@@ -25,7 +25,7 @@ def test_save1():
         save_image(img, TMP_FNAME)
         img2 = load_image(TMP_FNAME)
         assert_array_almost_equal(img.affine, img2.affine)
-        assert_equal(img.shape, img2.shape)
+        assert img.shape == img2.shape
         assert_array_almost_equal(img2.get_fdata(), img.get_fdata())
         del img2
 
@@ -42,7 +42,7 @@ def test_save2():
         save_image(img, TMP_FNAME)
         img2 = load_image(TMP_FNAME)
         assert_array_almost_equal(img.affine, img2.affine)
-        assert_equal(img.shape, img2.shape)
+        assert img.shape == img2.shape
         assert_array_almost_equal(img2.get_fdata(), img.get_fdata())
         del img2
 
@@ -66,7 +66,7 @@ def test_save2b():
         save_image(img, TMP_FNAME)
         img2 = load_image(TMP_FNAME)
         assert_array_almost_equal(img.affine, img2.affine)
-        assert_equal(img.shape, img2.shape)
+        assert img.shape == img2.shape
         assert_array_almost_equal(img2.get_fdata(), img.get_fdata())
         del img2
 
@@ -92,10 +92,10 @@ def test_save3():
         data = tmp.get_fdata().copy()
         img2 = api.Image(data, tmp.coordmap, tmp.metadata)
         del tmp
-    assert_equal(tuple([img.shape[l] for l in [3,2,1,0]]), img2.shape)
+    assert tuple([img.shape[l] for l in [3,2,1,0]]) == img2.shape
     a = np.transpose(img.get_fdata(), [3,2,1,0])
-    assert_false(np.allclose(img.affine, img2.affine))
-    assert_true(np.allclose(a, img2.get_fdata()))
+    assert not np.allclose(img.affine, img2.affine)
+    assert np.allclose(a, img2.get_fdata())
 
 
 def test_save4():
@@ -132,16 +132,16 @@ def test_save4():
     assert_array_almost_equal(res[:3,-1], img2.affine[:3,-1])
     # start in the time dimension should be 3.45 as in img, because NIFTI stores
     # the time offset in hdr[``toffset``]
-    assert_not_equal(res[3,-1], img2.affine[3,-1])
-    assert_equal(res[3,-1], 3.45)
+    assert res[3,-1] != img2.affine[3,-1]
+    assert res[3,-1] == 3.45
     # shapes should be reversed because img has coordinates reversed
-    assert_equal(img.shape[::-1], img2.shape)
+    assert img.shape[::-1] == img2.shape
     # data should be transposed because coordinates are reversed
     assert_array_almost_equal(
         np.transpose(img2.get_fdata(),[3,2,1,0]),
         img.get_fdata())
     # coordinate names should be reversed as well
-    assert_equal(img2.coordmap.function_domain.coord_names,
+    assert (img2.coordmap.function_domain.coord_names ==
                  img.coordmap.function_domain.coord_names[::-1])
-    assert_equal(img2.coordmap.function_domain.coord_names,
+    assert (img2.coordmap.function_domain.coord_names ==
                  ('i', 'j', 'k', 't'))

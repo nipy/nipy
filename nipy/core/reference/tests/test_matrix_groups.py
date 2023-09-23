@@ -68,7 +68,7 @@ def test_basis_change():
     #print basis1.coords
     new = MG.change_basis(basis1, bchange)
 
-    assert_true(MG.same_transformation(basis1, new, bchange))
+    assert MG.same_transformation(basis1, new, bchange)
 
 def test_product():
 

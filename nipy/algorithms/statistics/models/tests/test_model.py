@@ -88,19 +88,19 @@ def test_t_output():
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)
     res = RESULTS.Tcontrast([1,0], store=('effect',))
-    assert_equal(res.t, None)
+    assert res.t == None
     assert_array_almost_equal(res.effect, exp_effect)
-    assert_equal(res.sd, None)
+    assert res.sd == None
     res = RESULTS.Tcontrast([1,0], store=('t',))
     assert_array_almost_equal(res.t, exp_t)
-    assert_equal(res.effect, None)
-    assert_equal(res.sd, None)
+    assert res.effect == None
+    assert res.sd == None
     res = RESULTS.Tcontrast([1,0], store=('sd',))
-    assert_equal(res.t, None)
-    assert_equal(res.effect, None)
+    assert res.t == None
+    assert res.effect == None
     assert_array_almost_equal(res.sd, exp_sd)
     res = RESULTS.Tcontrast([1,0], store=('effect', 'sd'))
-    assert_equal(res.t, None)
+    assert res.t == None
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)
 
@@ -129,8 +129,8 @@ def test_f_output_new_api():
 
 def test_conf_int():
     lower_, upper_ = RESULTS.conf_int()
-    assert_true((lower_ < upper_).all())
-    assert_true((lower_ > upper_ - 10).all())
+    assert (lower_ < upper_).all()
+    assert (lower_ > upper_ - 10).all()
     lower_, upper_ = RESULTS.conf_int(cols=[1]).T
-    assert_true(lower_ < upper_)
-    assert_true(lower_ > upper_ - 10)
+    assert lower_ < upper_
+    assert lower_ > upper_ - 10

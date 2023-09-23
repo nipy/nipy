@@ -86,7 +86,7 @@ class test_permutation_test(unittest.TestCase):
         p_values, cluster_results, region_results = P.calibrate(
             nperms=nperms)
         cpval = p_values['Corr_p_values']
-        assert_true(np.sum(cpval > .5 * np.ones_like(cpval)) > .9 * len(cpval))
+        assert np.sum(cpval > .5 * np.ones_like(cpval)) > .9 * len(cpval)
 
     def test_twosample_non_null(self):
         data1, vardata1, XYZ = make_data(n=20)

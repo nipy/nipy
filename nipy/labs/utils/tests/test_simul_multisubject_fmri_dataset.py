@@ -61,7 +61,7 @@ def test_surrogate_array_3d_write():
     write_path = path.join(mkdtemp(), 'img.nii')
     shape = (5, 6, 7)
     data = surrogate_3d_dataset(shape=shape, out_image_file=write_path)
-    assert_true(path.isfile(write_path))
+    assert path.isfile(write_path)
 
 def test_surrogate_array_3d_mask():
     """ Check that 3D version works when a mask is provided
@@ -71,7 +71,7 @@ def test_surrogate_array_3d_mask():
     mask_img = Nifti1Image(mask.astype(np.uint8), np.eye(4))
     img = surrogate_3d_dataset(mask=mask_img)
     mean_image  = img[mask].mean()
-    assert_true((img[mask == 0] == 0).all())
+    assert (img[mask == 0] == 0).all()
 
 
 def test_surrogate_array_4d_shape():
@@ -80,15 +80,15 @@ def test_surrogate_array_4d_shape():
     shape = (5, 6, 7)
     out_shape = shape + (1,)
     imgs = surrogate_4d_dataset(shape)
-    assert_true(not np.any(np.asarray(imgs[0].shape) - np.asarray(out_shape)))
+    assert not np.any(np.asarray(imgs[0].shape) - np.asarray(out_shape))
     n_sess = 3
     imgs = surrogate_4d_dataset(shape, n_sess=n_sess)
-    assert_true(imgs[0].shape == out_shape)
-    assert_true(len(imgs) == n_sess)
+    assert imgs[0].shape == out_shape
+    assert len(imgs) == n_sess
     n_scans = 5
     out_shape = shape + (n_scans,)
     imgs = surrogate_4d_dataset(shape, n_scans=n_scans)
-    assert_true(imgs[0].shape == (out_shape))
+    assert imgs[0].shape == (out_shape)
 
 
 def test_surrogate_array_4d_write():
@@ -101,11 +101,11 @@ def test_surrogate_array_4d_write():
                    for i in range(n_sess)]
     shape = (5, 6, 7)
     imgs = surrogate_4d_dataset(shape, out_image_file=write_paths[0])
-    assert_true(path.isfile(write_paths[0]))
+    assert path.isfile(write_paths[0])
     imgs = surrogate_4d_dataset(shape, n_sess=n_sess,
                                 out_image_file=write_paths)
     for wp in write_paths:
-        assert_true(path.isfile(wp))
+        assert path.isfile(wp)
 
 
 def test_surrogate_array_4d_mask():
@@ -116,7 +116,7 @@ def test_surrogate_array_4d_mask():
     mask_img = Nifti1Image(mask.astype(np.uint8), np.eye(4))
     imgs = surrogate_4d_dataset(mask=mask_img)
     mean_image  = imgs[0].get_fdata()[mask].mean()
-    assert_true((imgs[0].get_fdata()[mask == 0] < mean_image / 2).all())
+    assert (imgs[0].get_fdata()[mask == 0] < mean_image / 2).all()
 
 
 def test_surrogate_array_4d_dmtx():
@@ -127,7 +127,7 @@ def test_surrogate_array_4d_dmtx():
     out_shape = shape + (n_scans,)
     dmtx = np.random.randn(n_scans, 3)
     imgs = surrogate_4d_dataset(shape, dmtx=dmtx)
-    assert_true(not np.any(np.asarray(imgs[0].shape) - np.asarray(out_shape)))
+    assert not np.any(np.asarray(imgs[0].shape) - np.asarray(out_shape))
 
 
 if __name__ == "__main__":

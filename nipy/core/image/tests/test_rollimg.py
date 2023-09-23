@@ -173,8 +173,8 @@ def test_reduce():
     im = Image(x, AT(CS('ijkq'), MNI4, np.diag([3, 4, 5, 6, 1])))
     newim = image_reduce(im, lambda x: x.sum(0), 'q')
     assert_array_equal(xyz_affine(im), xyz_affine(newim))
-    assert_equal(newim.axes.coord_names, tuple('ijk'))
-    assert_equal(newim.shape, (3, 5, 7))
+    assert newim.axes.coord_names == tuple('ijk')
+    assert newim.shape == (3, 5, 7)
     assert_almost_equal(newim.get_fdata(), x.sum(3))
     im_nd = Image(x, AT(CS('ijkq'), MNI4, np.array(
         [[0, 1, 2, 0, 10],
@@ -201,8 +201,8 @@ def test_specific_reduce():
     im = im.renamed_axes(q='specific')
     newim = need_specific_axis_reduce(im, lambda x: x.sum(0))
     assert_array_equal(xyz_affine(im), xyz_affine(newim))
-    assert_equal(newim.axes.coord_names, tuple('ijk'))
-    assert_equal(newim.shape, (3, 5, 7))
+    assert newim.axes.coord_names == tuple('ijk')
+    assert newim.shape == (3, 5, 7)
     assert_almost_equal(newim.get_fdata(), x.sum(3))
 
 
@@ -215,8 +215,8 @@ def test_call():
     im = Image(x, AT(CS('ijkq'), MNI4, affine))
     newim = image_call(im, lambda x: x[::2], 'q', 'out')
     assert_array_equal(xyz_affine(im), xyz_affine(newim))
-    assert_equal(newim.axes.coord_names, tuple('ijk') + ('out',))
-    assert_equal(newim.shape, (3, 5, 7, 6))
+    assert newim.axes.coord_names == tuple('ijk') + ('out',)
+    assert newim.shape == (3, 5, 7, 6)
     assert_almost_equal(newim.get_fdata(), x[:,:,:,::2])
 
 
@@ -240,10 +240,10 @@ def test_modify():
             meanim = image_modify(im, meanmodify, a)
             assert_array_equal(nullim.get_fdata(), im.get_fdata())
             assert_array_equal(xyz_affine(im), xyz_affine(nullim))
-            assert_equal(nullim.axes, im.axes)
+            assert nullim.axes == im.axes
             # yield assert_equal, nullim, im
             assert_array_equal(xyz_affine(im), xyz_affine(meanim))
-            assert_equal(meanim.axes, im.axes)
+            assert meanim.axes == im.axes
         # Make sure that meanmodify works as expected
         d = im.get_fdata()
         d = np.rollaxis(d, n)

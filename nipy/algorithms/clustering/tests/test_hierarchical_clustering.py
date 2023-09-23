@@ -39,7 +39,7 @@ def alg_test_basic(n=100,k=5):
     v = np.zeros(n)
     v[:int(0.7*n)]=1
     w = np.absolute(u-v)
-    assert_true(np.sum(w*(1-w))==0)
+    assert np.sum(w*(1-w))==0
 
 
 def alg_test_2():
@@ -53,7 +53,7 @@ def alg_test_2():
     G = knn(x, k)
     t = average_link_graph(G)
     u = t.split(2)
-    assert_true(u.max()==2)
+    assert u.max()==2
 
 
 def alg_test_3(n=100,k=5):
@@ -66,7 +66,7 @@ def alg_test_3(n=100,k=5):
     v = np.zeros(n)
     v[:int(0.7*n)]=1
     w = np.absolute(u-v)
-    assert_true(np.sum(w*(1-w))==0)
+    assert np.sum(w*(1-w))==0
 
 
 def ward_test_basic(n=100,k=5):
@@ -80,7 +80,7 @@ def ward_test_basic(n=100,k=5):
     v = np.zeros(n)
     v[:int(0.7*n)]=1
     w = np.absolute(u-v)
-    assert_true(np.sum(w*(1-w))==0)
+    assert np.sum(w*(1-w))==0
 
 
 def wardq_test_basic(n=100,k=5):
@@ -94,7 +94,7 @@ def wardq_test_basic(n=100,k=5):
     v = np.zeros(n)
     v[:int(0.7*n)]=1
     w = np.absolute(u-v)
-    assert_true(np.sum(w*(1-w))==0)
+    assert np.sum(w*(1-w))==0
 
 
 def wardq_test_2():
@@ -108,7 +108,7 @@ def wardq_test_2():
     G = knn(x, k)
     t = ward_quick(G, x)
     u = t.split(2)
-    assert_equal(u.max(), 2)
+    assert u.max() == 2
 
 
 def wardf_test(n=100,k=5):
@@ -121,7 +121,7 @@ def wardf_test(n=100,k=5):
     v = np.zeros(n)
     v[:int(0.7*n)]=1
     w = np.absolute(u-v)
-    assert_equal(np.sum(w*(1-w)), 0)
+    assert np.sum(w*(1-w)) == 0
 
 
 def wards_test_basic(n=100,k=5):
@@ -134,7 +134,7 @@ def wards_test_basic(n=100,k=5):
     v = np.zeros(n)
     v[:int(0.7*n)]=1
     w = np.absolute(u-v)
-    assert_equal(np.sum(w*(1-w)), 0)
+    assert np.sum(w*(1-w)) == 0
 
 
 def wards_test_3():
@@ -147,7 +147,7 @@ def wards_test_3():
     x[int(0.8*n):] -= 10
     G = knn(x,k)
     u,cost = ward_segment(G, x, qmax=2)
-    assert_equal(u.max(), 2)
+    assert u.max() == 2
 
 
 def cost_test(n=100, k=5):
@@ -156,7 +156,7 @@ def cost_test(n=100, k=5):
     x = np.random.randn(n, 2)
     G = knn(x, k)
     u, cost =  ward_segment(G, x)
-    assert_true(np.abs(cost.max()/(n*np.var(x,0).sum()) - 1) < 1e-6)
+    assert np.abs(cost.max()/(n*np.var(x,0).sum()) - 1) < 1e-6
 
 
 def ward_test_more(n=100, k=5, verbose=0):
@@ -169,7 +169,7 @@ def ward_test_more(n=100, k=5, verbose=0):
     u1,c = ward_segment(G, X, stop=-1, qmax=k, verbose=verbose)
     u,c = ward_quick_segment(G, X, stop=-1, qmax=1, verbose=verbose)
     u2,c = ward_quick_segment(G, X, stop=-1, qmax=k, verbose=verbose)
-    assert_equal(np.sum(u1==u2), n)
+    assert np.sum(u1==u2) == n
 
 
 if __name__ == '__main__':

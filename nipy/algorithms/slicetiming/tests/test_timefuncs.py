@@ -24,7 +24,7 @@ def test_ascending():
                 np.arange(n_slices) / n_slices * tr)
         assert_array_equal(
             np.argsort(func(5, 1)), [0, 1, 2, 3, 4])
-        assert_equal(tf.SLICETIME_FUNCTIONS[func.__name__], func)
+        assert tf.SLICETIME_FUNCTIONS[func.__name__] == func
 
 
 def test_descending():
@@ -36,7 +36,7 @@ def test_descending():
                 np.arange(n_slices-1, -1, -1) / n_slices * tr)
         assert_array_equal(
             np.argsort(func(5, 1)), [4, 3, 2, 1, 0])
-        assert_equal(tf.SLICETIME_FUNCTIONS[func.__name__], func)
+        assert tf.SLICETIME_FUNCTIONS[func.__name__] == func
 
 
 def test_asc_alt_2():
@@ -50,7 +50,7 @@ def test_asc_alt_2():
             [0, 6, 1, 7, 2, 8, 3, 9, 4, 10, 5])
         assert_array_equal(
             np.argsort(func(5, 1)), [0, 2, 4, 1, 3])
-        assert_equal(tf.SLICETIME_FUNCTIONS[func.__name__], func)
+        assert tf.SLICETIME_FUNCTIONS[func.__name__] == func
 
 
 def test_desc_alt_2():
@@ -64,7 +64,7 @@ def test_desc_alt_2():
             [5, 10, 4, 9, 3, 8, 2, 7, 1, 6, 0])
         assert_array_equal(
             np.argsort(func(5, 1)), [4, 2, 0, 3, 1])
-        assert_equal(tf.SLICETIME_FUNCTIONS[func.__name__], func)
+        assert tf.SLICETIME_FUNCTIONS[func.__name__] == func
 
 
 def test_asc_alt_2_1():
@@ -78,7 +78,7 @@ def test_asc_alt_2_1():
             [5, 0, 6, 1, 7, 2, 8, 3, 9, 4, 10])
         assert_array_equal(
             np.argsort(func(5, 1)), [1, 3, 0, 2, 4])
-        assert_equal(tf.SLICETIME_FUNCTIONS[func.__name__], func)
+        assert tf.SLICETIME_FUNCTIONS[func.__name__] == func
 
 
 def test_asc_alt_siemens():
@@ -92,7 +92,7 @@ def test_asc_alt_siemens():
             [0, 6, 1, 7, 2, 8, 3, 9, 4, 10, 5])
         assert_array_equal(
             np.argsort(func(5, 1)), [0, 2, 4, 1, 3])
-        assert_equal(tf.SLICETIME_FUNCTIONS[func.__name__], func)
+        assert tf.SLICETIME_FUNCTIONS[func.__name__] == func
 
 
 def test_asc_alt_half():
@@ -106,7 +106,7 @@ def test_asc_alt_half():
             [0, 2, 4, 6, 8, 10, 1, 3, 5, 7, 9])
         assert_array_equal(
             np.argsort(func(5, 1)), [0, 3, 1, 4, 2])
-        assert_equal(tf.SLICETIME_FUNCTIONS[func.__name__], func)
+        assert tf.SLICETIME_FUNCTIONS[func.__name__] == func
 
 
 def test_desc_alt_half():
@@ -120,7 +120,7 @@ def test_desc_alt_half():
             [9, 7, 5, 3, 1, 10, 8, 6, 4, 2, 0])
         assert_array_equal(
             np.argsort(func(5, 1)), [4, 1, 3, 0, 2])
-        assert_equal(tf.SLICETIME_FUNCTIONS[func.__name__], func)
+        assert tf.SLICETIME_FUNCTIONS[func.__name__] == func
 
 
 def test_number_names():
@@ -133,5 +133,5 @@ def test_number_names():
         tf.st_03142,
         tf.st_41302):
         name = func.__name__
-        assert_equal(tf.SLICETIME_FUNCTIONS[name], func)
-        assert_equal(tf.SLICETIME_FUNCTIONS[name[3:]], func)
+        assert tf.SLICETIME_FUNCTIONS[name] == func
+        assert tf.SLICETIME_FUNCTIONS[name[3:]] == func

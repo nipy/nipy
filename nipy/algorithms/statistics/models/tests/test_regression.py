@@ -26,13 +26,13 @@ Y = RNG.standard_normal((40,))
 def test_OLS():
     model = OLSModel(design=X)
     results = model.fit(Y)
-    assert_equal(results.df_resid, 30)
+    assert results.df_resid == 30
 
 
 def test_AR():
     model = ARModel(design=X, rho=0.4)
     results = model.fit(Y)
-    assert_equal(results.df_resid, 30)
+    assert results.df_resid == 30
 
 
 def test_OLS_degenerate():
@@ -40,7 +40,7 @@ def test_OLS_degenerate():
     Xd[:,0] = Xd[:,1] + Xd[:,2]
     model = OLSModel(design=Xd)
     results = model.fit(Y)
-    assert_equal(results.df_resid, 31)
+    assert results.df_resid == 31
 
 
 def test_AR_degenerate():
@@ -48,7 +48,7 @@ def test_AR_degenerate():
     Xd[:,0] = Xd[:,1] + Xd[:,2]
     model = ARModel(design=Xd, rho=0.9)
     results = model.fit(Y)
-    assert_equal(results.df_resid, 31)
+    assert results.df_resid == 31
 
 
 def test_yule_walker_R():
@@ -88,8 +88,8 @@ def test_ar_estimator():
     results = my_model.fit(Y)
     are = AREstimator(my_model,2)
     rhos = are(results)
-    assert_equal(rhos.shape, (2,))
-    assert_true(np.all(np.abs(rhos <= 1)))
+    assert rhos.shape == (2,)
+    assert np.all(np.abs(rhos <= 1))
     rhos2 = ar_bias_correct(results, 2)
     assert_array_almost_equal(rhos, rhos2, 8)
     invM = ar_bias_corrector(my_model.design, my_model.calc_beta, 2)
@@ -97,17 +97,17 @@ def test_ar_estimator():
     assert_array_almost_equal(rhos2, rhos3)
     # Check orders 1 and 3
     rhos = ar_bias_correct(results, 1)
-    assert_equal(rhos.shape, ())
-    assert_true(abs(rhos) <= 1)
+    assert rhos.shape == ()
+    assert abs(rhos) <= 1
     rhos = ar_bias_correct(results, 3)
-    assert_equal(rhos.shape, (3,))
-    assert_true(np.all(np.abs(rhos) <= 1))
+    assert rhos.shape == (3,)
+    assert np.all(np.abs(rhos) <= 1)
     # Make a 2D Y and try that
     Y = rng.normal(size=(N,12)) * 10 + 100
     results = my_model.fit(Y)
     rhos = are(results)
-    assert_equal(rhos.shape, (2,12))
-    assert_true(np.all(np.abs(rhos <= 1)))
+    assert rhos.shape == (2,12)
+    assert np.all(np.abs(rhos <= 1))
     rhos2 = ar_bias_correct(results, 2)
     assert_array_almost_equal(rhos, rhos2, 8)
     rhos3 = ar_bias_correct(results, 2, invM)
@@ -117,11 +117,11 @@ def test_ar_estimator():
     assert_array_almost_equal(rhos3, rhos4)
     # Check orders 1 and 3
     rhos = ar_bias_correct(results, 1)
-    assert_equal(rhos.shape, (12,))
-    assert_true(np.all(np.abs(rhos) <= 1))
+    assert rhos.shape == (12,)
+    assert np.all(np.abs(rhos) <= 1)
     rhos = ar_bias_correct(results, 3)
-    assert_equal(rhos.shape, (3,12))
-    assert_true(np.all(np.abs(rhos) <= 1))
+    assert rhos.shape == (3,12)
+    assert np.all(np.abs(rhos) <= 1)
     # Try reshaping to 3D
     results.resid = results.resid.reshape((N,3,4))
     rhos = ar_bias_correct(results, 2)

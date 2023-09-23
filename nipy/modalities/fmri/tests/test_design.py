@@ -32,7 +32,7 @@ THIS_DIR = dirname(__file__)
 
 def assert_dict_almost_equal(obs, exp):
     # Check that two dictionaries with array keys are almost equal
-    assert_equal(set(obs), set(exp))
+    assert set(obs) == set(exp)
     for key in exp:
         assert_almost_equal(exp[key], obs[key])
 
@@ -178,7 +178,7 @@ def assert_des_con_equal(one, two):
     des1, con1 = one
     des2, con2 = two
     assert_array_equal(des1, des2)
-    assert_equal(set(con1), set(con2))
+    assert set(con1) == set(con2)
     for key in con1:
         assert_array_equal(con1[key], con2[key])
 
@@ -237,7 +237,7 @@ def test_openfmri2nipy():
     onsets, durations, amplitudes = ons_dur_amp.T
     for in_param in (stim_file, ons_dur_amp):
         res = openfmri2nipy(in_param)
-        assert_equal(res.dtype.names, ('start', 'end', 'amplitude'))
+        assert res.dtype.names == ('start', 'end', 'amplitude')
         assert_array_equal(res['start'], onsets)
         assert_array_equal(res['end'], onsets + durations)
         assert_array_equal(res['amplitude'], amplitudes)

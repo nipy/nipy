@@ -41,42 +41,42 @@ def test_init():
     data = gimg.get_fdata()
     new = Image(data, gimg.coordmap)
     assert_array_almost_equal(gimg.get_fdata(), new.get_fdata())
-    assert_equal(new.coordmap, gimg.coordmap)
+    assert new.coordmap == gimg.coordmap
     assert_raises(TypeError, Image)
     assert_raises(TypeError, Image, data)
 
 
 def test_maxmin_values():
     y = gimg.get_fdata()
-    assert_equal(y.shape, tuple(gimg.shape))
-    assert_equal(y.max(), 23)
-    assert_equal(y.min(), 0.0)
+    assert y.shape == tuple(gimg.shape)
+    assert y.max() == 23
+    assert y.min() == 0.0
 
 
 def test_slice_plane():
     x = gimg[1]
-    assert_equal(x.shape, gimg.shape[1:])
+    assert x.shape == gimg.shape[1:]
 
 
 def test_slice_block():
     x = gimg[1:3]
-    assert_equal(x.shape, (2,) + tuple(gimg.shape[1:]))
+    assert x.shape == (2,) + tuple(gimg.shape[1:])
 
 
 def test_slice_step():
     s = slice(0,4,2)
     x = gimg[s]
-    assert_equal(x.shape, (2,) + tuple(gimg.shape[1:]))
+    assert x.shape == (2,) + tuple(gimg.shape[1:])
     x = gimg[0:4:2]
-    assert_equal(x.shape, (2,) + tuple(gimg.shape[1:]))
+    assert x.shape == (2,) + tuple(gimg.shape[1:])
 
 
 def test_slice_type():
     s = slice(0, gimg.shape[0])
     x = gimg[s]
-    assert_equal(x.shape, gimg.shape)
+    assert x.shape == gimg.shape
     x = gimg[0:]
-    assert_equal(x.shape, gimg.shape)
+    assert x.shape == gimg.shape
 
 
 def test_slice_steps():
@@ -86,29 +86,29 @@ def test_slice_steps():
     slice_x = slice(0, dim2, 2)
     x = gimg[slice_z, slice_y, slice_x]
     newshape = tuple(np.floor((np.array(gimg.shape) - 1)/2) + 1)
-    assert_equal(x.shape, newshape)
+    assert x.shape == newshape
     x = gimg[0:dim0:2,0:dim1:2,0:dim2:2]
-    assert_equal(x.shape, newshape)
+    assert x.shape == newshape
 
 
 def test_get_data():
     # get_fdata always returns an array
     x = gimg.get_fdata()
-    assert_true(isinstance(x, np.ndarray))
-    assert_equal(x.shape, gimg.shape)
-    assert_equal(x.ndim, gimg.ndim)
+    assert isinstance(x, np.ndarray)
+    assert x.shape == gimg.shape
+    assert x.ndim == gimg.ndim
 
 
 def test_generator():
     # User iter_axis to return slices
     gen = iter_axis(gimg, axis=0)
     for img_slice in gen:
-        assert_equal(img_slice.shape, (3,2))
+        assert img_slice.shape == (3,2)
 
 
 def test_iter():
     for img_slice in image.iter_axis(gimg, 0):
-        assert_equal(img_slice.shape, (3,2))
+        assert img_slice.shape == (3,2)
     tmp = np.zeros(gimg.shape)
     write_data(tmp, enumerate(iter_axis(gimg, 0, asarray=True)))
     assert_array_almost_equal(tmp, gimg.get_fdata())
@@ -124,7 +124,7 @@ def test_parcels1():
     v = 0
     for i, d in data_generator(test, parcels(parcelmap)):
         v += d.shape[0]
-    assert_equal(v, np.product(test.shape))
+    assert v == np.product(test.shape)
 
 
 def test_parcels3():
@@ -141,16 +141,16 @@ def test_parcels3():
 def test_slicing_returns_image():
     data = np.ones((2,3,4))
     img = Image(data, AffineTransform('kji', 'zyx', np.eye(4)))
-    assert_true(isinstance(img, Image))
-    assert_equal(img.ndim, 3)
+    assert isinstance(img, Image)
+    assert img.ndim == 3
     # 2D slice
     img2D = img[:,:,0]
-    assert_true(isinstance(img2D, Image))
-    assert_equal(img2D.ndim, 2)
+    assert isinstance(img2D, Image)
+    assert img2D.ndim == 2
     # 1D slice
     img1D = img[:,0,0]
-    assert_true(isinstance(img1D, Image))
-    assert_equal(img1D.ndim, 1)
+    assert isinstance(img1D, Image)
+    assert img1D.ndim == 1
 
 
 class ArrayLikeObj:
@@ -174,8 +174,8 @@ def test_ArrayLikeObj():
     coordmap = AffineTransform.from_params('xyz', 'ijk', xform)
     # create image form array-like object and coordmap
     img = image.Image(obj, coordmap)
-    assert_equal(img.ndim, 3)
-    assert_equal(img.shape, (2,3,4))
+    assert img.ndim == 3
+    assert img.shape == (2,3,4)
     assert_array_almost_equal(img.get_fdata(), 1)
     # Test that the array stays with the image, so we can assign the array
     # in-place, at least in this case
@@ -191,11 +191,11 @@ def test_defaults_ND():
         data = np.ones(arr_shape)
         ndim = len(arr_shape)
         img = Image(data, AffineTransform(in_names, out_names, np.eye(ndim+1)))
-        assert_true(isinstance(img._data, np.ndarray))
-        assert_equal(img.ndim, len(arr_shape))
-        assert_equal(img.shape, arr_shape)
-        assert_equal(img.affine.shape, (img.ndim+1, img.ndim+1))
-        assert_true(img.affine.diagonal().all())
+        assert isinstance(img._data, np.ndarray)
+        assert img.ndim == len(arr_shape)
+        assert img.shape == arr_shape
+        assert img.affine.shape == (img.ndim+1, img.ndim+1)
+        assert img.affine.diagonal().all()
         # img.header deprecated, when removed, test will raise Error
         assert_raises(AttributeError, getattr, img, 'header')
 
@@ -206,14 +206,14 @@ def test_header():
     coordmap = AffineTransform.from_params('xyz', 'ijk', np.eye(4))
     header = nib.Nifti1Header()
     img = Image(arr, coordmap, metadata={'header': header})
-    assert_equal(img.metadata['header'], header)
+    assert img.metadata['header'] == header
     # This interface deprecated
-    assert_equal(img.header, header)
+    assert img.header == header
     hdr2 = nib.Nifti1Header()
     hdr2['descrip'] = 'from fullness of heart'
-    assert_not_equal(img.header, hdr2)
+    assert img.header != hdr2
     img.header = hdr2
-    assert_equal(img.header, hdr2)
+    assert img.header == hdr2
 
 
 def test_from_image():
@@ -223,31 +223,31 @@ def test_from_image():
     img = Image(arr, coordmap, metadata={'field': 'value'})
     img2 = Image.from_image(img)
     assert_array_equal(img.get_fdata(), img2.get_fdata())
-    assert_equal(img.coordmap, img2.coordmap)
-    assert_equal(img.metadata, img2.metadata)
-    assert_false(img.metadata is img2.metadata)
+    assert img.coordmap == img2.coordmap
+    assert img.metadata == img2.metadata
+    assert not img.metadata is img2.metadata
     # optional inputs - data
     arr2 = arr + 10
     new = Image.from_image(img, arr2)
     assert_array_almost_equal(arr2, new.get_fdata())
-    assert_equal(new.coordmap, coordmap)
+    assert new.coordmap == coordmap
     new = Image.from_image(img, data=arr2)
     assert_array_almost_equal(arr2, new.get_fdata())
-    assert_equal(new.coordmap, coordmap)
+    assert new.coordmap == coordmap
     # optional inputs - coordmap
     coordmap2 = AffineTransform.from_params('pqr', 'ijk', np.eye(4))
     new = Image.from_image(img, arr2, coordmap2)
     assert_array_almost_equal(arr2, new.get_fdata())
-    assert_equal(new.coordmap, coordmap2)
+    assert new.coordmap == coordmap2
     new = Image.from_image(img, coordmap=coordmap2)
     assert_array_almost_equal(arr, new.get_fdata())
-    assert_equal(new.coordmap, coordmap2)
+    assert new.coordmap == coordmap2
     # Optional inputs - metadata
-    assert_equal(new.metadata, img.metadata)
+    assert new.metadata == img.metadata
     another_meta = {'interesting': 'information'}
     new = Image.from_image(img, arr2, coordmap2, another_meta)
     assert_array_almost_equal(arr2, new.get_fdata())
-    assert_equal(another_meta, new.metadata)
+    assert another_meta == new.metadata
 
 
 def test_synchronized_order():
@@ -255,24 +255,24 @@ def test_synchronized_order():
     im = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
     im_scrambled = im.reordered_axes('iljk').reordered_reference('xtyz')
     im_unscrambled = image.synchronized_order(im_scrambled, im)
-    assert_equal(im_unscrambled.coordmap, im.coordmap)
+    assert im_unscrambled.coordmap == im.coordmap
     assert_almost_equal(im_unscrambled.get_fdata(), im.get_fdata())
-    assert_equal(im_unscrambled, im)
-    assert_true(im_unscrambled == im)
-    assert_false(im_unscrambled != im)
+    assert im_unscrambled == im
+    assert im_unscrambled == im
+    assert im_unscrambled == im
     # the images don't have to be the same shape
     data2 = np.random.standard_normal((3,11,9,4))
     im2 = Image(data2, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
     im_scrambled2 = im2.reordered_axes('iljk').reordered_reference('xtyz')
     im_unscrambled2 = image.synchronized_order(im_scrambled2, im)
-    assert_equal(im_unscrambled2.coordmap, im.coordmap)
+    assert im_unscrambled2.coordmap == im.coordmap
     # or the same coordmap
     data3 = np.random.standard_normal((3,11,9,4))
     im3 = Image(data3, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,9,3,-2,1])))
     im_scrambled3 = im3.reordered_axes('iljk').reordered_reference('xtyz')
     im_unscrambled3 = image.synchronized_order(im_scrambled3, im)
-    assert_equal(im_unscrambled3.axes, im.axes)
-    assert_equal(im_unscrambled3.reference, im.reference)
+    assert im_unscrambled3.axes == im.axes
+    assert im_unscrambled3.reference == im.reference
 
 
 def test_iter_axis():
@@ -288,9 +288,9 @@ def test_iter_axis():
         slices = list(iter_axis(img, ax_id))
         expected_shape = list(data.shape)
         g_len = expected_shape.pop(ax_no)
-        assert_equal(len(slices), g_len)
+        assert len(slices) == g_len
         for s in slices:
-            assert_equal(list(s.shape), expected_shape)
+            assert list(s.shape) == expected_shape
         # test asarray
         slicer = [slice(None) for i in range(data.ndim)]
         for i, s in enumerate(iter_axis(img, ax_id, asarray=True)):
@@ -338,16 +338,16 @@ def test_is_image():
                            CoordinateSystem('xyz'),
                            np.eye(4))
     img = Image(arr, cmap)
-    assert_true(is_image(img))
-    assert_false(is_image(object()))
+    assert is_image(img)
+    assert not is_image(object())
     class C:
         def get_fdata(self): pass
     c = C()
-    assert_false(is_image(c))
+    assert not is_image(c)
     c.coordmap = None
-    assert_false(is_image(c))
+    assert not is_image(c)
     c.metadata = None
-    assert_true(is_image(c))
+    assert is_image(c)
 
 
 def test_rollimg():
@@ -357,35 +357,35 @@ def test_rollimg():
     im = Image(data, AT('ijkl', 'xyzt', aff))
     # No attempt to preserve the diagonal
     im1 = rollimg(im, 1)
-    assert_equal(im1.coordmap, rollimg(im, 'j').coordmap)
-    assert_equal(im1.coordmap, rollimg(im, 'y').coordmap)
-    assert_equal(im1.coordmap, rollimg(im, -3).coordmap)
-    assert_equal(im1.coordmap,
+    assert im1.coordmap == rollimg(im, 'j').coordmap
+    assert im1.coordmap == rollimg(im, 'y').coordmap
+    assert im1.coordmap == rollimg(im, -3).coordmap
+    assert (im1.coordmap ==
                  AT('jikl', 'xyzt', aff[:, (1, 0, 2, 3, 4)]))
     assert_array_equal(im1.get_fdata(), np.rollaxis(data, 1))
     im2 = rollimg(im, 2)
-    assert_equal(im2.coordmap, rollimg(im, 'k').coordmap)
-    assert_equal(im2.coordmap, rollimg(im, 'z').coordmap)
-    assert_equal(im2.coordmap, rollimg(im, -2).coordmap)
-    assert_equal(im2.coordmap,
+    assert im2.coordmap == rollimg(im, 'k').coordmap
+    assert im2.coordmap == rollimg(im, 'z').coordmap
+    assert im2.coordmap == rollimg(im, -2).coordmap
+    assert (im2.coordmap ==
                  AT('kijl', 'xyzt', aff[:, (2, 0, 1, 3, 4)]))
     assert_array_equal(im2.get_fdata(), np.rollaxis(data, 2))
     im3 = rollimg(im, 3)
-    assert_equal(im3.coordmap, rollimg(im, 'l').coordmap)
-    assert_equal(im3.coordmap, rollimg(im, 't').coordmap)
-    assert_equal(im3.coordmap, rollimg(im, -1).coordmap)
-    assert_equal(im3.coordmap,
+    assert im3.coordmap == rollimg(im, 'l').coordmap
+    assert im3.coordmap == rollimg(im, 't').coordmap
+    assert im3.coordmap == rollimg(im, -1).coordmap
+    assert (im3.coordmap ==
                         AT('lijk', 'xyzt', aff[:, (3, 0, 1, 2, 4)]))
     assert_array_equal(im3.get_fdata(), np.rollaxis(data, 3))
     # We can roll to before a specified axis
     im31 = rollimg(im, 3, 1)
-    assert_equal(im31.coordmap, rollimg(im, 'l', 'j').coordmap)
-    assert_equal(im31.coordmap, rollimg(im, 't', 'y').coordmap)
-    assert_equal(im31.coordmap, rollimg(im, 't', 'j').coordmap)
-    assert_equal(im31.coordmap, rollimg(im, 'l', 'y').coordmap)
-    assert_equal(im31.coordmap, rollimg(im, -1, 'y').coordmap)
-    assert_equal(im31.coordmap, rollimg(im, -1, -3).coordmap)
-    assert_equal(im31.coordmap,
+    assert im31.coordmap == rollimg(im, 'l', 'j').coordmap
+    assert im31.coordmap == rollimg(im, 't', 'y').coordmap
+    assert im31.coordmap == rollimg(im, 't', 'j').coordmap
+    assert im31.coordmap == rollimg(im, 'l', 'y').coordmap
+    assert im31.coordmap == rollimg(im, -1, 'y').coordmap
+    assert im31.coordmap == rollimg(im, -1, -3).coordmap
+    assert (im31.coordmap ==
                  AT('iljk', 'xyzt', aff[:, (0, 3, 1, 2, 4)]))
     assert_array_equal(im31.get_fdata(), np.rollaxis(data, 3, 1))
     # Check that ambiguous axes raise an exception; 'l' appears both as an axis
@@ -403,10 +403,10 @@ def test_rollimg():
     im_z = Image(data, AT('ijkl', 'xyzt', aff_z))
     assert_raises(AxisError, rollimg, im_z, 't', fix0=False)
     # But we can work it out if we turn on our zero detector
-    assert_equal(rollimg(im_z, 't', fix0=True).coordmap,
+    assert (rollimg(im_z, 't', fix0=True).coordmap ==
                  AT('lijk', 'xyzt', aff_z[:, (3, 0, 1, 2, 4)]))
     # That's the default
-    assert_equal(rollimg(im_z, 't').coordmap,
+    assert (rollimg(im_z, 't').coordmap ==
                  AT('lijk', 'xyzt', aff_z[:, (3, 0, 1, 2, 4)]))
     # Non square is OK
     aff_r = np.array([[1, 0, 0, 10],
@@ -415,7 +415,7 @@ def test_rollimg():
                       [0, 0, 0, 13],
                       [0, 0, 0, 1]])
     im_r = Image(data[:,:,:,0], AT('ijk', 'xyzt', aff_r))
-    assert_equal(rollimg(im_r, 'k').coordmap,
+    assert (rollimg(im_r, 'k').coordmap ==
                  AT('kij', 'xyzt', aff_r[:, (2, 0, 1, 3)]))
     # Unless you're tring to get at the dropped input dimension of course
     assert_raises(AxisError, rollimg, im_r, 't')

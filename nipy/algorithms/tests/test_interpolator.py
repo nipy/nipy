@@ -24,8 +24,8 @@ def test_interp_obj():
     coordmap =  vox2mni(np.eye(4))
     img = Image(arr, coordmap)
     interp = ImageInterpolator(img)
-    assert_equal(interp.mode, 'constant')
-    assert_equal(interp.order, 3)
+    assert interp.mode == 'constant'
+    assert interp.order == 3
     # order is read-only
     assert_raises(AttributeError,
                   setattr,
@@ -33,7 +33,7 @@ def test_interp_obj():
                   'order',
                   1)
     interp = ImageInterpolator(img, mode='nearest')
-    assert_equal(interp.mode, 'nearest')
+    assert interp.mode == 'nearest'
     # mode is read-only
     assert_raises(AttributeError,
                   setattr,

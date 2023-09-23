@@ -57,7 +57,7 @@ def test_high_level_glm_with_paths():
         multi_session_model.fit()
         z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
         assert_array_equal(get_affine(z_image), get_affine(load(mask_file)))
-        assert_true(z_image.get_fdata().std() < 3.)
+        assert z_image.get_fdata().std() < 3.
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory
         del z_image, fmri_files, multi_session_model
@@ -71,14 +71,14 @@ def test_high_level_glm_with_data():
     multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask=None)
     multi_session_model.fit()
     z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
-    assert_equal(np.sum(z_image.get_fdata() == 0), 0)
+    assert np.sum(z_image.get_fdata() == 0) == 0
 
     # compute the mask
     multi_session_model = FMRILinearModel(fmri_data, design_matrices,
                                           m=0, M=.01, threshold=0.)
     multi_session_model.fit()
     z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
-    assert_true(z_image.get_fdata().std() < 3. )
+    assert z_image.get_fdata().std() < 3.
 
     # with mask
     multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask)
@@ -86,13 +86,12 @@ def test_high_level_glm_with_data():
     z_image, effect_image, variance_image= multi_session_model.contrast(
         [np.eye(rk)[:2]] * 2, output_effects=True, output_variance=True)
     assert_array_equal(z_image.get_fdata() == 0., load(mask).get_fdata() == 0.)
-    assert_true(
-        (variance_image.get_fdata()[load(mask).get_fdata() > 0, 0] > .001).all())
+    assert (variance_image.get_fdata()[load(mask).get_fdata() > 0, 0] > .001).all()
 
     # without scaling
     multi_session_model.fit(do_scaling=False)
     z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
-    assert_true(z_image.get_fdata().std() < 3. )
+    assert z_image.get_fdata().std() < 3.
 
 
 def test_high_level_glm_contrasts():
@@ -104,8 +103,8 @@ def test_high_level_glm_contrasts():
                                             contrast_type='tmin-conjunction')
     z1, = multi_session_model.contrast([np.eye(rk)[:1]] * 2)
     z2, = multi_session_model.contrast([np.eye(rk)[1:2]] * 2)
-    assert_true((z_image.get_fdata() < np.maximum(
-        z1.get_fdata(), z2.get_fdata())).all())
+    assert (z_image.get_fdata() < np.maximum(
+        z1.get_fdata(), z2.get_fdata())).all()
 
 
 def test_high_level_glm_null_contrasts():
@@ -140,17 +139,17 @@ def ar1_glm(n=100, p=80, q=10):
 def test_glm_ols():
     mulm, n, p, q = ols_glm()
     assert_array_equal(mulm.labels_, np.zeros(n))
-    assert_equal(list(mulm.results_), [0.0])
-    assert_equal(mulm.results_[0.0].theta.shape, (q, n))
+    assert list(mulm.results_) == [0.0]
+    assert mulm.results_[0.0].theta.shape == (q, n)
     assert_almost_equal(mulm.results_[0.0].theta.mean(), 0, 1)
     assert_almost_equal(mulm.results_[0.0].theta.var(), 1. / p, 1)
 
 
 def test_glm_beta():
     mulm, n, p, q = ols_glm()
-    assert_equal(mulm.get_beta().shape, (q, n))
-    assert_equal(mulm.get_beta([0, -1]).shape, (2, n))
-    assert_equal(mulm.get_beta(6).shape, (1, n))
+    assert mulm.get_beta().shape == (q, n)
+    assert mulm.get_beta([0, -1]).shape == (2, n)
+    assert mulm.get_beta(6).shape == (1, n)
 
 
 def test_glm_mse():
@@ -167,11 +166,11 @@ def test_glm_logL():
 
 def test_glm_ar():
     mulm, n, p, q = ar1_glm()
-    assert_equal(len(mulm.labels_), n)
-    assert_true(len(mulm.results_) > 1)
+    assert len(mulm.labels_) == n
+    assert len(mulm.results_) > 1
     tmp = sum([mulm.results_[key].theta.shape[1]
                for key in mulm.results_])
-    assert_equal(tmp, n)
+    assert tmp == n
 
 
 def test_Tcontrast():
@@ -195,7 +194,7 @@ def test_Fcontrast_nd():
     mulm, n, p, q = ar1_glm()
     cval = np.eye(q)[:3]
     con = mulm.contrast(cval)
-    assert_equal(con.contrast_type, 'F')
+    assert con.contrast_type == 'F'
     z_vals = con.z_score()
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
@@ -214,7 +213,7 @@ def test_Fcontrast_nd_ols():
     mulm, n, p, q = ols_glm()
     cval = np.eye(q)[:3]
     con = mulm.contrast(cval)
-    assert_equal(con.contrast_type, 'F')
+    assert con.contrast_type == 'F'
     z_vals = con.z_score()
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)
@@ -286,7 +285,7 @@ def test_tmin():
         mulm.contrast(c3).stat()
     tmin = min(t1, t2, t3)
     con = mulm.contrast(np.eye(q)[:3], 'tmin-conjunction')
-    assert_equal(con.stat(), tmin)
+    assert con.stat() == tmin
 
 
 def test_scaling():
@@ -298,7 +297,7 @@ def test_scaling():
     Y, mean_ = data_scaling(Y)
     assert_almost_equal(Y.mean(0), 0)
     assert_almost_equal(mean_, mean, 0)
-    assert_true(Y.std() > 1)
+    assert Y.std() > 1
 
 
 def test_fmri_inputs():
@@ -336,7 +335,7 @@ def test_fmri_example():
     multi_session_model.fit()
     z_image, = multi_session_model.contrast([np.eye(13)[1]] * 2)
     # Check number of voxels with p < 0.001
-    assert_equal(np.sum(z_image.get_fdata() > 3.09), 671)
+    assert np.sum(z_image.get_fdata() > 3.09) == 671
 
 
 if __name__ == "__main__":

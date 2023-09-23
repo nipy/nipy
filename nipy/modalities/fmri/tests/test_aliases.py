@@ -29,45 +29,45 @@ def test_implemented_function():
     g = implemented_function('f', lambda x: np.sqrt(x))
     l1 = lambdify(x, f(x))
     l2 = lambdify(x, g(x))
-    assert_equal(str(f(x)), str(g(x)))
-    assert_equal(l1(3), 6)
-    assert_equal(l2(3), np.sqrt(3))
+    assert str(f(x)) == str(g(x))
+    assert l1(3) == 6
+    assert l2(3) == np.sqrt(3)
     # check that we can pass in a sympy function as input
     func = sympy.Function('myfunc')
-    assert_false(hasattr(func, '_imp_'))
+    assert not hasattr(func, '_imp_')
     f = implemented_function(func, lambda x: 2*x)
-    assert_true(hasattr(f, '_imp_'))
+    assert hasattr(f, '_imp_')
 
 
 def test_lambdify():
     # Test lambdify with implemented functions
     # first test basic (sympy) lambdify
     f = sympy.cos
-    assert_equal(lambdify(x, f(x))(0), 1)
-    assert_equal(lambdify(x, 1 + f(x))(0), 2)
-    assert_equal(lambdify((x, y), y + f(x))(0, 1), 2)
+    assert lambdify(x, f(x))(0) == 1
+    assert lambdify(x, 1 + f(x))(0) == 2
+    assert lambdify((x, y), y + f(x))(0, 1) == 2
     # make an implemented function and test
     f = implemented_function("f", lambda x : x+100)
-    assert_equal(lambdify(x, f(x))(0), 100)
-    assert_equal(lambdify(x, 1 + f(x))(0), 101)
-    assert_equal(lambdify((x, y), y + f(x))(0, 1), 101)
+    assert lambdify(x, f(x))(0) == 100
+    assert lambdify(x, 1 + f(x))(0) == 101
+    assert lambdify((x, y), y + f(x))(0, 1) == 101
     # Error for functions with same name and different implementation
     f2 = implemented_function("f", lambda x : x+101)
     assert_raises(ValueError, lambdify, x, f(f2(x)))
     # our lambdify, like sympy's lambdify, can also handle tuples,
     # lists, dicts as expressions
     lam = lambdify(x, (f(x), x))
-    assert_equal(lam(3), (103, 3))
+    assert lam(3) == (103, 3)
     lam = lambdify(x, [f(x), x])
-    assert_equal(lam(3), [103, 3])
+    assert lam(3) == [103, 3]
     lam = lambdify(x, [f(x), (f(x), x)])
-    assert_equal(lam(3), [103, (103, 3)])
+    assert lam(3) == [103, (103, 3)]
     lam = lambdify(x, {f(x): x})
-    assert_equal(lam(3), {103: 3})
+    assert lam(3) == {103: 3}
     lam = lambdify(x, {f(x): x})
-    assert_equal(lam(3), {103: 3})
+    assert lam(3) == {103: 3}
     lam = lambdify(x, {x: f(x)})
-    assert_equal(lam(3), {3: 103})
+    assert lam(3) == {3: 103}
 
 
 def gen_BrownianMotion():

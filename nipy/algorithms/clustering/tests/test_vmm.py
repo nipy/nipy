@@ -23,7 +23,7 @@ needs_mpl = skipIf(not HAVE_MPL, "Test needs matplotlib")
 def test_spherical_area():
     # test the co_labelling functionality
     points, area = sphere_density(100)
-    assert_true(np.abs(area.sum()-4*np.pi)<1.e-2)
+    assert np.abs(area.sum()-4*np.pi)<1.e-2
 
 
 def test_von_mises_fisher_density():
@@ -38,7 +38,7 @@ def test_von_mises_fisher_density():
                 vmd = VonMisesMixture(k, precision, null_class=null_class)
                 vmd.estimate(x)
                 # check that it sums to 1
-                assert_true(np.abs((vmd.mixture_density(s)*area).sum() - 1)
+                assert (np.abs((vmd.mixture_density(s)*area).sum() - 1)
                             < 1e-2)
 
 
@@ -67,7 +67,7 @@ def test_dimension_selection_bic():
 
     precision = 100.
     my_vmm = select_vmm(list(range(1,8)), precision, False, x)
-    assert_equal(my_vmm.k, 3)
+    assert my_vmm.k == 3
 
 
 def test_dimension_selection_cv():
@@ -84,8 +84,8 @@ def test_dimension_selection_cv():
     my_vmm = select_vmm_cv(list(range(1,8)), precision, x, cv_index=sub,
                            null_class=False, ninit=5)
     z = np.argmax(my_vmm.responsibilities(x), 1)
-    assert_true(len(np.unique(z))>1)
-    assert_true(len(np.unique(z))<4)
+    assert len(np.unique(z))>1
+    assert len(np.unique(z))<4
 
 
 if __name__ == '__main__':

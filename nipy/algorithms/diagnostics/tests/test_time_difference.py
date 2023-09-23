@@ -87,7 +87,7 @@ def test_time_slice_axes():
         assert_array_almost_equal(orig_results[key], s0_results[key])
     # Incorrect slice axis
     bad_s0_results = tsd.time_slice_diffs(s0_data)
-    assert_not_equal(orig_results['slice_mean_diff2'].shape,
+    assert (orig_results['slice_mean_diff2'].shape !=
                      bad_s0_results['slice_mean_diff2'].shape)
     # Slice axis equal to time axis - ValueError
     assert_raises(ValueError, tsd.time_slice_diffs, data, -1, -1)
@@ -161,7 +161,7 @@ def test_tsd_image():
             exp_ax_names = tuple(n for n in ax_names if n != time_name)
             for key in ('slice_diff2_max_vol', 'diff2_mean_vol'):
                 img = img_results[key]
-                assert_equal(img.coordmap.function_domain.coord_names,
+                assert (img.coordmap.function_domain.coord_names ==
                              exp_ax_names)
     # Test defaults on rolled image
     fimg_rolled = rollimg(fimg, 't')

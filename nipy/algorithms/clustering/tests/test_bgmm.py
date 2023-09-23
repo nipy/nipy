@@ -24,7 +24,7 @@ def test_dirichlet_eval():
     for i in range(10000):
         e = i * 0.0001 + 0.00005
         sd += dirichlet_eval(np.array([e, 1 - e]), alpha)
-    assert_true(np.absolute(sd.sum() * 0.0001 - 1) < 0.01)
+    assert np.absolute(sd.sum() * 0.0001 - 1) < 0.01
 
 
 def test_multinomial():
@@ -40,7 +40,7 @@ def test_multinomial():
     z = multinomial(likelihood)
     res = np.array([np.sum(z == k) for k in range(n_classes)])
     res = res * 1.0 / n_samples
-    assert_true(np.sum((aux-res) ** 2) < 1.e-4)
+    assert np.sum((aux-res) ** 2) < 1.e-4
 
 
 def test_dkln1():
@@ -49,7 +49,7 @@ def test_dkln1():
     P1 = np.eye(dim)
     m2 = m1
     P2 = P1
-    assert_true(dkl_gaussian(m1, P1, m2, P2) == 0)
+    assert dkl_gaussian(m1, P1, m2, P2) == 0
 
 
 def test_dkln2():
@@ -58,7 +58,7 @@ def test_dkln2():
     P1 = np.eye(dim)
     m2 = offset * np.ones(dim)
     P2 = np.eye(dim)
-    assert_true(dkl_gaussian(m1, P1, m2, P2) == .5 * dim * offset ** 2)
+    assert dkl_gaussian(m1, P1, m2, P2) == .5 * dim * offset ** 2
 
 
 def test_dkln3():
@@ -67,7 +67,7 @@ def test_dkln3():
     P1, P2 = np.eye(dim), scale * np.eye(dim)
     test1 = .5 * (dim * np.log(scale) + dim * (1. / scale - 1))
     test2 = .5 * (-dim * np.log(scale) + dim * (scale - 1))
-    assert_true(dkl_gaussian(m1, P1, m2, P2) == test2)
+    assert dkl_gaussian(m1, P1, m2, P2) == test2
 
 
 def test_bgmm_gibbs():
@@ -85,7 +85,7 @@ def test_bgmm_gibbs():
     z = pz[:, 0]
 
     # fixme : find a less trivial test
-    assert_true(z.max() + 1 == b.k)
+    assert z.max() + 1 == b.k
 
 
 def test_gmm_bf(kmax=4, seed=1):
@@ -123,7 +123,7 @@ def test_gmm_bf(kmax=4, seed=1):
         if bfk > bbf:
             bestk = k
             bbf = bfk
-    assert_true(bestk < 3)
+    assert bestk < 3
 
 
 def test_vbgmm():
@@ -139,7 +139,7 @@ def test_vbgmm():
     z = b.map_label(x)
 
     # fixme : find a less trivial test
-    assert_true(z.max() + 1 == b.k)
+    assert z.max() + 1 == b.k
 
 
 def test_vbgmm_select(kmax=6):
@@ -159,7 +159,7 @@ def test_vbgmm_select(kmax=6):
         if ek > be:
             be = ek
             bestk = k
-    assert_true(bestk < 3)
+    assert bestk < 3
 
 
 def test_evidence(k=1):
@@ -189,7 +189,7 @@ def test_evidence(k=1):
     bplugin.guess_priors(x)
     bfchib = bplugin.bayes_factor(x, pz.astype(np.int_), 1)
 
-    assert_true(bfchib > vbe)
+    assert bfchib > vbe
 
 
 if __name__ == '__main__':

@@ -19,7 +19,7 @@ def test_strides_from():
                 elif dtype is np.void:
                     continue
                 exp = np.empty(shape, dtype=dtype, order=order).strides
-                assert_equal(strides_from(shape, dtype, order), exp)
+                assert strides_from(shape, dtype, order) == exp
             assert_raises(ValueError, strides_from, shape, np.void, order)
             assert_raises(ValueError, strides_from, shape, bytes, order)
             assert_raises(ValueError, strides_from, shape, str, order)

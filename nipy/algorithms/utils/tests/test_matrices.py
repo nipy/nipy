@@ -12,40 +12,40 @@ from ..matrices import full_rank, matrix_rank, pos_recipr, recipr0
 
 def test_matrix_rank():
     # Full rank matrix
-    assert_equal(4, matrix_rank(np.eye(4)))
+    assert 4 == matrix_rank(np.eye(4))
     I=np.eye(4); I[-1,-1] = 0. # rank deficient matrix
-    assert_equal(matrix_rank(I), 3)
+    assert matrix_rank(I) == 3
     # All zeros - zero rank
-    assert_equal(matrix_rank(np.zeros((4,4))), 0)
+    assert matrix_rank(np.zeros((4,4))) == 0
     # 1 dimension - rank 1 unless all 0
-    assert_equal(matrix_rank(np.ones((4,))), 1)
-    assert_equal(matrix_rank(np.zeros((4,))), 0)
+    assert matrix_rank(np.ones((4,))) == 1
+    assert matrix_rank(np.zeros((4,))) == 0
     # accepts array-like
-    assert_equal(matrix_rank([1]), 1)
+    assert matrix_rank([1]) == 1
     # Make rank deficient matrix
     rng = np.random.RandomState(20120613)
     X = rng.normal(size=(40, 10))
     X[:, 0] = X[:, 1] + X[:, 2]
     S = spl.svd(X, compute_uv=False)
     eps = np.finfo(X.dtype).eps
-    assert_equal(matrix_rank(X, tol=0), 10)
-    assert_equal(matrix_rank(X, tol=S.min() - eps), 10)
-    assert_equal(matrix_rank(X, tol=S.min() + eps), 9)
+    assert matrix_rank(X, tol=0) == 10
+    assert matrix_rank(X, tol=S.min() - eps) == 10
+    assert matrix_rank(X, tol=S.min() + eps) == 9
 
 
 def test_full_rank():
     rng = np.random.RandomState(20110831)
     X = rng.standard_normal((40,5))
     # A quick rank check
-    assert_equal(matrix_rank(X), 5)
+    assert matrix_rank(X) == 5
     X[:,0] = X[:,1] + X[:,2]
-    assert_equal(matrix_rank(X), 4)
+    assert matrix_rank(X) == 4
     Y1 = full_rank(X)
-    assert_equal(Y1.shape, (40,4))
+    assert Y1.shape == (40,4)
     Y2 = full_rank(X, r=3)
-    assert_equal(Y2.shape, (40,3))
+    assert Y2.shape == (40,3)
     Y3 = full_rank(X, r=4)
-    assert_equal(Y3.shape, (40,4))
+    assert Y3.shape == (40,4)
     # Windows - there seems to be some randomness in the SVD result; standardize
     # column signs before comparison
     flipper = np.sign(Y1[0]) * np.sign(Y3[0])

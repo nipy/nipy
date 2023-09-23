@@ -34,17 +34,17 @@ def test_mfx():
     t1, = mfx_stat(Y, V1, X, 1,return_t=True,
                    return_f=False, return_effect=False,
                    return_var=False)
-    assert_true(t1.shape == (n_tests,))
-    assert_true(t1.mean() < 5 / np.sqrt(n_tests))
-    assert_true((t1.var() < 2) and (t1.var() > .5))
+    assert t1.shape == (n_tests,)
+    assert t1.mean() < 5 / np.sqrt(n_tests)
+    assert (t1.var() < 2) and (t1.var() > .5)
     t2, = mfx_stat(Y, V1, X * np.random.rand(3), 1)
     assert_almost_equal(t1, t2)
     f, = mfx_stat(Y, V1, X, 1, return_t=False, return_f=True)
     assert_almost_equal(t1 ** 2, f)
     v2, = mfx_stat(Y, V1, X, 1, return_t=False, return_var=True)
-    assert_true((v2 > 0).all())
+    assert (v2 > 0).all()
     fx, = mfx_stat(Y, V1, X, 1, return_t=False, return_effect=True)
-    assert_true(fx.shape == (n_tests,))
+    assert fx.shape == (n_tests,)
 
 def test_t_test():
     """ test that the t test run
@@ -52,10 +52,10 @@ def test_t_test():
     n_samples, n_tests = 15, 100
     data = nr.randn(n_samples, n_tests)
     t = t_stat(data)
-    assert_true(t.shape == (n_tests,))
-    assert_true( np.abs(t.mean() < 5 / np.sqrt(n_tests)))
-    assert_true(t.var() < 2)
-    assert_true( t.var() > .5)
+    assert t.shape == (n_tests,)
+    assert np.abs(t.mean() < 5 / np.sqrt(n_tests))
+    assert t.var() < 2
+    assert t.var() > .5
 
 def test_two_sample_ttest():
     """ test that the mfx ttest indeed runs

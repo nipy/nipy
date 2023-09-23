@@ -57,7 +57,7 @@ def test_mat2vec():
 
 def test_rotation_mat2vec():
     r = rotation_mat2vec(np.diag([-1,1,-1]))
-    assert_false(np.isnan(r).max())
+    assert not np.isnan(r).max()
 
 
 def test_composed_affines():
@@ -120,7 +120,7 @@ def test_indirect_affines():
         A = -A
     T[:3,:3] = A
     obj = Affine(T)
-    assert_false(obj.is_direct)
+    assert not obj.is_direct
     assert_array_almost_equal(T, obj.as_affine())
 
 

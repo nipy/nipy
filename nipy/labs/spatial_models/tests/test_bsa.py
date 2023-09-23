@@ -81,11 +81,11 @@ def test_bsa_methods():
         # run the algo
         AF, BF = make_bsa_2d(betas, theta, sigma, ths, thq, smin,
                              algorithm=name)
-        assert_true(test_func(AF, BF))
+        assert test_func(AF, BF)
 
-    assert_true(AF.map_label().shape == (np.prod(shape),))
-    assert_true(AF.kernel_density().shape == (np.prod(shape),))
-    assert_true((AF.roi_prevalence() > ths).all())
+    assert AF.map_label().shape == (np.prod(shape),)
+    assert AF.kernel_density().shape == (np.prod(shape),)
+    assert (AF.roi_prevalence() > ths).all()
 
 
 def test_pproba():
@@ -96,19 +96,19 @@ def test_pproba():
     #
     pval = _stat_to_proba(test)
     # check that pvals are between 0 and 1, and that its is monotonous
-    assert_true((pval >= 0).all())
-    assert_true((pval <= 1).all())
+    assert (pval >= 0).all()
+    assert (pval <= 1).all()
     assert_array_equal(pval[order], np.sort(pval))
     #
     pval = _stat_to_proba(test, learn)
-    assert_true((pval >= 0).all())
-    assert_true((pval <= 1).all())
+    assert (pval >= 0).all()
+    assert (pval <= 1).all()
     assert_array_equal(pval[order], np.sort(pval))
     #
     for method in ['gauss_mixture', 'emp_null', 'gam_gauss']:
         pval = _stat_to_proba(test, learn, method=method)
-        assert_true((pval >= 0).all())
-        assert_true((pval <= 1).all())
+        assert (pval >= 0).all()
+        assert (pval <= 1).all()
         # assert_array_equal(pval[order], np.sort(pval), 6)
 
 

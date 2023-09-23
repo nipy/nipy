@@ -113,7 +113,7 @@ def test_scaling_io_dtype():
                 img = load_image('img.nii')
                 # Check the output type is as expected
                 hdr = img.metadata['header']
-                assert_equal(hdr.get_data_dtype().type, out_type)
+                assert hdr.get_data_dtype().type == out_type
                 # Check the data is within reasonable bounds. The exact bounds
                 # are a little annoying to calculate - see
                 # nibabel/tests/test_round_trip for inspiration
@@ -134,9 +134,9 @@ def test_scaling_io_dtype():
                 elif np.dtype(out_type).kind == 'f':
                     abs_err_thresh = big_bad_ulp(data.astype(out_type))[nzs]
                     rel_err_thresh = ulp1_f32
-                assert_true(np.all(
+                assert np.all(
                     (abs_err <= abs_err_thresh) |
-                    (rel_err <= rel_err_thresh)))
+                    (rel_err <= rel_err_thresh))
 
 
 def assert_dt_no_end_equal(a, b):
@@ -146,7 +146,7 @@ def assert_dt_no_end_equal(a, b):
     """
     a = np.dtype(a).newbyteorder('=')
     b = np.dtype(b).newbyteorder('=')
-    assert_equal(a.str, b.str)
+    assert a.str == b.str
 
 
 def test_output_dtypes():
@@ -221,9 +221,9 @@ def test_header_roundtrip():
     newhdr = newimg.metadata['header']
     assert_array_almost_equal(newhdr['slice_duration'],
                               hdr['slice_duration'])
-    assert_equal(newhdr['intent_p1'], hdr['intent_p1'])
-    assert_equal(newhdr['descrip'], hdr['descrip'])
-    assert_equal(newhdr['slice_end'], hdr['slice_end'])
+    assert newhdr['intent_p1'] == hdr['intent_p1']
+    assert newhdr['descrip'] == hdr['descrip']
+    assert newhdr['slice_end'] == hdr['slice_end']
 
 
 def test_file_roundtrip():
@@ -239,8 +239,8 @@ def test_file_roundtrip():
     assert_almost_equal(data2.min(), data.min())
     assert_almost_equal(data2.max(), data.max())
     # verify shape and ndims
-    assert_equal(img2.shape, img.shape)
-    assert_equal(img2.ndim, img.ndim)
+    assert img2.shape == img.shape
+    assert img2.ndim == img.ndim
     # verify affine
     assert_almost_equal(img2.affine, img.affine)
 
@@ -258,8 +258,8 @@ def test_roundtrip_from_array():
     assert_almost_equal(data2.min(), data.min())
     assert_almost_equal(data2.max(), data.max())
     # verify shape and ndims
-    assert_equal(img2.shape, img.shape)
-    assert_equal(img2.ndim, img.ndim)
+    assert img2.shape == img.shape
+    assert img2.ndim == img.ndim
     # verify affine
     assert_almost_equal(img2.affine, img.affine)
 
@@ -269,9 +269,9 @@ def test_as_image():
     img = as_image(funcfile)  # string filename
     img1 = as_image(funcfile)  # unicode
     img2 = as_image(img)
-    assert_equal(img.affine, img1.affine)
+    assert img.affine == img1.affine
     assert_array_equal(img.get_fdata(), img1.get_fdata())
-    assert_true(img is img2)
+    assert img is img2
 
 
 def test_no_minc():

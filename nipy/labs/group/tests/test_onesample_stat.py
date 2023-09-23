@@ -18,14 +18,14 @@ def test_onesample_stat():
     y_target[0] = 0.0
     # Test: input C-contiguous, data owner, axis=3
     y = onesample.stat(x, axis=3).reshape(nvox)
-    assert_equal(y, y_target)
+    assert y == y_target
     # Test: input F-contiguous, not owner, axis=0
     y = onesample.stat(x.T, axis=0).reshape(nvox)
-    assert_equal(y, y_target)
+    assert y == y_target
     # Test: input C-contiguous, data owner, axis=0
     xT = x.T.copy()
     y = onesample.stat(xT, axis=0).reshape(nvox)
-    assert_equal(y, y_target)
+    assert y == y_target
 
 
 

@@ -18,7 +18,7 @@ def test_strip_array_repr():
         expected = arr.tolist()
         list_repr = strip_array_repr(repr(arr)).replace('\n', '')
         actual = eval(list_repr)
-        assert_equal(expected, actual)
+        assert expected == actual
 
 
 def test_round_numbers():
@@ -45,5 +45,5 @@ def test_round_numbers():
          '(0.123457)\n{0.765432}'),
                   )
     for in_str, out_4, out_6 in in_out_strs:
-        assert_equal(round_numbers(in_str, 4), out_4)
-        assert_equal(round_numbers(in_str, 6), out_6)
+        assert round_numbers(in_str, 4) == out_4
+        assert round_numbers(in_str, 6) == out_6

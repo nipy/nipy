@@ -47,19 +47,19 @@ def test_nipy_diagnose():
                           'pcnt_var_functional.png',
                           'tsdiff_functional.png',
                           'vectors_components_functional.npz'):
-            assert_true(isfile(out_fname))
+            assert isfile(out_fname)
         for out_img in ('max_functional.nii.gz',
                         'mean_functional.nii.gz',
                         'min_functional.nii.gz',
                         'std_functional.nii.gz'):
             img = load_image(out_img)
-            assert_equal(img.shape, fimg.shape[:-1])
+            assert img.shape == fimg.shape[:-1]
             del img
         pca_img = load_image('pca_functional.nii.gz')
-        assert_equal(pca_img.shape, fimg.shape[:-1] + (ncomps,))
+        assert pca_img.shape == fimg.shape[:-1] + (ncomps,)
         vecs_comps = np.load('vectors_components_functional.npz')
         vec_diff = vecs_comps['slice_mean_diff2'].copy()# just in case
-        assert_equal(vec_diff.shape, (fimg.shape[-1]-1, fimg.shape[2]))
+        assert vec_diff.shape == (fimg.shape[-1]-1, fimg.shape[2])
         del pca_img, vecs_comps
     with InTemporaryDirectory() as tmpdir:
         # Check we can pass in slice and time flags
@@ -72,7 +72,7 @@ def test_nipy_diagnose():
                '--slice-axis=0']
         run_command(cmd)
         pca_img = load_image('pca_slice0.nii')
-        assert_equal(pca_img.shape, s0_img.shape[:-1] + (ncomps,))
+        assert pca_img.shape == s0_img.shape[:-1] + (ncomps,)
         vecs_comps = np.load('vectors_components_slice0.npz')
         assert_almost_equal(vecs_comps['slice_mean_diff2'], vec_diff)
         del pca_img, vecs_comps
@@ -94,7 +94,7 @@ def test_nipy_tsdiffana():
             cmd = (['nipy_tsdiffana', funcfile] + extras +
                    ['--out-file=' + out_png])
             run_command(cmd)
-            assert_true(isfile(out_png))
+            assert isfile(out_png)
     # Out-file and write-results incompatible
     cmd = (['nipy_tsdiffana', funcfile, '--out-file=' + out_png,
             '--write-results'])
@@ -106,16 +106,16 @@ def test_nipy_tsdiffana():
     with InTemporaryDirectory():
         os.mkdir('myresults')
         run_command(cmd_root + ['--out-path=myresults', '--write-results'])
-        assert_true(isfile(pjoin('myresults', 'tsdiff_functional.png')))
-        assert_true(isfile(pjoin('myresults', 'tsdiff_functional.npz')))
-        assert_true(isfile(pjoin('myresults', 'dv2_max_functional.nii.gz')))
-        assert_true(isfile(pjoin('myresults', 'dv2_mean_functional.nii.gz')))
+        assert isfile(pjoin('myresults', 'tsdiff_functional.png'))
+        assert isfile(pjoin('myresults', 'tsdiff_functional.npz'))
+        assert isfile(pjoin('myresults', 'dv2_max_functional.nii.gz'))
+        assert isfile(pjoin('myresults', 'dv2_mean_functional.nii.gz'))
         run_command(cmd_root + ['--out-path=myresults', '--write-results',
                                 '--out-fname-label=vr2'])
-        assert_true(isfile(pjoin('myresults', 'tsdiff_vr2.png')))
-        assert_true(isfile(pjoin('myresults', 'tsdiff_vr2.npz')))
-        assert_true(isfile(pjoin('myresults', 'dv2_max_vr2.nii.gz')))
-        assert_true(isfile(pjoin('myresults', 'dv2_mean_vr2.nii.gz')))
+        assert isfile(pjoin('myresults', 'tsdiff_vr2.png'))
+        assert isfile(pjoin('myresults', 'tsdiff_vr2.npz'))
+        assert isfile(pjoin('myresults', 'dv2_max_vr2.nii.gz'))
+        assert isfile(pjoin('myresults', 'dv2_mean_vr2.nii.gz'))
 
 
 @script_test
@@ -129,7 +129,7 @@ def test_nipy_3_4d():
         run_command(cmd)
         imgs_3d = ['functional_%04d.nii' % i for i in range(N)]
         for iname in imgs_3d:
-            assert_true(isfile(iname))
+            assert isfile(iname)
         cmd = ['nipy_3dto4d'] + imgs_3d  + ['--out-4d=' + out_4d]
         run_command(cmd)
         fimg_back = load_image(out_4d)

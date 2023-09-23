@@ -101,7 +101,7 @@ def test_grid():
     cmap = CoordinateMap(input, output, f)
     grid = Grid(cmap)
     eval = ArrayCoordMap.from_shape(cmap, (50,40))
-    assert_true(np.allclose(grid[0:50,0:40].values, eval.values))
+    assert np.allclose(grid[0:50,0:40].values, eval.values)
 
 
 def test_eval_slice():

@@ -31,12 +31,12 @@ def test_parcel_intra_from_3d_images_list():
             prevalence_threshold=0, prevalence_pval=0.5, write_dir=dir_context,
             algorithm='density', contrast_id=contrast_id)
 
-        assert_equal(landmark, None)
-        assert_equal(len(hrois), 5)
-        assert_true(exists(f'density_{contrast_id}.nii'))
-        assert_true(exists(f'prevalence_{contrast_id}.nii'))
-        assert_true(exists(f'AR_{contrast_id}.nii'))
-        assert_true(exists(f'CR_{contrast_id}.nii'))
+        assert landmark == None
+        assert len(hrois) == 5
+        assert exists(f'density_{contrast_id}.nii')
+        assert exists(f'prevalence_{contrast_id}.nii')
+        assert exists(f'AR_{contrast_id}.nii')
+        assert exists(f'CR_{contrast_id}.nii')
 
 
 if __name__ == "__main__":

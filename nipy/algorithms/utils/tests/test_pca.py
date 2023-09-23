@@ -97,9 +97,9 @@ def test_input_effects():
     ntotal = data['nimages'] - 1
     # return full rank - mean PCA over last axis
     p = pos1pca(data['fmridata'], -1)
-    assert_equal(p['basis_vectors'].shape, (data['nimages'], ntotal))
-    assert_equal(p['basis_projections'].shape, data['mask'].shape + (ntotal,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert p['basis_vectors'].shape == (data['nimages'], ntotal)
+    assert p['basis_projections'].shape == data['mask'].shape + (ntotal,)
+    assert p['pcnt_var'].shape == (ntotal,)
     # Reconstructed data lacks only mean
     rarr = reconstruct(p['basis_vectors'], p['basis_projections'], -1)
     rarr = rarr + data['fmridata'].mean(-1)[...,None]
@@ -119,9 +119,9 @@ def test_input_effects():
 def test_diagonality():
     # basis_projections are diagonal, whether standarized or not
     p = pca(data['fmridata'], -1) # standardized
-    assert_true(diagonal_covariance(p['basis_projections'], -1))
+    assert diagonal_covariance(p['basis_projections'], -1)
     pns = pca(data['fmridata'], -1, standardize=False) # not
-    assert_true(diagonal_covariance(pns['basis_projections'], -1))
+    assert diagonal_covariance(pns['basis_projections'], -1)
 
 
 def diagonal_covariance(arr, axis=0):
@@ -140,8 +140,8 @@ def test_2D():
     p = pca(data)
     ts = p['basis_vectors']
     imgs = p['basis_projections']
-    assert_equal(ts.shape, (M, L))
-    assert_equal(imgs.shape, (L, N))
+    assert ts.shape == (M, L)
+    assert imgs.shape == (L, N)
     rimgs = reconstruct(ts, imgs)
     # add back the sqrt MSE, because we standardized
     data_mean = data.mean(0)[None,...]
@@ -150,10 +150,10 @@ def test_2D():
     # also add back the mean
     assert_array_almost_equal((rimgs * rmse) + data_mean, data)
     # if standardize is set, or not, covariance is diagonal
-    assert_true(diagonal_covariance(imgs))
+    assert diagonal_covariance(imgs)
     p = pca(data, standardize=False)
     imgs = p['basis_projections']
-    assert_true(diagonal_covariance(imgs))
+    assert diagonal_covariance(imgs)
 
 
 def test_PCAMask():
@@ -166,9 +166,9 @@ def test_PCAMask():
     mask1d = mask3d.reshape(-1)
     for arr, mask in (arr4d, mask3d), (arr2d, mask1d):
         p = pca(arr, -1, mask, ncomp=ncomp)
-        assert_equal(p['basis_vectors'].shape, (data['nimages'], ntotal))
-        assert_equal(p['basis_projections'].shape, mask.shape + (ncomp,))
-        assert_equal(p['pcnt_var'].shape, (ntotal,))
+        assert p['basis_vectors'].shape == (data['nimages'], ntotal)
+        assert p['basis_projections'].shape == mask.shape + (ncomp,)
+        assert p['pcnt_var'].shape == (ntotal,)
         assert_almost_equal(p['pcnt_var'].sum(), 100.)
     # Any reasonable datatype for mask
     for dt in ([np.bool_] +
@@ -176,9 +176,9 @@ def test_PCAMask():
                np.sctypes['uint'] +
                np.sctypes['float']):
         p = pca(arr4d, -1, mask3d.astype(dt), ncomp=ncomp)
-        assert_equal(p['basis_vectors'].shape, (data['nimages'], ntotal))
-        assert_equal(p['basis_projections'].shape, mask3d.shape + (ncomp,))
-        assert_equal(p['pcnt_var'].shape, (ntotal,))
+        assert p['basis_vectors'].shape == (data['nimages'], ntotal)
+        assert p['basis_projections'].shape == mask3d.shape + (ncomp,)
+        assert p['pcnt_var'].shape == (ntotal,)
         assert_almost_equal(p['pcnt_var'].sum(), 100.)
     # Mask data shape must match
     assert_raises(ValueError, pca, arr4d, -1, mask1d)
@@ -189,9 +189,9 @@ def test_PCAMask_nostandardize():
     ncomp = 5
     p = pca(data['fmridata'], -1, data['mask'], ncomp=ncomp,
             standardize=False)
-    assert_equal(p['basis_vectors'].shape, (data['nimages'], ntotal))
-    assert_equal(p['basis_projections'].shape, data['mask'].shape + (ncomp,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert p['basis_vectors'].shape == (data['nimages'], ntotal)
+    assert p['basis_projections'].shape == data['mask'].shape + (ncomp,)
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
 
@@ -199,9 +199,9 @@ def test_PCANoMask():
     ntotal = data['nimages'] - 1
     ncomp = 5
     p = pca(data['fmridata'], -1, ncomp=ncomp)
-    assert_equal(p['basis_vectors'].shape, (data['nimages'], ntotal))
-    assert_equal(p['basis_projections'].shape,  data['mask'].shape + (ncomp,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert p['basis_vectors'].shape == (data['nimages'], ntotal)
+    assert p['basis_projections'].shape ==  data['mask'].shape + (ncomp,)
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
 
@@ -209,9 +209,9 @@ def test_PCANoMask_nostandardize():
     ntotal = data['nimages'] - 1
     ncomp = 5
     p = pca(data['fmridata'], -1, ncomp=ncomp, standardize=False)
-    assert_equal(p['basis_vectors'].shape, (data['nimages'], ntotal))
-    assert_equal(p['basis_projections'].shape,  data['mask'].shape + (ncomp,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert p['basis_vectors'].shape == (data['nimages'], ntotal)
+    assert p['basis_projections'].shape ==  data['mask'].shape + (ncomp,)
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
 
@@ -224,9 +224,9 @@ def test_keep():
     ntotal = k
     X = np.random.standard_normal((data['nimages'], k))
     p = pca(data['fmridata'], -1, ncomp=ncomp, design_keep=X)
-    assert_equal(p['basis_vectors'].shape, (data['nimages'], ntotal))
-    assert_equal(p['basis_projections'].shape,  data['mask'].shape + (ncomp,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert p['basis_vectors'].shape == (data['nimages'], ntotal)
+    assert p['basis_projections'].shape ==  data['mask'].shape + (ncomp,)
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
 
@@ -238,19 +238,19 @@ def test_resid():
     ntotal = k
     X = np.random.standard_normal((data['nimages'], k))
     p = pca(data['fmridata'], -1, ncomp=ncomp, design_resid=X)
-    assert_equal(p['basis_vectors'].shape, (data['nimages'], ntotal))
-    assert_equal(p['basis_projections'].shape, data['mask'].shape + (ncomp,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert p['basis_vectors'].shape == (data['nimages'], ntotal)
+    assert p['basis_projections'].shape == data['mask'].shape + (ncomp,)
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
     # if design_resid is None, we do not remove the mean, and we get
     # full rank from our data
     p = pca(data['fmridata'], -1, design_resid=None)
     rank = p['basis_vectors'].shape[1]
-    assert_equal(rank, data['nimages'])
+    assert rank == data['nimages']
     rarr = reconstruct(p['basis_vectors'], p['basis_projections'], -1)
     # add back the sqrt MSE, because we standardized
     rmse = root_mse(data['fmridata'], axis=-1)[...,None]
-    assert_true(np.allclose(rarr * rmse, data['fmridata']))
+    assert np.allclose(rarr * rmse, data['fmridata'])
 
 
 def test_both():
@@ -261,7 +261,7 @@ def test_both():
     X1 = np.random.standard_normal((data['nimages'], k1))
     X2 = np.random.standard_normal((data['nimages'], k2))
     p = pca(data['fmridata'], -1, ncomp=ncomp, design_resid=X2, design_keep=X1)
-    assert_equal(p['basis_vectors'].shape, (data['nimages'], ntotal))
-    assert_equal(p['basis_projections'].shape,  data['mask'].shape + (ncomp,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert p['basis_vectors'].shape == (data['nimages'], ntotal)
+    assert p['basis_projections'].shape ==  data['mask'].shape + (ncomp,)
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)

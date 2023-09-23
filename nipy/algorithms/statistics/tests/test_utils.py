@@ -52,8 +52,8 @@ def test_multiple_fast_inv():
 
 def assert_equal_bin8(actual, expected):
     res = check_cast_bin8(actual)
-    assert_equal(res.shape, actual.shape)
-    assert_true(res.dtype.type == np.uint8)
+    assert res.shape == actual.shape
+    assert res.dtype.type == np.uint8
     assert_array_equal(res, expected)
 
 

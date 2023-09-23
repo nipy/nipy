@@ -37,10 +37,10 @@ def _test_clamping(I, thI=0.0, clI=256, mask=None):
     R.subsample(spacing=[1, 1, 1])
     Ic = R._from_data
     Ic2 = R._to_data[1:-1, 1:-1, 1:-1]
-    assert_equal(Ic, Ic2)
+    assert Ic == Ic2
     dyn = Ic.max() + 1
-    assert_equal(dyn, R._joint_hist.shape[0])
-    assert_equal(dyn, R._joint_hist.shape[1])
+    assert dyn == R._joint_hist.shape[0]
+    assert dyn == R._joint_hist.shape[1]
     return Ic, Ic2
 
 
@@ -201,14 +201,14 @@ def test_set_fov():
     J = make_xyz_image(I.get_fdata().copy(), dummy_affine, 'scanner')
     R = HistogramRegistration(I, J)
     R.set_fov(npoints=np.prod(I.shape))
-    assert_equal(R._from_data.shape, I.shape)
+    assert R._from_data.shape == I.shape
     half_shape = tuple([I.shape[i] / 2 for i in range(3)])
     R.set_fov(spacing=(2, 2, 2))
-    assert_equal(R._from_data.shape, half_shape)
+    assert R._from_data.shape == half_shape
     R.set_fov(corner=half_shape)
-    assert_equal(R._from_data.shape, half_shape)
+    assert R._from_data.shape == half_shape
     R.set_fov(size=half_shape)
-    assert_equal(R._from_data.shape, half_shape)
+    assert R._from_data.shape == half_shape
 
 
 def test_histogram_masked_registration():
@@ -228,7 +228,7 @@ def test_histogram_masked_registration():
                        dummy_affine, 'scanner')
     R = HistogramRegistration(I, J)
     sim2 = R.eval(Affine())
-    assert_equal(sim1, sim2)
+    assert sim1 == sim2
 
 
 def test_similarity_derivatives():
@@ -242,11 +242,11 @@ def test_similarity_derivatives():
     R = HistogramRegistration(I, J)
     T = Rigid()
     g = R.eval_gradient(T)
-    assert_equal(g.dtype, float)
-    assert_equal(g, np.zeros(6))
+    assert g.dtype == float
+    assert g == np.zeros(6)
     H = R.eval_hessian(T)
-    assert_equal(H.dtype, float)
-    assert_equal(H, np.zeros((6, 6)))
+    assert H.dtype == float
+    assert H == np.zeros((6, 6))
 
 
 def test_smoothing():

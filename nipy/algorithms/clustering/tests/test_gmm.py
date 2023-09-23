@@ -22,7 +22,7 @@ def test_em_loglike0():
     lgmm.estimate(x)
     ll = lgmm.average_log_like(x)
     ent = 0.5 * (1 + np.log(2 * np.pi))
-    assert_true(np.absolute(ll + ent) < 3. / np.sqrt(n))
+    assert np.absolute(ll + ent) < 3. / np.sqrt(n)
 
 def test_em_loglike1():
     # Test that the likelihood of the GMM is expected on standard data
@@ -34,7 +34,7 @@ def test_em_loglike1():
     lgmm.estimate(x)
     ll = lgmm.average_log_like(x)
     ent = 0.5 * (1 + np.log(2 * np.pi))
-    assert_true(np.absolute(ll + ent) < 3. / np.sqrt(n))
+    assert np.absolute(ll + ent) < 3. / np.sqrt(n)
 
 def test_em_loglike2():
     # Test that the likelihood of the GMM is expected on standard data
@@ -47,7 +47,7 @@ def test_em_loglike2():
     lgmm.estimate(x)
     ll = lgmm.average_log_like(x)
     ent = 0.5 * (1 + np.log(2 * np.pi * scale ** 2))
-    assert_true(np.absolute(ll + ent) < 3. / np.sqrt(n))
+    assert np.absolute(ll + ent) < 3. / np.sqrt(n)
 
 def test_em_loglike3():
     # Test that the likelihood of the GMM is expected on standard data
@@ -60,7 +60,7 @@ def test_em_loglike3():
     lgmm.estimate(x)
     ll = lgmm.average_log_like(x)
     ent = dim * 0.5 * (1 + np.log(2 * np.pi * scale ** 2))
-    assert_true(np.absolute(ll + ent) < dim * 3. / np.sqrt(n))
+    assert np.absolute(ll + ent) < dim * 3. / np.sqrt(n)
 
 def test_em_loglike4():
     # Test that the likelihood of the GMM is expected on standard data
@@ -73,7 +73,7 @@ def test_em_loglike4():
     lgmm.estimate(x)
     ll = lgmm.average_log_like(x)
     ent = dim * 0.5 * (1 + np.log(2 * np.pi * scale ** 2))
-    assert_true(np.absolute(ll + ent) < dim * 3. / np.sqrt(n))
+    assert np.absolute(ll + ent) < dim * 3. / np.sqrt(n)
 
 def test_em_loglike5():
     # Test that the likelihood of the GMM is expected on standard data
@@ -87,7 +87,7 @@ def test_em_loglike5():
     lgmm.estimate(x)
     ll = lgmm.average_log_like(y)
     ent = dim * 0.5 * (1 + np.log(2 * np.pi * scale ** 2))
-    assert_true(np.absolute(ll + ent) < dim * 3. / np.sqrt(n))
+    assert np.absolute(ll + ent) < dim * 3. / np.sqrt(n)
 
 def test_em_loglike6():
     # Test that the likelihood of shifted data is lower
@@ -101,7 +101,7 @@ def test_em_loglike6():
     lgmm.estimate(x)
     ll1 =  lgmm.average_log_like(x)
     ll2 = lgmm.average_log_like(y)
-    assert_true(ll2 < ll1)
+    assert ll2 < ll1
 
 def test_em_selection():
     # test that the basic GMM-based model selection tool
@@ -113,7 +113,7 @@ def test_em_selection():
     krange = list(range(1, 10))
     lgmm = best_fitting_GMM(x, krange, prec_type='full',
                             niter=100, delta = 1.e-4, ninit=1)
-    assert_true(lgmm.k < 4)
+    assert lgmm.k < 4
 
 
 def test_em_gmm_full():
@@ -133,7 +133,7 @@ def test_em_gmm_full():
         lgmm.initialize(x)
         bic[k - 1] = lgmm.estimate(x, maxiter, delta)
 
-    assert_true(bic[4] < bic[1])
+    assert bic[4] < bic[1]
 
 
 def test_em_gmm_diag():
@@ -156,8 +156,8 @@ def test_em_gmm_diag():
         bic[k - 1] = lgmm.estimate(x, maxiter, delta)
 
     z = lgmm.map_label(x)
-    assert_true(z.max() + 1 == lgmm.k)
-    assert_true(bic[4] < bic[1])
+    assert z.max() + 1 == lgmm.k
+    assert bic[4] < bic[1]
 
 
 def test_em_gmm_multi():
@@ -175,7 +175,7 @@ def test_em_gmm_multi():
                                         ninit=ninit)
     bic = bgmm.evidence(x)
 
-    assert_true(np.isfinite(bic))
+    assert np.isfinite(bic)
 
 def test_em_gmm_largedim():
     # testing the GMM model in larger dimensions
@@ -202,7 +202,7 @@ def test_em_gmm_largedim():
     # and the computed one
     eta = np.absolute(np.dot(z - z.mean(), u - u.mean()) /\
                           (np.std(z) * np.std(u) * 100))
-    assert_true(eta > 0.3)
+    assert eta > 0.3
 
 def test_em_gmm_heterosc():
     # testing the model in very ellipsoidal data:
@@ -223,7 +223,7 @@ def test_em_gmm_heterosc():
         lgmm.initialize(x)
         bic[k - 1] = lgmm.estimate(x, maxiter, delta, 0)
 
-    assert_true(bic[4] < bic[1])
+    assert bic[4] < bic[1]
 
 
 def test_em_gmm_cv():
@@ -257,7 +257,7 @@ def test_em_gmm_cv():
         lgmm.initialize(xtrain)
         ll.append(lgmm.test(xtest).mean())
 
-    assert_true(ll[4] < ll[1])
+    assert ll[4] < ll[1]
 
 
 if __name__ == '__main__':

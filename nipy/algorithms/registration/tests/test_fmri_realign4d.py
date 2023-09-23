@@ -35,21 +35,21 @@ def test_futurewarning():
     with warnings.catch_warnings(record=True) as warns:
         warnings.simplefilter('always')
         FmriRealign4d([IM], tr=2., slice_order='ascending')
-        assert_equal(warns.pop(0).category, FutureWarning)
+        assert warns.pop(0).category == FutureWarning
 
 
 def test_scanner_time():
     im4d = Image4d(IM.get_fdata(), IM.affine, tr=3.,
                    slice_times=(0, 1, 2))
-    assert_equal(im4d.scanner_time(0, 0), 0.)
-    assert_equal(im4d.scanner_time(0, im4d.tr), 1.)
+    assert im4d.scanner_time(0, 0) == 0.
+    assert im4d.scanner_time(0, im4d.tr) == 1.
 
 
 def test_slice_info():
     im4d = Image4d(IM.get_fdata(), IM.affine, tr=3.,
                    slice_times=(0, 1, 2), slice_info=(2, -1))
-    assert_equal(im4d.slice_axis, 2)
-    assert_equal(im4d.slice_direction, -1)
+    assert im4d.slice_axis == 2
+    assert im4d.slice_direction == -1
 
 
 def test_slice_timing():
@@ -172,14 +172,14 @@ def test_realign4d_runs_with_different_affines():
 def test_realign4d_params():
     # Some tests for input parameters to realign4d
     R = Realign4d(IM, 3, [0, 1, 2], None) # No slice_info - OK
-    assert_equal(R.tr, 3)
+    assert R.tr == 3
     # TR cannot be None
     assert_raises(ValueError, Realign4d, IMS[1], None, [0, 1, 2], None)
     # TR cannot be zero
     assert_raises(ValueError, Realign4d, IMS[1], 0, [0, 1, 2], None)
     # TR can be None if slice times are None
     R = Realign4d(IM, None, None)
-    assert_equal(R.tr, 1)
+    assert R.tr == 1
 
 
 def test_spacetimerealign_params():
@@ -187,15 +187,15 @@ def test_spacetimerealign_params():
     for slice_times in ('descending', '43210', st_43210, [2, 1, 0]):
         R = SpaceTimeRealign(runs, tr=3, slice_times=slice_times, slice_info=2)
         assert_array_equal(R.slice_times, (2, 1, 0))
-        assert_equal(R.tr, 3)
+        assert R.tr == 3
     for slice_times in ('asc_alt_2', '02413', st_02413, [0, 2, 1]):
         R = SpaceTimeRealign(runs, tr=3, slice_times=slice_times, slice_info=2)
         assert_array_equal(R.slice_times, (0, 2, 1))
-        assert_equal(R.tr, 3)
+        assert R.tr == 3
     for slice_times in ('desc_alt_2', '42031', st_42031, [1, 2, 0]):
         R = SpaceTimeRealign(runs, tr=3, slice_times=slice_times, slice_info=2)
         assert_array_equal(R.slice_times, (1, 2, 0))
-        assert_equal(R.tr, 3)
+        assert R.tr == 3
     # Check changing axis
     R = SpaceTimeRealign(runs, tr=21, slice_times='ascending', slice_info=1)
     assert_array_equal(R.slice_times, np.arange(21))
@@ -243,7 +243,7 @@ def test_lowlevel_params():
 
 def _test_make_grid(dims, subsampling, borders, expected_nvoxels):
     x = make_grid(dims, subsampling, borders)
-    assert_equal(x.shape[0], expected_nvoxels)
+    assert x.shape[0] == expected_nvoxels
 
 
 def test_make_grid_funfile():
@@ -284,8 +284,8 @@ def test_spacerealign():
     # Check space-only realigner
     runs = [IM, IM]
     R = SpaceRealign(runs)
-    assert_equal(R.tr, 1)
-    assert_equal(R.slice_times, 0.)
+    assert R.tr == 1
+    assert R.slice_times == 0.
     # Smoke test run
     R.estimate(refscan=None, loops=1, between_loops=1, optimizer='steepest')
 

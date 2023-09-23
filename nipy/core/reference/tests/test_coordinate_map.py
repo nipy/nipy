@@ -124,17 +124,17 @@ def test_renamed():
     C = CoordinateMap(ijk, xyz, np.log)
     for B in [A,C]:
         B_re = B.renamed_domain({'i':'foo'})
-        assert_equal(B_re.function_domain.coord_names, ('foo', 'j', 'k'))
+        assert B_re.function_domain.coord_names == ('foo', 'j', 'k')
         B_re = B.renamed_domain({'i':'foo','j':'bar'})
-        assert_equal(B_re.function_domain.coord_names, ('foo', 'bar', 'k'))
+        assert B_re.function_domain.coord_names == ('foo', 'bar', 'k')
         B_re = B.renamed_range({'y':'foo'})
-        assert_equal(B_re.function_range.coord_names, ('x', 'foo', 'z'))
+        assert B_re.function_range.coord_names == ('x', 'foo', 'z')
         B_re = B.renamed_range({0:'foo',1:'bar'})
-        assert_equal(B_re.function_range.coord_names, ('foo', 'bar', 'z'))
+        assert B_re.function_range.coord_names == ('foo', 'bar', 'z')
         B_re = B.renamed_domain({0:'foo',1:'bar'})
-        assert_equal(B_re.function_domain.coord_names, ('foo', 'bar', 'k'))
+        assert B_re.function_domain.coord_names == ('foo', 'bar', 'k')
         B_re = B.renamed_range({'y':'foo','x':'bar'})
-        assert_equal(B_re.function_range.coord_names, ('bar', 'foo', 'z'))
+        assert B_re.function_range.coord_names == ('bar', 'foo', 'z')
         assert_raises(ValueError, B.renamed_range, {'foo':'y'})
         assert_raises(ValueError, B.renamed_domain, {'foo':'y'})
 
@@ -159,7 +159,7 @@ def test_calling_shapes():
         res = xfm2d([0, 1])
         assert_array_equal(res, [1, 2])
         # and return arrays (by checking shape attribute)
-        assert_equal(res.shape, (2,))
+        assert res.shape == (2,)
         # maintaining input shape
         arr_long = arr[None, None, :]
         assert_array_equal(xfm2d(arr_long), arr_long + 1)
@@ -179,15 +179,15 @@ def test_calling_shapes():
 
 def test_call():
     value = 10
-    assert_true(np.allclose(E.a(value), 2*value))
-    assert_true(np.allclose(E.b(value), 2*value))
+    assert np.allclose(E.a(value), 2*value)
+    assert np.allclose(E.b(value), 2*value)
     # FIXME: this shape just below is not
     # really expected for a CoordinateMap
-    assert_true(np.allclose(E.b([value]), 2*value))
-    assert_true(np.allclose(E.c(value), value/2))
-    assert_true(np.allclose(E.d(value), value/2))
+    assert np.allclose(E.b([value]), 2*value)
+    assert np.allclose(E.c(value), value/2)
+    assert np.allclose(E.d(value), value/2)
     value = np.array([1., 2., 3.])
-    assert_true(np.allclose(E.e(value), value))
+    assert np.allclose(E.e(value), value)
     # check that error raised for wrong shape
     value = np.array([1., 2.,])
     assert_raises(CoordinateSystemError, E.e, value)
@@ -196,13 +196,13 @@ def test_call():
 def test_compose():
     value = np.array([[1., 2., 3.]]).T
     aa = compose(E.a, E.a)
-    assert_true(aa.inverse() is None)
+    assert aa.inverse() is None
     assert_almost_equal(aa(value), 4*value)
     ab = compose(E.a,E.b)
-    assert_true(ab.inverse() is None)
+    assert ab.inverse() is None
     assert_almost_equal(ab(value), 4*value)
     ac = compose(E.a,E.c)
-    assert_true(ac.inverse() is None)
+    assert ac.inverse() is None
     assert_almost_equal(ac(value), value)
     bb = compose(E.b,E.b)
     #    yield assert_true, bb.inverse() is not None
@@ -212,8 +212,8 @@ def test_compose():
     affine2 = AffineTransform.from_params('xyz', 'abc', aff2)
     # compose mapping from 'ijk' to 'abc'
     compcm = compose(affine2, affine1)
-    assert_equal(compcm.function_domain.coord_names, ('i', 'j', 'k'))
-    assert_equal(compcm.function_range.coord_names, ('a', 'b', 'c'))
+    assert compcm.function_domain.coord_names == ('i', 'j', 'k')
+    assert compcm.function_range.coord_names == ('a', 'b', 'c')
     assert_almost_equal(compcm.affine, np.dot(aff2, aff1))
     # check invalid coordinate mappings
     assert_raises(ValueError, compose, affine1, affine2)
@@ -253,13 +253,13 @@ def test_similar_to():
                               np.eye(4), np.diag([1, 2, 3, 1]))):
         c0 = klass(in_cs, out_cs, arg0)
         c1 = klass(in_cs, out_cs, arg0)
-        assert_true(c0.similar_to(c1))
+        assert c0.similar_to(c1)
         c1b = klass(in_cs, out_cs, arg1)
-        assert_false(c0.similar_to(c1b))
+        assert not c0.similar_to(c1b)
         c2 = klass(in_cs2, out_cs, arg0)
-        assert_true(c0.similar_to(c2))
+        assert c0.similar_to(c2)
         c3 = klass(in_cs, out_cs2, arg0)
-        assert_true(c0.similar_to(c3))
+        assert c0.similar_to(c3)
 
 
 def test_isinvertible():
@@ -288,11 +288,11 @@ def test_inverse1():
 def test_compose_cmap():
     value = np.array([1., 2., 3.])
     b = compose(E.e, E.e)
-    assert_true(np.allclose(b(value), value))
+    assert np.allclose(b(value), value)
 
 
 def test_inverse2():
-    assert_true(np.allclose(E.e.affine, E.e.inverse().inverse().affine))
+    assert np.allclose(E.e.affine, E.e.inverse().inverse().affine)
 
 
 def voxel_to_world():
@@ -322,14 +322,14 @@ def test_comap_cosys():
     r_sys = CoordinateSystem('xyz')
     fn = lambda x : x+1
     cm = CoordinateMap(d_sys, r_sys, fn)
-    assert_equal(CoordinateMap('ijk', 'xyz', fn), cm)
-    assert_equal(CoordinateMap(d_sys, 'xyz', fn), cm)
-    assert_equal(CoordinateMap('ijk', r_sys, fn), cm)
+    assert CoordinateMap('ijk', 'xyz', fn) == cm
+    assert CoordinateMap(d_sys, 'xyz', fn) == cm
+    assert CoordinateMap('ijk', r_sys, fn) == cm
     aff = np.diag([2,3,4,1])
     cm = AffineTransform(d_sys, r_sys, aff)
-    assert_equal(AffineTransform('ijk', 'xyz', aff), cm)
-    assert_equal(AffineTransform(d_sys, 'xyz', aff), cm)
-    assert_equal(AffineTransform('ijk', r_sys, aff), cm)
+    assert AffineTransform('ijk', 'xyz', aff) == cm
+    assert AffineTransform(d_sys, 'xyz', aff) == cm
+    assert AffineTransform('ijk', r_sys, aff) == cm
 
 
 def test_comap_copy():
@@ -364,8 +364,8 @@ def affine_v2w():
 def test_affine_init():
     incs, outcs, aff = affine_v2w()
     cm = AffineTransform(incs, outcs, aff)
-    assert_equal(cm.function_domain, incs)
-    assert_equal(cm.function_range, outcs)
+    assert cm.function_domain == incs
+    assert cm.function_range == outcs
     assert_array_equal(cm.affine, aff)
     badaff = np.diag([1,2])
     assert_raises(ValueError, AffineTransform, incs, outcs, badaff)
@@ -389,7 +389,7 @@ def test_affine_inverse():
     badcm = AffineTransform(CoordinateSystem('ij'),
                             CoordinateSystem('x'),
                             badaff)
-    assert_equal(badcm.inverse(), None)
+    assert badcm.inverse() == None
 
 
 def test_affine_from_params():
@@ -415,10 +415,10 @@ def test_affine_start_step():
 def test_affine_identity():
     aff = AffineTransform.identity('ijk')
     assert_array_equal(aff.affine, np.eye(4))
-    assert_equal(aff.function_domain, aff.function_range)
+    assert aff.function_domain == aff.function_range
     # AffineTransform's aren't CoordinateMaps, so
     # they don't have "function" attributes
-    assert_false(hasattr(aff, 'function'))
+    assert not hasattr(aff, 'function')
 
 
 def test_affine_copy():
@@ -427,8 +427,8 @@ def test_affine_copy():
     import copy
     cmcp = copy.copy(cm)
     assert_array_equal(cmcp.affine, cm.affine)
-    assert_equal(cmcp.function_domain, cm.function_domain)
-    assert_equal(cmcp.function_range, cm.function_range)
+    assert cmcp.function_domain == cm.function_domain
+    assert cmcp.function_range == cm.function_range
 
 
 #
@@ -464,7 +464,7 @@ def test_str():
     range = CoordinateSystem('xyz')
     affine = np.identity(4)
     affine_mapping = AffineTransform(domain, range, affine)
-    assert_equal(result, str(affine_mapping))
+    assert result == str(affine_mapping)
 
     cmap = CoordinateMap(domain, range, np.exp, np.log)
     result="""CoordinateMap(
@@ -479,7 +479,7 @@ def test_str():
    function_range=CoordinateSystem(coord_names=('x', 'y', 'z'), name='', coord_dtype=float64),
    function=<ufunc 'exp'>
   )"""
-    assert_equal(result, repr(cmap))
+    assert result == repr(cmap)
 
 
 def test_reordered_range():
@@ -509,24 +509,24 @@ def test_product():
                         CoordinateSystem('y'),
                         np.log)
     cm = product(cm1, cm2)
-    assert_equal(affine.function_domain.coord_names, ('i', 'j'))
-    assert_equal(affine.function_range.coord_names, ('x', 'y'))
+    assert affine.function_domain.coord_names == ('i', 'j')
+    assert affine.function_range.coord_names == ('x', 'y')
     assert_almost_equal(cm([3,4]), np.log([3,4]))
     assert_almost_equal(cm.function([[3,4],[5,6]]), np.log([[3,4],[5,6]]))
-    assert_equal(affine.function_domain.coord_names, ('i', 'j'))
-    assert_equal(affine.function_range.coord_names, ('x', 'y'))
+    assert affine.function_domain.coord_names == ('i', 'j')
+    assert affine.function_range.coord_names == ('x', 'y')
     assert_array_equal(affine.affine, np.diag([2, 3, 1]))
     # Test name argument
     for m1, m2 in ((affine1, affine2), (cm1, cm2), (affine1, cm2)):
         cm = product(m1, m2)
-        assert_equal(cm.function_domain.name, 'product')
-        assert_equal(cm.function_range.name, 'product')
+        assert cm.function_domain.name == 'product'
+        assert cm.function_range.name == 'product'
         cm = product(m1, m2, input_name='name0')
-        assert_equal(cm.function_domain.name, 'name0')
-        assert_equal(cm.function_range.name, 'product')
+        assert cm.function_domain.name == 'name0'
+        assert cm.function_range.name == 'product'
         cm = product(m1, m2, output_name='name1')
-        assert_equal(cm.function_domain.name, 'product')
-        assert_equal(cm.function_range.name, 'name1')
+        assert cm.function_domain.name == 'product'
+        assert cm.function_range.name == 'name1'
         assert_raises(TypeError, product, m1, m2, whatgains='name0')
 
 
@@ -607,14 +607,14 @@ def test_append_io_dim():
     cm = AffineTransform.from_params(in_dims, out_dims, aff)
     cm2 = append_io_dim(cm, 'l', 't')
     assert_array_equal(cm2.affine, np.diag([1,2,3,1,1]))
-    assert_equal(cm2.function_range.coord_names, out_dims + ('t',))
-    assert_equal(cm2.function_domain.coord_names, in_dims + ('l',))
+    assert cm2.function_range.coord_names == out_dims + ('t',)
+    assert cm2.function_domain.coord_names == in_dims + ('l',)
     cm2 = append_io_dim(cm, 'l', 't', 9, 5)
     a2 = np.diag([1,2,3,5,1])
     a2[3,4] = 9
     assert_array_equal(cm2.affine, a2)
-    assert_equal(cm2.function_range.coord_names, out_dims + ('t',))
-    assert_equal(cm2.function_domain.coord_names, in_dims + ('l',))
+    assert cm2.function_range.coord_names == out_dims + ('t',)
+    assert cm2.function_domain.coord_names == in_dims + ('l',)
     # non square case
     aff = np.array([[2,0,0],
                     [0,3,0],
@@ -628,8 +628,8 @@ def test_append_io_dim():
                    [0,0,5,9],
                    [0,0,0,1]])
     assert_array_equal(cm2.affine, a2)
-    assert_equal(cm2.function_range.coord_names, tuple('xyzt'))
-    assert_equal(cm2.function_domain.coord_names, tuple('ijq'))
+    assert cm2.function_range.coord_names == tuple('xyzt')
+    assert cm2.function_domain.coord_names == tuple('ijq')
 
 
 def test__fix0():
@@ -732,36 +732,36 @@ def test_drop_io_dim():
 def test_axmap():
     # Test mapping between axes
     cmap = AffineTransform('ijk', 'xyz', np.eye(4))
-    assert_equal(axmap(cmap), {0: 0, 1:1, 2:2,
-                               'i': 0, 'j': 1, 'k': 2})
-    assert_equal(axmap(cmap, 'out2in'), {0: 0, 1:1, 2:2,
-                                         'x': 0, 'y': 1, 'z': 2})
-    assert_equal(axmap(cmap, 'both'), ({0: 0, 1:1, 2:2,
+    assert axmap(cmap) == {0: 0, 1:1, 2:2,
+                               'i': 0, 'j': 1, 'k': 2}
+    assert axmap(cmap, 'out2in') == {0: 0, 1:1, 2:2,
+                                         'x': 0, 'y': 1, 'z': 2}
+    assert axmap(cmap, 'both') == ({0: 0, 1:1, 2:2,
                                         'i': 0, 'j': 1, 'k': 2},
                                        {0: 0, 1:1, 2:2,
-                                        'x': 0, 'y': 1, 'z': 2}))
+                                        'x': 0, 'y': 1, 'z': 2})
     cmap = AffineTransform('ijk', 'xyz', [[0, 1, 0, 0],
                                           [0, 0, 1, 0],
                                           [1, 0, 0, 0],
                                           [0, 0, 0, 1]])
-    assert_equal(axmap(cmap), {0: 2, 1: 0, 2: 1,
-                               'i': 2, 'j': 0, 'k': 1})
-    assert_equal(axmap(cmap, 'out2in'), {2: 0, 0: 1, 1: 2,
-                                         'z': 0, 'x': 1, 'y': 2})
+    assert axmap(cmap) == {0: 2, 1: 0, 2: 1,
+                               'i': 2, 'j': 0, 'k': 1}
+    assert axmap(cmap, 'out2in') == {2: 0, 0: 1, 1: 2,
+                                         'z': 0, 'x': 1, 'y': 2}
     # Test in presence of nasty zero
     cmap = AffineTransform('ijk', 'xyz', np.diag([2, 3, 0, 1]))
     # Default is to fix zero
-    assert_equal(axmap(cmap), {0: 0, 1: 1, 2: 2,
-                               'i': 0, 'j': 1, 'k': 2})
-    assert_equal(axmap(cmap, fix0=True), {0: 0, 1: 1, 2: 2,
-                                          'i': 0, 'j': 1, 'k': 2})
-    assert_equal(axmap(cmap, 'out2in'), {0: 0, 1: 1, 2: 2,
-                                         'x': 0, 'y': 1, 'z': 2})
+    assert axmap(cmap) == {0: 0, 1: 1, 2: 2,
+                               'i': 0, 'j': 1, 'k': 2}
+    assert axmap(cmap, fix0=True) == {0: 0, 1: 1, 2: 2,
+                                          'i': 0, 'j': 1, 'k': 2}
+    assert axmap(cmap, 'out2in') == {0: 0, 1: 1, 2: 2,
+                                         'x': 0, 'y': 1, 'z': 2}
     # If turned off, we can't find the axis anymore
-    assert_equal(axmap(cmap, fix0=False), {0: 0, 1: 1, 2: None,
-                                           'i': 0, 'j': 1, 'k': None})
-    assert_equal(axmap(cmap, 'out2in', fix0=False), {0: 0, 1: 1, 2: None,
-                                                    'x': 0, 'y': 1, 'z': None})
+    assert axmap(cmap, fix0=False) == {0: 0, 1: 1, 2: None,
+                                           'i': 0, 'j': 1, 'k': None}
+    assert axmap(cmap, 'out2in', fix0=False) == {0: 0, 1: 1, 2: None,
+                                                    'x': 0, 'y': 1, 'z': None}
     # Need in2out or out2in as action strings
     assert_raises(ValueError, axmap, cmap, 'do what exactly?')
     # Non-square
@@ -769,26 +769,26 @@ def test_axmap():
                                          [0, 0, 0],
                                          [1, 0, 0],
                                          [0, 0, 1]])
-    assert_equal(axmap(cmap), {0: 2, 1: 0,
-                               'i': 2, 'j': 0})
-    assert_equal(axmap(cmap, 'out2in'), {0: 1, 1: None, 2: 0,
-                                         'x': 1, 'y': None, 'z': 0})
+    assert axmap(cmap) == {0: 2, 1: 0,
+                               'i': 2, 'j': 0}
+    assert axmap(cmap, 'out2in') == {0: 1, 1: None, 2: 0,
+                                         'x': 1, 'y': None, 'z': 0}
     cmap = AffineTransform('ijk', 'xy', [[0, 1, 0, 0],
                                          [0, 0, 1, 0],
                                          [0, 0, 0, 1]])
-    assert_equal(axmap(cmap), {0: None, 1: 0, 2: 1,
-                               'i': None, 'j': 0, 'k': 1})
-    assert_equal(axmap(cmap, 'out2in'), {0: 1, 1: 2,
-                                         'x': 1, 'y': 2})
+    assert axmap(cmap) == {0: None, 1: 0, 2: 1,
+                               'i': None, 'j': 0, 'k': 1}
+    assert axmap(cmap, 'out2in') == {0: 1, 1: 2,
+                                         'x': 1, 'y': 2}
     # What happens if there are ties?
     cmap = AffineTransform('ijk', 'xyz', [[0, 1, 0, 0],
                                           [0, 1, 0, 0],
                                           [1, 0, 0, 0],
                                           [0, 0, 0, 1]])
-    assert_equal(axmap(cmap), {0: 2, 1: 0, 2: None,
-                               'i': 2, 'j': 0, 'k': None})
-    assert_equal(axmap(cmap, 'out2in'), {0: 1, 1: None, 2: 0,
-                                         'x': 1, 'y': None, 'z': 0})
+    assert axmap(cmap) == {0: 2, 1: 0, 2: None,
+                               'i': 2, 'j': 0, 'k': None}
+    assert axmap(cmap, 'out2in') == {0: 1, 1: None, 2: 0,
+                                         'x': 1, 'y': None, 'z': 0}
 
 
 def test_orth_axes():
@@ -796,106 +796,106 @@ def test_orth_axes():
     # Check 3,3, 2, 3, and that negative values don't confuse
     for aff in (np.eye(4), np.diag([2, 3, 1]), np.eye(4) * -1):
         for i in range(aff.shape[0]-1):
-            assert_true(orth_axes(i, i, aff))
-    assert_true(orth_axes(2, 2, np.diag([2, 3, 0, 1])))
-    assert_false(orth_axes(2, 2, np.diag([2, 3, 0, 1]), False))
+            assert orth_axes(i, i, aff)
+    assert orth_axes(2, 2, np.diag([2, 3, 0, 1]))
+    assert not orth_axes(2, 2, np.diag([2, 3, 0, 1]), False)
     aff = np.eye(4)
-    assert_true(orth_axes(0, 0, aff))
+    assert orth_axes(0, 0, aff)
     aff[0, 1] = 1e-4
-    assert_false(orth_axes(0, 0, aff))
-    assert_true(orth_axes(0, 0, aff, tol=2e-4))
+    assert not orth_axes(0, 0, aff)
+    assert orth_axes(0, 0, aff, tol=2e-4)
     aff[1, 0] = 3e-4
-    assert_false(orth_axes(0, 0, aff))
+    assert not orth_axes(0, 0, aff)
 
 
 def test_input_axis_index():
     # Test routine to map name to input axis
     cmap = AffineTransform('ijk', 'xyz', np.eye(4))
     for i, in_name, out_name in zip(range(3), 'ijk', 'xyz'):
-        assert_equal(input_axis_index(cmap, in_name), i)
-        assert_equal(input_axis_index(cmap, out_name), i)
+        assert input_axis_index(cmap, in_name) == i
+        assert input_axis_index(cmap, out_name) == i
     flipped = [[0, 0, 1, 1], [0, 1, 0, 2], [1, 0, 0, 3], [0, 0, 0, 1]]
     cmap_f = AffineTransform('ijk', 'xyz', flipped)
     for i, in_name, out_name in zip(range(3), 'ijk', 'zyx'):
-        assert_equal(input_axis_index(cmap_f, in_name), i)
-        assert_equal(input_axis_index(cmap_f, out_name), i)
+        assert input_axis_index(cmap_f, in_name) == i
+        assert input_axis_index(cmap_f, out_name) == i
     # Names can be same in input and output but they must match
     cmap_m = AffineTransform('ijk', 'kji', flipped)
     for i, in_name, out_name in zip(range(3), 'ijk', 'ijk'):
-        assert_equal(input_axis_index(cmap_m, in_name), i)
-        assert_equal(input_axis_index(cmap_m, out_name), i)
+        assert input_axis_index(cmap_m, in_name) == i
+        assert input_axis_index(cmap_m, out_name) == i
     # If they don't match, AxisError
     cmap_b = AffineTransform('ijk', 'xiz', np.eye(4))
-    assert_equal(input_axis_index(cmap_m, 'j'), 1)
+    assert input_axis_index(cmap_m, 'j') == 1
     assert_raises(AxisError, input_axis_index, cmap_b, 'i')
     # Name not found, AxisError
     assert_raises(AxisError, input_axis_index, cmap_b, 'q')
     # 0 leads to no match if fix0 turned off
     cmap_z = AffineTransform('ijk', 'xyz', np.diag([2, 3, 0, 1]))
-    assert_equal(input_axis_index(cmap_z, 'z'), 2)
-    assert_equal(input_axis_index(cmap_z, 'z', fix0=True), 2)
+    assert input_axis_index(cmap_z, 'z') == 2
+    assert input_axis_index(cmap_z, 'z', fix0=True) == 2
     assert_raises(AxisError, input_axis_index, cmap_z, 'z', fix0=False)
     # Other axes not affected in presence of 0
-    assert_equal(input_axis_index(cmap_z, 'y'), 1)
+    assert input_axis_index(cmap_z, 'y') == 1
 
 
 def test_io_axis_indices():
     # Test routine to get input and output axis indices
     cmap = AffineTransform('ijk', 'xyz', np.eye(4))
     for i, in_name, out_name in zip(range(3), 'ijk', 'xyz'):
-        assert_equal(io_axis_indices(cmap, i), (i, i))
-        assert_equal(io_axis_indices(cmap, in_name), (i, i))
-        assert_equal(io_axis_indices(cmap, out_name), (i, i))
+        assert io_axis_indices(cmap, i) == (i, i)
+        assert io_axis_indices(cmap, in_name) == (i, i)
+        assert io_axis_indices(cmap, out_name) == (i, i)
     flipped = [[0, 0, 1, 1], [0, 1, 0, 2], [1, 0, 0, 3], [0, 0, 0, 1]]
     cmap_f = AffineTransform('ijk', 'xyz', flipped)
     for i, in_name, out_name in zip(range(3), 'ijk', 'xyz'):
-        assert_equal(io_axis_indices(cmap_f, i), (i, 2-i))
-        assert_equal(io_axis_indices(cmap_f, in_name), (i, 2-i))
-        assert_equal(io_axis_indices(cmap_f, out_name), (2-i, i))
+        assert io_axis_indices(cmap_f, i) == (i, 2-i)
+        assert io_axis_indices(cmap_f, in_name) == (i, 2-i)
+        assert io_axis_indices(cmap_f, out_name) == (2-i, i)
     # Names can be same in input and output but they must match
     cmap_m = AffineTransform('ijk', 'kji', flipped)
     for i, in_name, out_name in zip(range(3), 'ijk', 'kji'):
-        assert_equal(io_axis_indices(cmap_m, i), (i, 2-i))
-        assert_equal(io_axis_indices(cmap_m, in_name), (i, 2-i))
-        assert_equal(io_axis_indices(cmap_m, out_name), (2-i, i))
+        assert io_axis_indices(cmap_m, i) == (i, 2-i)
+        assert io_axis_indices(cmap_m, in_name) == (i, 2-i)
+        assert io_axis_indices(cmap_m, out_name) == (2-i, i)
     # If they don't match, AxisError, if selecting by name
     cmap_b = AffineTransform('ijk', 'xiz', np.eye(4))
     assert_raises(AxisError, io_axis_indices, cmap_b, 'i')
     # ... but not if name corresponds
-    assert_equal(io_axis_indices(cmap_b, 'k'), (2, 2))
+    assert io_axis_indices(cmap_b, 'k') == (2, 2)
     # ... or if input name not found in output
-    assert_equal(io_axis_indices(cmap_b, 'j'), (1, 1))
+    assert io_axis_indices(cmap_b, 'j') == (1, 1)
     # ... or if selecting by number
-    assert_equal(io_axis_indices(cmap_b, 0), (0, 0))
+    assert io_axis_indices(cmap_b, 0) == (0, 0)
     # Name not found, AxisError
     assert_raises(AxisError, io_axis_indices, cmap_b, 'q')
     # 0 leads to no match if fix0 set to false
     cmap_z = AffineTransform('ijk', 'xyz', np.diag([2, 3, 0, 1]))
-    assert_equal(io_axis_indices(cmap_z, 'y'), (1, 1))
-    assert_equal(io_axis_indices(cmap_z, 'z'), (2, 2))
-    assert_equal(io_axis_indices(cmap_z, 'z', fix0=False), (None, 2))
+    assert io_axis_indices(cmap_z, 'y') == (1, 1)
+    assert io_axis_indices(cmap_z, 'z') == (2, 2)
+    assert io_axis_indices(cmap_z, 'z', fix0=False) == (None, 2)
     # For either input or output
-    assert_equal(io_axis_indices(cmap_z, 'k'), (2, 2))
-    assert_equal(io_axis_indices(cmap_z, 'k', fix0=False), (2, None))
+    assert io_axis_indices(cmap_z, 'k') == (2, 2)
+    assert io_axis_indices(cmap_z, 'k', fix0=False) == (2, None)
     # axis name and number access without fix0
     cmap = AffineTransform('ijkt', 'xyzt', np.diag([1, 1, 1, 0, 1]))
     assert_raises(AxisError, io_axis_indices, cmap, 't', fix0=False)
     in_ax, out_ax = io_axis_indices(cmap, -1, fix0=False)
-    assert_equal((in_ax, out_ax), (3, None))
+    assert (in_ax, out_ax) == (3, None)
     # Non-square is OK
     cmap = AffineTransform('ij', 'xyz', [[0, 1, 0],
                                          [0, 0, 0],
                                          [1, 0, 0],
                                          [0, 0, 1]])
-    assert_equal(io_axis_indices(cmap, 'j'), (1, 0))
-    assert_equal(io_axis_indices(cmap, 'y'), (None, 1))
-    assert_equal(io_axis_indices(cmap, 'z'), (0, 2))
+    assert io_axis_indices(cmap, 'j') == (1, 0)
+    assert io_axis_indices(cmap, 'y') == (None, 1)
+    assert io_axis_indices(cmap, 'z') == (0, 2)
     cmap = AffineTransform('ijk', 'xy', [[0, 1, 0, 0],
                                          [0, 0, 1, 0],
                                          [0, 0, 0, 1]])
-    assert_equal(io_axis_indices(cmap, 'i'), (0, None))
-    assert_equal(io_axis_indices(cmap, 'j'), (1, 0))
-    assert_equal(io_axis_indices(cmap, 'y'), (2, 1))
+    assert io_axis_indices(cmap, 'i') == (0, None)
+    assert io_axis_indices(cmap, 'j') == (1, 0)
+    assert io_axis_indices(cmap, 'y') == (2, 1)
 
 
 def test_make_cmap():
@@ -913,33 +913,33 @@ def test_make_cmap():
         dcs = CS(d_names[:i], 'voxels')
         rcs = CS(r_names[:i], 'world')
         # Generic
-        assert_equal(cmm.make_cmap(i, xform, inv_xform),
+        assert (cmm.make_cmap(i, xform, inv_xform) ==
                      CoordinateMap(dcs, rcs, xform, inv_xform))
-        assert_equal(cmm.make_cmap(i, xform), CoordinateMap(dcs, rcs, xform))
+        assert cmm.make_cmap(i, xform) == CoordinateMap(dcs, rcs, xform)
         # Affines
         aff = np.diag(diag_vals[:i] + [1])
-        assert_equal(cmm.make_affine(aff), AffineTransform(dcs, rcs, aff))
+        assert cmm.make_affine(aff) == AffineTransform(dcs, rcs, aff)
         # Test that the call method selects what it got correctly
-        assert_equal(cmm(i, xform, inv_xform),
+        assert (cmm(i, xform, inv_xform) ==
                      CoordinateMap(dcs, rcs, xform, inv_xform))
-        assert_equal(cmm(i, xform), CoordinateMap(dcs, rcs, xform))
-        assert_equal(cmm(aff), AffineTransform(dcs, rcs, aff))
+        assert cmm(i, xform) == CoordinateMap(dcs, rcs, xform)
+        assert cmm(aff) == AffineTransform(dcs, rcs, aff)
     # For affines, we can append dimensions by adding on the diagonal
     aff = np.diag([2,3,4,1])
     dcs = CS(d_names[:4], 'voxels')
     rcs = CS(r_names[:4], 'world')
-    assert_equal(cmm.make_affine(aff, 5),
+    assert (cmm.make_affine(aff, 5) ==
                  AffineTransform(CS(d_names[:4], 'voxels'),
                                  CS(r_names[:4], 'world'),
                                  np.diag([2,3,4,5,1])))
-    assert_equal(cmm.make_affine(aff, [5,6]),
+    assert (cmm.make_affine(aff, [5,6]) ==
                  AffineTransform(CS(d_names[:5], 'voxels'),
                                  CS(r_names[:5], 'world'),
                                  np.diag([2,3,4,5,6,1])))
     # we can add offsets too
     exp_aff = np.diag([2,3,4,5,6,1])
     exp_aff[3:5,-1] = [7,8]
-    assert_equal(cmm.make_affine(aff, [5,6],[7,8]),
+    assert (cmm.make_affine(aff, [5,6],[7,8]) ==
                  AffineTransform(CS(d_names[:5], 'voxels'),
                                  CS(r_names[:5], 'world'),
                                  exp_aff))
@@ -952,7 +952,7 @@ def test_make_cmap():
                     [0,0,1]])
     dcs = CS(d_names[:2], 'voxels')
     rcs = CS(r_names[:3], 'world')
-    assert_equal(cmm.make_affine(aff), AffineTransform(dcs, rcs, aff))
+    assert cmm.make_affine(aff) == AffineTransform(dcs, rcs, aff)
     dcs = CS(d_names[:3], 'voxels')
     rcs = CS(r_names[:4], 'world')
     exp_aff = np.array([[2,0,0,0],
@@ -960,7 +960,7 @@ def test_make_cmap():
                         [0,0,0,1],
                         [0,0,4,0],
                         [0,0,0,1]])
-    assert_equal(cmm.make_affine(aff, 4), AffineTransform(dcs, rcs, exp_aff))
+    assert cmm.make_affine(aff, 4) == AffineTransform(dcs, rcs, exp_aff)
 
 
 def test_dtype_cmap_inverses():
@@ -987,17 +987,17 @@ def test_dtype_cmap_inverses():
             1/0
         res = r_cmap(out_coord)
         assert_array_equal(res, coord)
-        assert_equal(res.dtype, exp_i_dt)
+        assert res.dtype == exp_i_dt
         # Default behavior is preserve_type=False
         r_cmap = cmap.inverse(preserve_dtype=False)
         res = r_cmap(out_coord)
         assert_array_equal(res, coord)
-        assert_equal(res.dtype, exp_i_dt)
+        assert res.dtype == exp_i_dt
         # Preserve_dtype=True - preserves dtype
         r_cmap = cmap.inverse(preserve_dtype=True)
         res = r_cmap(out_coord)
         assert_array_equal(res, coord)
-        assert_equal(res.dtype, dt)
+        assert res.dtype == dt
         # Preserve_dtype=True is default for conversion to CoordinateMap
         cm_cmap = _as_coordinate_map(cmap)
         assert_array_equal(cm_cmap(coord), out_list)
@@ -1005,7 +1005,7 @@ def test_dtype_cmap_inverses():
         assert_array_equal(rcm_cmap(coord), out_list)
         res = rcm_cmap(out_coord)
         assert_array_equal(res, coord)
-        assert_equal(res.dtype, dt)
+        assert res.dtype == dt
     # For integer types, where there is no integer inverse, return floatey
     # inverse by default, and None for inverse when preserve_dtype=True
     arr_p2 = arr_p1 * 2
@@ -1021,15 +1021,15 @@ def test_dtype_cmap_inverses():
         r_cmap = cmap.inverse()
         res = r_cmap(out_coord)
         assert_array_equal(res, coord)
-        assert_equal(res.dtype, np.float64)
+        assert res.dtype == np.float64
         # Default is preserve_type=False
         r_cmap = cmap.inverse(preserve_dtype=False)
         res = r_cmap(out_coord)
         assert_array_equal(res, coord)
-        assert_equal(res.dtype, np.float64)
+        assert res.dtype == np.float64
         # preserve_dtype=True means there is no valid inverse for non integer
         # affine inverses, as here
-        assert_equal(cmap.inverse(preserve_dtype=True), None)
+        assert cmap.inverse(preserve_dtype=True) == None
 
 
 def test_subtype_equalities():
@@ -1040,13 +1040,13 @@ def test_subtype_equalities():
     cmap = CoordinateMap(in_cs, out_cs, f)
     class CM2(CoordinateMap): pass
     cmap2 = CM2(in_cs, out_cs, f)
-    assert_equal(cmap, cmap2)
-    assert_equal(cmap2, cmap)
+    assert cmap == cmap2
+    assert cmap2 == cmap
     cmap = AffineTransform(in_cs, out_cs, np.eye(4))
     class AT2(AffineTransform): pass
     cmap2 = AT2(in_cs, out_cs, np.eye(4))
-    assert_equal(cmap, cmap2)
-    assert_equal(cmap2, cmap)
+    assert cmap == cmap2
+    assert cmap2 == cmap
 
 
 def test_cmap_coord_types():
@@ -1060,23 +1060,23 @@ def test_cmap_coord_types():
         out_cs = CoordinateSystem('xyz', coord_dtype=dt)
         # CoordinateMap
         cmap = CoordinateMap(in_cs, out_cs, lambda x : x + 1)
-        assert_equal(cmap, copy(cmap))
+        assert cmap == copy(cmap)
         res = cmap(np.array([0, 1, 2], dtype=dt))
         assert_array_equal(res, [1, 2, 3])
-        assert_equal(res.dtype, in_cs.coord_dtype)
+        assert res.dtype == in_cs.coord_dtype
         # Check reordering works
         rcmap = cmap.reordered_domain('ikj').reordered_range('yxz')
         res = rcmap(np.array([0, 1, 2], dtype=dt))
         assert_array_equal(res, [3, 1, 2])
-        assert_equal(res.dtype, in_cs.coord_dtype)
+        assert res.dtype == in_cs.coord_dtype
         # AffineTransform
         cmap = AffineTransform(in_cs, out_cs, arr_p1.astype(dt))
         res = cmap(np.array([0, 1, 2], dtype=dt))
         assert_array_equal(res, [1, 2, 3])
-        assert_equal(res.dtype, in_cs.coord_dtype)
-        assert_equal(cmap, copy(cmap))
+        assert res.dtype == in_cs.coord_dtype
+        assert cmap == copy(cmap)
         # Check reordering works
         rcmap = cmap.reordered_domain('ikj').reordered_range('yxz')
         res = rcmap(np.array([0, 1, 2], dtype=dt))
         assert_array_equal(res, [3, 1, 2])
-        assert_equal(res.dtype, in_cs.coord_dtype)
+        assert res.dtype == in_cs.coord_dtype

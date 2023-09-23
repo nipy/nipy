@@ -60,75 +60,75 @@ def setup():
 def test_xyz_space():
     # Space objects
     sp = XYZSpace('hijo')
-    assert_equal(sp.name, 'hijo')
+    assert sp.name == 'hijo'
     exp_labels = ['hijo-' + L for L in ('x=L->R', 'y=P->A', 'z=I->S')]
     exp_map = dict(zip('xyz', exp_labels))
-    assert_equal([sp.x, sp.y, sp.z], exp_labels)
-    assert_equal(sp.as_tuple(), tuple(exp_labels))
-    assert_equal(sp.as_map(), exp_map)
+    assert [sp.x, sp.y, sp.z] == exp_labels
+    assert sp.as_tuple() == tuple(exp_labels)
+    assert sp.as_map() == exp_map
     known = {}
     sp.register_to(known)
-    assert_equal(known, dict(zip(exp_labels, 'xyz')))
+    assert known == dict(zip(exp_labels, 'xyz'))
     # Coordinate system making, and __contains__ tests
     csm = sp.to_coordsys_maker()
     cs = csm(2)
-    assert_equal(cs, CS(exp_labels[:2], 'hijo'))
+    assert cs == CS(exp_labels[:2], 'hijo')
     # This is only 2 dimensions, not fully in space
-    assert_false(cs in sp)
+    assert cs not in sp
     cs = csm(3)
-    assert_equal(cs, CS(exp_labels, 'hijo'))
+    assert cs == CS(exp_labels, 'hijo')
     # We now have all 3, this in in the space
-    assert_true(cs in sp)
+    assert cs in sp
     # More dimensions than default, error
     assert_raises(CoordSysMakerError, csm, 4)
     # But we can pass in names for further dimensions
     csm = sp.to_coordsys_maker('tuv')
     cs = csm(6)
-    assert_equal(cs, CS(exp_labels + list('tuv'), 'hijo'))
+    assert cs == CS(exp_labels + list('tuv'), 'hijo')
     # These are also in the space, because they contain xyz
-    assert_true(cs in sp)
+    assert cs in sp
     # The axes can be in any order as long as they are a subset
     cs = CS(exp_labels, 'hijo')
-    assert_true(cs in sp)
+    assert cs in sp
     cs = CS(exp_labels[::-1], 'hijo')
-    assert_true(cs in sp)
+    assert cs in sp
     cs = CS(['t'] + exp_labels, 'hijo')
-    assert_true(cs in sp)
+    assert cs in sp
     # The coordinate system name doesn't matter
     cs = CS(exp_labels, 'hija')
-    assert_true(cs in sp)
+    assert cs in sp
     # Images, and coordinate maps, also work
     cmap = AffineTransform('ijk', cs, np.eye(4))
-    assert_true(cmap in sp)
+    assert cmap in sp
     img = Image(np.zeros((2,3,4)), cmap)
-    assert_true(img in sp)
+    assert img in sp
     # equality
-    assert_equal(XYZSpace('hijo'), XYZSpace('hijo'))
-    assert_not_equal(XYZSpace('hijo'), XYZSpace('hija'))
+    assert XYZSpace('hijo') == XYZSpace('hijo')
+    assert XYZSpace('hijo') != XYZSpace('hija')
 
 
 def test_is_xyz_space():
     # test test for xyz space
-    assert_true(is_xyz_space(XYZSpace('hijo')))
+    assert is_xyz_space(XYZSpace('hijo'))
     for sp in known_spaces:
-        assert_true(is_xyz_space(sp))
+        assert is_xyz_space(sp)
     for obj in ([], {}, object(), CS('xyz')):
-        assert_false(is_xyz_space(obj))
+        assert not is_xyz_space(obj)
 
 
 def test_known_space():
     # Known space utility routine
     for sp in known_spaces:
         cs = sp.to_coordsys_maker()(3)
-        assert_equal(known_space(cs), sp)
+        assert known_space(cs) == sp
     cs = CS('xyz')
-    assert_equal(known_space(cs), None)
+    assert known_space(cs) == None
     sp0 = XYZSpace('hijo')
     sp1 = XYZSpace('hija')
     custom_spaces = (sp0, sp1)
     for sp in custom_spaces:
         cs = sp.to_coordsys_maker()(3)
-        assert_equal(known_space(cs, custom_spaces), sp)
+        assert known_space(cs, custom_spaces) == sp
 
 
 def test_image_creation():
@@ -136,7 +136,7 @@ def test_image_creation():
     arr = np.arange(24).reshape(2,3,4)
     aff = np.diag([2,3,4,1])
     img = Image(arr, vox2mni(aff))
-    assert_equal(img.shape, (2,3,4))
+    assert img.shape == (2,3,4)
     assert_array_equal(img.affine, aff)
     assert_array_equal(img.coordmap,
                        AffineTransform(VARS['d_cs_r3'], VARS['r_cs_r3'], aff))
@@ -144,9 +144,9 @@ def test_image_creation():
     arr = np.arange(24).reshape(2,3,4,1)
     img = Image(arr, vox2mni(aff, 7))
     exp_aff = np.diag([2,3,4,7,1])
-    assert_equal(img.shape, (2,3,4,1))
+    assert img.shape == (2,3,4,1)
     exp_cmap = AffineTransform(VARS['d_cs_r4'], VARS['r_cs_r4'], exp_aff)
-    assert_equal(img.coordmap, exp_cmap)
+    assert img.coordmap == exp_cmap
 
 
 def test_default_makers():
@@ -161,19 +161,19 @@ def test_default_makers():
             dom_cs = CS('ijkl'[:i], 'voxels')
             ran_cs = CS(r_names[:i], r_name)
             aff = np.diag(list(range(i)) + [1])
-            assert_equal(csm(aff), AffineTransform(dom_cs, ran_cs, aff))
+            assert csm(aff) == AffineTransform(dom_cs, ran_cs, aff)
 
 
 def test_get_world_cs():
     # Utility to get world from a variety of inputs
-    assert_equal(get_world_cs('mni'), mni_csm(3))
+    assert get_world_cs('mni') == mni_csm(3)
     mnit = mni_space.to_coordsys_maker('t')(4)
-    assert_equal(get_world_cs(mni_space, 4), mnit)
-    assert_equal(get_world_cs(mni_csm, 4), mni_csm(4))
-    assert_equal(get_world_cs(CS('xyz')), CS('xyz'))
+    assert get_world_cs(mni_space, 4) == mnit
+    assert get_world_cs(mni_csm, 4) == mni_csm(4)
+    assert get_world_cs(CS('xyz')) == CS('xyz')
     hija = XYZSpace('hija')
     maker = hija.to_coordsys_maker('qrs')
-    assert_equal(get_world_cs('hija', ndim = 5, extras='qrs', spaces=[hija]),
+    assert (get_world_cs('hija', ndim = 5, extras='qrs', spaces=[hija]) ==
                  maker(5))
     assert_raises(SpaceError, get_world_cs, 'hijo')
     assert_raises(SpaceError, get_world_cs, 'hijo', spaces=[hija])
@@ -278,15 +278,15 @@ def test_is_xyz_affable():
     # Whether there exists an xyz affine for this coordmap
     affine = np.diag([2,4,5,6,1])
     cmap = AffineTransform(VARS['d_cs_r4'], VARS['r_cs_r4'], affine)
-    assert_true(is_xyz_affable(cmap))
-    assert_false(is_xyz_affable(cmap.reordered_range([3,0,1,2])))
-    assert_false(is_xyz_affable(cmap.reordered_domain([3,0,1,2])))
+    assert is_xyz_affable(cmap)
+    assert not is_xyz_affable(cmap.reordered_range([3,0,1,2]))
+    assert not is_xyz_affable(cmap.reordered_domain([3,0,1,2]))
     # Can pass in own validator
     my_valtor = {'blind': 'x', 'leading': 'y', 'ditch': 'z'}
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
     affine = from_matvec(np.arange(9).reshape((3, 3)), [11, 12, 13])
     cmap = AffineTransform(VARS['d_cs_r3'], r_cs, affine)
     # No xyz affine if we don't use our custom dictionary
-    assert_false(is_xyz_affable(cmap))
+    assert not is_xyz_affable(cmap)
     # Is if we do
-    assert_true(is_xyz_affable(cmap, my_valtor))
+    assert is_xyz_affable(cmap, my_valtor)

@@ -104,7 +104,7 @@ twoway = f1 * f2
 def test_names():
     # Check that the design column names are what we expect
     X = twoway.design(D, return_float=False)
-    assert_equal(set(X.dtype.names), {'Duration_1*Weight_1', 'Duration_1*Weight_2', 'Duration_1*Weight_3', 'Duration_2*Weight_1', 'Duration_2*Weight_2', 'Duration_2*Weight_3'})
+    assert set(X.dtype.names) == {'Duration_1*Weight_1', 'Duration_1*Weight_2', 'Duration_1*Weight_3', 'Duration_2*Weight_1', 'Duration_2*Weight_2', 'Duration_2*Weight_3'}
 
 # If we ask for contrasts, the resulting matrix is
 # of dtype np.float64

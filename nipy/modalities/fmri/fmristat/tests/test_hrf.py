@@ -20,7 +20,7 @@ def test_spectral_decomposition():
     t = np.linspace(-15,50,3251)
     vals = [val_maker(t) for val_maker in val_makers]
     ind = np.argmax(vals[1])
-    assert_true(vals[0][ind] > 0)
+    assert vals[0][ind] > 0
     # test that we can get several components
     spectral, approx = spectral_decomposition(hrf.glover, ncomp=5)
-    assert_equal(len(spectral), 5)
+    assert len(spectral) == 5

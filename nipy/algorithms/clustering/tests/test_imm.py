@@ -40,7 +40,7 @@ def test_imm_loglike_1D():
     like =  igmm.sample(x, niter=300)
     theoretical_ll = -dim*.5*(1+np.log(2*np.pi))
     empirical_ll = np.log(like).mean()
-    assert_true(np.absolute(theoretical_ll-empirical_ll)<0.25*dim)
+    assert np.absolute(theoretical_ll-empirical_ll)<0.25*dim
 
 
 def test_imm_loglike_known_groups():
@@ -60,7 +60,7 @@ def test_imm_loglike_known_groups():
     like =  igmm.sample(x, niter=300, kfold=kfold)
     theoretical_ll = -dim*.5*(1+np.log(2*np.pi))
     empirical_ll = np.log(like).mean()
-    assert_true(np.absolute(theoretical_ll-empirical_ll)<0.25*dim)
+    assert np.absolute(theoretical_ll-empirical_ll)<0.25*dim
 
 
 def test_imm_loglike_1D_k10():
@@ -82,7 +82,7 @@ def test_imm_loglike_1D_k10():
     empirical_ll = np.log(like).mean()
     # Result susceptible to random number output. See:
     # https://github.com/nipy/nipy/issues/418
-    assert_true(np.absolute(theoretical_ll-empirical_ll) < 0.27 * dim)
+    assert np.absolute(theoretical_ll-empirical_ll) < 0.27 * dim
 
 
 def test_imm_loglike_2D_fast():
@@ -101,7 +101,7 @@ def test_imm_loglike_2D_fast():
     like =  igmm.sample(x, niter=300)
     theoretical_ll = -dim*.5*(1+np.log(2*np.pi))
     empirical_ll = np.log(like).mean()
-    assert_true(np.absolute(theoretical_ll-empirical_ll)<0.25*dim)
+    assert np.absolute(theoretical_ll-empirical_ll)<0.25*dim
 
 
 def test_imm_loglike_2D():
@@ -121,7 +121,7 @@ def test_imm_loglike_2D():
     like =  igmm.sample(x, niter=300, kfold=k)
     theoretical_ll = -dim*.5*(1+np.log(2*np.pi))
     empirical_ll = np.log(like).mean()
-    assert_true(np.absolute(theoretical_ll-empirical_ll)<0.25*dim)
+    assert np.absolute(theoretical_ll-empirical_ll)<0.25*dim
 
 
 def test_imm_loglike_2D_a0_1():
@@ -141,7 +141,7 @@ def test_imm_loglike_2D_a0_1():
     theoretical_ll = -dim*.5*(1+np.log(2*np.pi))
     empirical_ll = np.log(like).mean()
     print(theoretical_ll, empirical_ll)
-    assert_true(np.absolute(theoretical_ll-empirical_ll)<0.2*dim)
+    assert np.absolute(theoretical_ll-empirical_ll)<0.2*dim
 
 
 def test_imm_wnc():
@@ -170,10 +170,10 @@ def test_imm_wnc():
 
     # the density should sum to 1
     ds = 0.01*like.sum()
-    assert_true(ds<1)
-    assert_true(ds>.8)
-    assert_true(np.sum(pproba>.5)>1)
-    assert_true(np.sum(pproba<.5)>1)
+    assert ds<1
+    assert ds>.8
+    assert np.sum(pproba>.5)>1
+    assert np.sum(pproba<.5)>1
 
 
 def test_imm_wnc1():
@@ -202,10 +202,10 @@ def test_imm_wnc1():
 
     # the density should sum to 1
     ds = 0.01*like.sum()
-    assert_true(ds<1)
-    assert_true(ds>.8)
-    assert_true(np.sum(pproba>.5)>1)
-    assert_true(np.sum(pproba<.5)>1)
+    assert ds<1
+    assert ds>.8
+    assert np.sum(pproba>.5)>1
+    assert np.sum(pproba<.5)>1
 
 
 def test_imm_wnc2():
@@ -229,8 +229,8 @@ def test_imm_wnc2():
 
     # sampling
     like, pproba =  migmm.sample(x, null_class_proba=ncp, niter=300)
-    assert_true(like.min()>.1)
-    assert_true(like.max()<5.)
+    assert like.min()>.1
+    assert like.max()<5.
     assert_array_equal(pproba, ncp)
 
 

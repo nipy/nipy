@@ -128,24 +128,24 @@ def wiki_tet_vol(d, a, b, c):
 
 
 def test_mu3tet():
-    assert_equal(intvol.mu3_tet(0,0,0,0,1,0,0,1,0,1), 1./6)
-    assert_equal(intvol.mu3_tet(0,0,0,0,0,0,0,0,0,0), 0)
+    assert intvol.mu3_tet(0,0,0,0,1,0,0,1,0,1) == 1./6
+    assert intvol.mu3_tet(0,0,0,0,0,0,0,0,0,0) == 0
     d = [2,2,2]
     a = [3,2,2]
     b = [2,3,2]
     c = [2,2,3]
-    assert_equal(pts2mu3_tet(d, a, b, c), 1./6)
-    assert_equal(wiki_tet_vol(d, a, b, c), 1./6)
+    assert pts2mu3_tet(d, a, b, c) == 1./6
+    assert wiki_tet_vol(d, a, b, c) == 1./6
     # This used to generate nan values
-    assert_equal(intvol.mu3_tet(0,0,0,0,1,0,0,-1,0,1), 0)
+    assert intvol.mu3_tet(0,0,0,0,1,0,0,-1,0,1) == 0
 
 
 def test_mu2tri():
-    assert_equal(intvol.mu2_tri(0,0,0,1,0,1), 1./2)
+    assert intvol.mu2_tri(0,0,0,1,0,1) == 1./2
 
 
 def test_mu1tri():
-    assert_equal(intvol.mu1_tri(0,0,0,1,0,1), 1+np.sqrt(2)/2)
+    assert intvol.mu1_tri(0,0,0,1,0,1) == 1+np.sqrt(2)/2
 
 
 def test_mu2tet():
@@ -164,10 +164,10 @@ def pts2mu1_tet(d, a, b, c):
 def test_mu1_tet():
     res1 = pts2mu1_tet([2,2,2],[3,2,2],[2,3,2],[2,2,3])
     res2 = pts2mu1_tet([0,0,0],[1,0,0],[0,1,0],[0,0,1])
-    assert_equal(res1, res2)
-    assert_equal(intvol.mu1_tet(0,0,0,0,0,0,0,0,0,0), 0)
+    assert res1 == res2
+    assert intvol.mu1_tet(0,0,0,0,0,0,0,0,0,0) == 0
     # This used to generate nan values
-    assert_equal(intvol.mu1_tet(0,0,0,0,1,0,0,-1,0,1), 0)
+    assert intvol.mu1_tet(0,0,0,0,1,0,0,-1,0,1) == 0
 
 
 def test__mu1_tetface():
@@ -211,7 +211,7 @@ def test_lips_wrapping():
     b2 = np.zeros(40, np.int_)
     b2[11:] = 1
     # lines are disjoint
-    assert_equal((b1*b2).sum(), 0)
+    assert (b1*b2).sum() == 0
     c = np.indices(b1.shape).astype(np.float64)
     assert_array_equal(intvol.Lips1d(c, b1), (1, 10))
     assert_array_equal(intvol.Lips1d(c, b2), (1, 28))
@@ -220,7 +220,7 @@ def test_lips_wrapping():
     b1 = b1[:,None]
     b2 = b2[:,None]
     # boxes are disjoint
-    assert_equal((b1*b2).sum(), 0)
+    assert (b1*b2).sum() == 0
     c = np.indices(b1.shape).astype(np.float64)
     assert_array_equal(intvol.Lips2d(c, b1), (1, 10, 0))
     assert_array_equal(intvol.Lips2d(c, b2), (1, 28, 0))
@@ -228,9 +228,9 @@ def test_lips_wrapping():
     # 3D
     b1 = b1[:,:,None]
     b2 = b2[:,:,None]
-    assert_equal(b1.shape, (40,1,1))
+    assert b1.shape == (40,1,1)
     # boxes are disjoint
-    assert_equal((b1*b2).sum(), 0)
+    assert (b1*b2).sum() == 0
     c = np.indices(b1.shape).astype(np.float64)
     assert_array_equal(intvol.Lips3d(c, b1), (1, 10, 0, 0))
     assert_array_equal(intvol.Lips3d(c, b2), (1, 28, 0, 0))
@@ -248,7 +248,7 @@ def test_lips_wrapping():
         c = np.indices(box_shape).astype(np.float64)
         b = np.ones(box_shape, dtype=np.int_)
         assert_array_equal(lips_func(c, b), exp_ivs)
-        assert_equal(ec_func(b), exp_ivs[0])
+        assert ec_func(b) == exp_ivs[0]
 
 
 def test_lips1_disjoint():
@@ -364,18 +364,18 @@ def test_slices():
 
 def test_ec_wrapping():
     # Test wrapping for EC1 calculation
-    assert_equal(intvol.EC1d(np.ones((6,), dtype=np.int_)), 1)
+    assert intvol.EC1d(np.ones((6,), dtype=np.int_)) == 1
     box1 = np.array([1, 1, 0, 1, 1, 1], dtype=np.int_)
-    assert_equal(intvol.EC1d(box1), 2)
+    assert intvol.EC1d(box1) == 2
     # 2D
     box1 = np.zeros((3,6), dtype=np.int_)
     box1[1] = 1
-    assert_equal(intvol.EC2d(box1), 1)
+    assert intvol.EC2d(box1) == 1
     box1[1, 3] = 0
-    assert_equal(intvol.EC2d(box1), 2)
+    assert intvol.EC2d(box1) == 2
     # 3D
     box1 = np.zeros((3,6,3), dtype=np.int_)
     box1[1, :, 1] = 1
-    assert_equal(intvol.EC3d(box1), 1)
+    assert intvol.EC3d(box1) == 1
     box1[1, 3, 1] = 0
-    assert_equal(intvol.EC3d(box1), 2)
+    assert intvol.EC3d(box1) == 2

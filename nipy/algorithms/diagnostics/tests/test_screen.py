@@ -47,9 +47,9 @@ def test_screen():
     # slice axis below
     img = img.renamed_axes(k='slice')
     res = screen(img)
-    assert_equal(res['mean'].ndim, 3)
-    assert_equal(res['pca'].ndim, 4)
-    assert_equal(sorted(res.keys()),
+    assert res['mean'].ndim == 3
+    assert res['pca'].ndim == 4
+    assert (sorted(res.keys()) ==
                  ['max', 'mean', 'min',
                   'pca', 'pca_res',
                   'std', 'ts_res'])
@@ -148,7 +148,7 @@ def test_write_screen_res():
         os.mkdir('myresults')
         write_screen_res(res, 'myresults', 'myana')
         pca_img = ni.load_image(pjoin('myresults', 'pca_myana.nii'))
-        assert_equal(pca_img.shape, img.shape[:-1] + (10,))
+        assert pca_img.shape == img.shape[:-1] + (10,)
         # Make sure we get the same output image even from rolled image
         # Do fancy roll to put time axis first, and slice axis last. This does
         # a stress test on the axis ordering, but also makes sure that we are
@@ -162,5 +162,5 @@ def test_write_screen_res():
         rres = screen(rimg)
         write_screen_res(rres, 'rmyresults', 'myana')
         rpca_img = ni.load_image(pjoin('rmyresults', 'pca_myana.nii'))
-        assert_equal(rpca_img.shape, img.shape[:-1] + (10,))
+        assert rpca_img.shape == img.shape[:-1] + (10,)
         del pca_img, rpca_img

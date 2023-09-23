@@ -277,7 +277,7 @@ def test_agreement():
         for i in range(X[design_type].shape[1]):
             _, cmax = matchcol(X[design_type][:,i], fmristat[design_type])
             if not dd.dtype.names[i].startswith('ns'):
-                assert_true(np.greater(np.abs(cmax), 0.999))
+                assert np.greater(np.abs(cmax), 0.999)
 
 
 # @dec.slow

@@ -15,10 +15,10 @@ from ..compat3 import open4csv, to_str
 
 def test_to_str():
     # Test routine to convert to string
-    assert_equal('1', to_str(1))
-    assert_equal('1.0', to_str(1.0))
-    assert_equal('from', to_str('from'))
-    assert_equal('from', to_str(b'from'))
+    assert '1' == to_str(1)
+    assert '1.0' == to_str(1.0)
+    assert 'from' == to_str('from')
+    assert 'from' == to_str(b'from')
 
 
 def test_open4csv():
@@ -36,6 +36,6 @@ def test_open4csv():
             fobj.seek(0)
             reader = csv.reader(fobj, dialect)
             back = list(reader)
-    assert_equal(contents, back)
+    assert contents == back
     assert_raises(ValueError, open4csv, 'my.csv', 'rb')
     assert_raises(ValueError, open4csv, 'my.csv', 'wt')

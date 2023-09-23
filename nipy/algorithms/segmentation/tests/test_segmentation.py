@@ -22,7 +22,7 @@ def _check_dims(x, ndim, shape):
     if isinstance(shape, Number):
         shape = (shape,)
     for i in range(ndim):
-        assert_equal(x.shape[i], shape[i])
+        assert x.shape[i] == shape[i]
 
 
 def _test_brain_seg(model, niters=3, beta=0, ngb_size=6, init_params=None,
@@ -89,13 +89,13 @@ def test_brain_seg7():
 
 
 def _test_segmentation(S, nchannels=1):
-    assert_equal(S.nchannels, nchannels)
+    assert S.nchannels == nchannels
     nef = S.normalized_external_field()
     assert_array_almost_equal(nef.sum(-1), np.ones(nef.shape[0]))
     S.run(niters=5)
     label = S.map()
-    assert_equal(label.ndim, 3)
-    assert_equal(label.dtype, 'uint8')
+    assert label.ndim == 3
+    assert label.dtype == 'uint8'
     assert isinstance(S.free_energy(), float)
 
 
