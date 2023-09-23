@@ -54,10 +54,10 @@ def test_badfile():
 def test_maxminmean_values():
     # loaded array values from SPM
     y = gimg.get_fdata()
-    yield assert_equal, y.shape, tuple(gimg.shape)
-    yield assert_array_almost_equal, y.max(), 1.000000059
-    yield assert_array_almost_equal, y.mean(), 0.273968048
-    yield assert_equal, y.min(), 0.0
+    assert y.shape == tuple(gimg.shape)
+    assert_array_almost_equal(y.max(), 1.000000059)
+    assert_array_almost_equal(y.mean(), 0.273968048)
+    assert y.min() == 0.0
 
 
 @if_templates

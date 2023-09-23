@@ -56,28 +56,28 @@ def test_pos_recipr():
     X = np.array([2,1,-1,0], dtype=np.int8)
     eX = np.array([0.5,1,0,0])
     Y = pos_recipr(X)
-    yield assert_array_almost_equal, Y, eX
-    yield assert_equal, Y.dtype.type, np.float64
+    assert_array_almost_equal(Y, eX)
+    assert Y.dtype.type == np.float64
     X2 = X.reshape((2,2))
     Y2 = pos_recipr(X2)
-    yield assert_array_almost_equal, Y2, eX.reshape((2,2))
+    assert_array_almost_equal(Y2, eX.reshape((2,2)))
     # check that lists have arrived
     XL = [0, 1, -1]
-    yield assert_array_almost_equal, pos_recipr(XL), [0, 1, 0]
+    assert_array_almost_equal(pos_recipr(XL), [0, 1, 0])
     # scalars
-    yield assert_equal, pos_recipr(-1), 0
-    yield assert_equal, pos_recipr(0), 0
-    yield assert_equal, pos_recipr(2), 0.5
+    assert pos_recipr(-1) == 0
+    assert pos_recipr(0) == 0
+    assert pos_recipr(2) == 0.5
 
 
 def test_recipr0():
     X = np.array([[2,1],[-4,0]])
     Y = recipr0(X)
-    yield assert_array_almost_equal, Y, np.array([[0.5,1],[-0.25,0]])
+    assert_array_almost_equal(Y, np.array([[0.5,1],[-0.25,0]]))
     # check that lists have arrived
     XL = [0, 1, -1]
-    yield assert_array_almost_equal, recipr0(XL), [0, 1, -1]
+    assert_array_almost_equal(recipr0(XL), [0, 1, -1])
     # scalars
-    yield assert_equal, recipr0(-1), -1
-    yield assert_equal, recipr0(0), 0
-    yield assert_equal, recipr0(2), 0.5
+    assert recipr0(-1) == -1
+    assert recipr0(0) == 0
+    assert recipr0(2) == 0.5

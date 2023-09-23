@@ -227,20 +227,20 @@ def test_compose():
 
 
 def test__eq__():
-    yield assert_true, E.a == E.a
-    yield assert_false, E.a != E.a
+    assert E.a == E.a
+    assert not E.a != E.a
 
-    yield assert_false, E.a == E.b
-    yield assert_true, E.a != E.b
+    assert not E.a == E.b
+    assert E.a != E.b
 
-    yield assert_true, E.singular == E.singular
-    yield assert_false, E.singular != E.singular
+    assert E.singular == E.singular
+    assert not E.singular != E.singular
 
     A = AffineTransform.from_params('ijk', 'xyz', np.diag([4,3,2,1]))
     B = AffineTransform.from_params('ijk', 'xyz', np.diag([4,3,2,1]))
 
-    yield assert_true, A == B
-    yield assert_false, A != B
+    assert A == B
+    assert not A != B
 
 
 def test_similar_to():
@@ -264,26 +264,26 @@ def test_similar_to():
 
 
 def test_isinvertible():
-    yield assert_false, E.a.inverse()
-    yield assert_true, E.b.inverse()
-    yield assert_false, E.c.inverse()
-    yield assert_true, E.d.inverse()
-    yield assert_true, E.e.inverse()
-    yield assert_true, E.mapping.inverse()
-    yield assert_false, E.singular.inverse()
+    assert not E.a.inverse()
+    assert E.b.inverse()
+    assert not E.c.inverse()
+    assert E.d.inverse()
+    assert E.e.inverse()
+    assert E.mapping.inverse()
+    assert not E.singular.inverse()
 
 
 def test_inverse1():
     inv = lambda a: a.inverse()
-    yield assert_true, inv(E.a) is None
-    yield assert_true, inv(E.c) is None
+    assert inv(E.a) is None
+    assert inv(E.c) is None
     inv_b = E.b.inverse()
     inv_d = E.d.inverse()
     ident_b = compose(inv_b,E.b)
     ident_d = compose(inv_d,E.d)
     value = np.array([[1., 2., 3.]]).T
-    yield assert_true, np.allclose(ident_b(value), value)
-    yield assert_true, np.allclose(ident_d(value), value)
+    assert np.allclose(ident_b(value), value)
+    assert np.allclose(ident_d(value), value)
 
 
 def test_compose_cmap():
@@ -309,12 +309,12 @@ def test_comap_init():
     # Test mapping and non-mapping functions
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(incs, outcs, map, inv)
-    yield assert_equal, cm.function, map
-    yield assert_equal, cm.function_domain, incs
-    yield assert_equal, cm.function_range, outcs
-    yield assert_equal, cm.inverse_function, inv
-    yield pytest.raises, ValueError, CoordinateMap, incs, outcs, 'foo', inv
-    yield pytest.raises, ValueError, CoordinateMap, incs, outcs, map, 'bar'
+    assert cm.function == map
+    assert cm.function_domain == incs
+    assert cm.function_range == outcs
+    assert cm.inverse_function == inv
+    pytest.raises(ValueError, CoordinateMap, incs, outcs, 'foo', inv)
+    pytest.raises(ValueError, CoordinateMap, incs, outcs, map, 'bar')
 
 
 def test_comap_cosys():
@@ -338,10 +338,10 @@ def test_comap_copy():
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(incs, outcs, inv, map)
     cmcp = copy.copy(cm)
-    yield assert_equal, cmcp.function, cm.function
-    yield assert_equal, cmcp.function_domain, cm.function_domain
-    yield assert_equal, cmcp.function_range, cm.function_range
-    yield assert_equal, cmcp.inverse_function, cm.inverse_function
+    assert cmcp.function == cm.function
+    assert cmcp.function_domain == cm.function_domain
+    assert cmcp.function_range == cm.function_range
+    assert cmcp.inverse_function == cm.inverse_function
 
 
 #
@@ -440,16 +440,16 @@ def test_reordered_domain():
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(incs, outcs, map, inv)
     recm = cm.reordered_domain('jki')
-    yield assert_equal, recm.function_domain.coord_names, ('j', 'k', 'i')
-    yield assert_equal, recm.function_range.coord_names, outcs.coord_names
-    yield assert_equal, recm.function_domain.name, incs.name
-    yield assert_equal, recm.function_range.name, outcs.name
+    assert recm.function_domain.coord_names == ('j', 'k', 'i')
+    assert recm.function_range.coord_names == outcs.coord_names
+    assert recm.function_domain.name == incs.name
+    assert recm.function_range.name == outcs.name
     # default reverse reorder
     recm = cm.reordered_domain()
-    yield assert_equal, recm.function_domain.coord_names, ('k', 'j', 'i')
+    assert recm.function_domain.coord_names == ('k', 'j', 'i')
     # reorder with order as indices
     recm = cm.reordered_domain([2,0,1])
-    yield assert_equal, recm.function_domain.coord_names, ('k', 'i', 'j')
+    assert recm.function_domain.coord_names == ('k', 'i', 'j')
 
 
 def test_str():
@@ -487,16 +487,16 @@ def test_reordered_range():
     incs, outcs, map, inv = voxel_to_world()
     cm = CoordinateMap(incs, outcs, inv, map)
     recm = cm.reordered_range('yzx')
-    yield assert_equal, recm.function_domain.coord_names, incs.coord_names
-    yield assert_equal, recm.function_range.coord_names, ('y', 'z', 'x')
-    yield assert_equal, recm.function_domain.name, incs.name
-    yield assert_equal, recm.function_range.name, outcs.name
+    assert recm.function_domain.coord_names == incs.coord_names
+    assert recm.function_range.coord_names == ('y', 'z', 'x')
+    assert recm.function_domain.name == incs.name
+    assert recm.function_range.name == outcs.name
     # default reverse order
     recm = cm.reordered_range()
-    yield assert_equal, recm.function_range.coord_names, ('z', 'y', 'x')
+    assert recm.function_range.coord_names == ('z', 'y', 'x')
     # reorder with indicies
     recm = cm.reordered_range([2,0,1])
-    yield assert_equal, recm.function_range.coord_names, ('z', 'x', 'y')
+    assert recm.function_range.coord_names == ('z', 'x', 'y')
 
 
 def test_product():
@@ -543,21 +543,21 @@ def test_equivalent():
     # 'ijk' and 'xyz' and confirm that
     # the mapping is equivalent
 
-    yield assert_false, equivalent(A, A.renamed_domain({'i':'foo'}))
+    assert not equivalent(A, A.renamed_domain({'i':'foo'}))
 
     try:
         import itertools
         for pijk in itertools.permutations('ijk'):
             for pxyz in itertools.permutations('xyz'):
                 B = A.reordered_domain(pijk).reordered_range(pxyz)
-                yield assert_true, equivalent(A, B)
+                assert equivalent(A, B)
     except (ImportError, AttributeError):
         # just do some if we can't find itertools, or if itertools
         # doesn't have permutations
         for pijk in ['ikj', 'kij']:
             for pxyz in ['xzy', 'yxz']:
                 B = A.reordered_domain(pijk).reordered_range(pxyz)
-                yield assert_true, equivalent(A, B)
+                assert equivalent(A, B)
 
 
 def test_as_coordinate_map():
@@ -568,14 +568,14 @@ def test_as_coordinate_map():
     A = np.random.standard_normal((4,4))
 
     # bottom row of A is not [0,0,0,1]
-    yield pytest.raises, ValueError, AffineTransform, ijk, xyz, A
+    pytest.raises(ValueError, AffineTransform, ijk, xyz, A)
 
     A[-1] = [0,0,0,1]
 
     aff = AffineTransform(ijk, xyz, A)
     _cmapA = _as_coordinate_map(aff)
-    yield assert_true, isinstance(_cmapA, CoordinateMap)
-    yield assert_true, _cmapA.inverse_function is not None
+    assert isinstance(_cmapA, CoordinateMap)
+    assert _cmapA.inverse_function is not None
 
     # a non-invertible one
 
@@ -584,8 +584,8 @@ def test_as_coordinate_map():
     affB = AffineTransform(ijk, xy, B)
     _cmapB = _as_coordinate_map(affB)
 
-    yield assert_true, isinstance(_cmapB, CoordinateMap)
-    yield assert_true, _cmapB.inverse_function is None
+    assert isinstance(_cmapB, CoordinateMap)
+    assert _cmapB.inverse_function is None
 
 
 def test_cm__setattr__raise_error():
@@ -598,7 +598,7 @@ def test_cm__setattr__raise_error():
 
     cm = CoordinateMap(ijk, xyz, np.exp)
 
-    yield pytest.raises, AttributeError, cm.__setattr__, "function_range", xyz
+    pytest.raises(AttributeError, cm.__setattr__, "function_range", xyz)
 
 
 def test_append_io_dim():

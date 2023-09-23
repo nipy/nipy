@@ -25,8 +25,8 @@ def build_xform():
 def test_to_matrix_vector():
     mat, vec, xform = build_xform()
     newmat, newvec = to_matrix_vector(xform)
-    yield assert_equal, newmat, mat
-    yield assert_equal, newvec, vec
+    assert newmat == mat
+    assert newvec == vec
 
 
 def test_from_matrix_vector():

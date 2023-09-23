@@ -120,11 +120,11 @@ def test_eval_slice():
     e = grid[0:50,0:40]
     ee = e[0:20:3]
 
-    yield assert_equal, ee.shape, (7,40)
-    yield assert_equal, ee.values.shape, (280,2)
-    yield assert_equal, ee.transposed_values.shape, (2,7,40)
+    assert ee.shape == (7,40)
+    assert ee.values.shape == (280,2)
+    assert ee.transposed_values.shape == (2,7,40)
 
     ee = e[0:20:2,3]
-    yield assert_equal, ee.values.shape, (10,2)
-    yield assert_equal, ee.transposed_values.shape, (2,10)
-    yield assert_equal, ee.shape, (10,)
+    assert ee.values.shape == (10,2)
+    assert ee.transposed_values.shape == (2,10)
+    assert ee.shape == (10,)

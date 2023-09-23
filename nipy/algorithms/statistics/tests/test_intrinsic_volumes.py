@@ -348,18 +348,18 @@ def test_slices():
     m = np.zeros((40,)*3, np.int_)
     D = np.indices(m.shape).astype(np.float64)
     m[10,10,10] = 1
-    yield assert_almost_equal, e(m), 1
-    yield assert_almost_equal, p(D,m), [1,0,0,0]
+    assert_almost_equal(e(m), 1)
+    assert_almost_equal(p(D,m), [1,0,0,0])
 
     m = np.zeros((40,)*3, np.int_)
     m[10,10:14,10] = 1
-    yield assert_almost_equal, e(m), 1
-    yield assert_almost_equal, p(D,m), [1,3,0,0]
+    assert_almost_equal(e(m), 1)
+    assert_almost_equal(p(D,m), [1,3,0,0])
 
     m = np.zeros((40,)*3, np.int_)
     m[10,10:14,9:15] = 1
-    yield assert_almost_equal, e(m), 1
-    yield assert_almost_equal, p(D,m), [1,8,15,0]
+    assert_almost_equal(e(m), 1)
+    assert_almost_equal(p(D,m), [1,8,15,0])
 
 
 def test_ec_wrapping():

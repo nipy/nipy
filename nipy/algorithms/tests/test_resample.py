@@ -18,8 +18,8 @@ def test_resample_img2img():
     fimg = load_image(funcfile)
     aimg = load_image(anatfile)
     resimg = resample_img2img(fimg, fimg)
-    yield assert_true, np.allclose(resimg.get_fdata(), fimg.get_fdata())
-    yield pytest.raises, ValueError, resample_img2img, fimg, aimg
+    assert np.allclose(resimg.get_fdata(), fimg.get_fdata())
+    pytest.raises(ValueError, resample_img2img, fimg, aimg)
 
 
 # Hackish flag for enabling of pyplots of resamplingstest_2d_from_3d

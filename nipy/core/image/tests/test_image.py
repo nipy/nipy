@@ -130,7 +130,7 @@ def test_parcels3():
     v = 0
     for i, d in data_generator(test, parcels(parcelmap, labels=labels)):
         v += d.shape[0]
-    yield assert_equal, v, np.product(test.shape)
+    assert v == np.product(test.shape)
 
 
 def test_slicing_returns_image():

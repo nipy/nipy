@@ -28,4 +28,4 @@ def test_registers():
                                   interp=interp)
         R.subsample([2,2,2])
         affine = R.optimize(affine_type)
-        yield assert_array_almost_equal, affine.as_affine(), np.eye(4), 2
+        assert_array_almost_equal(affine.as_affine(), np.eye(4), 2)
