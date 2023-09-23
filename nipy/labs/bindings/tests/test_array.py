@@ -4,7 +4,7 @@
 #
 
 import numpy as np
-from numpy.testing import assert_almost_equal, assert_equal
+from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
 
 from .. import array_add, array_div, array_get, array_get_block, array_mul, array_sub
 
@@ -33,7 +33,7 @@ def test_array_get():
 def _test_array_get_block(x):
     b0 = array_get_block(x, 1, 8, 2, 1, 8, 2, 1, 8, 2, 1, 8, 2)
     b = x[1:8:2, 1:8:2, 1:8:2, 1:8:2]
-    assert b0 == b
+    assert_array_equal(b0, b)
 
 def test_array_get_block():
     x = np.random.rand(10, 10, 10, 10)-.5
@@ -41,7 +41,7 @@ def test_array_get_block():
 
 def _test_array_add(x, y):
     z = array_add(x, y)
-    assert z == x+y
+    assert_array_equal(z, x+y)
 
 def test_array_add():
     d0, d1, d2, d3 = random_shape(4)
@@ -51,7 +51,7 @@ def test_array_add():
 
 def _test_array_mul(x, y):
     z = array_mul(x, y)
-    assert z == x*y
+    assert_array_equal(z, x*y)
 
 def test_array_mul():
     d0, d1, d2, d3 = random_shape(4)
@@ -61,7 +61,7 @@ def test_array_mul():
 
 def _test_array_sub(x, y):
     z = array_sub(x, y)
-    assert z == x-y
+    assert_array_equal(z, x-y)
 
 def test_array_sub():
     d0, d1, d2, d3 = random_shape(4)

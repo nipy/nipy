@@ -3,7 +3,7 @@ from os.path import exists
 import numpy as np
 from nibabel import Nifti1Image, save
 from nibabel.tmpdirs import InTemporaryDirectory
-from numpy.testing import assert_equal
+from numpy.testing import assert_array_equal, assert_equal
 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_3d_dataset
 from ..discrete_domain import grid_domain_from_shape
@@ -22,7 +22,7 @@ def test_mask_parcel():
     shape = (10, 10, 10)
     mask_image = Nifti1Image(np.ones(shape).astype('u1'), np.eye(4))
     wim = mask_parcellation(mask_image, n_parcels)
-    assert np.unique(wim.get_fdata()) == np.arange(n_parcels)
+    assert_array_equal(np.unique(wim.get_fdata()), np.arange(n_parcels))
 
 
 def test_mask_parcel_multi_subj():
@@ -41,7 +41,7 @@ def test_mask_parcel_multi_subj():
             mask_images.append(path)
 
         wim = mask_parcellation(mask_images, n_parcels)
-        assert np.unique(wim.get_fdata()) == np.arange(n_parcels)
+        assert_array_equal(np.unique(wim.get_fdata()), np.arange(n_parcels))
 
 
 def test_parcel_intra_from_3d_image():

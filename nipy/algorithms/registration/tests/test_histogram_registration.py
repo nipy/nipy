@@ -37,7 +37,7 @@ def _test_clamping(I, thI=0.0, clI=256, mask=None):
     R.subsample(spacing=[1, 1, 1])
     Ic = R._from_data
     Ic2 = R._to_data[1:-1, 1:-1, 1:-1]
-    assert Ic == Ic2
+    assert_array_equal(Ic, Ic2)
     dyn = Ic.max() + 1
     assert dyn == R._joint_hist.shape[0]
     assert dyn == R._joint_hist.shape[1]
@@ -243,10 +243,10 @@ def test_similarity_derivatives():
     T = Rigid()
     g = R.eval_gradient(T)
     assert g.dtype == float
-    assert g == np.zeros(6)
+    assert_array_equal(g, np.zeros(6))
     H = R.eval_hessian(T)
     assert H.dtype == float
-    assert H == np.zeros((6, 6))
+    assert_array_equal(H, np.zeros((6, 6)))
 
 
 def test_smoothing():

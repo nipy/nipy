@@ -269,7 +269,7 @@ def test_as_image():
     img = as_image(funcfile)  # string filename
     img1 = as_image(funcfile)  # unicode
     img2 = as_image(img)
-    assert img.affine == img1.affine
+    assert_array_equal(img.affine, img1.affine)
     assert_array_equal(img.get_fdata(), img1.get_fdata())
     assert img is img2
 

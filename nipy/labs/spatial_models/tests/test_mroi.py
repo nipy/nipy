@@ -12,7 +12,7 @@ from os.path import join as pjoin
 
 import numpy as np
 from nibabel import Nifti1Image, load
-from numpy.testing import assert_almost_equal, assert_equal
+from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
 
 from nipy.io.nibcompat import get_affine
 
@@ -71,16 +71,16 @@ def test_copy_subdomain():
     # check some properties of mroi
     assert mroi.k == 8
     for k in mroi.get_id():
-        assert mroi.get_feature('a', k) == foo_feature[mroi.select_id(k)]
-    assert mroi.get_roi_feature('b') == foo_roi_feature
+        assert_array_equal(mroi.get_feature('a', k), foo_feature[mroi.select_id(k)])
+    assert_array_equal(mroi.get_roi_feature('b'), foo_roi_feature)
     # delete mroi
     del mroi
     # check mroi_copy
     assert mroi_copy.k == 8
     for k in mroi_copy.get_id():
-        assert (mroi_copy.get_feature('a', k) ==
+        assert_array_equal(mroi_copy.get_feature('a', k),
                      foo_feature[mroi_copy.select_id(k)])
-    assert mroi_copy.get_roi_feature('b') == foo_roi_feature
+    assert_array_equal(mroi_copy.get_roi_feature('b'), foo_roi_feature)
 
 
 def test_select_roi():
@@ -161,7 +161,7 @@ def test_sd_from_ball():
     positions = np.array([[3, 3], [3, 7], [7, 7]])
     subdomain = subdomain_from_balls(dom, positions, radii)
     assert subdomain.k == 3
-    assert subdomain.get_size() == np.array([9, 9, 9])
+    assert_array_equal(subdomain.get_size(), np.array([9, 9, 9]))
 
 
 def test_set_feature():
@@ -173,12 +173,12 @@ def test_set_feature():
                     for k in mroi.get_id()]
     mroi.set_feature('data', feature_data)
     get_feature_output = mroi.get_feature('data')
-    assert ([len(k) for k in mroi.get_feature('data')] ==
+    assert_array_equal([len(k) for k in mroi.get_feature('data')],
                  mroi.get_size())
     for k in mroi.get_id():
-        assert (mroi.get_feature('data', k) ==
+        assert_array_equal(mroi.get_feature('data', k),
                      data[mroi.select_id(k, roi=False)])
-        assert (get_feature_output[k] ==
+        assert_array_equal(get_feature_output[k],
                      data[mroi.select_id(k, roi=False)])
 
 
@@ -195,7 +195,7 @@ def test_set_feature2():
 def test_get_coord():
     mroi = make_subdomain()
     for k in mroi.get_id():
-        assert (mroi.get_coord(k) ==
+        assert_array_equal(mroi.get_coord(k),
                      mroi.domain.coord[mroi.select_id(k, roi=False)])
 
 
@@ -224,21 +224,21 @@ def test_example():
     averages = [blob.mean() for blob in nroi.get_feature('activation')]
     assert_almost_equal(averages, average_activation, 6)
     # Test repeat
-    assert average_activation == nroi.representative_feature('activation')
+    assert_array_equal(average_activation, nroi.representative_feature('activation'))
     # Binary image is default
     bin_wim = nroi.to_image()
     bin_vox = bin_wim.get_fdata()
-    assert np.unique(bin_vox) == [0, 1]
+    assert_array_equal(np.unique(bin_vox), [0, 1])
     id_wim = nroi.to_image('id', roi=True, descrip='description')
     id_vox = id_wim.get_fdata()
     mask = bin_vox.astype(bool)
-    assert id_vox[~mask] == -1
+    assert_array_equal(id_vox[~mask], -1)
     ids = nroi.get_id()
-    assert np.unique(id_vox) == [-1] + list(ids)
+    assert_array_equal(np.unique(id_vox), [-1] + list(ids))
     # Test activation
     wim = nroi.to_image('activation', roi=True, descrip='description')
     # Sadly, all cast to int
-    assert np.unique(wim.get_fdata().astype(np.int32)) == [-1, 3, 4, 5]
+    assert_array_equal(np.unique(wim.get_fdata().astype(np.int32)), [-1, 3, 4, 5])
     # end blobs or leaves
     lroi = nroi.copy()
     lroi.reduce_to_leaves()

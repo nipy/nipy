@@ -10,7 +10,7 @@ in ~/.nipy/tests/data
 import nibabel.gifti as nbg
 import numpy as np
 from nibabel import Nifti1Image
-from numpy.testing import assert_almost_equal, assert_equal
+from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
 
 from ..discrete_domain import (
     domain_from_binary_array,
@@ -124,7 +124,7 @@ def test_connected_components():
     """
     toto = np.ones(shape)
     ddom = domain_from_binary_array(toto)
-    assert ddom.connected_components() == np.zeros(ddom.size)
+    assert_array_equal(ddom.connected_components(), np.zeros(ddom.size))
 
 
 def test_image_domain():
@@ -234,7 +234,7 @@ def test_domain_from_mesh():
     toy_image = nbg.GiftiImage(darrays=darrays)
     domain = domain_from_mesh(toy_image)
     # if we get there, we could build the domain, and that's what we wanted.
-    assert domain.get_coord() == coords
+    assert_array_equal(domain.get_coord(), coords)
 
 
 def test_representative():

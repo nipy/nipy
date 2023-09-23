@@ -12,7 +12,7 @@ instead of using the utility functions such as get_id() or select_id().
 """
 
 import numpy as np
-from numpy.testing import assert_equal
+from numpy.testing import assert_array_equal, assert_equal
 
 from ..discrete_domain import domain_from_binary_array
 from ..hroi import HROI_as_discrete_domain_blobs, make_hroi_from_subdomain
@@ -77,7 +77,7 @@ def test_hroi_isleaf_2():
     hroi = make_hroi()
     #import pdb; pdb.set_trace()
     hroi.select_roi(list(range(1, 9)))
-    assert hroi.parents == np.arange(8).astype(np.int_)
+    assert_array_equal(hroi.parents, np.arange(8).astype(np.int_))
 
 
 def test_asc_merge():
@@ -180,8 +180,8 @@ def test_leaves():
     lroi = hroi.copy()
     lroi.reduce_to_leaves()
     assert lroi.k == 8
-    assert lroi.get_size() == size
-    assert lroi.get_leaves_id() == np.arange(1, 9)
+    assert_array_equal(lroi.get_size(), size)
+    assert_array_equal(lroi.get_leaves_id(), np.arange(1, 9))
 
 
 def test_leaves_empty():

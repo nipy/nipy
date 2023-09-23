@@ -26,10 +26,10 @@ def test_largest_cc():
     """
     a = np.zeros((6, 6, 6))
     a[1:3, 1:3, 1:3] = 1
-    assert a == largest_cc(a)
+    assert_array_equal(a, largest_cc(a))
     b = a.copy()
     b[5, 5, 5] = 1
-    assert a == largest_cc(b)
+    assert_array_equal(a, largest_cc(b))
 
 
 def test_threshold_connect_components():
