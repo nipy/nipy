@@ -6,11 +6,11 @@ stored in a nipy data packages that you can download separately.
 
 .. note:
 
-   We use the ``nose`` testing framework for tests.
+   We use the ``pytest`` testing framework for tests.
 
-   Nose is a dependency for the tests, but should not be a dependency
-   for running the algorithms in the NIPY library.  This file should
-   import without nose being present on the python path.
+   ``pytest`` is a dependency for the tests, but should not be a dependency for
+   running the algorithms in the NIPY library.  This file should import without
+   ``pytest`` being present on the python path.
 
 Examples
 --------
@@ -43,12 +43,6 @@ test = Tester().test
 bench = Tester().bench
 
 from . import decorators as dec
-
-# Allow failed import of nose if not now running tests
-try:
-    from nose.tools import assert_false, assert_true
-except ImportError:
-    pass
 
 
 def legacy_printing():
