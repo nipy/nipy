@@ -42,10 +42,13 @@ cstat_files = [
   'fff_vector.c'
 ]
 
-cstat = py.extension_module(
+blas = dependency('openblas', required: true)
+
+cstat = py.extension_module( # This should probably be library?
   'cstat',
   fff,
-  include_directories: ['../../lib/fff']
+  include_directories: ['../../lib/fff'],
+  dependencies: [py_dep, blas]
 )
 
 cython_gen_cstat = generator(cython_cli,
