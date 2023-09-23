@@ -2,7 +2,6 @@
 
 import numpy as np
 from nibabel.affines import from_matvec
-from six import string_types
 
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
@@ -291,7 +290,7 @@ def get_world_cs(world_id, ndim=3, extras='tuvw', spaces=None):
         return world_id
     if spaces is None:
         spaces = known_spaces
-    if isinstance(world_id, string_types):
+    if isinstance(world_id, str):
         space_names = [s.name for s in spaces]
         if world_id not in space_names:
             raise SpaceError('Unkown space "{}"; known spaces are {}'.format(world_id, ', '.join(space_names)))

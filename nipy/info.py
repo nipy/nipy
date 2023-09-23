@@ -130,14 +130,13 @@ the nipy distribution.
 
 .. links:
 .. _python: http://python.org
-.. _numpy: http://numpy.scipy.org
-.. _scipy: http://www.scipy.org
+.. _numpy: http://numpy.org
+.. _scipy: http://scipy.org
 .. _sympy: http://sympy.org
 .. _nibabel: http://nipy.org/nibabel
 .. _ipython: http://ipython.org
 .. _matplotlib: http://matplotlib.org
 .. _nose: http://nose.readthedocs.org/en/latest
-.. _six: https://six.readthedocs.io
 .. _installation instructions: http://nipy.org/nipy/users/installation.html
 """
 
@@ -150,7 +149,6 @@ NIBABEL_MIN_VERSION = '4.0'
 SYMPY_MIN_VERSION = '1.9'
 MAYAVI_MIN_VERSION = '4.7'
 CYTHON_MIN_VERSION = '0.12.1'
-SIX_MIN_VERSION = '1.9'
 
 NAME                = 'nipy'
 MAINTAINER          = "nipy developers"
@@ -169,7 +167,7 @@ MINOR               = _version_minor
 MICRO               = _version_micro
 ISRELEASE           = _version_extra == ''
 VERSION             = __version__
-REQUIRES            = ["numpy", "scipy", "sympy(<1.6)", "nibabel", "six"]
+REQUIRES            = ["numpy", "scipy", "sympy", "nibabel"]
 STATUS              = 'beta'
 
 # Versions and locations of optional data packages

@@ -3,9 +3,7 @@
 
 import os
 import sys
-
-from six import string_types
-from six.moves.configparser import ConfigParser
+from configparser import ConfigParser
 
 NIPY_DEFAULTS = {}
 
@@ -25,7 +23,7 @@ def get_nipy_info():
         if value.startswith('~'):
             info[key] = os.path.expanduser(value)
     # Ugly fix for bug 409269
-    if 'libraries' in info and isinstance(info['libraries'], string_types):
+    if 'libraries' in info and isinstance(info['libraries'], str):
         info['libraries'] = [info['libraries']]
     # End of ugly fix
     return info

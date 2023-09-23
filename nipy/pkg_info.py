@@ -1,9 +1,8 @@
 
+import configparser
 import os
 import subprocess
 import sys
-
-from six.moves import configparser
 
 COMMIT_INFO_FNAME = 'COMMIT_INFO.txt'
 

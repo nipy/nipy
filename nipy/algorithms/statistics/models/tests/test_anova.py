@@ -4,7 +4,6 @@ from io import StringIO
 
 import numpy as np
 import scipy.stats
-import six
 
 from nipy.testing import assert_almost_equal, assert_equal
 
@@ -87,7 +86,7 @@ data = """0.0      1      1      1
 # http://www-stat.stanford.edu/~jtaylo/courses/stats191/data/kidney.table
 
 D = []
-for row in StringIO(six.u(data)):
+for row in StringIO(data):
     D.append([float(val) for val in row.split()])
 D = make_recarray(D, ['Days', 'Duration', 'Weight', 'ID'])
 

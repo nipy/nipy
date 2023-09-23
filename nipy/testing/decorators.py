@@ -9,7 +9,6 @@ dependency on nose.
 from unittest import skipIf
 
 from nibabel.optpkg import optional_package
-from six import string_types
 
 from nipy.utils import DataError, example_data, templates
 
@@ -52,7 +51,7 @@ def make_label_dec(label, ds=None):
     >>> f.hard
     True
     """
-    if isinstance(label, string_types):
+    if isinstance(label, str):
         labels = [label]
     else:
         labels = label

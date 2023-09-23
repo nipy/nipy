@@ -7,13 +7,12 @@ General linear models
 """
 
 import numpy as np
-from six import Iterator
 
 from . import family
 from .regression import WLSModel
 
 
-class Model(WLSModel, Iterator):
+class Model(WLSModel):
 
     niter = 10
 

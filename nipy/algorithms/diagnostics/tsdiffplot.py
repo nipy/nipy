@@ -3,7 +3,6 @@
 ''' plot tsdiffana parameters '''
 
 import numpy as np
-from six import string_types
 
 import nipy
 
@@ -105,7 +104,7 @@ def plot_tsdiffs_image(img, axes=None, show=True):
        Axes on which we have done the plots.   Will be same as `axes` input if
        `axes` input was not None
     '''
-    if isinstance(img, string_types):
+    if isinstance(img, str):
         title = img
     else:
         title = 'Difference plots'

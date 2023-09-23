@@ -17,7 +17,6 @@ import warnings
 
 import numpy as np
 from nibabel.affines import apply_affine
-from six import string_types
 
 from ...core.image.image_spaces import as_xyz_image, make_xyz_image, xyz_affine
 from ...fixes.nibabel import io_orientation
@@ -975,7 +974,7 @@ class SpaceTimeRealign(Realign4d):
             n_slices = images[0].shape[slice_axis]
         else:
             n_slices = images.shape[slice_axis]
-        if isinstance(slice_times, string_types):
+        if isinstance(slice_times, str):
             slice_times = timefuncs.SLICETIME_FUNCTIONS[slice_times]
         if hasattr(slice_times, '__call__'):
             slice_times = slice_times(n_slices, tr)

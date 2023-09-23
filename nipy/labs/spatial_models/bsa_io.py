@@ -9,7 +9,6 @@ import os.path as op
 
 import numpy as np
 from nibabel import Nifti1Image, load, save
-from six import string_types
 
 from ...io.nibcompat import get_affine, get_header
 from ..mask import intersect_masks
@@ -67,7 +66,7 @@ def make_bsa_image(
 
     # Read the masks and compute the "intersection"
     # mask = np.reshape(intersect_masks(mask_images), ref_dim).astype('u8')
-    if isinstance(mask_images, string_types):
+    if isinstance(mask_images, str):
         mask = load(mask_images).get_fdata()
     elif isinstance(mask_images, Nifti1Image):
         mask = mask_images.get_fdata()

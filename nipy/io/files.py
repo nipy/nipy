@@ -16,7 +16,6 @@ import os
 import nibabel as nib
 import numpy as np
 from nibabel.spatialimages import HeaderDataError
-from six import string_types
 
 from ..core.image.image import is_image
 from .nibcompat import get_affine, get_dataobj, get_header
@@ -130,7 +129,7 @@ def save(img, filename, dtype_from='data'):
     * SPM Analyze : ['.img', '.img.gz']
     """
     # Try and get nifti
-    dt_from_is_str = isinstance(dtype_from, string_types)
+    dt_from_is_str = isinstance(dtype_from, str)
     if dt_from_is_str and dtype_from == 'header':
         # All done
         io_dtype = None
@@ -224,6 +223,6 @@ def as_image(image_input):
     '''
     if is_image(image_input):
         return image_input
-    if isinstance(image_input, string_types):
+    if isinstance(image_input, str):
         return load(image_input)
     raise TypeError('Expecting an image-like object or filename string')

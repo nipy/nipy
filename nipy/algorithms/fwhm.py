@@ -20,14 +20,13 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 from numpy.linalg import det
-from six import Iterator
 
 from nipy.core.api import Image
 
 from .utils.matrices import pos_recipr
 
 
-class Resels(Iterator):
+class Resels:
     """The Resels class.
     """
     def __init__(self, coordmap, normalized=False, fwhm=None, resels=None,

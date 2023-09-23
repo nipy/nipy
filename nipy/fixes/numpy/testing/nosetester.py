@@ -7,8 +7,6 @@ This module implements ``test()`` and ``bench()`` functions for NumPy modules.
 import os
 import sys
 
-from six import string_types
-
 
 def get_package_name(filepath):
     """
@@ -169,7 +167,7 @@ class NoseTester:
         '''
         argv = [__file__, self.package_path, '-s']
         if label and label != 'full':
-            if not isinstance(label, string_types):
+            if not isinstance(label, str):
                 raise TypeError('Selection label should be a string')
             if label == 'fast':
                 label = 'not slow'

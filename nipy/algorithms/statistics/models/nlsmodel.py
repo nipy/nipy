@@ -7,12 +7,11 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 import numpy.linalg as npl
-from six import Iterator
 
 from .model import Model
 
 
-class NLSModel(Model, Iterator):
+class NLSModel(Model):
     """
     Class representing a simple nonlinear least squares model.
     """
