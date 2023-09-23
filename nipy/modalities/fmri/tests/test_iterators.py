@@ -5,7 +5,6 @@
 from nipy.core.api import Image
 from nipy.core.reference import coordinate_map
 from nipy.modalities.fmri.api import FmriImageList
-from nipy.testing import *
 
 """
 Comment out since these are slated for deletion and currently are broken.
