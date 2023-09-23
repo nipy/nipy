@@ -1,9 +1,4 @@
 [run]
 branch = True
 source = nipy
-omit =
-    */fixes/*
-    */externals/*
-    */benchmarks/*
-    */bench/*
-    */setup.py
+omit = */fixes/*, */externals/*, */benchmarks/*, */bench/*, */setup.py
