@@ -93,10 +93,10 @@ def test_transformation():
     yield np.testing.assert_almost_equal, img1.values_in_world(x, y, z), \
         img2.values_in_world(x, y, z)
 
-    yield nose.tools.pytest.raises, CompositionError, \
+    yield pytest.raises, CompositionError, \
             img1.composed_with_transform, identity.get_inverse()
 
-    yield nose.tools.pytest.raises, CompositionError, img1.resampled_to_img, \
+    yield pytest.raises, CompositionError, img1.resampled_to_img, \
             img2
 
     # Resample an image on itself: it shouldn't change much:
@@ -130,5 +130,5 @@ def test_as_volume_image():
     img2 = img1.as_volume_img()
 
     # Check that passing in the wrong shape raises an error
-    yield nose.tools.pytest.raises, ValueError, img1.as_volume_img, None, \
+    yield pytest.raises, ValueError, img1.as_volume_img, None, \
             (10, 10)

@@ -22,10 +22,10 @@ def test_volume_data():
     yield repr, vol
 
     # Check the non-implemented interface
-    yield nose.tools.pytest.raises, NotImplementedError, \
+    yield pytest.raises, NotImplementedError, \
                         vol.values_in_world, 0, 0, 0
 
-    yield nose.tools.pytest.raises, NotImplementedError, \
+    yield pytest.raises, NotImplementedError, \
                         vol.as_volume_img
 
-    yield nose.tools.pytest.raises, NotImplementedError, copy.copy, vol
+    yield pytest.raises, NotImplementedError, copy.copy, vol

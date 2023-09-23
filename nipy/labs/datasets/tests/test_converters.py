@@ -25,7 +25,7 @@ def test_conversion():
 
 
 def test_basics():
-    yield nose.tools.pytest.raises, ValueError, as_volume_img, 'foobar'
+    yield pytest.raises, ValueError, as_volume_img, 'foobar'
 
 
 def test_save():
