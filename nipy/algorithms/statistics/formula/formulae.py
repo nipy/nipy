@@ -125,7 +125,10 @@ from nipy.algorithms.utils.matrices import full_rank, matrix_rank
 # Legacy repr printing from numpy.
 from nipy.testing import legacy_printing as setup_module  # noqa
 from nipy.utils import VisibleDeprecationWarning, _NoValue
-from nipy.utils.compat3 import to_str
+
+
+def _to_str(s):
+    return s.decode('latin1') if isinstance(s, bytes) else str(s)
 
 
 @np.deprecate(message = "Please use sympy.Dummy instead of this function")
@@ -251,7 +254,7 @@ class FactorTerm(Term):
 
     def __new__(cls, name, level):
         # Names or levels can be byte strings
-        new = Term.__new__(cls, f"{to_str(name)}_{to_str(level)}")
+        new = Term.__new__(cls, f"{_to_str(name)}_{_to_str(level)}")
         new.level = level
         new.factor_name = name
         return new
