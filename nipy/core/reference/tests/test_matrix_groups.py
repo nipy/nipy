@@ -1,7 +1,6 @@
 
 import numpy as np
 import pytest
-from nose.tools import assert_equal, assert_true
 from scipy.linalg import expm
 
 import nipy.core.reference.tests.matrix_groups as MG
@@ -78,8 +77,7 @@ def test_product():
     GLZ_C = MG.GLZ(B, 'ij')
 
     GLZ_AB = MG.product(GLZ_A, GLZ_B)
-    yield (assert_true,
-           np.allclose(GLZ_AB.matrix, np.dot(GLZ_A.matrix, GLZ_B.matrix)))
+    assert np.allclose(GLZ_AB.matrix, np.dot(GLZ_A.matrix, GLZ_B.matrix))
 
     # different coordinates: can't make the product
     pytest.raises(ValueError, MG.product, GLZ_A, GLZ_C)

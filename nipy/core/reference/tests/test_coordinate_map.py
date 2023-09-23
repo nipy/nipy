@@ -36,7 +36,6 @@ from ..coordinate_system import (
 CS = CoordinateSystem
 
 import pytest
-from nose.tools import assert_equal, assert_false, assert_true
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 # Legacy repr printing from numpy.
@@ -206,7 +205,7 @@ def test_compose():
     assert ac.inverse() is None
     assert_almost_equal(ac(value), value)
     bb = compose(E.b,E.b)
-    #    yield assert_true, bb.inverse() is not None
+    #    assert bb.inverse() is not None
     aff1 = np.diag([1,2,3,1])
     affine1 = AffineTransform.from_params('ijk', 'xyz', aff1)
     aff2 = np.diag([4,5,6,1])
