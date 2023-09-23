@@ -1,4 +1,5 @@
 # Requirements for running tests
 -r requirements.txt
 nose3
+coverage
 pre-commit
