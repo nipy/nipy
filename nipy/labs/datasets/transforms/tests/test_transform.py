@@ -10,10 +10,6 @@ import copy
 import numpy as np
 import pytest
 
-# Don't import from nipy.testing not to have a hard dependence on nipy,
-# use np.testing or nose
-from nose.tools import assert_equal, assert_true
-
 from ..transform import CompositionError, Transform
 
 
@@ -36,14 +32,12 @@ def test_composition():
     # Check forward composition (transforms have forward mappings)
     t12 = t1.composed_with(t2)
     x, y, z = np.random.random((3, 10))
-    yield np.testing.assert_equal, mapping(x, y, z), \
-                t12.mapping(x, y, z)
+    np.testing.assert_equal(mapping(x, y, z), t12.mapping(x, y, z))
 
     # Check backward composition (transforms have reverse mappings)
     t21 = t2.get_inverse().composed_with(t1.get_inverse())
     x, y, z = np.random.random((3, 10))
-    yield np.testing.assert_equal, mapping(x, y, z), \
-                t21.inverse_mapping(x, y, z)
+    np.testing.assert_equal(mapping(x, y, z), t21.inverse_mapping(x, y, z))
 
     # Check that you cannot compose transforms that do not have chainable
     # mappings

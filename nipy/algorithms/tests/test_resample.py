@@ -4,7 +4,6 @@ from itertools import product
 
 import numpy as np
 import pytest
-from nose.tools import assert_true
 from numpy.testing import assert_array_almost_equal
 
 from nipy.algorithms.resample import resample, resample_img2img
