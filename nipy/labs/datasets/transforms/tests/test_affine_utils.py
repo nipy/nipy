@@ -7,8 +7,6 @@ imports.
 
 import numpy as np
 
-from nipy.testing import assert_equal
-
 from ..affine_utils import from_matrix_vector, to_matrix_vector
 
 
@@ -32,4 +30,4 @@ def test_to_matrix_vector():
 def test_from_matrix_vector():
     mat, vec, xform = build_xform()
     newxform = from_matrix_vector(mat, vec)
-    assert_equal, newxform, xform
+    assert newxform == xform

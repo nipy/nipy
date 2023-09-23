@@ -3,7 +3,6 @@
 # Test numpy bindings
 
 import numpy as np
-from nose.tools import assert_equal
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from .. import (

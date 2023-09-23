@@ -4,7 +4,6 @@
 Parametrized surfaces using a CoordinateMap
 """
 import numpy as np
-from nose.tools import assert_equal
 
 from nipy.core.api import CoordinateMap, CoordinateSystem, Grid
 

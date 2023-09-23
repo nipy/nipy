@@ -6,7 +6,6 @@ from itertools import chain
 import nibabel as nib
 import numpy as np
 import pytest
-from nose.tools import assert_equal
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,

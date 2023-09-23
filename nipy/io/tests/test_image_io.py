@@ -19,7 +19,6 @@ from nipy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,
     assert_array_equal,
-    assert_equal,
     funcfile,
 )
 from nipy.testing.decorators import if_templates

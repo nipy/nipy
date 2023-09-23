@@ -4,7 +4,6 @@
 
 import numpy as np
 import scipy.linalg as spl
-from nose.tools import assert_equal
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 
 from ..matrices import full_rank, matrix_rank, pos_recipr, recipr0
