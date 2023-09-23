@@ -16,11 +16,11 @@ cc = meson.get_compiler('c')
 # Check compiler is recent enough (see "Toolchain Roadmap" for details)
 if cc.get_id() == 'gcc'
   if not cc.version().version_compare('>=8.0')
-    error('scikit-image requires GCC >= 8.0')
+    error('nipy requires GCC >= 8.0')
   endif
 elif cc.get_id() == 'msvc'
   if not cc.version().version_compare('>=19.20')
-    error('scikit-image requires at least vc142 (default with Visual Studio 2019) ' + \
+    error('nipy requires at least vc142 (default with Visual Studio 2019) ' + \
           'when building with MSVC')
   endif
 endif
@@ -44,4 +44,5 @@ copier = find_program(['cp', 'skimage/_build_utils/copyfiles.py'])
 py = import('python').find_installation(pure: false)
 py_dep = py.dependency()
 
+subdir('lib')
 subdir('nipy')

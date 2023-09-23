@@ -129,4 +129,4 @@ endforeach
 
 
 subdir('algorithms')
-# subdir('labs')
+subdir('labs')

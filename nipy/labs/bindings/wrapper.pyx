@@ -88,7 +88,7 @@ def copy_vector(ndarray X, int flag):
     itemsize = X.descr.elsize
     type = X.descr.type_num
 
-    relstride = stride/itemsize
+    relstride = stride//itemsize
     fff_type =  fff_datatype_fromNumPy(type)
 
     y = fff_vector_new(size)
