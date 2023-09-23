@@ -16,4 +16,4 @@ def test_edge_detect():
     img = np.zeros((10, 10))
     img[:5] = 1
     _, edge_mask = _edge_detect(img)
-    assert np.isclose(img[4], 1)
+    assert np.allclose(img[4], 1)
