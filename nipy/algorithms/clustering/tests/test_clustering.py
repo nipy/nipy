@@ -4,7 +4,6 @@
 
 from unittest import TestCase
 
-import nose
 import numpy as np
 import numpy.random as nr
 

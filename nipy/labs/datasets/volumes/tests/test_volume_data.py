@@ -6,7 +6,7 @@ Testing volume data interface.
 
 import copy
 
-import nose
+import pytest
 
 # Local imports
 from ..volume_data import VolumeData
@@ -19,13 +19,13 @@ def test_volume_data():
     """
     vol = VolumeData()
     # Test that the repr doesn't raise an error
-    yield repr, vol
+    repr(vol)
 
     # Check the non-implemented interface
-    yield pytest.raises, NotImplementedError, \
-                        vol.values_in_world, 0, 0, 0
+    assert pytest.raises(NotImplementedError,
+                        vol.values_in_world, 0, 0, 0)
 
-    yield pytest.raises, NotImplementedError, \
-                        vol.as_volume_img
+    assert pytest.raises(NotImplementedError,
+                        vol.as_volume_img)
 
-    yield pytest.raises, NotImplementedError, copy.copy, vol
+    assert pytest.raises(NotImplementedError, copy.copy, vol)

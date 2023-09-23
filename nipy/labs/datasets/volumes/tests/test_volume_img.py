@@ -6,9 +6,10 @@ Test the VolumeImg object.
 
 import copy
 
-import nose
 import numpy as np
-from nose.tools import assert_true
+from numpy.testing import assert_array_equal, assert_almost_equal
+
+import pytest
 
 from ...transforms.affine_transform import AffineTransform
 from ...transforms.affine_utils import from_matrix_vector
@@ -38,10 +39,10 @@ def id(x, y, z):
 ################################################################################
 # Tests
 def test_constructor():
-    yield np.testing.pytest.raises, AttributeError, VolumeImg, None, \
-        None, 'foo'
-    yield np.testing.pytest.raises, ValueError, VolumeImg, None, \
-        np.eye(4), 'foo', {}, 'e'
+    assert pytest.raises(AttributeError, VolumeImg, None,
+                         None, 'foo')
+    assert pytest.raises(ValueError, VolumeImg, None,
+                         np.eye(4), 'foo', {}, 'e')
 
 
 def test_identity_resample():
@@ -53,12 +54,12 @@ def test_identity_resample():
     affine[:3, -1] = 0.5 * np.array(shape[:3])
     ref_im = VolumeImg(data, affine, 'mine')
     rot_im = ref_im.as_volume_img(affine, interpolation='nearest')
-    yield np.testing.assert_almost_equal, data, rot_im.get_fdata()
+    assert_almost_equal(data, rot_im.get_fdata())
     # Now test when specifying only a 3x3 affine
     #rot_im = ref_im.as_volume_img(affine[:3, :3], interpolation='nearest')
-    yield np.testing.assert_almost_equal, data, rot_im.get_fdata()
+    assert_almost_equal(data, rot_im.get_fdata())
     reordered_im = rot_im.xyz_ordered()
-    yield np.testing.assert_almost_equal, data, reordered_im.get_fdata()
+    assert_almost_equal(data, reordered_im.get_fdata())
 
 
 def test_downsample():
@@ -84,7 +85,7 @@ def test_resampling_with_affine():
     for angle in (0, np.pi, np.pi/2, np.pi/4, np.pi/3):
         rot = rotation(0, angle)
         rot_im = img.as_volume_img(affine=rot)
-        yield np.testing.assert_almost_equal, np.max(data), np.max(rot_im.get_fdata())
+        assert_almost_equal(np.max(data), np.max(rot_im.get_fdata()))
 
 
 def test_reordering():
@@ -106,24 +107,20 @@ def test_reordering():
         b = 0.5*np.array(shape[:3])
         new_affine = from_matrix_vector(rot, b)
         rot_im = ref_im.as_volume_img(affine=new_affine)
-        yield np.testing.assert_array_equal, rot_im.affine, \
-                                    new_affine
-        yield np.testing.assert_array_equal, rot_im.get_fdata().shape, \
-                                    shape
+        assert_array_equal(rot_im.affine, new_affine)
+        assert_array_equal(rot_im.get_fdata().shape, shape)
         reordered_im = rot_im.xyz_ordered()
-        yield np.testing.assert_array_equal, reordered_im.affine[:3, :3], \
-                                    np.eye(3)
-        yield np.testing.assert_almost_equal, reordered_im.get_fdata(), \
-                                    data
+        assert_array_equal(reordered_im.affine[:3, :3], np.eye(3))
+        assert_almost_equal(reordered_im.get_fdata(), data)
 
     # Check that we cannot swap axes for non spatial axis:
-    yield pytest.raises, ValueError, ref_im._swapaxes, 4, 5
+    assert pytest.raises(ValueError, ref_im._swapaxes, 4, 5)
 
     # Create a non-diagonal affine, and check that we raise a sensible
     # exception
     affine[1, 0] = 0.1
     ref_im = VolumeImg(data, affine, 'mine')
-    yield pytest.raises, CompositionError, ref_im.xyz_ordered
+    assert pytest.raises(CompositionError, ref_im.xyz_ordered)
 
 
     # Test flipping an axis
@@ -140,13 +137,13 @@ def test_reordering():
         sample = img.values_in_world(x, y, z)
         img2 = img.xyz_ordered()
         # Check that img has not been changed
-        yield nose.tools.assert_true, img == orig_img
+        assert img == orig_img
         x_, y_, z_ = img.get_world_coords()
-        yield np.testing.assert_array_equal, np.unique(x), np.unique(x_)
-        yield np.testing.assert_array_equal, np.unique(y), np.unique(y_)
-        yield np.testing.assert_array_equal, np.unique(z), np.unique(z_)
+        assert_array_equal(np.unique(x), np.unique(x_))
+        assert_array_equal(np.unique(y), np.unique(y_))
+        assert_array_equal(np.unique(z), np.unique(z_))
         sample2 = img.values_in_world(x, y, z)
-        yield np.testing.assert_array_equal, sample, sample2
+        assert_array_equal(sample, sample2)
 
 
 def test_eq():
@@ -157,25 +154,25 @@ def test_eq():
     data = np.random.random(shape)
     affine = np.random.random((4, 4))
     ref_im = VolumeImg(data, affine, 'mine')
-    yield nose.tools.assert_equal, ref_im, ref_im
-    yield nose.tools.assert_equal, ref_im, copy.copy(ref_im)
-    yield nose.tools.assert_equal, ref_im, copy.deepcopy(ref_im)
+    assert ref_im == ref_im
+    assert ref_im == copy.copy(ref_im)
+    assert ref_im == copy.deepcopy(ref_im)
     # Check that as_volume_img with no arguments returns the same image
-    yield nose.tools.assert_equal, ref_im, ref_im.as_volume_img()
+    assert ref_im == ref_im.as_volume_img()
     copy_im = copy.copy(ref_im)
     copy_im.get_fdata()[0, 0, 0] *= -1
-    yield nose.tools.assert_not_equal, ref_im, copy_im
+    assert ref_im != copy_im
     copy_im = copy.copy(ref_im)
     copy_im.affine[0, 0] *= -1
-    yield nose.tools.assert_not_equal, ref_im, copy_im
+    assert ref_im != copy_im
     copy_im = copy.copy(ref_im)
     copy_im.world_space = 'other'
-    yield nose.tools.assert_not_equal, ref_im, copy_im
+    assert ref_im != copy_im
     # Test repr
-    yield assert_true, isinstance(repr(ref_im), str)
+    assert isinstance(repr(ref_im), str)
     # Test init: should raise exception is not passing in right affine
-    yield pytest.raises, Exception, VolumeImg, data, \
-                np.eye(3, 3), 'mine'
+    assert pytest.raises(Exception, VolumeImg, data,
+                          np.eye(3, 3), 'mine')
 
 
 def test_values_in_world():
@@ -197,21 +194,23 @@ def test_resampled_to_img():
     data = np.random.random(shape)
     affine = np.random.random((4, 4))
     ref_im = VolumeImg(data, affine, 'mine')
-    yield np.testing.assert_almost_equal, data, \
-                ref_im.as_volume_img(affine=ref_im.affine).get_fdata()
-    yield np.testing.assert_almost_equal, data, \
-                        ref_im.resampled_to_img(ref_im).get_fdata()
+    assert_almost_equal(
+        data,
+        ref_im.as_volume_img(affine=ref_im.affine).get_fdata())
+    assert_almost_equal(
+        data,
+        ref_im.resampled_to_img(ref_im).get_fdata())
 
     # Check that we cannot resample to another image in a different
     # world.
     other_im = VolumeImg(data, affine, 'other')
-    yield pytest.raises, CompositionError, \
-            other_im.resampled_to_img, ref_im
+    assert pytest.raises(CompositionError,
+                         other_im.resampled_to_img, ref_im)
 
     # Also check that trying to resample on a non 3D grid will raise an
     # error
-    yield pytest.raises, ValueError, \
-        ref_im.as_volume_img, None, (2, 2)
+    assert pytest.raises(ValueError,
+                         ref_im.as_volume_img, None, (2, 2))
 
 
 def test_transformation():
@@ -228,21 +227,23 @@ def test_transformation():
                            )
         img2 = img1.composed_with_transform(identity)
 
-        yield nose.tools.assert_equal, img2.world_space, 'world2'
+        assert img2.world_space == 'world2'
 
         x, y, z = N*np.random.random(size=(3, 10))
-        yield np.testing.assert_almost_equal, img1.values_in_world(x, y, z), \
-            img2.values_in_world(x, y, z)
+        assert_almost_equal(img1.values_in_world(x, y, z),
+                            img2.values_in_world(x, y, z))
 
-        yield pytest.raises, CompositionError, \
-                img1.composed_with_transform, identity.get_inverse()
+        assert pytest.raises(CompositionError,
+                             img1.composed_with_transform,
+                             identity.get_inverse())
 
-        yield pytest.raises, CompositionError, \
-                img1.resampled_to_img, img2
+        assert pytest.raises(CompositionError,
+                             img1.resampled_to_img,
+                             img2)
 
         # Resample an image on itself: it shouldn't change much:
         img  = img1.resampled_to_img(img1)
-        yield np.testing.assert_almost_equal, data, img.get_fdata()
+        assert_almost_equal(data, img.get_fdata())
 
 
 def test_get_affine():
