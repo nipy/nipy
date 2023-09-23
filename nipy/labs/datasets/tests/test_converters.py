@@ -23,7 +23,7 @@ def test_conversion():
 
 
 def test_basics():
-    assert pytest.raises(ValueError, as_volume_img, 'foobar')
+    pytest.raises(ValueError, as_volume_img, 'foobar')
 
 
 def test_save():

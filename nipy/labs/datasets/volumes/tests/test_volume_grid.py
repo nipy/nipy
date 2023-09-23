@@ -28,7 +28,7 @@ def id(x, y, z):
 ################################################################################
 # Tests
 def test_constructor():
-    assert pytest.raises(ValueError, VolumeGrid, None,
+    pytest.raises(ValueError, VolumeGrid, None,
         None, {}, 'e')
 
 
@@ -45,8 +45,8 @@ def test_volume_grid():
     # We cannot calculate the values in the world, because the transform
     # is not invertible.
 
-    assert pytest.raises(ValueError, img.values_in_world, 0, 0, 0)
-    assert pytest.raises(ValueError, img.as_volume_img)
+    pytest.raises(ValueError, img.values_in_world, 0, 0, 0)
+    pytest.raises(ValueError, img.as_volume_img)
     assert img == copy.copy(img)
 
 
@@ -63,9 +63,9 @@ def test_trivial_grid():
     x, y, z = np.random.randint(1, N + 1, size=(3, 10)) - 1
     data_ = img.values_in_world(x, y, z)
     # Check that passing in arrays with different shapes raises an error
-    assert pytest.raises(ValueError, img.values_in_world, x, y, z[:-1])
+    pytest.raises(ValueError, img.values_in_world, x, y, z[:-1])
     # Check that passing in wrong interpolation keyword raises an error
-    assert pytest.raises(ValueError, img.values_in_world, 0, 0, 0, 'e')
+    pytest.raises(ValueError, img.values_in_world, 0, 0, 0, 'e')
     np.testing.assert_almost_equal(data[x, y, z], data_)
 
 
@@ -89,10 +89,10 @@ def test_transformation():
         img1.values_in_world(x, y, z),
         img2.values_in_world(x, y, z))
 
-    assert pytest.raises(CompositionError,
+    pytest.raises(CompositionError,
                 img1.composed_with_transform, identity.get_inverse())
 
-    assert pytest.raises(CompositionError, img1.resampled_to_img, img2)
+    pytest.raises(CompositionError, img1.resampled_to_img, img2)
 
     # Resample an image on itself: it shouldn't change much:
     img  = img1.resampled_to_img(img1)
@@ -126,7 +126,7 @@ def test_as_volume_image():
     img2 = img1.as_volume_img()
 
     # Check that passing in the wrong shape raises an error
-    assert pytest.raises(ValueError,
+    pytest.raises(ValueError,
                          img1.as_volume_img,
                          None,
                          (10, 10))

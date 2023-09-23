@@ -22,10 +22,10 @@ def test_volume_data():
     repr(vol)
 
     # Check the non-implemented interface
-    assert pytest.raises(NotImplementedError,
+    pytest.raises(NotImplementedError,
                         vol.values_in_world, 0, 0, 0)
 
-    assert pytest.raises(NotImplementedError,
+    pytest.raises(NotImplementedError,
                         vol.as_volume_img)
 
-    assert pytest.raises(NotImplementedError, copy.copy, vol)
+    pytest.raises(NotImplementedError, copy.copy, vol)

@@ -38,9 +38,9 @@ def id(x, y, z):
 ################################################################################
 # Tests
 def test_constructor():
-    assert pytest.raises(AttributeError, VolumeImg, None,
+    pytest.raises(AttributeError, VolumeImg, None,
                          None, 'foo')
-    assert pytest.raises(ValueError, VolumeImg, None,
+    pytest.raises(ValueError, VolumeImg, None,
                          np.eye(4), 'foo', {}, 'e')
 
 
@@ -113,13 +113,13 @@ def test_reordering():
         assert_almost_equal(reordered_im.get_fdata(), data)
 
     # Check that we cannot swap axes for non spatial axis:
-    assert pytest.raises(ValueError, ref_im._swapaxes, 4, 5)
+    pytest.raises(ValueError, ref_im._swapaxes, 4, 5)
 
     # Create a non-diagonal affine, and check that we raise a sensible
     # exception
     affine[1, 0] = 0.1
     ref_im = VolumeImg(data, affine, 'mine')
-    assert pytest.raises(CompositionError, ref_im.xyz_ordered)
+    pytest.raises(CompositionError, ref_im.xyz_ordered)
 
 
     # Test flipping an axis
@@ -170,7 +170,7 @@ def test_eq():
     # Test repr
     assert isinstance(repr(ref_im), str)
     # Test init: should raise exception is not passing in right affine
-    assert pytest.raises(Exception, VolumeImg, data,
+    pytest.raises(Exception, VolumeImg, data,
                           np.eye(3, 3), 'mine')
 
 
@@ -203,12 +203,12 @@ def test_resampled_to_img():
     # Check that we cannot resample to another image in a different
     # world.
     other_im = VolumeImg(data, affine, 'other')
-    assert pytest.raises(CompositionError,
+    pytest.raises(CompositionError,
                          other_im.resampled_to_img, ref_im)
 
     # Also check that trying to resample on a non 3D grid will raise an
     # error
-    assert pytest.raises(ValueError,
+    pytest.raises(ValueError,
                          ref_im.as_volume_img, None, (2, 2))
 
 
@@ -232,11 +232,11 @@ def test_transformation():
         assert_almost_equal(img1.values_in_world(x, y, z),
                             img2.values_in_world(x, y, z))
 
-        assert pytest.raises(CompositionError,
+        pytest.raises(CompositionError,
                              img1.composed_with_transform,
                              identity.get_inverse())
 
-        assert pytest.raises(CompositionError,
+        pytest.raises(CompositionError,
                              img1.resampled_to_img,
                              img2)
 
