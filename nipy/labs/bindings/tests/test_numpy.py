@@ -108,9 +108,9 @@ def test_pass_vector_uint8():
 
 def _test_pass_matrix(x):
     y = pass_matrix(x)
-    assert y == x
+    assert_array_equal(y, x)
     y = pass_matrix(x.T)
-    assert y == x.T
+    assert_array_equal(y, x.T)
 
 
 def test_pass_matrix():
@@ -133,9 +133,9 @@ def test_pass_matrix_uint8():
 
 def _test_pass_array(x):
     y = pass_array(x)
-    assert y == x
+    assert_array_equal(y, x)
     y = pass_array(x.T)
-    assert y == x.T
+    assert_array_equal(y, x.T)
 
 
 def test_pass_array():
@@ -165,10 +165,10 @@ def _test_pass_vector_via_iterator(X, pos=0):
     """
     # axis == 0
     x = pass_vector_via_iterator(X, axis=0, niters=pos)
-    assert x == X[:, pos]
+    assert_array_equal(x, X[:, pos])
     # axis == 1
     x = pass_vector_via_iterator(X, axis=1, niters=pos)
-    assert x == X[pos, :]
+    assert_array_equal(x, X[pos, :])
 
 
 def test_pass_vector_via_iterator():
@@ -210,9 +210,9 @@ def test_pass_vector_via_iterator_shift_uint8():
 def _test_copy_via_iterators(Y):
     for axis in range(4):
         Z = copy_via_iterators(Y, axis)
-        assert Z == Y
+        assert_array_equal(Z, Y)
         ZT = copy_via_iterators(Y.T, axis)
-        assert ZT == Y.T
+        assert_array_equal(ZT, Y.T)
 
 
 def test_copy_via_iterators():

@@ -23,11 +23,11 @@ def build_xform():
 def test_to_matrix_vector():
     mat, vec, xform = build_xform()
     newmat, newvec = to_matrix_vector(xform)
-    assert newmat == mat
-    assert newvec == vec
+    np.testing.assert_array_equal(newmat, mat)
+    np.testing.assert_array_equal(newvec, vec)
 
 
 def test_from_matrix_vector():
     mat, vec, xform = build_xform()
     newxform = from_matrix_vector(mat, vec)
-    assert newxform == xform
+    np.testing.assert_array_equal(newxform, xform)
