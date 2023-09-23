@@ -16,7 +16,7 @@ foreach ext: extensions
 endforeach
 
 
-py.extension_module('_quantile.pyx',
+py.extension_module('_quantile',
   [
     cython_gen.process('_quantile.pyx'),
     'quantile.c',
@@ -45,4 +45,12 @@ py.install_sources(
 )
 
 
-install_subdir('tests', install_dir: target_dir)
+pure_subdirs = [
+  'bench',
+  'formula',
+  'models',
+  'tests'
+]
+foreach subdir: pure_subdirs
+  install_subdir(subdir, install_dir: target_dir)
+endforeach
