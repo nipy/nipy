@@ -30,5 +30,5 @@ endforeach
 
 subdir('graph')
 subdir('registration')
-# subdir('segmentation')
+subdir('segmentation')
 # subdir('statistics')
