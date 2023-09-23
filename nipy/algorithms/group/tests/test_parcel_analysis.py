@@ -5,7 +5,7 @@ import os
 
 import numpy as np
 from nose.tools import assert_equal
-from numpy.testing import assert_array_almost_equal, assert_array_equal, assert_raises
+from numpy.testing import assert_array_almost_equal, assert_array_equal, pytest.raises
 
 from ....core.image.image_spaces import make_xyz_image, xyz_affine
 from ..parcel_analysis import ParcelAnalysis, _smooth_image_pair, parcel_analysis
@@ -25,7 +25,7 @@ def test_smooth_image_pair():
         for method in ('default', 'spm'):
             scon_img, svcon_img = _smooth_image_pair(con_img, vcon_img,
                                                      sigma, method=method)
-    assert_raises(ValueError, _smooth_image_pair, con_img, vcon_img, 1,
+    pytest.raises(ValueError, _smooth_image_pair, con_img, vcon_img, 1,
                   method='fsl')
 
 
@@ -102,16 +102,16 @@ def _test_parcel_analysis_error(**kw):
 
 
 def test_parcel_analysis_error():
-    assert_raises(ValueError, _test_parcel_analysis_error,
+    pytest.raises(ValueError, _test_parcel_analysis_error,
                   vcon_imgs=list(range(NSUBJ + 1)))
-    assert_raises(ValueError, _test_parcel_analysis_error,
+    pytest.raises(ValueError, _test_parcel_analysis_error,
                   cvect=np.ones(1))
-    assert_raises(ValueError, _test_parcel_analysis_error,
+    pytest.raises(ValueError, _test_parcel_analysis_error,
                   design_matrix=np.random.rand(NSUBJ, 2))
-    assert_raises(ValueError, _test_parcel_analysis_error,
+    pytest.raises(ValueError, _test_parcel_analysis_error,
                   design_matrix=np.random.rand(NSUBJ + 1, 2),
                   cvect=np.ones(2))
-    assert_raises(ValueError, _test_parcel_analysis_error,
+    pytest.raises(ValueError, _test_parcel_analysis_error,
                   design_matrix=np.random.rand(NSUBJ, 2),
                   cvect=np.ones(3))
 
@@ -127,7 +127,7 @@ def test_parcel_analysis_write_mode():
         res_path += 'a'
     p = ParcelAnalysis(con_imgs, parcel_img, res_path=res_path,
                        write_smoothed_images=True)
-    assert_raises(IOError, p.dump_results)
+    pytest.raises(IOError, p.dump_results)
     _ = p.t_map()
     _ = p.parcel_maps()
 

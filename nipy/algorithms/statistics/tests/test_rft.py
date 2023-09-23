@@ -10,7 +10,7 @@ try:
 except ImportError:
     from scipy.special import factorial
 
-from nose.tools import assert_raises
+from nose.tools import pytest.raises
 from numpy.testing import assert_almost_equal
 
 from .. import rft
@@ -40,8 +40,8 @@ from .. import rft
 #            return scipy.stats.norm.sf(x)
 
 def test_Q():
-    assert_raises(ValueError, rft.Q, -1)
-    assert_raises(ValueError, rft.Q, 0)
+    pytest.raises(ValueError, rft.Q, -1)
+    pytest.raises(ValueError, rft.Q, 0)
     x = np.arange(-9, 10)
     for dim in range(1, 4):
         res = rft.Q(dim)

@@ -4,7 +4,7 @@
 import nibabel as nib
 import numpy as np
 from nibabel.affines import from_matvec
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from ...reference.coordinate_map import AffineTransform
@@ -36,7 +36,7 @@ def test_image_xyz_affine():
     assert is_xyz_affable(img4)
     img4_r = img4.reordered_axes([3,2,0,1])
     assert not is_xyz_affable(img4_r)
-    assert_raises(AxesError, xyz_affine, img4_r)
+    pytest.raises(AxesError, xyz_affine, img4_r)
     nimg = nib.Nifti1Image(arr, aff)
     assert is_xyz_affable(nimg)
     assert_array_equal(xyz_affine(nimg), aff)
@@ -45,13 +45,13 @@ def test_image_xyz_affine():
     r_cs = CS(('mni-x=L->R', 'mni-y=P->A', 'mni-q'), 'mni')
     cmap = AffineTransform(d_cs,r_cs, aff)
     img = Image(arr, cmap)
-    assert_raises(AxesError, xyz_affine, img)
+    pytest.raises(AxesError, xyz_affine, img)
     # Can pass in own validator
     my_valtor = {'blind': 'x', 'leading': 'y', 'ditch': 'z'}
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
     cmap = AffineTransform(d_cs, r_cs, aff)
     img = Image(arr, cmap)
-    assert_raises(AxesError, xyz_affine, img)
+    pytest.raises(AxesError, xyz_affine, img)
     assert_array_equal(xyz_affine(img, my_valtor), aff)
 
 
@@ -91,7 +91,7 @@ def test_image_as_xyz_image():
                     [0, 0, 0, 5, 23],
                     [0, 0, 0, 0, 1]])
     img = Image(arr, vox2mni(aff))
-    assert_raises(AffineError, as_xyz_image, img)
+    pytest.raises(AffineError, as_xyz_image, img)
     # If any dimensions not spatial, AxesError
     arr = np.arange(24, dtype='float32').reshape((2,3,4))
     aff = np.diag([2,3,4,1])
@@ -99,13 +99,13 @@ def test_image_as_xyz_image():
     r_cs = CS(('mni-x=L->R', 'mni-y=P->A', 'mni-q'), 'mni')
     cmap = AffineTransform(d_cs, r_cs, aff)
     img = Image(arr, cmap)
-    assert_raises(AxesError, as_xyz_image, img)
+    pytest.raises(AxesError, as_xyz_image, img)
     # Can pass in own validator
     my_valtor = {'blind': 'x', 'leading': 'y', 'ditch': 'z'}
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
     cmap = AffineTransform(d_cs, r_cs, aff)
     img = Image(arr, cmap)
-    assert_raises(AxesError, as_xyz_image, img)
+    pytest.raises(AxesError, as_xyz_image, img)
     assert as_xyz_image(img, my_valtor) is img
 
 
@@ -118,9 +118,9 @@ def test_image_xyza_slices():
     img0 = img[0] # slice in X
     # The result does not have an input axis corresponding to x, and should
     # raise an error
-    assert_raises(AxesError, as_xyz_image, img0)
+    pytest.raises(AxesError, as_xyz_image, img0)
     img0r = img0.reordered_reference([1,0,2,3]).reordered_axes([2,0,1])
-    assert_raises(AxesError, as_xyz_image, img0r)
+    pytest.raises(AxesError, as_xyz_image, img0r)
 
 
 def test_make_xyz_image():
@@ -136,7 +136,7 @@ def test_make_xyz_image():
     img = make_xyz_image(arr, aff, talairach_space)
     assert img.coordmap == vox2talairach(aff, 1.0)
     # Unknown space as string raises SpaceError
-    assert_raises(SpaceError, make_xyz_image, arr, aff, 'unlikely space name')
+    pytest.raises(SpaceError, make_xyz_image, arr, aff, 'unlikely space name')
     funky_space = XYZSpace('hija')
     img = make_xyz_image(arr, aff, funky_space)
     csm = funky_space.to_coordsys_maker('t')
@@ -145,7 +145,7 @@ def test_make_xyz_image():
     assert img.coordmap == exp_cmap
     # Affine must be 4, 4
     bad_aff = np.diag([2,3,4,2,1])
-    assert_raises(ValueError, make_xyz_image, arr, bad_aff, 'mni')
+    pytest.raises(ValueError, make_xyz_image, arr, bad_aff, 'mni')
     # Can pass added zooms
     img = make_xyz_image(arr, (aff, (2.,)), 'mni')
     assert img.coordmap == vox2mni(aff, 2.0)
@@ -154,14 +154,14 @@ def test_make_xyz_image():
     assert img.coordmap == vox2mni(aff, 2.0)
     # Must match length of needed zooms
     arr5 = arr[...,None]
-    assert_raises(ValueError, make_xyz_image, arr5, (aff, 2.), 'mni')
+    pytest.raises(ValueError, make_xyz_image, arr5, (aff, 2.), 'mni')
     img = make_xyz_image(arr5, (aff, (2., 3.)), 'mni')
     assert img.coordmap == vox2mni(aff, (2.0, 3.0))
     # Always xyz affable after creation
     assert_array_equal(xyz_affine(img), aff)
     assert is_xyz_affable(img)
     # Need at least 3 dimensions in data
-    assert_raises(ValueError, make_xyz_image, np.zeros((2,3)), aff, 'mni')
+    pytest.raises(ValueError, make_xyz_image, np.zeros((2,3)), aff, 'mni')
     # Check affines don't round / floor floating point
     aff = np.diag([2.1, 3, 4, 1])
     img = make_xyz_image(np.zeros((2, 3, 4)), aff, 'scanner')

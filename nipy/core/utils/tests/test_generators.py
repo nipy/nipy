@@ -1,7 +1,7 @@
 # EMAcs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
-from nose.tools import assert_equal, assert_raises
+from nose.tools import assert_equal, pytest.raises
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ...api import slice_generator, write_data
@@ -87,23 +87,23 @@ def test_parcel_exclude():
     ps = gen.parcels(data, (1, 3))
     assert_array_equal(next(ps), [False, True, False, False, False])
     assert_array_equal(next(ps), [False, False, False, True, False])
-    assert_raises(StopIteration, next, ps)
+    pytest.raises(StopIteration, next, ps)
     ps = gen.parcels(data, (1, 3), exclude=(1,))
     assert_array_equal(next(ps), [False, False, False, True, False])
-    assert_raises(StopIteration, next, ps)
+    pytest.raises(StopIteration, next, ps)
     ps = gen.parcels(data, (1, 3), exclude=(3,))
     assert_array_equal(next(ps), [False, True, False, False, False])
-    assert_raises(StopIteration, next, ps)
+    pytest.raises(StopIteration, next, ps)
     ps = gen.parcels(data, (1, 3), exclude=(3, 1))
-    assert_raises(StopIteration, next, ps)
+    pytest.raises(StopIteration, next, ps)
     # Test that two element exclude works
     ps = gen.parcels(data, (1, 3, 4), exclude=(1, 4))
     assert_array_equal(next(ps), [False, False, False, True, False])
-    assert_raises(StopIteration, next, ps)
+    pytest.raises(StopIteration, next, ps)
     # Also as np.array
     ps = gen.parcels(data, (1, 3, 4), exclude=np.array((1, 4)))
     assert_array_equal(next(ps), [False, False, False, True, False])
-    assert_raises(StopIteration, next, ps)
+    pytest.raises(StopIteration, next, ps)
     # Test that parcels continue to be returned in sorted order
     rng = np.random.RandomState(42)
     data = rng.normal(size=(10,))

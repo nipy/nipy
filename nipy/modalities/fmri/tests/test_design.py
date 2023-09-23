@@ -9,7 +9,7 @@ from nose.tools import (
     assert_equal,
     assert_false,
     assert_not_equal,
-    assert_raises,
+    pytest.raises,
     assert_true,
 )
 from numpy.testing import assert_almost_equal, assert_array_equal
@@ -161,17 +161,17 @@ def test_event_design():
                                 })
     # events : test field called "time" is necessary
     spec_1d = make_recarray(zip(onsets, fac_1), ('brighteyes', 'smt'))
-    assert_raises(ValueError, event_design, spec_1d, t)
+    pytest.raises(ValueError, event_design, spec_1d, t)
     # blocks : test fields called "start" and "end" are necessary
     spec_1d = make_recarray(zip(onsets, offsets, fac_1),
                             ('mister', 'brighteyes', 'smt'))
-    assert_raises(ValueError, block_design, spec_1d, t)
+    pytest.raises(ValueError, block_design, spec_1d, t)
     spec_1d = make_recarray(zip(onsets, offsets, fac_1),
                             ('start', 'brighteyes', 'smt'))
-    assert_raises(ValueError, block_design, spec_1d, t)
+    pytest.raises(ValueError, block_design, spec_1d, t)
     spec_1d = make_recarray(zip(onsets, offsets, fac_1),
                             ('mister', 'end', 'smt'))
-    assert_raises(ValueError, block_design, spec_1d, t)
+    pytest.raises(ValueError, block_design, spec_1d, t)
 
 
 def assert_des_con_equal(one, two):
@@ -292,12 +292,12 @@ def test_block_amplitudes():
                              {'ev0_0': [1, 0], 'ev0_1': [0, 1]})
     # Errors on bad input
     no_start = make_recarray(zip(onsets, offsets), ('begin', 'end'))
-    assert_raises(ValueError, block_amplitudes, 'ev0', no_start, t)
+    pytest.raises(ValueError, block_amplitudes, 'ev0', no_start, t)
     no_end = make_recarray(zip(onsets, offsets), ('start', 'finish'))
-    assert_raises(ValueError, block_amplitudes, 'ev0', no_end, t)
+    pytest.raises(ValueError, block_amplitudes, 'ev0', no_end, t)
     funny_amp = make_recarray(zip(onsets, offsets, amplitudes),
                               ('start', 'end', 'intensity'))
-    assert_raises(ValueError, block_amplitudes, 'ev0', funny_amp, t)
+    pytest.raises(ValueError, block_amplitudes, 'ev0', funny_amp, t)
     funny_extra = make_recarray(zip(onsets, offsets, amplitudes, onsets),
                               ('start', 'end', 'amplitude', 'extra_field'))
-    assert_raises(ValueError, block_amplitudes, 'ev0', funny_extra, t)
+    pytest.raises(ValueError, block_amplitudes, 'ev0', funny_extra, t)

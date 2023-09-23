@@ -5,7 +5,7 @@ from itertools import combinations
 
 import numpy as np
 import numpy.linalg as npl
-from nose.tools import assert_equal, assert_raises
+from nose.tools import assert_equal, pytest.raises
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from .. import intvol
@@ -194,7 +194,7 @@ def test_ec():
             box1_again = box1.copy().astype(dtt)
             assert_almost_equal(f(box1_again), 1)
             box1_again[(10,) * i] = 2
-            assert_raises(ValueError, f, box1_again)
+            pytest.raises(ValueError, f, box1_again)
 
 
 def test_ec_disjoint():
@@ -273,7 +273,7 @@ def test_lips1_disjoint():
                         np.array(
                             [elsym([e[1]-e[0]-1
                                     for e in edge2], i) for i in range(2)])))
-    assert_raises(ValueError, phi, c[...,None], box1)
+    pytest.raises(ValueError, phi, c[...,None], box1)
 
 
 def test_lips2_disjoint():
@@ -299,8 +299,8 @@ def test_lips2_disjoint():
                         np.array([elsym([e[1]-e[0]-1 for e in edge2], i)
                                   for i in range(3)])
                        )
-    assert_raises(ValueError, phi, c[...,None], box1)
-    assert_raises(ValueError, phi, c[:,:,1], box1)
+    pytest.raises(ValueError, phi, c[...,None], box1)
+    pytest.raises(ValueError, phi, c[:,:,1], box1)
 
 
 def test_lips3_disjoint():
@@ -322,8 +322,8 @@ def test_lips3_disjoint():
         phi(e, box1 + box2),
         (np.array([elsym([e[1]-e[0]-1 for e in edge1], i) for i in range(4)]) +
          np.array([elsym([e[1]-e[0]-1 for e in edge2], i) for i in range(4)])))
-    assert_raises(ValueError, phi, c[...,None], box1)
-    assert_raises(ValueError, phi, c[:,:,:,1], box1)
+    pytest.raises(ValueError, phi, c[...,None], box1)
+    pytest.raises(ValueError, phi, c[:,:,:,1], box1)
 
 
 def test_lips3_nans():

@@ -28,7 +28,7 @@ def id(x, y, z):
 ################################################################################
 # Tests
 def test_constructor():
-    yield np.testing.assert_raises, ValueError, VolumeGrid, None, \
+    yield np.testing.pytest.raises, ValueError, VolumeGrid, None, \
         None, {}, 'e'
 
 
@@ -45,9 +45,9 @@ def test_volume_grid():
     # We cannot calculate the values in the world, because the transform
     # is not invertible.
 
-    yield np.testing.assert_raises, ValueError, \
+    yield np.testing.pytest.raises, ValueError, \
                         img.values_in_world, 0, 0, 0
-    yield np.testing.assert_raises, ValueError, \
+    yield np.testing.pytest.raises, ValueError, \
         img.as_volume_img
 
     yield nose.tools.assert_equal, img, copy.copy(img)
@@ -66,10 +66,10 @@ def test_trivial_grid():
     x, y, z = np.random.randint(1, N + 1, size=(3, 10)) - 1
     data_ = img.values_in_world(x, y, z)
     # Check that passing in arrays with different shapes raises an error
-    yield np.testing.assert_raises, ValueError, \
+    yield np.testing.pytest.raises, ValueError, \
         img.values_in_world, x, y, z[:-1]
     # Check that passing in wrong interpolation keyword raises an error
-    yield np.testing.assert_raises, ValueError, \
+    yield np.testing.pytest.raises, ValueError, \
                         img.values_in_world, 0, 0, 0, 'e'
     yield np.testing.assert_almost_equal, data[x, y, z], data_
 
@@ -93,10 +93,10 @@ def test_transformation():
     yield np.testing.assert_almost_equal, img1.values_in_world(x, y, z), \
         img2.values_in_world(x, y, z)
 
-    yield nose.tools.assert_raises, CompositionError, \
+    yield nose.tools.pytest.raises, CompositionError, \
             img1.composed_with_transform, identity.get_inverse()
 
-    yield nose.tools.assert_raises, CompositionError, img1.resampled_to_img, \
+    yield nose.tools.pytest.raises, CompositionError, img1.resampled_to_img, \
             img2
 
     # Resample an image on itself: it shouldn't change much:
@@ -130,5 +130,5 @@ def test_as_volume_image():
     img2 = img1.as_volume_img()
 
     # Check that passing in the wrong shape raises an error
-    yield nose.tools.assert_raises, ValueError, img1.as_volume_img, None, \
+    yield nose.tools.pytest.raises, ValueError, img1.as_volume_img, None, \
             (10, 10)

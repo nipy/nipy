@@ -31,7 +31,7 @@ identifies 'x+LR' == 'slice' == 0.
 """
 
 import numpy as np
-from nose.tools import assert_equal, assert_raises
+from nose.tools import assert_equal, pytest.raises
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ...image.image_spaces import xyz_affine
@@ -185,7 +185,7 @@ def test_reduce():
     for i, o, n in zip('ijk', MNI3.coord_names, range(3)):
         for axis_id in (i, o, n):
             # Non-diagonal reduce raise an error
-            assert_raises(AxisError, image_reduce, im_nd,
+            pytest.raises(AxisError, image_reduce, im_nd,
                           lambda x: x.sum(0), axis_id)
             # Diagonal reduces are OK
             newim = image_reduce(im, lambda x: x.sum(0), axis_id)
@@ -197,7 +197,7 @@ def test_specific_reduce():
     im = Image(x, AT(CS('ijkq'), MNI4, np.diag([3, 4, 5, 6, 1])))
     # we have to rename the axis before we can call the function
     # need_specific_axis_reduce on it
-    assert_raises(AxisError, need_specific_axis_reduce, im, lambda x: x.sum(0))
+    pytest.raises(AxisError, need_specific_axis_reduce, im, lambda x: x.sum(0))
     im = im.renamed_axes(q='specific')
     newim = need_specific_axis_reduce(im, lambda x: x.sum(0))
     assert_array_equal(xyz_affine(im), xyz_affine(newim))

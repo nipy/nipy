@@ -15,7 +15,7 @@ representing approximations to Brownian Motions.
 import numpy as np
 import scipy.interpolate
 import sympy
-from nose.tools import assert_false, assert_raises, assert_true
+from nose.tools import assert_false, pytest.raises, assert_true
 from numpy.testing import assert_almost_equal, assert_array_almost_equal, assert_equal
 from sympy.utilities.lambdify import implemented_function, lambdify
 
@@ -53,7 +53,7 @@ def test_lambdify():
     assert lambdify((x, y), y + f(x))(0, 1) == 101
     # Error for functions with same name and different implementation
     f2 = implemented_function("f", lambda x : x+101)
-    assert_raises(ValueError, lambdify, x, f(f2(x)))
+    pytest.raises(ValueError, lambdify, x, f(f2(x)))
     # our lambdify, like sympy's lambdify, can also handle tuples,
     # lists, dicts as expressions
     lam = lambdify(x, (f(x), x))

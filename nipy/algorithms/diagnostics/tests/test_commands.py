@@ -15,7 +15,7 @@ from nose.tools import (
     assert_equal,
     assert_false,
     assert_not_equal,
-    assert_raises,
+    pytest.raises,
     assert_true,
 )
 from numpy.testing import assert_almost_equal, assert_array_equal
@@ -82,7 +82,7 @@ def test_parse_fname_axes():
             for new_arr in (arr[..., 0], arr[..., None]):
                 new_nib = img_class(new_arr, None, hdr)
                 nib.save(new_nib, fname)
-                assert_raises(ValueError, parse_fname_axes, fname, None, None)
+                pytest.raises(ValueError, parse_fname_axes, fname, None, None)
                 # But you can still set slice axis
                 img, time_axis, slice_axis = parse_fname_axes(fname, None, 'j')
                 assert time_axis == 't'
@@ -91,7 +91,7 @@ def test_parse_fname_axes():
     nib_data = pjoin(dirname(nib.__file__), 'tests', 'data')
     mnc_4d_fname = pjoin(nib_data, 'minc1_4d.mnc')
     if isfile(mnc_4d_fname):
-        assert_raises(ValueError, parse_fname_axes, mnc_4d_fname, None, None)
+        pytest.raises(ValueError, parse_fname_axes, mnc_4d_fname, None, None)
         # At the moment we can't even load these guys
         try:
             img, time_axis, slice_axis = parse_fname_axes(
@@ -151,7 +151,7 @@ def test_tsdiffana():
         check_axes(tsdiffana(args), img.shape, -1, -3)
         # Check that --out-images incompatible with --out-file
         args.write_results=True
-        assert_raises(ValueError, tsdiffana, args)
+        pytest.raises(ValueError, tsdiffana, args)
         args.out_file=None
         # Copy the functional file to a temporary writeable directory
         os.mkdir('mydata')
@@ -239,7 +239,7 @@ def test_diagnose():
         # Time axis is not going to work because we'd have to use up one of the
         # needed spatial axes
         args.time_axis = 'i'
-        assert_raises(NiftiError, diagnose, args)
+        pytest.raises(NiftiError, diagnose, args)
         args.time_axis = 't'
         # Check that output works
         os.mkdir('myresults')

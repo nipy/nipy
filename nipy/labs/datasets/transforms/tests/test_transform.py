@@ -11,7 +11,7 @@ import numpy as np
 
 # Don't import from nipy.testing not to have a hard dependence on nipy,
 # use np.testing or nose
-from nose.tools import assert_equal, assert_raises, assert_true
+from nose.tools import assert_equal, pytest.raises, assert_true
 
 from ..transform import CompositionError, Transform
 
@@ -30,7 +30,7 @@ def mapping(x, y, z):
 def test_composition():
     t1 = Transform('in',  'mid', mapping=id)
     t2 = Transform('mid', 'out', mapping=mapping)
-    yield assert_raises, CompositionError, t1.composed_with, t1
+    yield pytest.raises, CompositionError, t1.composed_with, t1
 
     # Check forward composition (transforms have forward mappings)
     t12 = t1.composed_with(t2)
@@ -46,7 +46,7 @@ def test_composition():
 
     # Check that you cannot compose transforms that do not have chainable
     # mappings
-    yield assert_raises, CompositionError, t1.composed_with, \
+    yield pytest.raises, CompositionError, t1.composed_with, \
                         t1.get_inverse()
 
 def test_misc():
@@ -54,7 +54,7 @@ def test_misc():
     """
     # Check that passing neither a mapping, nor an inverse_mapping raises
     # a ValueError
-    yield assert_raises, ValueError, Transform, 'world1', 'world2'
+    yield pytest.raises, ValueError, Transform, 'world1', 'world2'
 
     transform = Transform('in', 'out', mapping=mapping)
 

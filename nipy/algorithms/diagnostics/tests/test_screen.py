@@ -9,7 +9,7 @@ from warnings import catch_warnings, simplefilter
 
 import numpy as np
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,
@@ -97,12 +97,12 @@ def test_screen():
     # First re-show that when we don't specify, we get the default
     res = screen(img)
     _check_ts(res, data, 3, 2)
-    assert_raises(AssertionError, _check_ts, res, data, 3, 0)
+    pytest.raises(AssertionError, _check_ts, res, data, 3, 0)
     # Then specify, get non-default
     slicey_img = img.renamed_axes(slice='k', i='slice')
     res = screen(slicey_img)
     _check_ts(res, data, 3, 0)
-    assert_raises(AssertionError, _check_ts, res, data, 3, 2)
+    pytest.raises(AssertionError, _check_ts, res, data, 3, 2)
 
 
 def pca_pos(data4d):
@@ -121,8 +121,8 @@ def test_screen_slice_axis():
     exp_res = screen(img, slice_axis='k')
     with catch_warnings():
         simplefilter('error')
-        assert_raises(FutureWarning, screen, img)
-        assert_raises(FutureWarning, screen, img, slice_axis=None)
+        pytest.raises(FutureWarning, screen, img)
+        pytest.raises(FutureWarning, screen, img, slice_axis=None)
         explicit_img = img.renamed_axes(k='slice')
         # Now the analysis works without warning
         res = screen(explicit_img)

@@ -11,7 +11,7 @@ from ....io.api import load_image
 from ....testing import (
     assert_almost_equal,
     assert_equal,
-    assert_raises,
+    pytest.raises,
     assert_true,
     funcfile,
 )
@@ -30,9 +30,9 @@ def test_il_init():
     assert element.coordmap == FIMG[...,1].coordmap
     # Test bad construction
     bad_images = images + [np.zeros((17, 21, 3))]
-    assert_raises(ValueError, ImageList, bad_images)
+    pytest.raises(ValueError, ImageList, bad_images)
     a = np.arange(10)
-    assert_raises(ValueError, ImageList, a)
+    pytest.raises(ValueError, ImageList, a)
     # Test empty ImageList
     emplst = ImageList()
     assert len(emplst.list) == 0
@@ -44,8 +44,8 @@ def test_il_from_image():
     # from_image construction
     imglst = ImageList.from_image(FIMG, axis=-1)
     # Test axis must be specified
-    assert_raises(ValueError, ImageList.from_image, FIMG)
-    assert_raises(ValueError, ImageList.from_image, FIMG, None)
+    pytest.raises(ValueError, ImageList.from_image, FIMG)
+    pytest.raises(ValueError, ImageList.from_image, FIMG, None)
     # check all the axes
     for i in range(4):
         order = list(range(4))
@@ -72,7 +72,7 @@ def test_il_from_image():
     fimg2 = Image(FIMG.get_fdata(), new_cmap)
     assert len(ImageList.from_image(fimg2, axis='t')) == 20
     assert len(ImageList.from_image(fimg2, axis='l')) == 20
-    assert_raises(AxisError, ImageList.from_image, FIMG, 'q')
+    pytest.raises(AxisError, ImageList.from_image, FIMG, 'q')
     # Check non-dropping case
     ndlist = ImageList.from_image(FIMG, axis='t', dropout=False)
     element = ndlist[1]
@@ -103,12 +103,12 @@ def test_il_slicing_dicing():
     ilist = ImageList.from_image(funcim, axis='t')
 
     # make sure that we pass an axis
-    assert_raises(ValueError, ImageList.get_list_data, ilist, None)
-    assert_raises(ValueError, ImageList.get_list_data, ilist)
+    pytest.raises(ValueError, ImageList.get_list_data, ilist, None)
+    pytest.raises(ValueError, ImageList.get_list_data, ilist)
 
     # make sure that axis that don't exist makes the function fail
-    assert_raises(ValueError, ImageList.get_list_data, ilist, 4)
-    assert_raises(ValueError, ImageList.get_list_data, ilist, -5)
+    pytest.raises(ValueError, ImageList.get_list_data, ilist, 4)
+    pytest.raises(ValueError, ImageList.get_list_data, ilist, -5)
 
     # make sure that axis is put in the right place in the result array
     # image of ilist have dimension (17,21,3), lenght(ilist) = 20.

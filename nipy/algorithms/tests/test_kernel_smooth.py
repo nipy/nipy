@@ -2,7 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Test for smoothing with kernels """
 import numpy as np
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.random import randint
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
@@ -55,7 +55,7 @@ def test_func_smooth():
     func = load_image(funcfile)
     smoother = LinearFilter(func.coordmap, func.shape)
     # should work, but currently broken : sfunc = smoother.smooth(func)
-    assert_raises(NotImplementedError, smoother.smooth, func)
+    pytest.raises(NotImplementedError, smoother.smooth, func)
 
 
 def test_sigma_fwhm():

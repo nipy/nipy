@@ -2,7 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
 from nibabel.affines import from_matvec
-from nose.tools import assert_raises
+from nose.tools import pytest.raises
 from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
 
 from ....core.api import AffineTransform, Image
@@ -67,19 +67,19 @@ def test_mask_match():
     ncomp = 5
     out_coords = data_dict['mask'].reference.coord_names
     for i, o, n in zip('ijk', out_coords, [0,1,2]):
-        assert_raises(ValueError,
+        pytest.raises(ValueError,
                       pca_image,
                       data_dict['fmridata'],
                       i,
                       data_dict['mask'],
                       ncomp)
-        assert_raises(ValueError,
+        pytest.raises(ValueError,
                       pca_image,
                       data_dict['fmridata'],
                       o,
                       data_dict['mask'],
                       ncomp)
-        assert_raises(ValueError,
+        pytest.raises(ValueError,
                       pca_image,
                       data_dict['fmridata'],
                       n,
@@ -307,7 +307,7 @@ def test_other_axes():
     nd_cmap = AffineTransform(img.axes, img.reference, aff)
     nd_img = Image(img_data, nd_cmap)
     for axis_name in 'ijkt':
-        assert_raises(AxisError, pca_image, nd_img, axis_name)
+        pytest.raises(AxisError, pca_image, nd_img, axis_name)
     # Only for the non-diagonal parts
     aff = np.array([[1, 2, 0, 0, 10],
                     [2, 1, 0, 0, 11],
@@ -317,7 +317,7 @@ def test_other_axes():
     nd_cmap = AffineTransform(img.axes, img.reference, aff)
     nd_img = Image(img_data, nd_cmap)
     for axis_name in 'ij':
-        assert_raises(AxisError, pca_image, nd_img, axis_name)
+        pytest.raises(AxisError, pca_image, nd_img, axis_name)
     for axis_name in 'kt':
         p = pca_image(img, axis_name, ncomp=ncomp)
         exp_coords = in_coords[:]

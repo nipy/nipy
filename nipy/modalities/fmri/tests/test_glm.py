@@ -7,7 +7,7 @@ Test the glm utilities.
 import numpy as np
 from nibabel import Nifti1Image, load, save
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, assert_raises, assert_true
+from nose.tools import assert_equal, pytest.raises, assert_true
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,
@@ -316,9 +316,9 @@ def test_fmri_inputs():
                 fmodel = FMRILinearModel([fi], [d], mask=None)
                 fmodel = FMRILinearModel([fi, fi], [d, d], mask=None)
                 fmodel = FMRILinearModel((fi, fi), (d, d), mask=None)
-                assert_raises(ValueError, FMRILinearModel, [fi, fi], d,
+                pytest.raises(ValueError, FMRILinearModel, [fi, fi], d,
                               mask=None)
-                assert_raises(ValueError, FMRILinearModel, fi, [d, d],
+                pytest.raises(ValueError, FMRILinearModel, fi, [d, d],
                               mask=None)
 
 

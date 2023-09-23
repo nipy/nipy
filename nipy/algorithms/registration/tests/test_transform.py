@@ -2,7 +2,7 @@
 """
 
 import numpy as np
-from nose.tools import assert_equal, assert_raises, assert_true
+from nose.tools import assert_equal, pytest.raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from ..transform import Transform
@@ -12,7 +12,7 @@ def test_transform():
     t = Transform(lambda x : x+1)
     pts = np.random.normal(size=(10,3))
     assert_array_equal(t.apply(pts), pts+1)
-    assert_raises(AttributeError, getattr, t, 'param')
+    pytest.raises(AttributeError, getattr, t, 'param')
     tm1 = Transform(lambda x : x-1)
     assert_array_equal(tm1.apply(pts), pts-1)
     tctm1 = t.compose(tm1)

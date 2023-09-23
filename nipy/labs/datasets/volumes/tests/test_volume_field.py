@@ -19,18 +19,18 @@ def test_interface():
     img.world_space = 'world'
     for method in ('get_transform', 'as_volume_img'):
         method = getattr(img, method)
-        yield np.testing.assert_raises, NotImplementedError, method
+        yield np.testing.pytest.raises, NotImplementedError, method
 
-    yield np.testing.assert_raises, CompositionError, \
+    yield np.testing.pytest.raises, CompositionError, \
                     img.composed_with_transform, \
                     Transform('world2', 'world', mapping=map)
 
-    yield np.testing.assert_raises, NotImplementedError, \
+    yield np.testing.pytest.raises, NotImplementedError, \
                     img.composed_with_transform, \
                     Transform('world', 'world2', mapping=map)
 
-    yield np.testing.assert_raises, NotImplementedError, \
+    yield np.testing.pytest.raises, NotImplementedError, \
                     img.resampled_to_img, None
 
-    yield np.testing.assert_raises, NotImplementedError, \
+    yield np.testing.pytest.raises, NotImplementedError, \
                     img.values_in_world, None, None, None

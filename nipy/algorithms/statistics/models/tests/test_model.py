@@ -3,7 +3,7 @@
 
 import numpy as np
 from nose import SkipTest
-from nose.tools import assert_equal, assert_raises, assert_true
+from nose.tools import assert_equal, pytest.raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 # In fact we're testing methods defined in model
@@ -72,10 +72,10 @@ def test_t_contrast():
     assert_array_almost_equal(RESULTS.Tcontrast([1,0]).t, 3.25)
     assert_array_almost_equal(RESULTS.Tcontrast([0,1]).t, 7.181, 3)
     # Input matrix checked for size
-    assert_raises(ValueError, RESULTS.Tcontrast, [1])
-    assert_raises(ValueError, RESULTS.Tcontrast, [1, 0, 0])
+    pytest.raises(ValueError, RESULTS.Tcontrast, [1])
+    pytest.raises(ValueError, RESULTS.Tcontrast, [1, 0, 0])
     # And shape
-    assert_raises(ValueError, RESULTS.Tcontrast, np.array([1, 0])[:,None])
+    pytest.raises(ValueError, RESULTS.Tcontrast, np.array([1, 0])[:,None])
 
 
 def test_t_output():
@@ -117,10 +117,10 @@ def test_f_output():
     res = RESULTS.Fcontrast(np.eye(2))
     assert_array_almost_equal(31.06, res.F, 2)
     # Input matrix checked for size
-    assert_raises(ValueError, RESULTS.Fcontrast, [1])
-    assert_raises(ValueError, RESULTS.Fcontrast, [1, 0, 0])
+    pytest.raises(ValueError, RESULTS.Fcontrast, [1])
+    pytest.raises(ValueError, RESULTS.Fcontrast, [1, 0, 0])
     # And shape
-    assert_raises(ValueError, RESULTS.Fcontrast, np.array([1, 0])[:,None])
+    pytest.raises(ValueError, RESULTS.Fcontrast, np.array([1, 0])[:,None])
 
 def test_f_output_new_api():
     res = RESULTS.Fcontrast([1, 0])

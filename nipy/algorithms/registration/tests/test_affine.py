@@ -1,6 +1,6 @@
 
 import numpy as np
-from nose.tools import assert_false, assert_raises, assert_true
+from nose.tools import assert_false, pytest.raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from ....testing import assert_almost_equal
@@ -168,4 +168,4 @@ def test_subgrid_affine():
                         [0, 0, 0, 1]])
     # Raises error for non-integer slice arguments
     slices[0] = slice(2.1, 11, 4)
-    assert_raises(ValueError, subgrid_affine, np.eye(4), slices)
+    pytest.raises(ValueError, subgrid_affine, np.eye(4), slices)

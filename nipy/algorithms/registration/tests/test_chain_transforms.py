@@ -24,7 +24,7 @@ parameters::
 import numpy as np
 import numpy.linalg as npl
 from nibabel.affines import apply_affine
-from nose.tools import assert_equal, assert_raises, assert_true
+from nose.tools import assert_equal, pytest.raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from ..affine import Affine

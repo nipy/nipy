@@ -8,7 +8,7 @@ import re
 
 import numpy as np
 import sympy
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true, raises
+from nose.tools import assert_equal, assert_false, pytest.raises, assert_true, raises
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,
@@ -95,22 +95,22 @@ def test_interp():
         s = int_func(times, values, fill=None)
         f = lambdify(t, s)
         assert_array_almost_equal(f(tval[1:-1]), [2.05, 3.95, 4.2])
-        assert_raises(ValueError, f, tval[:-1])
+        pytest.raises(ValueError, f, tval[:-1])
         # specifying kind as linear is OK
         s = linear_interp(times, values, kind='linear')
         # bounds_check should match fill
         int_func(times, values, bounds_error=False)
         int_func(times, values, fill=None, bounds_error=True)
-        assert_raises(ValueError, int_func, times, values, bounds_error=True)
+        pytest.raises(ValueError, int_func, times, values, bounds_error=True)
         # fill should match fill value
         int_func(times, values, fill=10, fill_value=10)
         int_func(times, values, fill_value=0)
-        assert_raises(ValueError,
+        pytest.raises(ValueError,
                       int_func, times, values, fill=10, fill_value=9)
         int_func(times, values, fill=np.nan, fill_value=np.nan)
-        assert_raises(ValueError,
+        pytest.raises(ValueError,
                       int_func, times, values, fill=10, fill_value=np.nan)
-        assert_raises(ValueError,
+        pytest.raises(ValueError,
                       int_func, times, values, fill=np.nan, fill_value=0)
 
 
@@ -258,7 +258,7 @@ def test_interp1d_numeric():
     assert_almost_equal(func([1, 2, 3]), [1, 2, 3])
     assert_almost_equal(func([1.5, 2.5, 3.5]), [1.5, 2.5, 3.5])
     # Object values raise TypeError
-    assert_raises(TypeError, func, t)
+    pytest.raises(TypeError, func, t)
     # Check it works as expected via sympy
     sym_func = implemented_function('func', func)
     f = sym_func(t - 2)

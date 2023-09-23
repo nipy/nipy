@@ -13,7 +13,7 @@ from unittest import skipIf
 import numpy as np
 from nibabel.optpkg import optional_package
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.testing import assert_almost_equal
 
 from nipy import load_image, save_image
@@ -98,7 +98,7 @@ def test_nipy_tsdiffana():
     # Out-file and write-results incompatible
     cmd = (['nipy_tsdiffana', funcfile, '--out-file=' + out_png,
             '--write-results'])
-    assert_raises(RuntimeError,
+    pytest.raises(RuntimeError,
                   run_command,
                   cmd)
     # Can save images

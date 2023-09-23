@@ -3,7 +3,7 @@
 import math
 
 import numpy as np
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from .. import quaternions as tq
@@ -45,10 +45,10 @@ def test_fillpos():
     w,x,y,z = tq.fillpositive(xyz)
     yield assert_true, w == 1
     # Errors with wrong number of values
-    yield assert_raises, ValueError, tq.fillpositive, [0, 0]
-    yield assert_raises, ValueError, tq.fillpositive, [0]*4
+    yield pytest.raises, ValueError, tq.fillpositive, [0, 0]
+    yield pytest.raises, ValueError, tq.fillpositive, [0]*4
     # Errors with negative w2
-    yield assert_raises, ValueError, tq.fillpositive, [1.0]*3
+    yield pytest.raises, ValueError, tq.fillpositive, [1.0]*3
     # Test corner case where w is near zero
     wxyz = tq.fillpositive([1,0,0])
     yield assert_true, wxyz[0] == 0.0

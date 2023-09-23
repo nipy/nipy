@@ -6,7 +6,7 @@ from nose.tools import (
     assert_equal,
     assert_false,
     assert_not_equal,
-    assert_raises,
+    pytest.raises,
     assert_true,
 )
 from numpy.testing import assert_almost_equal, assert_array_equal
@@ -39,5 +39,5 @@ def test_estimable():
     # Test ValueError for incorrect number of columns
     X = rng.normal(size=(N, 5))
     for n in range(1, 4):
-        assert_raises(ValueError, isestimable, np.ones((n,)), X)
-    assert_raises(ValueError, isestimable, np.eye(4), X)
+        pytest.raises(ValueError, isestimable, np.ones((n,)), X)
+    pytest.raises(ValueError, isestimable, np.eye(4), X)

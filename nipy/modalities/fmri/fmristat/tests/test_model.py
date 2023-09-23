@@ -3,7 +3,7 @@
 
 import numpy as np
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, assert_raises, assert_true
+from nose.tools import assert_equal, pytest.raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nipy.algorithms.statistics.formula.formulae import Formula, Term, make_recarray
@@ -33,8 +33,8 @@ def test_model_out_img():
         for i in range(shape[0]):
             assert_array_equal(moi[i], i)
         moi.save()
-        assert_raises(ValueError, moi.__setitem__, 0, 1)
-        assert_raises(ValueError, moi.__getitem__, 0)
+        pytest.raises(ValueError, moi.__setitem__, 0, 1)
+        pytest.raises(ValueError, moi.__getitem__, 0)
         new_img = load_image(fname)
         for i in range(shape[0]):
             assert_array_equal(new_img[i].get_fdata(), i)

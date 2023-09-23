@@ -6,7 +6,7 @@ import warnings
 import nibabel as nib
 import numpy as np
 from nose.tools import assert_equal
-from numpy.testing import assert_array_almost_equal, assert_array_equal, assert_raises
+from numpy.testing import assert_array_almost_equal, assert_array_equal, pytest.raises
 
 from .... import load_image
 from ....core.image.image_spaces import make_xyz_image, xyz_affine
@@ -105,18 +105,18 @@ def wrong_call(slice_times=None, slice_order=None, tr_slices=None,
 
 
 def test_realign4d_incompatible_args():
-    assert_raises(ValueError, wrong_call, slice_order=(0, 1, 2),
+    pytest.raises(ValueError, wrong_call, slice_order=(0, 1, 2),
                   interleaved=False)
-    assert_raises(ValueError, wrong_call, slice_times=(0, 1, 2),
+    pytest.raises(ValueError, wrong_call, slice_times=(0, 1, 2),
                   slice_order='ascending')
-    assert_raises(ValueError, wrong_call, slice_times=(0, 1, 2),
+    pytest.raises(ValueError, wrong_call, slice_times=(0, 1, 2),
                   slice_order=(0, 1, 2))
-    assert_raises(ValueError, wrong_call, slice_times=(0, 1, 2),
+    pytest.raises(ValueError, wrong_call, slice_times=(0, 1, 2),
                   time_interp=True)
-    assert_raises(ValueError, wrong_call, slice_times=(0, 1, 2),
+    pytest.raises(ValueError, wrong_call, slice_times=(0, 1, 2),
                   time_interp=False)
-    assert_raises(ValueError, wrong_call, time_interp=True)
-    assert_raises(ValueError, wrong_call, slice_times=(0, 1, 2),
+    pytest.raises(ValueError, wrong_call, time_interp=True)
+    pytest.raises(ValueError, wrong_call, slice_times=(0, 1, 2),
                   tr_slices=1)
 
 
@@ -174,9 +174,9 @@ def test_realign4d_params():
     R = Realign4d(IM, 3, [0, 1, 2], None) # No slice_info - OK
     assert R.tr == 3
     # TR cannot be None
-    assert_raises(ValueError, Realign4d, IMS[1], None, [0, 1, 2], None)
+    pytest.raises(ValueError, Realign4d, IMS[1], None, [0, 1, 2], None)
     # TR cannot be zero
-    assert_raises(ValueError, Realign4d, IMS[1], 0, [0, 1, 2], None)
+    pytest.raises(ValueError, Realign4d, IMS[1], 0, [0, 1, 2], None)
     # TR can be None if slice times are None
     R = Realign4d(IM, None, None)
     assert R.tr == 1
@@ -201,12 +201,12 @@ def test_spacetimerealign_params():
     assert_array_equal(R.slice_times, np.arange(21))
     # Check slice_times and slice_info and TR required
     R = SpaceTimeRealign(runs, 3, 'ascending', 2) # OK
-    assert_raises(ValueError, SpaceTimeRealign, runs, 3, None, 2)
-    assert_raises(ValueError, SpaceTimeRealign, runs, 3, 'ascending', None)
-    assert_raises(ValueError, SpaceTimeRealign, IMS[0], None, [0, 1, 2], 2)
-    assert_raises(ValueError, SpaceTimeRealign, IMS[1], None, [0, 1, 2], 2)
-    assert_raises(ValueError, SpaceTimeRealign, IMS[2:4], None, [0, 1, 2], 2)
-    assert_raises(ValueError, SpaceTimeRealign, IMS[0], 'header-allow-1.0', [0, 1, 2], 2)
+    pytest.raises(ValueError, SpaceTimeRealign, runs, 3, None, 2)
+    pytest.raises(ValueError, SpaceTimeRealign, runs, 3, 'ascending', None)
+    pytest.raises(ValueError, SpaceTimeRealign, IMS[0], None, [0, 1, 2], 2)
+    pytest.raises(ValueError, SpaceTimeRealign, IMS[1], None, [0, 1, 2], 2)
+    pytest.raises(ValueError, SpaceTimeRealign, IMS[2:4], None, [0, 1, 2], 2)
+    pytest.raises(ValueError, SpaceTimeRealign, IMS[0], 'header-allow-1.0', [0, 1, 2], 2)
     R = SpaceTimeRealign(IMS[1], "header-allow-1.0", 'ascending', 2)
     assert_array_equal(R.tr, 1.0)
     # Test when TR and nslices are not the same
@@ -230,15 +230,15 @@ def test_lowlevel_params():
     nvoxels = np.prod(np.array([reduced_dim(IM.shape[i], 1, borders[i]) for i in range(3)]))
     assert_array_equal(r.xyz.shape, (nvoxels, 3))
     # Test wrong argument types raise errors
-    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], subsampling=(3,3,3,1))
-    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], refscan='first')
-    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], borders=(1,1,1,0))
-    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], xtol=None)
-    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], ftol='dunno')
-    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], gtol=(.1,.1,.1))
-    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], stepsize=None)
-    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], maxiter=None)
-    assert_raises(ValueError, Realign4dAlgorithm, R._runs[0], maxfun='none')
+    pytest.raises(ValueError, Realign4dAlgorithm, R._runs[0], subsampling=(3,3,3,1))
+    pytest.raises(ValueError, Realign4dAlgorithm, R._runs[0], refscan='first')
+    pytest.raises(ValueError, Realign4dAlgorithm, R._runs[0], borders=(1,1,1,0))
+    pytest.raises(ValueError, Realign4dAlgorithm, R._runs[0], xtol=None)
+    pytest.raises(ValueError, Realign4dAlgorithm, R._runs[0], ftol='dunno')
+    pytest.raises(ValueError, Realign4dAlgorithm, R._runs[0], gtol=(.1,.1,.1))
+    pytest.raises(ValueError, Realign4dAlgorithm, R._runs[0], stepsize=None)
+    pytest.raises(ValueError, Realign4dAlgorithm, R._runs[0], maxiter=None)
+    pytest.raises(ValueError, Realign4dAlgorithm, R._runs[0], maxfun='none')
 
 
 def _test_make_grid(dims, subsampling, borders, expected_nvoxels):

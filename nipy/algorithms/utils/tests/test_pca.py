@@ -8,7 +8,7 @@ from nipy.testing import (
     assert_array_almost_equal,
     assert_array_equal,
     assert_equal,
-    assert_raises,
+    pytest.raises,
     assert_true,
     funcfile,
 )
@@ -113,7 +113,7 @@ def test_input_effects():
     assert_almost_equal(p['basis_vectors'], pr['basis_vectors'])
     assert_almost_equal(p['pcnt_var'], pr['pcnt_var'])
     # Check axis None raises error
-    assert_raises(ValueError, pca, data['fmridata'], None)
+    pytest.raises(ValueError, pca, data['fmridata'], None)
 
 
 def test_diagonality():
@@ -181,7 +181,7 @@ def test_PCAMask():
         assert p['pcnt_var'].shape == (ntotal,)
         assert_almost_equal(p['pcnt_var'].sum(), 100.)
     # Mask data shape must match
-    assert_raises(ValueError, pca, arr4d, -1, mask1d)
+    pytest.raises(ValueError, pca, arr4d, -1, mask1d)
 
 
 def test_PCAMask_nostandardize():

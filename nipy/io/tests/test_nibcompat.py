@@ -7,7 +7,7 @@ from nose.tools import (
     assert_equal,
     assert_false,
     assert_not_equal,
-    assert_raises,
+    pytest.raises,
     assert_true,
 )
 from numpy.testing import assert_array_equal

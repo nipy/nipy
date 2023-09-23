@@ -35,7 +35,7 @@ from ..coordinate_system import (
 # shortcut
 CS = CoordinateSystem
 
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 # Legacy repr printing from numpy.
@@ -135,8 +135,8 @@ def test_renamed():
         assert B_re.function_domain.coord_names == ('foo', 'bar', 'k')
         B_re = B.renamed_range({'y':'foo','x':'bar'})
         assert B_re.function_range.coord_names == ('bar', 'foo', 'z')
-        assert_raises(ValueError, B.renamed_range, {'foo':'y'})
-        assert_raises(ValueError, B.renamed_domain, {'foo':'y'})
+        pytest.raises(ValueError, B.renamed_range, {'foo':'y'})
+        pytest.raises(ValueError, B.renamed_domain, {'foo':'y'})
 
 
 def test_calling_shapes():
@@ -164,8 +164,8 @@ def test_calling_shapes():
         arr_long = arr[None, None, :]
         assert_array_equal(xfm2d(arr_long), arr_long + 1)
         # wrong shape array raises error
-        assert_raises(CoordinateSystemError, xfm2d, np.zeros((3,)))
-        assert_raises(CoordinateSystemError, xfm2d, np.zeros((3,3)))
+        pytest.raises(CoordinateSystemError, xfm2d, np.zeros((3,)))
+        pytest.raises(CoordinateSystemError, xfm2d, np.zeros((3,3)))
         # 1d to 2d
         arr = np.array(1)
         assert_array_equal(xfm1d2d(arr), [1,1] )
@@ -173,8 +173,8 @@ def test_calling_shapes():
         assert_array_equal(xfm1d2d(arr_long), np.ones((1,1,2)))
         # wrong shape array raises error.  Note 1d input requires size 1
         # as final axis
-        assert_raises(CoordinateSystemError, xfm1d2d, np.zeros((3,)))
-        assert_raises(CoordinateSystemError, xfm1d2d, np.zeros((3,2)))
+        pytest.raises(CoordinateSystemError, xfm1d2d, np.zeros((3,)))
+        pytest.raises(CoordinateSystemError, xfm1d2d, np.zeros((3,2)))
 
 
 def test_call():
@@ -190,7 +190,7 @@ def test_call():
     assert np.allclose(E.e(value), value)
     # check that error raised for wrong shape
     value = np.array([1., 2.,])
-    assert_raises(CoordinateSystemError, E.e, value)
+    pytest.raises(CoordinateSystemError, E.e, value)
 
 
 def test_compose():
@@ -216,13 +216,13 @@ def test_compose():
     assert compcm.function_range.coord_names == ('a', 'b', 'c')
     assert_almost_equal(compcm.affine, np.dot(aff2, aff1))
     # check invalid coordinate mappings
-    assert_raises(ValueError, compose, affine1, affine2)
-    assert_raises(ValueError, compose, affine1, 'foo')
+    pytest.raises(ValueError, compose, affine1, affine2)
+    pytest.raises(ValueError, compose, affine1, 'foo')
     cm1 = CoordinateMap(CoordinateSystem('ijk'),
                         CoordinateSystem('xyz'), np.log)
     cm2 = CoordinateMap(CoordinateSystem('xyz'),
                         CoordinateSystem('abc'), np.exp)
-    assert_raises(ValueError, compose, cm1, cm2)
+    pytest.raises(ValueError, compose, cm1, cm2)
 
 
 def test__eq__():
@@ -312,8 +312,8 @@ def test_comap_init():
     yield assert_equal, cm.function_domain, incs
     yield assert_equal, cm.function_range, outcs
     yield assert_equal, cm.inverse_function, inv
-    yield assert_raises, ValueError, CoordinateMap, incs, outcs, 'foo', inv
-    yield assert_raises, ValueError, CoordinateMap, incs, outcs, map, 'bar'
+    yield pytest.raises, ValueError, CoordinateMap, incs, outcs, 'foo', inv
+    yield pytest.raises, ValueError, CoordinateMap, incs, outcs, map, 'bar'
 
 
 def test_comap_cosys():
@@ -368,13 +368,13 @@ def test_affine_init():
     assert cm.function_range == outcs
     assert_array_equal(cm.affine, aff)
     badaff = np.diag([1,2])
-    assert_raises(ValueError, AffineTransform, incs, outcs, badaff)
+    pytest.raises(ValueError, AffineTransform, incs, outcs, badaff)
 
 
 def test_affine_bottom_row():
     # homogeneous transformations have bottom rows all zero
     # except the last one
-    assert_raises(ValueError, AffineTransform.from_params,
+    pytest.raises(ValueError, AffineTransform.from_params,
                   'ij',  'x', np.array([[3,4,5],[1,1,1]]))
 
 
@@ -397,7 +397,7 @@ def test_affine_from_params():
     cm = AffineTransform.from_params('ijk', 'xyz', aff)
     assert_array_equal(cm.affine, aff)
     badaff = np.array([[1,2,3],[4,5,6]])
-    assert_raises(ValueError,
+    pytest.raises(ValueError,
                   AffineTransform.from_params, 'ijk', 'xyz', badaff)
 
 
@@ -408,7 +408,7 @@ def test_affine_start_step():
     cm = AffineTransform.from_start_step(incs.coord_names, outcs.coord_names,
                                 start, step)
     assert_array_equal(cm.affine, aff)
-    assert_raises(ValueError, AffineTransform.from_start_step, 'ijk', 'xy',
+    pytest.raises(ValueError, AffineTransform.from_start_step, 'ijk', 'xy',
                   start, step)
 
 
@@ -527,7 +527,7 @@ def test_product():
         cm = product(m1, m2, output_name='name1')
         assert cm.function_domain.name == 'product'
         assert cm.function_range.name == 'name1'
-        assert_raises(TypeError, product, m1, m2, whatgains='name0')
+        pytest.raises(TypeError, product, m1, m2, whatgains='name0')
 
 
 def test_equivalent():
@@ -567,7 +567,7 @@ def test_as_coordinate_map():
     A = np.random.standard_normal((4,4))
 
     # bottom row of A is not [0,0,0,1]
-    yield assert_raises, ValueError, AffineTransform, ijk, xyz, A
+    yield pytest.raises, ValueError, AffineTransform, ijk, xyz, A
 
     A[-1] = [0,0,0,1]
 
@@ -597,7 +597,7 @@ def test_cm__setattr__raise_error():
 
     cm = CoordinateMap(ijk, xyz, np.exp)
 
-    yield assert_raises, AttributeError, cm.__setattr__, "function_range", xyz
+    yield pytest.raises, AttributeError, cm.__setattr__, "function_range", xyz
 
 
 def test_append_io_dim():
@@ -706,7 +706,7 @@ def test_drop_io_dim():
     assert_array_equal(cm2d.affine, np.diag([2, 3, 1]))
     # Here they don't match and this raises an error
     cm3d = AffineTransform.from_params('ijk', 'xiz', np.diag([1, 2, 3, 1]))
-    assert_raises(AxisError, drop_io_dim, cm3d, 'i')
+    pytest.raises(AxisError, drop_io_dim, cm3d, 'i')
     # Dropping input or outputs that have no matching dimensions is also OK
     aff = np.array([[1, .1, 0, 10],
                     [.1, 0, 0, 11],
@@ -763,7 +763,7 @@ def test_axmap():
     assert axmap(cmap, 'out2in', fix0=False) == {0: 0, 1: 1, 2: None,
                                                     'x': 0, 'y': 1, 'z': None}
     # Need in2out or out2in as action strings
-    assert_raises(ValueError, axmap, cmap, 'do what exactly?')
+    pytest.raises(ValueError, axmap, cmap, 'do what exactly?')
     # Non-square
     cmap = AffineTransform('ij', 'xyz', [[0, 1, 0],
                                          [0, 0, 0],
@@ -827,14 +827,14 @@ def test_input_axis_index():
     # If they don't match, AxisError
     cmap_b = AffineTransform('ijk', 'xiz', np.eye(4))
     assert input_axis_index(cmap_m, 'j') == 1
-    assert_raises(AxisError, input_axis_index, cmap_b, 'i')
+    pytest.raises(AxisError, input_axis_index, cmap_b, 'i')
     # Name not found, AxisError
-    assert_raises(AxisError, input_axis_index, cmap_b, 'q')
+    pytest.raises(AxisError, input_axis_index, cmap_b, 'q')
     # 0 leads to no match if fix0 turned off
     cmap_z = AffineTransform('ijk', 'xyz', np.diag([2, 3, 0, 1]))
     assert input_axis_index(cmap_z, 'z') == 2
     assert input_axis_index(cmap_z, 'z', fix0=True) == 2
-    assert_raises(AxisError, input_axis_index, cmap_z, 'z', fix0=False)
+    pytest.raises(AxisError, input_axis_index, cmap_z, 'z', fix0=False)
     # Other axes not affected in presence of 0
     assert input_axis_index(cmap_z, 'y') == 1
 
@@ -860,7 +860,7 @@ def test_io_axis_indices():
         assert io_axis_indices(cmap_m, out_name) == (2-i, i)
     # If they don't match, AxisError, if selecting by name
     cmap_b = AffineTransform('ijk', 'xiz', np.eye(4))
-    assert_raises(AxisError, io_axis_indices, cmap_b, 'i')
+    pytest.raises(AxisError, io_axis_indices, cmap_b, 'i')
     # ... but not if name corresponds
     assert io_axis_indices(cmap_b, 'k') == (2, 2)
     # ... or if input name not found in output
@@ -868,7 +868,7 @@ def test_io_axis_indices():
     # ... or if selecting by number
     assert io_axis_indices(cmap_b, 0) == (0, 0)
     # Name not found, AxisError
-    assert_raises(AxisError, io_axis_indices, cmap_b, 'q')
+    pytest.raises(AxisError, io_axis_indices, cmap_b, 'q')
     # 0 leads to no match if fix0 set to false
     cmap_z = AffineTransform('ijk', 'xyz', np.diag([2, 3, 0, 1]))
     assert io_axis_indices(cmap_z, 'y') == (1, 1)
@@ -879,7 +879,7 @@ def test_io_axis_indices():
     assert io_axis_indices(cmap_z, 'k', fix0=False) == (2, None)
     # axis name and number access without fix0
     cmap = AffineTransform('ijkt', 'xyzt', np.diag([1, 1, 1, 0, 1]))
-    assert_raises(AxisError, io_axis_indices, cmap, 't', fix0=False)
+    pytest.raises(AxisError, io_axis_indices, cmap, 't', fix0=False)
     in_ax, out_ax = io_axis_indices(cmap, -1, fix0=False)
     assert (in_ax, out_ax) == (3, None)
     # Non-square is OK
@@ -944,7 +944,7 @@ def test_make_cmap():
                                  CS(r_names[:5], 'world'),
                                  exp_aff))
     # The zooms (diagonal elements) and offsets must match in length
-    assert_raises(CoordMapMakerError, cmm.make_affine, aff, [5,6], 7)
+    pytest.raises(CoordMapMakerError, cmm.make_affine, aff, [5,6], 7)
     # Check non-square affines
     aff = np.array([[2,0,0],
                     [0,3,0],

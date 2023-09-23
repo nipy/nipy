@@ -38,9 +38,9 @@ def id(x, y, z):
 ################################################################################
 # Tests
 def test_constructor():
-    yield np.testing.assert_raises, AttributeError, VolumeImg, None, \
+    yield np.testing.pytest.raises, AttributeError, VolumeImg, None, \
         None, 'foo'
-    yield np.testing.assert_raises, ValueError, VolumeImg, None, \
+    yield np.testing.pytest.raises, ValueError, VolumeImg, None, \
         np.eye(4), 'foo', {}, 'e'
 
 
@@ -117,13 +117,13 @@ def test_reordering():
                                     data
 
     # Check that we cannot swap axes for non spatial axis:
-    yield nose.tools.assert_raises, ValueError, ref_im._swapaxes, 4, 5
+    yield nose.tools.pytest.raises, ValueError, ref_im._swapaxes, 4, 5
 
     # Create a non-diagonal affine, and check that we raise a sensible
     # exception
     affine[1, 0] = 0.1
     ref_im = VolumeImg(data, affine, 'mine')
-    yield nose.tools.assert_raises, CompositionError, ref_im.xyz_ordered
+    yield nose.tools.pytest.raises, CompositionError, ref_im.xyz_ordered
 
 
     # Test flipping an axis
@@ -174,7 +174,7 @@ def test_eq():
     # Test repr
     yield assert_true, isinstance(repr(ref_im), str)
     # Test init: should raise exception is not passing in right affine
-    yield nose.tools.assert_raises, Exception, VolumeImg, data, \
+    yield nose.tools.pytest.raises, Exception, VolumeImg, data, \
                 np.eye(3, 3), 'mine'
 
 
@@ -205,12 +205,12 @@ def test_resampled_to_img():
     # Check that we cannot resample to another image in a different
     # world.
     other_im = VolumeImg(data, affine, 'other')
-    yield nose.tools.assert_raises, CompositionError, \
+    yield nose.tools.pytest.raises, CompositionError, \
             other_im.resampled_to_img, ref_im
 
     # Also check that trying to resample on a non 3D grid will raise an
     # error
-    yield nose.tools.assert_raises, ValueError, \
+    yield nose.tools.pytest.raises, ValueError, \
         ref_im.as_volume_img, None, (2, 2)
 
 
@@ -234,10 +234,10 @@ def test_transformation():
         yield np.testing.assert_almost_equal, img1.values_in_world(x, y, z), \
             img2.values_in_world(x, y, z)
 
-        yield nose.tools.assert_raises, CompositionError, \
+        yield nose.tools.pytest.raises, CompositionError, \
                 img1.composed_with_transform, identity.get_inverse()
 
-        yield nose.tools.assert_raises, CompositionError, \
+        yield nose.tools.pytest.raises, CompositionError, \
                 img1.resampled_to_img, img2
 
         # Resample an image on itself: it shouldn't change much:

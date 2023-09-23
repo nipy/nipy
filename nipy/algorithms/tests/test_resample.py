@@ -3,7 +3,7 @@
 from itertools import product
 
 import numpy as np
-from nose.tools import assert_raises, assert_true
+from nose.tools import pytest.raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nipy.algorithms.resample import resample, resample_img2img
@@ -18,7 +18,7 @@ def test_resample_img2img():
     aimg = load_image(anatfile)
     resimg = resample_img2img(fimg, fimg)
     yield assert_true, np.allclose(resimg.get_fdata(), fimg.get_fdata())
-    yield assert_raises, ValueError, resample_img2img, fimg, aimg
+    yield pytest.raises, ValueError, resample_img2img, fimg, aimg
 
 
 # Hackish flag for enabling of pylab plots of resamplingstest_2d_from_3d

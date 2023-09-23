@@ -5,7 +5,7 @@
 """
 
 import numpy as np
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 import nipy.core.reference.array_coords as acs
@@ -75,7 +75,7 @@ def test_array_coord_map():
                                   [0, 0, 2*zz+zt],
                                   [0, 0, 1]]))
     # that there can be only one ellipsis
-    assert_raises(ValueError, acm.__getitem__, (
+    pytest.raises(ValueError, acm.__getitem__, (
         (Ellipsis, Ellipsis,2)))
     # that you can integer slice in all three dimensions, leaving only
     # the translation column
@@ -87,8 +87,8 @@ def test_array_coord_map():
                                   [2*zz+zt],
                                   [1]]))
     # that anything other than an int, slice or Ellipsis is an error
-    assert_raises(ValueError, acm.__getitem__, ([0,2],))
-    assert_raises(ValueError, acm.__getitem__, (np.array([0,2]),))
+    pytest.raises(ValueError, acm.__getitem__, ([0,2],))
+    pytest.raises(ValueError, acm.__getitem__, (np.array([0,2]),))
 
 
 def test_grid():

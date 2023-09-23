@@ -10,7 +10,7 @@ import nibabel as nib
 import numpy as np
 from nibabel.affines import from_matvec
 from nibabel.spatialimages import HeaderDataError
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ...core.api import AffineTransform as AT
@@ -83,24 +83,24 @@ def test_xyz_affines():
     # Check bad names cause NiftiError
     out_coords = fimg.reference.coord_names
     bad_img = fimg.renamed_reference(**{out_coords[0]: 'not a known axis'})
-    assert_raises(NiftiError, nipy2nifti, bad_img)
+    pytest.raises(NiftiError, nipy2nifti, bad_img)
     # Check xyz works for not strict
     bad_img = fimg.renamed_reference(**dict(zip(out_coords, 'xyz')))
     assert_array_equal(nipy2nifti(bad_img, strict=False).get_fdata(), data)
     # But fails for strict
-    assert_raises(NiftiError, nipy2nifti, bad_img, strict=True)
+    pytest.raises(NiftiError, nipy2nifti, bad_img, strict=True)
     # 3D is OK
     aimg = copy_of(anatfile)
     adata = aimg.get_fdata()
     assert_array_equal(nipy2nifti(aimg).get_fdata(), adata)
     # For now, always error on 2D (this depends on as_xyz_image)
-    assert_raises(NiftiError, nipy2nifti, aimg[:, :, 1])
-    assert_raises(NiftiError, nipy2nifti, aimg[:, 1, :])
-    assert_raises(NiftiError, nipy2nifti, aimg[1, :, :])
+    pytest.raises(NiftiError, nipy2nifti, aimg[:, :, 1])
+    pytest.raises(NiftiError, nipy2nifti, aimg[:, 1, :])
+    pytest.raises(NiftiError, nipy2nifti, aimg[1, :, :])
     # Do not allow spaces not in the NIFTI canon
     for i in range(3):
         displaced_img = fimg.renamed_reference(**{out_coords[i]: 'obscure'})
-        assert_raises(NiftiError, nipy2nifti, displaced_img)
+        pytest.raises(NiftiError, nipy2nifti, displaced_img)
 
 
 def test_unknown():
@@ -116,7 +116,7 @@ def test_unknown():
     # So nipy2nifti raises an error
     displaced_img = aimg.renamed_reference(
         **dict(zip(out_coords[:3], unknown_cs.coord_names)))
-    assert_raises(NiftiError, nipy2nifti, displaced_img)
+    pytest.raises(NiftiError, nipy2nifti, displaced_img)
     # If the affine is the same, no error
     displaced_img.coordmap.affine[:] = bare_affine
     assert np.allclose(bare_affine, displaced_img.coordmap.affine)
@@ -150,15 +150,15 @@ def test_orthogonal_dims():
     assert_array_equal(get_affine(nipy2nifti(img)), as3d(aff))
     # Space must be orthogonal to time etc
     aff[0, 3] = 0.1
-    assert_raises(NiftiError, nipy2nifti, img)
+    pytest.raises(NiftiError, nipy2nifti, img)
     aff[0, 3] = 0
     assert_array_equal(get_affine(nipy2nifti(img)), as3d(aff))
     aff[3, 0] = 0.1
-    assert_raises(NiftiError, nipy2nifti, img)
+    pytest.raises(NiftiError, nipy2nifti, img)
     aff[3, 0] = 0
     assert_array_equal(get_affine(nipy2nifti(img)), as3d(aff))
     aff[4, 0] = 0.1
-    assert_raises(NiftiError, nipy2nifti, img)
+    pytest.raises(NiftiError, nipy2nifti, img)
 
 
 def test_dim_info():
@@ -218,7 +218,7 @@ def test_time_like_matching():
             # Time-like in both, but not matching, not OK
             cmap = AT(CS(('i', 'j', 'k', 'u', name)),
                     CS(mni_names + (name, 'u')), aff)
-            assert_raises(NiftiError, nipy2nifti, Image(data, cmap))
+            pytest.raises(NiftiError, nipy2nifti, Image(data, cmap))
             # Time like in both with no match between but no match elsewhere
             # Actually this does cause a problem for non-zero time offset and
             # time axes, but we test that elsewhere.
@@ -242,10 +242,10 @@ def test_time_like_matching():
         for name in others:
             cmap = AT(CS(('i', 'j', 'k', time_like, 'u')),
                     CS(mni_names + (name, 'u')), aff)
-            assert_raises(NiftiError, nipy2nifti, Image(data, cmap))
+            pytest.raises(NiftiError, nipy2nifti, Image(data, cmap))
             cmap = AT(CS(('i', 'j', 'k', name, 'u')),
                     CS(mni_names + (time_like, 'u')), aff)
-            assert_raises(NiftiError, nipy2nifti, Image(data, cmap))
+            pytest.raises(NiftiError, nipy2nifti, Image(data, cmap))
         # It's OK to have more than one time-like, but the order of recognition
         # is 't', 'hz', 'ppm', 'rads'
         for i, better in enumerate(time_cans[:-1]):
@@ -385,14 +385,14 @@ def test_save_toffset():
         assert (nipy2nifti(Image(data, cmap), fix0=True).shape ==
                      shape_shifted)
         # Unless fix0 is False
-        assert_raises(NiftiError, nipy2nifti, Image(data, cmap), fix0=False)
+        pytest.raises(NiftiError, nipy2nifti, Image(data, cmap), fix0=False)
         # Fix doesn't work if there is more than one zero row and column
         aff_z2 = from_matvec(np.diag([2., 3, 4, 0, 0, 7]),
                              [11, 12, 13, 14, 15, 16])
         cmap = AT(CS(('i', 'j', 'k', 'u', t_name, 'v')),
                   CS(xyz_names + ('u', t_name, 'v')),
                   aff_z2)
-        assert_raises(NiftiError, nipy2nifti, Image(data, cmap), fix0=True)
+        pytest.raises(NiftiError, nipy2nifti, Image(data, cmap), fix0=True)
     # zeros on the diagonal are not a problem for non-time, with toffset,
     # because we don't need to set the 'time' part of the translation vector,
     # and therefore we don't need to know which *output axis* is time-like
@@ -417,10 +417,10 @@ def test_too_many_dims():
     # Too many dimensions
     data1 = np.zeros(list(range(2, 10)))
     cmap = AT(CS('ijktuvwq'), CS(xyz_names + tuple('tuvwq')), np.eye(9))
-    assert_raises(NiftiError, nipy2nifti, Image(data1, cmap))
+    pytest.raises(NiftiError, nipy2nifti, Image(data1, cmap))
     # No time adds a dimension
     cmap = AT(CS('ijkpuvw'), CS(xyz_names + tuple('puvw')), np.eye(8))
-    assert_raises(NiftiError, nipy2nifti, Image(data0, cmap))
+    pytest.raises(NiftiError, nipy2nifti, Image(data0, cmap))
 
 
 def test_no_time():
@@ -481,11 +481,11 @@ def test_save_dtype():
     ni_img = nipy2nifti(img, data_dtype=None)
     assert get_header(ni_img).get_data_dtype() == np.dtype(np.int32)
     # Bad dtype
-    assert_raises(TypeError, nipy2nifti, img, data_dtype='foo')
+    pytest.raises(TypeError, nipy2nifti, img, data_dtype='foo')
     # Fancy dtype
     data = np.zeros((2, 3, 4), dtype=[('f0', 'i2'), ('f1', 'f4')])
     img = Image(data, cmap)
-    assert_raises(HeaderDataError, nipy2nifti, img, data_dtype=None)
+    pytest.raises(HeaderDataError, nipy2nifti, img, data_dtype=None)
 
 
 def test_basic_load():
@@ -507,16 +507,16 @@ def test_expand_to_3d():
         data = np.random.normal(size=size)
         ni_img = nib.Nifti1Image(data, xyz_aff)
         # Default is aligned
-        assert_raises(NiftiError, nifti2nipy, ni_img)
+        pytest.raises(NiftiError, nifti2nipy, ni_img)
         hdr = get_header(ni_img)
         # The pixdim affine
         for label in 'scanner', 'aligned', 'talairach', 'mni':
             hdr.set_sform(xyz_aff, label)
-            assert_raises(NiftiError, nifti2nipy, ni_img)
+            pytest.raises(NiftiError, nifti2nipy, ni_img)
             hdr.set_sform(None)
-            assert_raises(NiftiError, nifti2nipy, ni_img)
+            pytest.raises(NiftiError, nifti2nipy, ni_img)
             hdr.set_sform(xyz_aff, label)
-            assert_raises(NiftiError, nifti2nipy, ni_img)
+            pytest.raises(NiftiError, nifti2nipy, ni_img)
             hdr.set_qform(None)
 
 

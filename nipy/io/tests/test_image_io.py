@@ -19,7 +19,7 @@ from nipy.testing import (
     assert_array_almost_equal,
     assert_array_equal,
     assert_equal,
-    assert_raises,
+    pytest.raises,
     assert_true,
     funcfile,
 )
@@ -48,7 +48,7 @@ def test_badfile():
     filename = "bad_file.foo"
     # nibabel prior 2.1.0 was throwing a ImageFileError for the not-recognized
     # file type.  >=2.1.0 give a FileNotFoundError.
-    assert_raises((ImageFileError, FileNotFoundError), load_image, filename)
+    pytest.raises((ImageFileError, FileNotFoundError), load_image, filename)
 
 
 @if_templates
@@ -203,7 +203,7 @@ def test_output_dtypes():
         hdr = img_back.metadata['header']
         assert_dt_no_end_equal(hdr.get_data_dtype(), 'u2')
         # Check analyze can't save u2 datatype
-        assert_raises(HeaderDataError, save_image, img, 'my_file.img', 'u2')
+        pytest.raises(HeaderDataError, save_image, img, 'my_file.img', 'u2')
         del img_back
 
 
@@ -276,6 +276,6 @@ def test_as_image():
 
 def test_no_minc():
     # We can't yet get good axis names for MINC files. Check we reject these
-    assert_raises(ValueError, load_image, 'nofile.mnc')
+    pytest.raises(ValueError, load_image, 'nofile.mnc')
     data_path = pjoin(dirname(nib.__file__), 'tests', 'data')
-    assert_raises(ValueError, load_image, pjoin(data_path, 'tiny.mnc'))
+    pytest.raises(ValueError, load_image, pjoin(data_path, 'tiny.mnc'))

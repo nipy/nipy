@@ -8,7 +8,7 @@ from warnings import catch_warnings, simplefilter
 
 import numpy as np
 import sympy
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+from nose.tools import assert_equal, assert_false, pytest.raises, assert_true
 from numpy.core.records import fromrecords
 from numpy.testing import assert_almost_equal, assert_array_equal
 from sympy.utilities.lambdify import implemented_function
@@ -33,11 +33,11 @@ def test_terms():
     assert terms('a b c') == (a, b, c)
     assert terms('a, b, c') == (a, b, c)
     # no arg is an error
-    assert_raises(TypeError, terms)
+    pytest.raises(TypeError, terms)
     # but empty arg returns empty tuple
     assert terms(()) == ()
     # Test behavior of deprecated each_char kwarg
-    assert_raises(TypeError, terms, 'abc', each_char=True)
+    pytest.raises(TypeError, terms, 'abc', each_char=True)
 
 
 def test_getparams_terms():
@@ -277,7 +277,7 @@ def test_make_recarray():
             reshape((3, 1)))
         assert warn_list[0].category == VisibleDeprecationWarning
     # Can't pass dtypes to array version of function
-    assert_raises(ValueError, F.make_recarray, arr, 'xy', [int, float])
+    pytest.raises(ValueError, F.make_recarray, arr, 'xy', [int, float])
 
 
 def test_make_recarray_axes():
@@ -320,7 +320,7 @@ def test_design():
     # drop x field, check that design raises error
     ny = np.recarray(n.shape, dtype=[('x', n.dtype['x'])])
     ny['x'] = n['x']
-    assert_raises(ValueError, f.design, ny)
+    pytest.raises(ValueError, f.design, ny)
     n = np.array([(2,3,'a'),(4,5,'b'),(5,6,'a')], np.dtype([('x', np.float64),
                                                             ('y', np.float64),
                                                             ('f', 'S1')]))
@@ -378,7 +378,7 @@ def test_factor_getterm():
     fac = F.Factor('f', [1,2])
     assert fac['f_1'] == fac.get_term(1)
     fac = F.Factor('f', [1,2])
-    assert_raises(ValueError, fac.get_term, '1')
+    pytest.raises(ValueError, fac.get_term, '1')
     m = fac.main_effect
     assert set(m.terms) == {fac['f_1']-fac['f_2']}
 
@@ -388,7 +388,7 @@ def test_stratify():
 
     y = sympy.Symbol('y')
     f = sympy.Function('f')
-    assert_raises(ValueError, fac.stratify, f(y))
+    pytest.raises(ValueError, fac.stratify, f(y))
 
 
 def test_nonlin1():
@@ -428,7 +428,7 @@ def test_nonlin2():
     t = sympy.Symbol('th')
     p = F.make_recarray([3], ['tt'])
     f = F.Formula([sympy.exp(t*z)])
-    assert_raises(ValueError, f.design, dz, p)
+    pytest.raises(ValueError, f.design, dz, p)
 
 
 def test_Rintercept():

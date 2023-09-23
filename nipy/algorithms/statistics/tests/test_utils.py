@@ -1,7 +1,7 @@
 
 import numpy as np
 import scipy.linalg as spl
-from nose.tools import assert_equal, assert_raises, assert_true
+from nose.tools import assert_equal, pytest.raises, assert_true
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,
@@ -63,13 +63,13 @@ def test_check_cast_bin8():
         assert_equal_bin8(np.array([0, 1, 1, 1], in_dtype), [0, 1, 1, 1])
         assert_equal_bin8(np.array([[0, 1], [1, 1]], in_dtype),
                           [[0, 1], [1, 1]])
-        assert_raises(ValueError, check_cast_bin8,
+        pytest.raises(ValueError, check_cast_bin8,
                       np.array([0, 1, 2], dtype=in_dtype))
     for in_dtype in np.sctypes['float']:
         assert_equal_bin8(np.array([0, 1, 1, -0], np.float64), [0, 1, 1, 0])
         assert_equal_bin8(np.array([[0, 1], [1, -0]], np.float64),
                           [[0, 1], [1, 0]])
-        assert_raises(ValueError, check_cast_bin8,
+        pytest.raises(ValueError, check_cast_bin8,
                       np.array([0, 0.1, 1], dtype=in_dtype))
-        assert_raises(ValueError, check_cast_bin8,
+        pytest.raises(ValueError, check_cast_bin8,
                       np.array([0, -1, 1], dtype=in_dtype))

@@ -9,7 +9,7 @@ from nose.tools import (
     assert_equal,
     assert_false,
     assert_not_equal,
-    assert_raises,
+    pytest.raises,
     assert_true,
 )
 from numpy.testing import (
@@ -42,8 +42,8 @@ def test_init():
     new = Image(data, gimg.coordmap)
     assert_array_almost_equal(gimg.get_fdata(), new.get_fdata())
     assert new.coordmap == gimg.coordmap
-    assert_raises(TypeError, Image)
-    assert_raises(TypeError, Image, data)
+    pytest.raises(TypeError, Image)
+    pytest.raises(TypeError, Image, data)
 
 
 def test_maxmin_values():
@@ -197,7 +197,7 @@ def test_defaults_ND():
         assert img.affine.shape == (img.ndim+1, img.ndim+1)
         assert img.affine.diagonal().all()
         # img.header deprecated, when removed, test will raise Error
-        assert_raises(AttributeError, getattr, img, 'header')
+        pytest.raises(AttributeError, getattr, img, 'header')
 
 
 def test_header():
@@ -302,7 +302,7 @@ def test_rollaxis():
     data = np.random.standard_normal((3,4,7,5))
     im = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
     # for the inverse we must specify an integer
-    assert_raises(ValueError, image.rollaxis, im, 'i', True)
+    pytest.raises(ValueError, image.rollaxis, im, 'i', True)
     # Check that rollaxis preserves diagonal affines, as claimed
     assert_almost_equal(image.rollaxis(im, 1).affine, np.diag([2,1,3,4,1]))
     assert_almost_equal(image.rollaxis(im, 2).affine, np.diag([3,1,2,4,1]))
@@ -311,7 +311,7 @@ def test_rollaxis():
     # 'l' appears both as an axis and a reference coord name
     # and in different places
     im_amb = Image(data, AffineTransform.from_params('ijkl', 'xylt', np.diag([1,2,3,4,1])))
-    assert_raises(ValueError, image.rollaxis, im_amb, 'l')
+    pytest.raises(ValueError, image.rollaxis, im_amb, 'l')
     # But if it's unambiguous, then
     # 'l' can appear both as an axis and a reference coord name
     im_unamb = Image(data, AffineTransform.from_params('ijkl', 'xyzl', np.diag([1,2,3,4,1])))
@@ -391,7 +391,7 @@ def test_rollimg():
     # Check that ambiguous axes raise an exception; 'l' appears both as an axis
     # and a reference coord name and in different places
     im_amb = Image(data, AT('ijkl', 'xylt', np.diag([1,2,3,4,1])))
-    assert_raises(AxisError, rollimg, im_amb, 'l')
+    pytest.raises(AxisError, rollimg, im_amb, 'l')
     # But if it's unambiguous, then 'l' can appear both as an axis and a
     # reference coord name
     im_unamb = Image(data, AT('ijkl', 'xyzl', np.diag([1,2,3,4,1])))
@@ -401,7 +401,7 @@ def test_rollimg():
     # Zero row / col means we can't find an axis mapping, when fix0 is false
     aff_z = np.diag([1, 2, 3, 0, 1])
     im_z = Image(data, AT('ijkl', 'xyzt', aff_z))
-    assert_raises(AxisError, rollimg, im_z, 't', fix0=False)
+    pytest.raises(AxisError, rollimg, im_z, 't', fix0=False)
     # But we can work it out if we turn on our zero detector
     assert (rollimg(im_z, 't', fix0=True).coordmap ==
                  AT('lijk', 'xyzt', aff_z[:, (3, 0, 1, 2, 4)]))
@@ -418,7 +418,7 @@ def test_rollimg():
     assert (rollimg(im_r, 'k').coordmap ==
                  AT('kij', 'xyzt', aff_r[:, (2, 0, 1, 3)]))
     # Unless you're tring to get at the dropped input dimension of course
-    assert_raises(AxisError, rollimg, im_r, 't')
+    pytest.raises(AxisError, rollimg, im_r, 't')
     # Another check for integers, input names, output names, reversing
     for i, o, n in zip('ijkl', 'xyzt', range(4)):
         im_i = rollimg(im, i)

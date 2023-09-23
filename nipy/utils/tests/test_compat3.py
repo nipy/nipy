@@ -6,7 +6,7 @@ from nose.tools import (
     assert_equal,
     assert_false,
     assert_not_equal,
-    assert_raises,
+    pytest.raises,
     assert_true,
 )
 
@@ -37,5 +37,5 @@ def test_open4csv():
             reader = csv.reader(fobj, dialect)
             back = list(reader)
     assert contents == back
-    assert_raises(ValueError, open4csv, 'my.csv', 'rb')
-    assert_raises(ValueError, open4csv, 'my.csv', 'wt')
+    pytest.raises(ValueError, open4csv, 'my.csv', 'rb')
+    pytest.raises(ValueError, open4csv, 'my.csv', 'wt')

@@ -6,7 +6,7 @@ from os.path import dirname
 from os.path import join as pjoin
 
 import numpy as np
-from nose.tools import assert_raises
+from nose.tools import pytest.raises
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ..realfuncs import dct_ii_basis, dct_ii_cut_basis
@@ -38,7 +38,7 @@ def test_dct_ii_basis():
             assert_almost_equal(dct_ii_basis(vol_times, i, True),
                                 spm_mtx[:, :i])
     vol_times[0] += 0.1
-    assert_raises(ValueError, dct_ii_basis, vol_times)
+    pytest.raises(ValueError, dct_ii_basis, vol_times)
 
 
 def test_dct_ii_cut_basis():

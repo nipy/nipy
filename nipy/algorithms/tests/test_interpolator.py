@@ -8,7 +8,7 @@ from nose.tools import (
     assert_equal,
     assert_false,
     assert_not_equal,
-    assert_raises,
+    pytest.raises,
     assert_true,
 )
 from numpy.testing import assert_almost_equal, assert_array_equal
@@ -27,7 +27,7 @@ def test_interp_obj():
     assert interp.mode == 'constant'
     assert interp.order == 3
     # order is read-only
-    assert_raises(AttributeError,
+    pytest.raises(AttributeError,
                   setattr,
                   interp,
                   'order',
@@ -35,7 +35,7 @@ def test_interp_obj():
     interp = ImageInterpolator(img, mode='nearest')
     assert interp.mode == 'nearest'
     # mode is read-only
-    assert_raises(AttributeError,
+    pytest.raises(AttributeError,
                   setattr,
                   interp,
                   'mode',

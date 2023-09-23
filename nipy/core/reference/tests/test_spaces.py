@@ -7,7 +7,7 @@ from nose.tools import (
     assert_equal,
     assert_false,
     assert_not_equal,
-    assert_raises,
+    pytest.raises,
     assert_true,
 )
 from numpy.testing import assert_array_almost_equal, assert_array_equal
@@ -80,7 +80,7 @@ def test_xyz_space():
     # We now have all 3, this in in the space
     assert cs in sp
     # More dimensions than default, error
-    assert_raises(CoordSysMakerError, csm, 4)
+    pytest.raises(CoordSysMakerError, csm, 4)
     # But we can pass in names for further dimensions
     csm = sp.to_coordsys_maker('tuv')
     cs = csm(6)
@@ -175,9 +175,9 @@ def test_get_world_cs():
     maker = hija.to_coordsys_maker('qrs')
     assert (get_world_cs('hija', ndim = 5, extras='qrs', spaces=[hija]) ==
                  maker(5))
-    assert_raises(SpaceError, get_world_cs, 'hijo')
-    assert_raises(SpaceError, get_world_cs, 'hijo', spaces=[hija])
-    assert_raises(ValueError, get_world_cs, 0)
+    pytest.raises(SpaceError, get_world_cs, 'hijo')
+    pytest.raises(SpaceError, get_world_cs, 'hijo', spaces=[hija])
+    pytest.raises(ValueError, get_world_cs, 0)
 
 
 def test_xyz_affine():
@@ -194,14 +194,14 @@ def test_xyz_affine():
     # Any dimensions not spatial, AxesError
     r_cs = CS(('mni-x', 'mni-y', 'mni-q'), 'mni')
     funny_cmap = AffineTransform(VARS['d_cs_r3'],r_cs, aff3d)
-    assert_raises(AxesError, xyz_affine, funny_cmap)
+    pytest.raises(AxesError, xyz_affine, funny_cmap)
     r_cs = CS(('mni-x', 'mni-q', 'mni-z'), 'mni')
     funny_cmap = AffineTransform(VARS['d_cs_r3'],r_cs, aff3d)
-    assert_raises(AxesError, xyz_affine, funny_cmap)
+    pytest.raises(AxesError, xyz_affine, funny_cmap)
     # We insist that the coordmap is in output xyz order
     permutations = (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)
     for perm in permutations:
-        assert_raises(AxesError, xyz_affine, cmap3d.reordered_range(perm))
+        pytest.raises(AxesError, xyz_affine, cmap3d.reordered_range(perm))
     # The input order doesn't matter, as long as the xyz axes map to the first
     # three input axes
     for perm in permutations:
@@ -209,15 +209,15 @@ def test_xyz_affine():
             cmap3d.reordered_domain(perm)), aff3d[:, perm + (-1,)])
     # But if the corresponding input axes not in the first three, an axis error
     wrong_inputs = cmap4d.reordered_domain([0, 1, 3, 2])
-    assert_raises(AxesError, xyz_affine, wrong_inputs)
+    pytest.raises(AxesError, xyz_affine, wrong_inputs)
     # xyzs must be orthogonal to dropped axis
     for i in range(3):
         aff = aff4d.copy()
         aff[i,3] = 1
         cmap = AffineTransform(VARS['d_cs_r4'], VARS['r_cs_r4'], aff)
-        assert_raises(AffineError, xyz_affine, cmap)
+        pytest.raises(AffineError, xyz_affine, cmap)
         # And if reordered
-        assert_raises(AxesError, xyz_affine, cmap.reordered_range([2,0,1,3]))
+        pytest.raises(AxesError, xyz_affine, cmap.reordered_range([2,0,1,3]))
     # Non-square goes to square
     aff54 = np.array([[0, 1, 2, 15],
                       [3, 4, 5, 16],
@@ -236,27 +236,27 @@ def test_xyz_affine():
     assert_array_equal(xyz_affine(cmap), aff3d)
     # Non-affine raises SpaceTypeError
     cmap_cmap = CoordinateMap(VARS['d_cs_r4'], VARS['r_cs_r4'], lambda x:x*3)
-    assert_raises(SpaceTypeError, xyz_affine, cmap_cmap)
+    pytest.raises(SpaceTypeError, xyz_affine, cmap_cmap)
     # Not enough dimensions - SpaceTypeError
     d_cs_r2 = CS('ij', 'voxels')
     r_cs_r2 = CS(VARS['r_names'][:2], 'mni')
     cmap = AffineTransform(d_cs_r2, r_cs_r2,
                            np.array([[2,0,10],[0,3,11],[0,0,1]]))
-    assert_raises(AxesError, xyz_affine, cmap)
+    pytest.raises(AxesError, xyz_affine, cmap)
     # Can pass in own validator
     my_valtor = {'blind': 'x', 'leading': 'y', 'ditch': 'z'}
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
     cmap = AffineTransform(VARS['d_cs_r3'],r_cs, aff3d)
-    assert_raises(AxesError, xyz_affine, cmap)
+    pytest.raises(AxesError, xyz_affine, cmap)
     assert_array_equal(xyz_affine(cmap, my_valtor), aff3d)
     # Slices in x, y, z coordmaps raise error because of missing spatial
     # dimensions
     arr = np.arange(120).reshape((2, 3, 4, 5))
     aff = np.diag([2, 3, 4, 5, 1])
     img = Image(arr, vox2mni(aff))
-    assert_raises(AxesError, xyz_affine, img[1].coordmap)
-    assert_raises(AxesError, xyz_affine, img[:,1].coordmap)
-    assert_raises(AxesError, xyz_affine, img[:,:,1].coordmap)
+    pytest.raises(AxesError, xyz_affine, img[1].coordmap)
+    pytest.raises(AxesError, xyz_affine, img[:,1].coordmap)
+    pytest.raises(AxesError, xyz_affine, img[:,:,1].coordmap)
 
 
 def test_xyz_order():
@@ -264,13 +264,13 @@ def test_xyz_order():
     assert_array_equal(xyz_order(VARS['r_cs_r3']), [0,1,2])
     assert_array_equal(xyz_order(VARS['r_cs_r4']), [0,1,2,3])
     r_cs = CS(('mni-x=L->R', 'mni-y=P->A', 'mni-q'), 'mni')
-    assert_raises(AxesError, xyz_order, r_cs)
+    pytest.raises(AxesError, xyz_order, r_cs)
     r_cs = CS(('t', 'mni-x=L->R', 'mni-z=I->S', 'mni-y=P->A'), 'mni')
     assert_array_equal(xyz_order(r_cs), [1, 3, 2, 0])
     # Can pass in own validator
     my_valtor = {'ditch': 'x', 'leading': 'y', 'blind': 'z'}
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
-    assert_raises(AxesError, xyz_order, r_cs)
+    pytest.raises(AxesError, xyz_order, r_cs)
     assert_array_equal(xyz_order(r_cs, my_valtor), [2,1,0])
 
 

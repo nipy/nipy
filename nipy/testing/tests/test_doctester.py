@@ -2,7 +2,7 @@
 """
 
 import numpy as np
-from nose.tools import assert_equal, assert_raises, assert_true
+from nose.tools import assert_equal, pytest.raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from ..doctester import round_numbers, strip_array_repr

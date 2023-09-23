@@ -6,7 +6,7 @@
 import numpy as np
 import numpy.random as nr
 from nose.tools import assert_true
-from numpy.testing import assert_almost_equal, assert_array_almost_equal, assert_raises
+from numpy.testing import assert_almost_equal, assert_array_almost_equal, pytest.raises
 
 from ..bayesian_mixed_effects import two_level_glm
 from ..mixed_effects_stat import (
@@ -172,7 +172,7 @@ def test_two_level_glm_error():
     X = np.random.normal(0, 1, size=(10, 11))
     y = np.random.normal(0, 1, size=(10, 5))
     vy = np.zeros((10, 5))
-    assert_raises(ValueError, two_level_glm, y, vy, X)
+    pytest.raises(ValueError, two_level_glm, y, vy, X)
 
 
 if __name__ == "__main__":

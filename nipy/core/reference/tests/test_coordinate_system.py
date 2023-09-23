@@ -5,7 +5,7 @@ from nose.tools import (
     assert_equal,
     assert_false,
     assert_not_equal,
-    assert_raises,
+    pytest.raises,
     assert_true,
 )
 
@@ -60,7 +60,7 @@ def test_unique_coord_names():
     notuniq = ('i','i','k')
     coordsys = CoordinateSystem(unique)
     assert coordsys.coord_names == unique
-    assert_raises(ValueError, CoordinateSystem, notuniq)
+    pytest.raises(ValueError, CoordinateSystem, notuniq)
 
 
 def test_dtypes():
@@ -68,10 +68,10 @@ def test_dtypes():
     dtypes = np.sctypes['others']
     dtypes.remove(object)
     for dt in dtypes:
-        assert_raises(ValueError, CoordinateSystem, 'ijk', 'test', dt)
+        pytest.raises(ValueError, CoordinateSystem, 'ijk', 'test', dt)
     # compound dtype
     dtype = np.dtype([('field1', '<f8'), ('field2', '<i4')])
-    assert_raises(ValueError, CoordinateSystem, 'ijk', 'test', dtype)
+    pytest.raises(ValueError, CoordinateSystem, 'ijk', 'test', dtype)
     # valid dtypes
     dtypes = (np.sctypes['int'] + np.sctypes['float'] + np.sctypes['complex'] +
               [object])
@@ -85,19 +85,19 @@ def test_dtypes():
         assert (product(cs, cs2) ==
                      CoordinateSystem('ijxy', name='product', coord_dtype=dt))
     # verify assignment fails
-    assert_raises(AttributeError, setattr, cs, 'dtype', np.dtype(cs_dt))
-    assert_raises(AttributeError, setattr, cs, 'coord_dtype', np.float64)
+    pytest.raises(AttributeError, setattr, cs, 'dtype', np.dtype(cs_dt))
+    pytest.raises(AttributeError, setattr, cs, 'coord_dtype', np.float64)
 
 
 def test_readonly_attrs():
     cs = E.cs
-    assert_raises(AttributeError, setattr, cs, 'coord_dtype',
+    pytest.raises(AttributeError, setattr, cs, 'coord_dtype',
                   np.dtype(np.int32))
-    assert_raises(AttributeError, setattr, cs, 'coord_names',
+    pytest.raises(AttributeError, setattr, cs, 'coord_names',
                   ['a','b','c'])
-    assert_raises(AttributeError, setattr, cs, 'dtype',
+    pytest.raises(AttributeError, setattr, cs, 'dtype',
                   np.dtype([('i', '<f4'), ('j', '<f4'), ('k', '<f4')]))
-    assert_raises(AttributeError, setattr, cs, 'ndim', 4)
+    pytest.raises(AttributeError, setattr, cs, 'ndim', 4)
 
 
 def test_index():
@@ -105,7 +105,7 @@ def test_index():
     assert cs.index('i') == 0
     assert cs.index('j') == 1
     assert cs.index('k') == 2
-    assert_raises(ValueError, cs.index, 'x')
+    pytest.raises(ValueError, cs.index, 'x')
 
 
 def test__ne__():
@@ -176,18 +176,18 @@ def test_checked_values():
     xc = cs._checked_values(x)
     np.allclose(xc, x)
     # wrong shape
-    assert_raises(CoordinateSystemError, cs._checked_values, x.reshape(3,1))
+    pytest.raises(CoordinateSystemError, cs._checked_values, x.reshape(3,1))
     # wrong length
-    assert_raises(CoordinateSystemError, cs._checked_values, x[0:2])
+    pytest.raises(CoordinateSystemError, cs._checked_values, x[0:2])
     # wrong dtype
     x = np.array([1,2,3], dtype=np.float64)
-    assert_raises(CoordinateSystemError, cs._checked_values, x)
+    pytest.raises(CoordinateSystemError, cs._checked_values, x)
 
 
 def test_safe_dtype():
-    assert_raises(TypeError, safe_dtype, str)
-    assert_raises(TypeError, safe_dtype, str, np.float64)
-    assert_raises(TypeError, safe_dtype, [('x', 'f8')])
+    pytest.raises(TypeError, safe_dtype, str)
+    pytest.raises(TypeError, safe_dtype, str, np.float64)
+    pytest.raises(TypeError, safe_dtype, [('x', 'f8')])
     valid_dtypes = []
     valid_dtypes.extend(np.sctypes['complex'])
     valid_dtypes.extend(np.sctypes['float'])
@@ -242,7 +242,7 @@ def test_product():
     cs = product(ax2, ax1, name='a name')
     assert cs.name == 'a name'
     # Anything else as kwarg -> error
-    assert_raises(TypeError, product, ax2, ax1, newarg='a name')
+    pytest.raises(TypeError, product, ax2, ax1, newarg='a name')
 
 
 def test_coordsys_maker():
@@ -253,7 +253,7 @@ def test_coordsys_maker():
     for i in range(1,nl+1):
         assert (cs_maker(i) ==
                      CoordinateSystem(ax_names[:i], 'myname', np.float64))
-    assert_raises(CoordSysMakerError, cs_maker, nl+1)
+    pytest.raises(CoordSysMakerError, cs_maker, nl+1)
     # You can pass in your own name
     assert (cs_maker(i, 'anothername') ==
                  CoordinateSystem(ax_names[:i+1], 'anothername', np.float64))

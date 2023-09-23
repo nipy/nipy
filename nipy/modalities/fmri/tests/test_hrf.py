@@ -6,7 +6,7 @@ from os.path import join as pjoin
 
 import numpy as np
 import scipy.io as sio
-from nose.tools import assert_raises
+from nose.tools import pytest.raises
 from numpy.testing import assert_almost_equal
 from scipy.stats import gamma
 
@@ -102,8 +102,8 @@ def test_spm_hrf_errors():
     # 0 or negative raise error for other args
     args = [0]
     for i in range(4):
-        assert_raises(ValueError, spm_hrf_compat, t_vec, *args)
+        pytest.raises(ValueError, spm_hrf_compat, t_vec, *args)
         args[-1] = -1
-        assert_raises(ValueError, spm_hrf_compat, t_vec, *args)
+        pytest.raises(ValueError, spm_hrf_compat, t_vec, *args)
         args[-1] = 1
         args.append(0)
