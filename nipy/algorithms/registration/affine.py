@@ -6,7 +6,6 @@ from nibabel.affines import apply_affine
 from transforms3d.quaternions import mat2quat, quat2axangle
 
 # Legacy repr printing from numpy.
-from nipy.testing import legacy_printing as setup_module  # noqa
 
 from .transform import Transform
 

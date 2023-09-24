@@ -38,9 +38,6 @@ CS = CoordinateSystem
 import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 
-# Legacy repr printing from numpy.
-from nipy.testing import legacy_printing
-
 # Dtypes for testing coordinate map creation / processing
 _SYMPY_SAFE_DTYPES = (np.sctypes['int'] + np.sctypes['uint'] +
                       np.sctypes['float'] + np.sctypes['complex'] +
@@ -78,7 +75,7 @@ def setup():
                                               [ 8,  9, 10, 11],
                                               [ 8,  9, 10, 11],
                                               [ 0,  0,  0,  1]]))
-    legacy_printing()
+    np.set_printoptions(legacy="1.13")
 
 
 def test_shift_origin():

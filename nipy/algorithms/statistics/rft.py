@@ -25,7 +25,6 @@ except ImportError:
 from scipy.special import beta, gamma, gammaln, hermitenorm
 
 # Legacy repr printing from numpy.
-from nipy.testing import legacy_printing as setup_module  # noqa
 
 
 def binomial(n, k):

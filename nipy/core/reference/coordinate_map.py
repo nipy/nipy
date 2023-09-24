@@ -69,7 +69,6 @@ from nibabel import io_orientation
 from nibabel.affines import from_matvec, to_matvec
 
 # Legacy repr printing from numpy.
-from nipy.testing import legacy_printing as setup_module  # noqa
 
 from .coordinate_system import CoordinateSystem, is_coordsys, safe_dtype
 from .coordinate_system import product as coordsys_product

@@ -73,7 +73,6 @@ import sys
 import numpy as np
 
 # Legacy repr printing from numpy.
-from nipy.testing import legacy_printing as setup_module  # noqa
 
 from nibabel import io_orientation
 from ...io import nibcompat

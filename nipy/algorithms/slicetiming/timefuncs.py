@@ -30,7 +30,6 @@ array([ 0. ,  0.2,  0.4,  0.6,  0.8,  1. ,  1.2,  1.4,  1.6,  1.8])
 import numpy as np
 
 # Legacy repr printing from numpy.
-from nipy.testing import legacy_printing as setup_module  # noqa
 
 # Dictionary (key, value) == (name, function) for slice timing functions
 SLICETIME_FUNCTIONS = {}
