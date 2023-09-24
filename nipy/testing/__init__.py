@@ -48,13 +48,3 @@ test = Tester().test
 bench = Tester().bench
 
 from . import decorators as dec
-
-
-def legacy_printing():
-    """ Set numpy print options to "legacy" for new versions of numpy
-
-    If imported into a file, nosetest will run this before any doctests.
-    """
-    from distutils.version import LooseVersion
-    if LooseVersion(np.__version__) >= LooseVersion('1.14'):
-        np.set_printoptions(legacy="1.13")

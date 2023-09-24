@@ -6,11 +6,6 @@ import pytest
 
 import numpy
 
-@pytest.fixture(autouse=True)
-def add_np(doctest_namespace):
-    doctest_namespace["np"] = numpy
-
-
 IGNORE_OUTPUT = register_optionflag('IGNORE_OUTPUT')
 NP_ALLCLOSE = register_optionflag('NP_ALLCLOSE')
 SYMPY_EQUAL = register_optionflag('SYMPY_EQUAL')
@@ -68,8 +63,8 @@ def round_numbers(in_str, precision):
         return res
     return FP_REG.sub(dorep, in_str)
 
-ARRAY_REG = re.compile('^\s*array\((.*)\)\s*$', re.DOTALL)
-DTYPE_REG = re.compile('\s*,\s+dtype=.*', re.DOTALL)
+ARRAY_REG = re.compile(r'^\s*array\((.*)\)\s*$', re.DOTALL)
+DTYPE_REG = re.compile(r'\s*,\s+dtype=.*', re.DOTALL)
 
 def strip_array_repr(in_str):
     """ Removes array-specific part of repr from string `in_str`
@@ -110,7 +105,7 @@ def strip_array_repr(in_str):
     out_str = arr_match.groups()[0]
     return DTYPE_REG.sub('', out_str)
 
-IGNORE_DTYPE_REG = re.compile(',\s+dtype=.*?(?=\))', re.DOTALL)
+IGNORE_DTYPE_REG = re.compile(r',\s+dtype=.*?(?=\))', re.DOTALL)
 
 def ignore_dtype(in_str):
     """ Removes dtype=[dtype] from string `in_str`
@@ -205,3 +200,9 @@ class NipyOutputChecker(doctest.OutputChecker):
 
 
 doctest.OutputChecker = NipyOutputChecker
+
+
+@pytest.fixture(autouse=True)
+def add_np(doctest_namespace):
+    numpy.set_printoptions(legacy="1.13")
+    doctest_namespace["np"] = numpy

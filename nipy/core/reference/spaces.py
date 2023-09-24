@@ -4,7 +4,6 @@ import numpy as np
 from nibabel.affines import from_matvec
 
 # Legacy repr printing from numpy.
-from nipy.testing import legacy_printing as setup_module  # noqa
 
 from nibabel import io_orientation
 from .coordinate_map import CoordMapMaker

@@ -19,7 +19,6 @@ import numpy as np
 from nibabel.onetime import auto_attr
 
 # Legacy repr printing from numpy.
-from nipy.testing import legacy_printing as setup_module  # noqa
 
 from ..reference.array_coords import ArrayCoordMap
 
