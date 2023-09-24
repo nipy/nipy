@@ -37,7 +37,12 @@ anatfile = os.path.join(basedir, 'anatomical.nii.gz')
 from numpy.testing import *
 
 # Overwrites numpy.testing.Tester
-from .nosetester import NipyNoseTester as Tester
+class Tester:
+    def test(self):
+        pass
+
+    def bench(self):
+        pass
 
 test = Tester().test
 bench = Tester().bench

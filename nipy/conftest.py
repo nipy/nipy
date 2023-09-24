@@ -1,21 +1,15 @@
-""" Custom doctester based on Numpy doctester
-
-To run doctests via nose, you'll need ``nosetests nipy/testing/doctester.py
---doctest-test``, because this file will be identified as containing tests.
-"""
-
-import os
+# Control testing
 import re
+import doctest
 from doctest import register_optionflag
+import pytest
 
-import numpy as np
+import numpy
 
-# Import for testing structured array reprs
-from numpy import array  # noqa
+@pytest.fixture(autouse=True)
+def add_np(doctest_namespace):
+    doctest_namespace["np"] = numpy
 
-from nipy.utils import _NoValue
-
-from ..fixes.numpy.testing.noseclasses import NumpyDoctest, NumpyOutputChecker
 
 IGNORE_OUTPUT = register_optionflag('IGNORE_OUTPUT')
 NP_ALLCLOSE = register_optionflag('NP_ALLCLOSE')
@@ -160,7 +154,8 @@ def ignore_dtype(in_str):
     return IGNORE_DTYPE_REG.sub('', in_str)
 
 
-class NipyOutputChecker(NumpyOutputChecker):
+class NipyOutputChecker(doctest.OutputChecker):
+
     def check_output(self, want, got, optionflags):
         if IGNORE_OUTPUT & optionflags:
             return True
@@ -203,25 +198,10 @@ class NipyOutputChecker(NumpyOutputChecker):
                 return False
             return first.dtype.names == second.dtype.names
         # Pass tests through two-pass numpy checker
-        res = NumpyOutputChecker.check_output(self, want, got, optionflags)
+        res = super(self).check_output(self, want, got, optionflags)
         # Return True if we wanted True and got True, or if we wanted False and
         # got False
         return res == wanted_tf
 
 
-class NipyDoctest(NumpyDoctest):
-    name = 'nipydoctest'   # call nosetests with --with-nipydoctest
-    out_check_class = NipyOutputChecker
-
-    def set_test_context(self, test):
-        # set namespace for tests
-        test.globs['np'] = np
-
-    def options(self, parser, env=_NoValue):
-        # Override option handling to take environment out of default values.
-        # Parent class has os.environ as default value for env.  This results
-        # in the environment being picked up and printed out in the built API
-        # documentation.  Remove this default, reset it inside the function.
-        if env is _NoValue:
-            env = os.environ
-        super().options(parser, env)
+doctest.OutputChecker = NipyOutputChecker
