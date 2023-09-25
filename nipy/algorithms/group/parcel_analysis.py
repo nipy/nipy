@@ -24,10 +24,10 @@ from os.path import join
 import numpy as np
 import scipy.ndimage as nd
 import scipy.stats as ss
+from nibabel import io_orientation
 
 from ... import save_image
 from ...core.image.image_spaces import make_xyz_image, xyz_affine
-from nibabel import io_orientation
 from ..kernel_smooth import fwhm2sigma
 from ..registration import resample
 from ..statistics.bayesian_mixed_effects import two_level_glm

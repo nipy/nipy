@@ -1,11 +1,11 @@
 """ Useful neuroimaging coordinate map makers and utilities """
 
 import numpy as np
-from nibabel.affines import from_matvec
 
 # Legacy repr printing from numpy.
-
 from nibabel import io_orientation
+from nibabel.affines import from_matvec
+
 from .coordinate_map import CoordMapMaker
 from .coordinate_system import CoordSysMaker, is_coordsys, is_coordsys_maker
 

@@ -36,6 +36,7 @@ anatfile = os.path.join(basedir, 'anatomical.nii.gz')
 
 from numpy.testing import *
 
+
 # Overwrites numpy.testing.Tester
 class Tester:
     def test(self):
