@@ -1,10 +1,10 @@
 # Control testing
-import re
 import doctest
+import re
 from doctest import register_optionflag
-import pytest
 
 import numpy
+import pytest
 
 IGNORE_OUTPUT = register_optionflag('IGNORE_OUTPUT')
 NP_ALLCLOSE = register_optionflag('NP_ALLCLOSE')

@@ -19,7 +19,6 @@ import numpy as np
 from nibabel.onetime import auto_attr
 
 # Legacy repr printing from numpy.
-
 from ..reference.array_coords import ArrayCoordMap
 
 # These imports are used in the fromarray and subsample functions only, not in

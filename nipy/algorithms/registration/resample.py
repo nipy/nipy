@@ -3,9 +3,9 @@
 
 import numpy as np
 from nibabel.casting import shared_range
+from scipy.ndimage import affine_transform, map_coordinates
 
 from ...core.image.image_spaces import as_xyz_image, make_xyz_image, xyz_affine
-from scipy.ndimage import affine_transform, map_coordinates
 from ._registration import _cspline_resample3d, _cspline_sample3d, _cspline_transform
 from .affine import Affine, inverse_affine
 

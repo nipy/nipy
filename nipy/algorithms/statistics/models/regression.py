@@ -31,7 +31,6 @@ from scipy import stats
 from nipy.algorithms.utils.matrices import matrix_rank, pos_recipr
 
 # Legacy repr printing from numpy.
-
 from .model import LikelihoodModel, LikelihoodModelResults
 
 
