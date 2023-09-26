@@ -444,6 +444,6 @@ class LinearModel:
 
 
 ###############################################################################
-# Hack to have nose skip onesample_test, which is not a unit test
+# Hack to have test framework skip onesample_test, which is not a unit test
 onesample_test.__test__ = False
 twosample_test.__test__ = False
