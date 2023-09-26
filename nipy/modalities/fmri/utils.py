@@ -91,8 +91,8 @@ def define(name, expr):
     --------
     >>> t = Term('t')
     >>> expr = t**2 + 3*t
-    >>> print(expr)  #doctest: +SYMPY_EQUAL
-    3*t + t**2
+    >>> expr
+    t**2 + 3*t
     >>> newexpr = define('f', expr)
     >>> print(newexpr)
     f(t)
