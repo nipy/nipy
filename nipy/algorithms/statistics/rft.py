@@ -232,7 +232,7 @@ class ECquasi(np.poly1d):
         --------
         >>> b = ECquasi([3,4,20], m=30, exponent=4)
         >>> c = ECquasi([1], m=30, exponent=4)
-        >>> b+c #doctest: +IGNORE_DTYPE
+        >>> b+c #doctest: +FIX
         ECquasi(array([ 3,  4, 21]), m=30.000000, exponent=4.000000)
 
         >>> d = ECquasi([1], m=30, exponent=3)
@@ -333,7 +333,7 @@ class ECquasi(np.poly1d):
         --------
         >>> b = ECquasi([3,4,20], m=30, exponent=4)
         >>> c = ECquasi([1,2], m=30, exponent=4)
-        >>> print(b-c)  #doctest: +IGNORE_DTYPE
+        >>> print(b-c)  #doctest: +FIX
         ECquasi(array([ 3,  3, 18]), m=30.000000, exponent=4.000000)
         """
         return self + (other * -1)
@@ -360,7 +360,7 @@ class ECquasi(np.poly1d):
         Examples
         --------
         >>> a = ECquasi([3,4,5])
-        >>> a.deriv(m=2) #doctest: +IGNORE_DTYPE
+        >>> a.deriv(m=2) #doctest: +FIX
         ECquasi(array([6]), m=inf, exponent=0.000000)
 
         >>> b = ECquasi([3,4,5], m=10, exponent=3)

@@ -604,7 +604,7 @@ class AffineTransform:
         ...                    [0,0,1,1],
         ...                    [0,0,0,1]])
         >>> affine_transform = AffineTransform(input_cs, output_cs, affine)
-        >>> affine_transform([2,3,4]) #doctest: +IGNORE_DTYPE
+        >>> affine_transform([2,3,4]) #doctest: +FIX
         array([3, 4, 5])
 
         The inverse transform, by default, generates a floating point inverse
@@ -618,7 +618,7 @@ class AffineTransform:
         `preserve_dtype` flag:
 
         >>> at_inv_preserved = affine_transform.inverse(preserve_dtype=True)
-        >>> at_inv_preserved([2, 6, 12]) #doctest: +IGNORE_DTYPE
+        >>> at_inv_preserved([2, 6, 12]) #doctest: +FIX
         array([  1,   5,  11])
 
         If you `preserve_dtype`, and there is no inverse affine preserving the
@@ -951,7 +951,7 @@ class AffineTransform:
         ...                    [0,0,1,1],
         ...                    [0,0,0,1]])
         >>> affine_transform = AffineTransform(input_cs, output_cs, affine)
-        >>> affine_transform([2,3,4]) #doctest: +IGNORE_DTYPE
+        >>> affine_transform([2,3,4]) #doctest: +FIX
         array([3, 4, 5])
         """
         x = np.asanyarray(x)
