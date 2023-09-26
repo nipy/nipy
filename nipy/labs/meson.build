@@ -32,11 +32,11 @@ cc.check_header('Python.h', dependencies: [py_dep], required: true)
 
 pylib_dep = dependency('python3-embed')
 
-cstat = shared_library( # This should probably be library?
+cstat = static_library(
   'cstat',
   fff,
   include_directories: ['../../lib/fff', '../../lib/fff_python_wrapper'],
-  dependencies: [pylib_dep, py_dep, blas],
+  dependencies: [pylib_dep, py_dep, blas]
 )
 
 cstat_dep = declare_dependency(
