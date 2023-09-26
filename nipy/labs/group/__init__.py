@@ -8,8 +8,3 @@ from . import glm_twolevel, onesample, permutation_test, twosample
 warn('Module nipy.labs.group deprecated, will be removed',
      FutureWarning,
      stacklevel=2)
-
-from nipy.testing import Tester
-
-test = Tester().test
-bench = Tester().bench

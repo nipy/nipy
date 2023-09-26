@@ -25,8 +25,6 @@ Examples
 
 import os
 
-import numpy as np
-
 # Discover directory path
 filepath = os.path.abspath(__file__)
 basedir = os.path.dirname(filepath)
@@ -35,17 +33,5 @@ funcfile = os.path.join(basedir, 'functional.nii.gz')
 anatfile = os.path.join(basedir, 'anatomical.nii.gz')
 
 from numpy.testing import *
-
-
-# Overwrites numpy.testing.Tester
-class Tester:
-    def test(self):
-        pass
-
-    def bench(self):
-        pass
-
-test = Tester().test
-bench = Tester().bench
 
 from . import decorators as dec

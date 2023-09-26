@@ -49,8 +49,3 @@ from .wrapper import (
 warn('Module nipy.labs.bindings deprecated, will be removed',
      FutureWarning,
      stacklevel=2)
-
-from nipy.testing import Tester
-
-test = Tester().test
-bench = Tester().bench

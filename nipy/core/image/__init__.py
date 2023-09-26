@@ -9,10 +9,6 @@ and the data itself.
 __docformat__ = 'restructuredtext'
 
 # You'd usually use nipy.core.api for these
-from nipy.testing import Tester
 
 from . import image
 from .image import Image
-
-test = Tester().test
-bench = Tester().bench

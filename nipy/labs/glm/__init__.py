@@ -8,8 +8,3 @@ warn('Module nipy.labs.glm deprecated, will be removed. '
      'Please use nipy.modalities.fmri.glm instead.',
      FutureWarning,
      stacklevel=2)
-
-from nipy.testing import Tester
-
-test = Tester().test
-bench = Tester().bench
