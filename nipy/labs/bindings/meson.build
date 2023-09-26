@@ -9,7 +9,8 @@ extensions = [
 
 foreach ext: extensions
   py.extension_module(ext,
-    [cython_gen_cstat.process(ext + '.pyx'), cstat],
+    cython_gen_cstat.process(ext + '.pyx'),
+    dependencies: [cstat_dep],
     c_args: cython_c_args,
     include_directories: [
       incdir_numpy,

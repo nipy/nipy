@@ -26,29 +26,22 @@ foreach subdir: pure_subdirs
 endforeach
 
 
-cstat_files = [
-  'fff_array.c',
-  'fff_base.c',
-  'fff_blas.c',
-  'fff_gen_stats.c',
-  'fff_glm_kalman.c',
-  'fff_glm_twolevel.c',
-  'fff_lapack.c',
-  'fff_matrix.c',
-  'fff_onesample_stat.c',
-  'fff_routines.c',
-  'fff_specfun.c',
-  'fff_twosample_stat.c',
-  'fff_vector.c'
-]
-
 blas = dependency('openblas', required: true)
 
-cstat = py.extension_module( # This should probably be library?
+cc.check_header('Python.h', dependencies: [py_dep], required: true)
+
+pylib_dep = dependency('python3-embed')
+
+cstat = shared_library( # This should probably be library?
   'cstat',
   fff,
-  include_directories: ['../../lib/fff'],
-  dependencies: [py_dep, blas]
+  include_directories: ['../../lib/fff', '../../lib/fff_python_wrapper'],
+  dependencies: [pylib_dep, py_dep, blas],
+)
+
+cstat_dep = declare_dependency(
+  link_with: cstat,
+  include_directories: ['../../lib/fff', '../../lib/fff_python_wrapper']
 )
 
 cython_gen_cstat = generator(cython_cli,

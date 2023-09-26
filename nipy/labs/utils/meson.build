@@ -1,8 +1,8 @@
 target_dir = nipy_dir / 'labs/utils'
 
-
 py.extension_module('routines',
-  [cython_gen_cstat.process('routines.pyx'), cstat],
+  cython_gen_cstat.process('routines.pyx'),
+  dependencies: cstat_dep,
   c_args: cython_c_args,
   include_directories: [
     incdir_numpy,

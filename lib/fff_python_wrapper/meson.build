@@ -1,1 +1,1 @@
-fff += files('fffpy.c')
+fff += files(['fffpy.c'])

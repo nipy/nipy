@@ -2,7 +2,8 @@ target_dir = nipy_dir / 'labs/glm'
 
 
 py.extension_module('kalman',
-  [cython_gen_cstat.process('kalman.pyx'), cstat],
+  cython_gen_cstat.process('kalman.pyx'),
+  dependencies: [cstat_dep],
   c_args: cython_c_args,
   include_directories: [
     incdir_numpy,
