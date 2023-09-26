@@ -5,8 +5,3 @@ This sub-package contains functions for clustering.
 It might be removed in the future, and replaced
 by an optional dependence on scikit learn.
 """
-
-from nipy.testing import Tester
-
-test = Tester().test
-bench = Tester().bench

@@ -44,8 +44,3 @@ from . import coordinate_map, coordinate_system, slices
 
 __all__ = ["coordinate_system", "coordinate_map",
            "slices"]
-
-from nipy.testing import Tester
-
-test = Tester().test
-bench = Tester().bench
