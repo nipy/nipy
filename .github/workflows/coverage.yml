@@ -26,15 +26,19 @@ jobs:
       - name: Install
         run: |
           pip install -r dev-requirements.txt
-          pip install .
+          pip install -e .
       - name: Show environment
         run: env
       - name: Library tests
         run: |
-          pytest --cov=nipy --pyargs nipy
+          mkdir tmp
+          cd tmp
+          pytest --doctest-plus --cov=nipy --cov-config=../.coveragerc --pyargs nipy
       - name: See what's where
         run: |
           pwd
           ls -lR ..
       - name: Upload to codecov
         uses: codecov/codecov-action@v3
+        with:
+          files: tmp/.coverage
