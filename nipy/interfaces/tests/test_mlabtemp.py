@@ -5,6 +5,7 @@
 # Stdlib imports
 import os
 import tempfile
+
 import pytest
 
 # Our own imports

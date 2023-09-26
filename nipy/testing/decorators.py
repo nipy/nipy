@@ -3,8 +3,8 @@
 """ Extend numpy's decorators to use nipy's gui and data labels.
 """
 
-from unittest import skipIf
 import functools
+from unittest import skipIf
 
 from nibabel.optpkg import optional_package
 
