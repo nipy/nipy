@@ -40,4 +40,4 @@ jobs:
         run: env
       - name: Library tests
         run: |
-          pytest --pyargs nipy
+          pytest --doctest-plus --pyargs nipy
