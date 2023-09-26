@@ -56,7 +56,7 @@ def elsym(edgelen, order=1):
         return 1
     r = 0
     for v in combinations(range(l), order):
-        r += np.product([edgelen[vv] for vv in v])
+        r += np.prod([edgelen[vv] for vv in v])
     return r
 
 
@@ -259,7 +259,7 @@ def test_lips1_disjoint():
     d = np.random.standard_normal((10,)+(30,))
     # Test rotation causes no change in volumes
     U = randorth(p=6)[:1]
-    e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
+    e = np.dot(U.T, c.reshape((c.shape[0], np.prod(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
 
     assert_almost_equal(phi(c, box1 + box2), phi(c, box1) + phi(c, box2))
@@ -284,7 +284,7 @@ def test_lips2_disjoint():
     d = np.random.standard_normal((10,40,40))
     # Test rotation causes no change in volumes
     U = randorth(p=6)[0:2]
-    e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
+    e = np.dot(U.T, c.reshape((c.shape[0], np.prod(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
     assert_almost_equal(phi(c, box1 + box2),
                         phi(c, box1) + phi(c, box2))
@@ -311,7 +311,7 @@ def test_lips3_disjoint():
     d = np.random.standard_normal((10,40,40,40))
     # Test rotation causes no change in volumes
     U = randorth(p=6)[0:3]
-    e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
+    e = np.dot(U.T, c.reshape((c.shape[0], np.prod(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
 
     assert_almost_equal(phi(c, box1 + box2), phi(c, box1) + phi(c, box2))
@@ -336,7 +336,7 @@ def test_lips3_nans():
     c = np.indices(box1.shape).astype(np.float64)
     assert_array_equal(np.isnan(phi(c, box2)), False)
     U = randorth(p=6)[0:3]
-    e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
+    e = np.dot(U.T, c.reshape((c.shape[0], np.prod(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
     assert_array_equal(np.isnan(phi(e, box1 + box2)), False)
 
