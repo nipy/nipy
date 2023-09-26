@@ -175,7 +175,7 @@ def test_tsdiffana():
         assert isfile(pjoin('myresults', 'tsdiff_vr2.png'))
         max_img = load_image(pjoin('myresults', 'dv2_max_vr2.nii.gz'))
         assert max_img.shape == img.shape[:-1]
-        del max_img, mean_img
+        del max_img, mean_img, saved_results
 
 
 def check_diag_results(results, img_shape,
