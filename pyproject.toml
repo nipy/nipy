@@ -9,6 +9,13 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+[project.scripts]
+nipy_3dto4d = 'nipy.cli.img3dto4d:main'
+nipy_4dto3d = 'nipy.cli.img4dto3d:main'
+nipy_4d_realign = 'nipy.cli.realign4d:main'
+nipy_tsdiffana = 'nipy.cli.tsdiffana:main'
+nipy_diagnose = 'nipy.cli.diagnose:main'
+
 [tool.ruff]
 line-length = 88
 target-version = 'py39'

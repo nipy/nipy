@@ -5,7 +5,6 @@ python_sources = [
   'gmm.py',
   'hierarchical_clustering.py',
   'imm.py',
-  'setup.py',
   'utils.py',
   'von_mises_fisher_mixture.py'
 ]
