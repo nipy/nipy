@@ -71,11 +71,6 @@ tox-fresh:
 	# pytox, obviously.
 	tox -c tox.ini
 
-tox-stale:
-	# tox tests with MB's already-installed virtualenvs (numpy and nose
-	# installed)
-	tox -e python25,python26,python27,python32,np-1.2.1
-
 recythonize:
 	# Recythonize all pyx files
 	find . -name "*.pyx" -exec cython -I libcstat/wrapper -I lib/fff_python_wrapper {} \;

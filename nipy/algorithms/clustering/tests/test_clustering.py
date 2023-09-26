@@ -11,6 +11,7 @@ from ..utils import kmeans
 
 
 class TestClustering(TestCase):
+
     def testkmeans1(self):
         X = nr.randn(10, 2)
         A = np.concatenate([np.ones((7, 2)),np.zeros((3, 2))])

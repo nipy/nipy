@@ -89,6 +89,7 @@
 .. _bazaar: http://bazaar-vcs.org/
 .. _subversion: http://subversion.tigris.org/
 .. _nose: http://nose.readthedocs.org/en/latest
+.. _pytest: https://pytest.org
 .. _`python coverage tester`: http://nedbatchelder.com/code/modules/coverage.html
 
 .. Other python projects
