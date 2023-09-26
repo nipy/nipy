@@ -91,10 +91,6 @@ _b0*x1 + _b1*x3 + _b2*x1*x3 + _b3
 The I is the "intercept" term, I have explicity not used R's default of
 adding it to everything.
 
->>> import doctest
->>> doctest.OutputChecker
-Something
-
 >>> f.design(r)  #doctest: +STRUCTARR_EQUAL
 array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
        (70.0, 69.0, 4830.0, 1.0), (63.0, 47.0, 2961.0, 1.0),
