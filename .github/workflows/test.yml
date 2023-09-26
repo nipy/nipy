@@ -35,9 +35,11 @@ jobs:
       - name: Install
         run: |
           pip install -r dev-requirements.txt
-          pip install .
+          pip install -e .
       - name: Show environment
         run: env
       - name: Library tests
         run: |
+          mkdir tmp
+          cd tmp
           pytest --doctest-plus --pyargs nipy
