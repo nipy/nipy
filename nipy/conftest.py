@@ -1,4 +1,5 @@
 # Control testing
+import os
 import numpy
 import pytest
 
@@ -19,3 +20,11 @@ def mpl_imports():
         pass
     else:
         mpl.use('agg')
+
+
+@pytest.fixture
+def in_tmp_path(tmp_path):
+    wd = os.getcwd()
+    os.chdir(tmp_path)
+    yield tmp_path
+    os.chdir(wd)
