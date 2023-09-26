@@ -125,11 +125,20 @@ class OLS:
        (``object[0]``) axis being the independent variable of the model;
        object[0] returns an object with attribute ``shape``.
     formula :  :class:`nipy.algorithms.statistics.formula.Formula`
-    outputs :
-    volume_start_times :
+    outputs : list
+        Store for model outputs.
+    volume_start_times: None or float or (N,) ndarray
+        start time of each frame. It can be specified either as an ndarray
+        with ``N=len(images)`` elements or as a single float, the TR. None
+        results in ``np.arange(len(images)).astype(np.float64)``
+
+    Raises
+    ------
+    ValueError
+        If `volume_start_times` not specified, and 4D image passed.
     """
 
-    def __init__(self, fmri_image, formula, outputs=[],
+    def __init__(self, fmri_image, formula, outputs=None,
                  volume_start_times=None):
         self.fmri_image = fmri_image
         try:
@@ -137,11 +146,12 @@ class OLS:
         except AttributeError:
             self.data = fmri_image.get_list_data(axis=0)
         self.formula = formula
-        self.outputs = outputs
+        self.outputs = outputs if outputs else []
         if volume_start_times is None:
-            self.volume_start_times = self.fmri_image.volume_start_times
-        else:
-            self.volume_start_times = volume_start_times
+            volume_start_times = getattr(fmri_image, 'volume_start_times', None)
+        if volume_start_times is None:
+            raise ValueError('Must specify start times for 4D image input')
+        self.volume_start_times = volume_start_times
 
     def execute(self):
         m = model_generator(self.formula, self.data,
@@ -199,8 +209,17 @@ class AR1:
     rho : ``Image``
        image of AR(1) coefficients.  Returning data from
        ``rho.get_fdata()``, and having attribute ``coordmap``
-    outputs :
-    volume_start_times :
+    outputs : list
+        Store for model outputs.
+    volume_start_times: None or float or (N,) ndarray
+        start time of each frame. It can be specified either as an ndarray
+        with ``N=len(images)`` elements or as a single float, the TR. None
+        results in ``np.arange(len(images)).astype(np.float64)``
+
+    Raises
+    ------
+    ValueError
+        If `volume_start_times` not specified, and 4D image passed.
     """
 
     def __init__(self, fmri_image, formula, rho, outputs=[],
@@ -219,10 +238,12 @@ class AR1:
         r = (np.clip(rho,-1,1) * 100).astype(np.int_) / 100.
         r[m] = np.inf
         self.rho = Image(r, g)
+        self.outputs = outputs if outputs else []
         if volume_start_times is None:
-            self.volume_start_times = self.fmri_image.volume_start_times
-        else:
-            self.volume_start_times = volume_start_times
+            volume_start_times = getattr(fmri_image, 'volume_start_times', None)
+        if volume_start_times is None:
+            raise ValueError('Must specify start times for 4D image input')
+        self.volume_start_times = volume_start_times
 
     def execute(self):
 

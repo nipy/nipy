@@ -3,7 +3,6 @@
 
 import numpy as np
 from nibabel.affines import from_matvec
-from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import assert_array_almost_equal
 
 from nipy.core import api
@@ -16,20 +15,19 @@ from nipy.testing import funcfile
 TMP_FNAME = 'afile.nii'
 
 
-def test_save1():
+def test_save1(in_tmp_path):
     # A test to ensure that when a file is saved, the affine and the
     # data agree. This image comes from a NIFTI file
     img = load_image(funcfile)
-    with InTemporaryDirectory():
-        save_image(img, TMP_FNAME)
-        img2 = load_image(TMP_FNAME)
-        assert_array_almost_equal(img.affine, img2.affine)
-        assert img.shape == img2.shape
-        assert_array_almost_equal(img2.get_fdata(), img.get_fdata())
-        del img2
+    save_image(img, TMP_FNAME)
+    img2 = load_image(TMP_FNAME)
+    assert_array_almost_equal(img.affine, img2.affine)
+    assert img.shape == img2.shape
+    assert_array_almost_equal(img2.get_fdata(), img.get_fdata())
+    del img2
 
 
-def test_save2():
+def test_save2(in_tmp_path):
     # A test to ensure that when a file is saved, the affine and the
     # data agree. This image comes from a NIFTI file
     shape = (13,5,7,3)
@@ -37,16 +35,15 @@ def test_save2():
     cmap = api.AffineTransform.from_start_step('ijkt', 'xyzt', [1,3,5,0], step)
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
-    with InTemporaryDirectory():
-        save_image(img, TMP_FNAME)
-        img2 = load_image(TMP_FNAME)
-        assert_array_almost_equal(img.affine, img2.affine)
-        assert img.shape == img2.shape
-        assert_array_almost_equal(img2.get_fdata(), img.get_fdata())
-        del img2
+    save_image(img, TMP_FNAME)
+    img2 = load_image(TMP_FNAME)
+    assert_array_almost_equal(img.affine, img2.affine)
+    assert img.shape == img2.shape
+    assert_array_almost_equal(img2.get_fdata(), img.get_fdata())
+    del img2
 
 
-def test_save2b():
+def test_save2b(in_tmp_path):
     # A test to ensure that when a file is saved, the affine and the
     # data agree. This image comes from a NIFTI file.  This example has a
     # non-diagonal affine matrix for the spatial part, but is 'diagonal' for the
@@ -61,16 +58,15 @@ def test_save2b():
     cmap = api.vox2mni(B)
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
-    with InTemporaryDirectory():
-        save_image(img, TMP_FNAME)
-        img2 = load_image(TMP_FNAME)
-        assert_array_almost_equal(img.affine, img2.affine)
-        assert img.shape == img2.shape
-        assert_array_almost_equal(img2.get_fdata(), img.get_fdata())
-        del img2
+    save_image(img, TMP_FNAME)
+    img2 = load_image(TMP_FNAME)
+    assert_array_almost_equal(img.affine, img2.affine)
+    assert img.shape == img2.shape
+    assert_array_almost_equal(img2.get_fdata(), img.get_fdata())
+    del img2
 
 
-def test_save3():
+def test_save3(in_tmp_path):
     # A test to ensure that when a file is saved, the affine
     # and the data agree. In this case, things don't agree:
     # i) the pixdim is off
@@ -83,21 +79,19 @@ def test_save3():
               from_matvec(np.diag([0,3,5,1]), step))
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
-    # with InTemporaryDirectory():
-    with InTemporaryDirectory():
-        save_image(img, TMP_FNAME)
-        tmp = load_image(TMP_FNAME)
-        # Detach image from file so we can delete it
-        data = tmp.get_fdata().copy()
-        img2 = api.Image(data, tmp.coordmap, tmp.metadata)
-        del tmp
+    save_image(img, TMP_FNAME)
+    tmp = load_image(TMP_FNAME)
+    # Detach image from file so we can delete it
+    data = tmp.get_fdata().copy()
+    img2 = api.Image(data, tmp.coordmap, tmp.metadata)
+    del tmp
     assert tuple([img.shape[l] for l in [3,2,1,0]]) == img2.shape
     a = np.transpose(img.get_fdata(), [3,2,1,0])
     assert not np.allclose(img.affine, img2.affine)
     assert np.allclose(a, img2.get_fdata())
 
 
-def test_save4():
+def test_save4(in_tmp_path):
     # Same as test_save3 except we have reordered the 'ijk' input axes.
     shape = (13,5,7,3)
     step = np.array([3.45,2.3,4.5,6.9])
@@ -112,13 +106,12 @@ def test_save4():
               from_matvec(np.diag([2., 3, 5, 1]), step))
     data = np.random.standard_normal(shape)
     img = api.Image(data, cmap)
-    with InTemporaryDirectory():
-        save_image(img, TMP_FNAME)
-        tmp = load_image(TMP_FNAME)
-        data = tmp.get_fdata().copy()
-        # Detach image from file so we can delete it
-        img2 = api.Image(data, tmp.coordmap, tmp.metadata)
-        del tmp
+    save_image(img, TMP_FNAME)
+    tmp = load_image(TMP_FNAME)
+    data = tmp.get_fdata().copy()
+    # Detach image from file so we can delete it
+    img2 = api.Image(data, tmp.coordmap, tmp.metadata)
+    del tmp
     P = np.array([[0,0,0,1,0],
                   [0,0,1,0,0],
                   [0,1,0,0,0],

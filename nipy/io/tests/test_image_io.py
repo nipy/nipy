@@ -2,6 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from os.path import dirname
 from os.path import join as pjoin
+from pathlib import Path
 
 import nibabel as nib
 import numpy as np
@@ -219,13 +220,12 @@ def test_header_roundtrip():
     assert newhdr['slice_end'] == hdr['slice_end']
 
 
-def test_file_roundtrip():
+def test_file_roundtrip(in_tmp_path):
     img = load_image(anatfile)
     data = img.get_fdata()
-    with InTemporaryDirectory():
-        save_image(img, 'img.nii.gz')
-        img2 = load_image('img.nii.gz')
-        data2 = img2.get_fdata()
+    save_image(img, 'img.nii.gz')
+    img2 = load_image('img.nii.gz')
+    data2 = img2.get_fdata()
     # verify data
     assert_almost_equal(data2, data)
     assert_almost_equal(data2.mean(), data.mean())
@@ -236,6 +236,13 @@ def test_file_roundtrip():
     assert img2.ndim == img.ndim
     # verify affine
     assert_almost_equal(img2.affine, img.affine)
+    # Test we can use Path objects
+    out_path = 'path_img.nii'
+    save_image(img, out_path)
+    img2 = load_image(out_path)
+    data2 = img2.get_fdata()
+    # verify data
+    assert_almost_equal(data2, data)
 
 
 def test_roundtrip_from_array():

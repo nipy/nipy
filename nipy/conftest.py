@@ -1,5 +1,6 @@
 # Control testing
 import os
+import tempfile
 import numpy
 import pytest
 
@@ -23,8 +24,9 @@ def mpl_imports():
 
 
 @pytest.fixture
-def in_tmp_path(tmp_path):
-    wd = os.getcwd()
-    os.chdir(tmp_path)
-    yield tmp_path
-    os.chdir(wd)
+def in_tmp_path():
+    with tempfile.TemporaryDirectory() as newpath:
+        old_cwd = os.getcwd()
+        os.chdir(newpath)
+        yield newpath
+        os.chdir(old_cwd)
