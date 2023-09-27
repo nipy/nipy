@@ -26,7 +26,12 @@ foreach subdir: pure_subdirs
 endforeach
 
 
-blas = dependency('openblas', required: true)
+blas = dependency('openblas', required: false)
+if not blas.found()
+  blas = declare_dependency(
+    link_with: lapack_lite,
+  )
+endif
 
 cc.check_header('Python.h', dependencies: [py_dep], required: true)
 
