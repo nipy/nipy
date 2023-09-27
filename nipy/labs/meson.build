@@ -35,7 +35,11 @@ pylib_dep = dependency('python3-embed')
 cstat = static_library(
   'cstat',
   fff,
-  include_directories: ['../../lib/fff', '../../lib/fff_python_wrapper'],
+  include_directories: [
+    '../../lib/fff',
+    '../../lib/fff_python_wrapper',
+    incdir_numpy
+  ],
   dependencies: [pylib_dep, py_dep, blas]
 )
 
