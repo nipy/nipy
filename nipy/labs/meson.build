@@ -35,7 +35,7 @@ endif
 
 cc.check_header('Python.h', dependencies: [py_dep], required: true)
 
-pylib_dep = dependency('python3-embed')
+pylib_dep = dependency('python3')
 
 cstat = static_library(
   'cstat',
