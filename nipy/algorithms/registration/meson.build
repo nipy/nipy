@@ -1,4 +1,4 @@
-target_dir = nipy_dir / 'algorithms/registration'
+target_dir = 'nipy/algorithms/registration'
 
 
 py.extension_module('_registration',
@@ -37,4 +37,4 @@ py.install_sources(
 )
 
 
-install_subdir('tests', install_dir: target_dir)
+install_subdir('tests', install_dir: install_root / target_dir)

@@ -120,9 +120,10 @@ pure_subdirs = [
   'utils'
 ]
 
-nipy_dir = py.get_install_dir() / 'nipy'
+install_root = py.get_install_dir()
+
 foreach subdir: pure_subdirs
-  install_subdir(subdir, install_dir: nipy_dir)
+  install_subdir(subdir, install_dir: install_root / 'nipy')
 endforeach
 
 

@@ -1,3 +1,5 @@
+target_dir = 'nipy/algorithms/clustering'
+
 python_sources = [
   '__init__.py',
   'bgmm.py',
@@ -12,5 +14,5 @@ python_sources = [
 py3.install_sources(
   python_sources,
   pure: false,
-  subdir: 'nipy/algorithms/clustering'
+  subdir: target_dir
 )

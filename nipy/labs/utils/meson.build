@@ -1,4 +1,4 @@
-target_dir = nipy_dir / 'labs/utils'
+target_dir = 'nipy/labs/utils'
 
 py.extension_module('routines',
   cython_gen_cstat.process('routines.pyx'),
@@ -28,4 +28,4 @@ py.install_sources(
 )
 
 
-install_subdir('tests', install_dir: target_dir)
+install_subdir('tests', install_dir: install_root / target_dir)

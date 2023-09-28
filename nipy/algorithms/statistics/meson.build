@@ -1,4 +1,4 @@
-target_dir = nipy_dir / 'algorithms/statistics'
+target_dir = 'nipy/algorithms/statistics'
 
 
 extensions = [
@@ -52,5 +52,5 @@ pure_subdirs = [
   'tests'
 ]
 foreach subdir: pure_subdirs
-  install_subdir(subdir, install_dir: target_dir)
+  install_subdir(subdir, install_dir: install_root / target_dir)
 endforeach

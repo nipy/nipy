@@ -1,4 +1,4 @@
-target_dir = nipy_dir / 'labs/glm'
+target_dir = 'nipy/labs/glm'
 
 
 py.extension_module('kalman',
@@ -26,4 +26,4 @@ py.install_sources(
 )
 
 
-install_subdir('tests', install_dir: target_dir)
+install_subdir('tests', install_dir: install_root / target_dir)

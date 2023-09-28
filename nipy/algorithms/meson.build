@@ -1,4 +1,4 @@
-target_dir = nipy_dir / 'algorithms'
+target_dir = 'nipy/algorithms'
 
 
 python_sources = [
@@ -25,7 +25,7 @@ pure_subdirs = [
   'utils'
 ]
 foreach subdir: pure_subdirs
-  install_subdir(subdir, install_dir: target_dir)
+  install_subdir(subdir, install_dir: install_root / target_dir)
 endforeach
 
 subdir('graph')

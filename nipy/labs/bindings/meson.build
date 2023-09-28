@@ -1,4 +1,4 @@
-target_dir = nipy_dir / 'labs/bindings'
+target_dir = 'nipy/labs/bindings'
 
 
 extensions = [
@@ -33,4 +33,4 @@ py.install_sources(
 )
 
 
-install_subdir('tests', install_dir: target_dir)
+install_subdir('tests', install_dir: install_root / target_dir)

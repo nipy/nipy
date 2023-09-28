@@ -1,4 +1,4 @@
-target_dir = nipy_dir / 'labs'
+target_dir = 'nipy/labs'
 
 
 python_sources = [
@@ -22,7 +22,7 @@ pure_subdirs = [
   'viz_tools'
 ]
 foreach subdir: pure_subdirs
-  install_subdir(subdir, install_dir: target_dir)
+  install_subdir(subdir, install_dir: install_root / target_dir)
 endforeach
 
 
