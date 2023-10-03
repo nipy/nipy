@@ -18,11 +18,7 @@ yielding a paradigm is in fact a session index
 Author: Bertrand Thirion, 2009-2011
 """
 
-import warnings
-
 import numpy as np
-
-from ...utils.compat3 import open4csv
 
 ##########################################################
 # Paradigm handling
@@ -71,7 +67,7 @@ class Paradigm:
         session: string, optional, session identifier
         """
         import csv
-        with open4csv(csv_file, "w") as fid:
+        with open(csv_file, "w", newline='') as fid:
             writer = csv.writer(fid, delimiter=' ')
             n_pres = np.size(self.con_id)
             sess = np.repeat(session, n_pres)
@@ -167,7 +163,7 @@ def load_paradigm_from_csv_file(path, session=None):
     .csv
     """
     import csv
-    with open4csv(path, 'r') as csvfile:
+    with open(path, newline='') as csvfile:
         dialect = csv.Sniffer().sniff(csvfile.read())
         csvfile.seek(0)
         reader = csv.reader(csvfile, dialect)

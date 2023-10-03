@@ -19,7 +19,6 @@ high ideals of :ref:`nipy-mission`.
 
     documentation
     devel/code_discussions/coordmap_notes
-    devel/doctests_preprocessor
     devel/guidelines/compiling_windows
     devel/images
     devel/install/windows_scipy_build

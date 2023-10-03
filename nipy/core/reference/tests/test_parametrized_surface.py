@@ -4,7 +4,6 @@
 Parametrized surfaces using a CoordinateMap
 """
 import numpy as np
-from nose.tools import assert_equal
 
 from nipy.core.api import CoordinateMap, CoordinateSystem, Grid
 
@@ -45,9 +44,9 @@ def test_grid():
     g = Grid(surface_param)
     xyz_grid = g[-1:1:201j,-1:1:101j]
     x, y, z = xyz_grid.transposed_values
-    yield assert_equal, x.shape, (201,101)
-    yield assert_equal, y.shape, (201,101)
-    yield assert_equal, z.shape, (201,101)
+    assert x.shape == (201,101)
+    assert y.shape == (201,101)
+    assert z.shape == (201,101)
 
 def test_grid32():
     # Check that we can use a float32 input and output
@@ -57,10 +56,10 @@ def test_grid32():
     g = Grid(surface32)
     xyz_grid = g[-1:1:201j,-1:1:101j]
     x, y, z = xyz_grid.transposed_values
-    yield assert_equal, x.shape, (201,101)
-    yield assert_equal, y.shape, (201,101)
-    yield assert_equal, z.shape, (201,101)
-    yield assert_equal, x.dtype, np.dtype(np.float32)
+    assert x.shape == (201,101)
+    assert y.shape == (201,101)
+    assert z.shape == (201,101)
+    assert x.dtype == np.dtype(np.float32)
 
 def test_grid32_c128():
     # Check that we can use a float32 input and complex128 output
@@ -72,10 +71,10 @@ def test_grid32_c128():
     g = Grid(surface)
     xyz_grid = g[-1:1:201j,-1:1:101j]
     x, y, z = xyz_grid.transposed_values
-    yield assert_equal, x.shape, (201,101)
-    yield assert_equal, y.shape, (201,101)
-    yield assert_equal, z.shape, (201,101)
-    yield assert_equal, x.dtype, np.dtype(np.complex128)
+    assert x.shape == (201,101)
+    assert y.shape == (201,101)
+    assert z.shape == (201,101)
+    assert x.dtype == np.dtype(np.complex128)
 
 
 def view_surface():

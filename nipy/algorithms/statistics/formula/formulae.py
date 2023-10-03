@@ -91,7 +91,7 @@ _b0*x1 + _b1*x3 + _b2*x1*x3 + _b3
 The I is the "intercept" term, I have explicity not used R's default of
 adding it to everything.
 
->>> f.design(r)  #doctest: +STRUCTARR_EQUAL
+>>> f.design(r)  #doctest: +FIX +FLOAT_CMP
 array([(51.0, 39.0, 1989.0, 1.0), (64.0, 54.0, 3456.0, 1.0),
        (70.0, 69.0, 4830.0, 1.0), (63.0, 47.0, 2961.0, 1.0),
        (78.0, 66.0, 5148.0, 1.0), (55.0, 44.0, 2420.0, 1.0),
@@ -123,9 +123,11 @@ from sympy.utilities.lambdify import implemented_function, lambdify
 from nipy.algorithms.utils.matrices import full_rank, matrix_rank
 
 # Legacy repr printing from numpy.
-from nipy.testing import legacy_printing as setup_module  # noqa
 from nipy.utils import VisibleDeprecationWarning, _NoValue
-from nipy.utils.compat3 import to_str
+
+
+def _to_str(s):
+    return s.decode('latin1') if isinstance(s, bytes) else str(s)
 
 
 @np.deprecate(message = "Please use sympy.Dummy instead of this function")
@@ -251,7 +253,7 @@ class FactorTerm(Term):
 
     def __new__(cls, name, level):
         # Names or levels can be byte strings
-        new = Term.__new__(cls, f"{to_str(name)}_{to_str(level)}")
+        new = Term.__new__(cls, f"{_to_str(name)}_{_to_str(level)}")
         new.level = level
         new.factor_name = name
         return new
@@ -404,22 +406,22 @@ def make_recarray(rows, names, dtypes=None, drop_name_dim=_NoValue):
 
     >>> arr = np.array([[3, 4], [4, 6], [6, 8]])
     >>> make_recarray(arr, ['x', 'y'],
-    ...               drop_name_dim=True) #doctest: +STRUCTARR_EQUAL
+    ...               drop_name_dim=True) #doctest: +FIX
     array([(3, 4), (4, 6), (6, 8)],
           dtype=[('x', '<i8'), ('y', '<i8')])
     >>> make_recarray(arr, ['x', 'y'],
-    ...               drop_name_dim=False) #doctest: +STRUCTARR_EQUAL
+    ...               drop_name_dim=False) #doctest: +FIX
     array([[(3, 4)],
            [(4, 6)],
            [(6, 8)]],
           dtype=[('x', '<i8'), ('y', '<i8')])
     >>> r = make_recarray(arr, ['w', 'u'], drop_name_dim=True)
     >>> make_recarray(r, ['x', 'y'],
-    ...               drop_name_dim=True) #doctest: +STRUCTARR_EQUAL
+    ...               drop_name_dim=True) #doctest: +FIX
     array([(3, 4), (4, 6), (6, 8)],
           dtype=[('x', '<i8'), ('y', '<i8')])
     >>> make_recarray([[3, 4], [4, 6], [7, 9]], 'wv',
-    ...               [np.float64, np.int_])  #doctest: +STRUCTARR_EQUAL
+    ...               [np.float64, np.int_])  #doctest: +FIX +FLOAT_CMP
     array([(3.0, 4), (4.0, 6), (7.0, 9)],
           dtype=[('w', '<f8'), ('v', '<i8')])
 

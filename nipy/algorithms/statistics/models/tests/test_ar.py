@@ -2,7 +2,6 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 
-from numpy.testing import assert_array_equal
 
 from .. import regression
 from .exampledata import x, y

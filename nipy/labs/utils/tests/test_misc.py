@@ -1,7 +1,6 @@
 
 import numpy as np
-from nose.tools import assert_true
-from numpy.testing import TestCase, assert_almost_equal, assert_equal
+from numpy.testing import TestCase, assert_almost_equal
 from scipy import special
 
 from ..routines import gamln, mahalanobis, median, psi
@@ -15,7 +14,7 @@ class TestAll(TestCase):
 
     def test_median2(self):
         x = np.random.rand(101)
-        assert_equal(median(x), np.median(x))
+        assert median(x) == np.median(x)
 
     def test_median3(self):
         x = np.random.rand(10, 30, 11)
@@ -40,7 +39,7 @@ class TestAll(TestCase):
         j = np.random.randint(4)
         mah = np.dot(x[:,i,j], np.dot(np.linalg.inv(Aa[:,:,i,j]), x[:,i,j]))
         f_mah = (mahalanobis(x, Aa))[i,j]
-        assert_true(np.allclose(mah, f_mah))
+        assert np.allclose(mah, f_mah)
 
     def test_gamln(self):
         for x in (0.01+100*np.random.random(50)):
@@ -53,8 +52,3 @@ class TestAll(TestCase):
             scipy_psi = special.psi(x)
             my_psi = psi(x)
             assert_almost_equal(scipy_psi, my_psi)
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

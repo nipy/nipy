@@ -7,8 +7,8 @@
 import re
 
 import numpy as np
+import pytest
 import sympy
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true, raises
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,
@@ -38,9 +38,9 @@ t = Term('t')
 
 def test_define():
     expr = sympy.exp(3*t)
-    assert_equal(str(expr), 'exp(3*t)')
+    assert str(expr) == 'exp(3*t)'
     newf = define('f', expr)
-    assert_equal(str(newf), 'f(t)')
+    assert str(newf) == 'f(t)'
     f = lambdify_t(newf)
     tval = np.random.standard_normal((3,))
     assert_almost_equal(np.exp(3*tval), f(tval))
@@ -50,23 +50,23 @@ def test_events():
     # test events utility function
     h = Function('hrf')
     evs = events([3,6,9])
-    assert_equal(DiracDelta(-9 + t) + DiracDelta(-6 + t) +
-                 DiracDelta(-3 + t), evs)
+    assert (DiracDelta(-9 + t) + DiracDelta(-6 + t) +
+                 DiracDelta(-3 + t) == evs)
     evs = events([3,6,9], f=h)
-    assert_equal(h(-3 + t) + h(-6 + t) + h(-9 + t), evs)
+    assert h(-3 + t) + h(-6 + t) + h(-9 + t) == evs
     # make some beta symbols
     b = [Dummy('b%d' % i) for i in range(3)]
     a = Symbol('a')
     p = b[0] + b[1]*a + b[2]*a**2
     evs = events([3,6,9], amplitudes=[2,1,-1], g=p)
-    assert_equal((2*b[1] + 4*b[2] + b[0])*DiracDelta(-3 + t) +
+    assert ((2*b[1] + 4*b[2] + b[0])*DiracDelta(-3 + t) +
                  (-b[1] + b[0] + b[2])*DiracDelta(-9 + t) +
-                 (b[0] + b[1] + b[2])*DiracDelta(-6 + t),
+                 (b[0] + b[1] + b[2])*DiracDelta(-6 + t) ==
                  evs)
     evs = events([3,6,9], amplitudes=[2,1,-1], g=p, f=h)
-    assert_equal((2*b[1] + 4*b[2] + b[0])*h(-3 + t) +
+    assert ((2*b[1] + 4*b[2] + b[0])*h(-3 + t) +
                  (-b[1] + b[0] + b[2])*h(-9 + t) +
-                 (b[0] + b[1] + b[2])*h(-6 + t),
+                 (b[0] + b[1] + b[2])*h(-6 + t) ==
                  evs)
     # test no error for numpy int arrays
     onsets = np.array([30, 70, 100], dtype=np.int64)
@@ -95,28 +95,28 @@ def test_interp():
         s = int_func(times, values, fill=None)
         f = lambdify(t, s)
         assert_array_almost_equal(f(tval[1:-1]), [2.05, 3.95, 4.2])
-        assert_raises(ValueError, f, tval[:-1])
+        pytest.raises(ValueError, f, tval[:-1])
         # specifying kind as linear is OK
         s = linear_interp(times, values, kind='linear')
         # bounds_check should match fill
         int_func(times, values, bounds_error=False)
         int_func(times, values, fill=None, bounds_error=True)
-        assert_raises(ValueError, int_func, times, values, bounds_error=True)
+        pytest.raises(ValueError, int_func, times, values, bounds_error=True)
         # fill should match fill value
         int_func(times, values, fill=10, fill_value=10)
         int_func(times, values, fill_value=0)
-        assert_raises(ValueError,
+        pytest.raises(ValueError,
                       int_func, times, values, fill=10, fill_value=9)
         int_func(times, values, fill=np.nan, fill_value=np.nan)
-        assert_raises(ValueError,
+        pytest.raises(ValueError,
                       int_func, times, values, fill=10, fill_value=np.nan)
-        assert_raises(ValueError,
+        pytest.raises(ValueError,
                       int_func, times, values, fill=np.nan, fill_value=0)
 
 
-@raises(ValueError)
 def test_linear_inter_kind():
-    linear_interp([0, 1], [1, 2], kind='cubic')
+    with pytest.raises(ValueError):
+        linear_interp([0, 1], [1, 2], kind='cubic')
 
 
 def test_step_function():
@@ -130,10 +130,10 @@ def test_step_function():
     lam = lambdify(t, s)
     assert_array_equal(lam(tval), [0, 4, 4, 2, 2, 1])
     # Name default
-    assert_false(re.match(r'step\d+\(t\)$', str(s)) is None)
+    assert not re.match(r'step\d+\(t\)$', str(s)) is None
     # Name reloaded
     s = step_function([0,4,5],[4,2,1], name='goodie_goodie_yum_yum')
-    assert_equal(str(s), 'goodie_goodie_yum_yum(t)')
+    assert str(s) == 'goodie_goodie_yum_yum(t)'
 
 
 def test_blocks():
@@ -147,10 +147,10 @@ def test_blocks():
     assert_array_equal(lam(tval), [0, 3, 0, 5])
     # Check what happens with names
     # Default is from step function
-    assert_false(re.match(r'step\d+\(t\)$', str(b)) is None)
+    assert not re.match(r'step\d+\(t\)$', str(b)) is None
     # Can pass in another
     b = blocks(on_off, name='funky_chicken')
-    assert_equal(str(b), 'funky_chicken(t)')
+    assert str(b) == 'funky_chicken(t)'
 
 
 def numerical_convolve(func1, func2, interval, dt):
@@ -186,7 +186,7 @@ def test_convolve_functions():
         return kern.convolve(f1, f1_interval, name=name)
     for cfunc in (convolve_functions, kern_conv1, kern_conv2):
         tri = cfunc(f1, f1, [0, 2], [0, 2], dt, name='conv')
-        assert_equal(str(tri), 'conv(t)')
+        assert str(tri) == 'conv(t)'
         ftri = lambdify(t, tri)
         y = ftri(time)
         # numerical convolve about the same as ours
@@ -241,8 +241,8 @@ def test_convolve_functions():
         nan_ftri = lambdify(t, nan_tri)
         y = nan_ftri(time)
         assert_array_equal(y, value)
-        assert_true(np.all(np.isnan(nan_ftri(np.arange(-2, 0)))))
-        assert_true(np.all(np.isnan(nan_ftri(np.arange(4, 6)))))
+        assert np.all(np.isnan(nan_ftri(np.arange(-2, 0))))
+        assert np.all(np.isnan(nan_ftri(np.arange(4, 6))))
         # The original fill value was 0
         assert_array_equal(ftri(np.arange(-2, 0)), 0)
         assert_array_equal(ftri(np.arange(4, 6)), 0)
@@ -258,7 +258,7 @@ def test_interp1d_numeric():
     assert_almost_equal(func([1, 2, 3]), [1, 2, 3])
     assert_almost_equal(func([1.5, 2.5, 3.5]), [1.5, 2.5, 3.5])
     # Object values raise TypeError
-    assert_raises(TypeError, func, t)
+    pytest.raises(TypeError, func, t)
     # Check it works as expected via sympy
     sym_func = implemented_function('func', func)
     f = sym_func(t - 2)

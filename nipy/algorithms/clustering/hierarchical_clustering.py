@@ -132,7 +132,7 @@ class WeightedForest(Forest):
         -------
         ax, the axis handle
         """
-        import matplotlib.pylab as mp
+        import matplotlib.pyplot as plt
         if self.check_compatible_height() == False:
             raise ValueError('cannot plot myself in my current state')
 
@@ -157,13 +157,13 @@ class WeightedForest(Forest):
 
         # 3. plot
         if ax is None:
-            mp.figure()
-            ax = mp.subplot(1, 1, 1)
+            plt.figure()
+            ax = plt.subplot(1, 1, 1)
 
         for i in range(self.V):
             h1 = self.height[i]
             h2 = self.height[self.parents[i]]
-            mp.plot([idx[i], idx[i]], [h1, h2], 'k')
+            plt.plot([idx[i], idx[i]], [h1, h2], 'k')
 
         ch = self.get_children()
         for i in range(self.V):
@@ -172,11 +172,11 @@ class WeightedForest(Forest):
                 m = lidx.min()
                 M = lidx.max()
                 h = self.height[i]
-                mp.plot([m, M], [h, h], 'k')
+                plt.plot([m, M], [h, h], 'k')
 
         cM = 1.05 * self.height.max() - 0.05 * self.height.min()
         cm = 1.05 * self.height.min() - 0.05 * self.height.max()
-        mp.axis([-1, idx.max() + 1, cm, cM])
+        plt.axis([-1, idx.max() + 1, cm, cM])
         return ax
 
     def partition(self, threshold):
@@ -208,11 +208,11 @@ class WeightedForest(Forest):
     def plot_height(self):
         """Plot the height of the non-leaves nodes
         """
-        import matplotlib.pylab as mp
-        mp.figure()
+        import matplotlib.pyplot as plt
+        plt.figure()
         sh = np.sort(self.height[self.isleaf() == False])
         n = np.sum(self.isleaf() == False)
-        mp.bar(np.arange(n), sh)
+        plt.bar(np.arange(n), sh)
 
     def list_of_subtrees(self):
         """

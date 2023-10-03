@@ -4,7 +4,6 @@
 
 from unittest import TestCase
 
-import nose
 import numpy as np
 import numpy.random as nr
 
@@ -12,6 +11,7 @@ from ..utils import kmeans
 
 
 class TestClustering(TestCase):
+
     def testkmeans1(self):
         X = nr.randn(10, 2)
         A = np.concatenate([np.ones((7, 2)),np.zeros((3, 2))])
@@ -28,7 +28,3 @@ class TestClustering(TestCase):
         C, L, J = kmeans(X, 2, L)
         l = L[:7000].astype(np.float64)
         self.assertGreater(np.mean(l), 0.9)
-
-
-if __name__ == '__main__':
-    nose.run(argv=['', __file__])

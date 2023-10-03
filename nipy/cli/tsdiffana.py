@@ -89,7 +89,7 @@ def main():
         import matplotlib
         matplotlib.use('Agg')
     else:
-        import matplotlib.pylab as plt
+        import matplotlib.pyplot as plt
     # Import late to give set of mpl backend best chance of working
     from nipy.algorithms.diagnostics.commands import tsdiffana
     tsdiffana(args)

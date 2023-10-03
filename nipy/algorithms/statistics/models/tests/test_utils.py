@@ -5,8 +5,8 @@ Test functions for models.utils
 """
 
 import numpy as np
-from nose.tools import assert_equal, assert_raises, assert_true
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+import pytest
+from numpy.testing import assert_array_almost_equal
 
 from .. import utils
 
@@ -21,7 +21,7 @@ def test_StepFunction():
 def test_StepFunctionBadShape():
     x = np.arange(20)
     y = np.arange(21)
-    assert_raises(ValueError, utils.StepFunction, x, y)
+    pytest.raises(ValueError, utils.StepFunction, x, y)
     x = np.zeros((2, 2))
     y = np.zeros((2, 2))
-    assert_raises(ValueError, utils.StepFunction, x, y)
+    pytest.raises(ValueError, utils.StepFunction, x, y)

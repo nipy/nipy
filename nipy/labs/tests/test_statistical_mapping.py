@@ -67,7 +67,3 @@ def test_8():
     clusters, info = cluster_stats(img, img, height_th=.001, height_control='fpr', cluster_th=0, nulls={})
     nstv = sum([c['size'] for c in clusters])
     assert nstv==36
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

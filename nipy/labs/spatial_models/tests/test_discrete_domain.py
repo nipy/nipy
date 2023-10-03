@@ -10,7 +10,7 @@ in ~/.nipy/tests/data
 import nibabel.gifti as nbg
 import numpy as np
 from nibabel import Nifti1Image
-from numpy.testing import assert_almost_equal, assert_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ..discrete_domain import (
     domain_from_binary_array,
@@ -40,7 +40,7 @@ def test_smatrix_1d():
     """
     idx = generate_dataset(shape[:1])
     sm = smatrix_from_nd_idx(idx, nn=0)
-    assert_equal(sm.data.size, 2 * shape[0] - 2)
+    assert sm.data.size == 2 * shape[0] - 2
 
 
 def test_smatrix_2d():
@@ -49,7 +49,7 @@ def test_smatrix_2d():
     idx = generate_dataset(shape[:2])
     sm = smatrix_from_nd_idx(idx, nn=0)
     ne = 2 * (2 * np.prod(shape[:2]) - shape[0] - shape[1])
-    assert_equal(sm.data.size, ne)
+    assert sm.data.size == ne
 
 
 def test_smatrix_3d():
@@ -59,7 +59,7 @@ def test_smatrix_3d():
     sm = smatrix_from_nd_idx(idx)
     ne = 2 * (3 * np.prod(shape[:3]) - shape[0] * shape[1]
               - shape[0] * shape[2] - shape[1] * shape[2])
-    assert_equal(sm.data.size, ne)
+    assert sm.data.size == ne
 
 
 def test_smatrix_4d():
@@ -71,7 +71,7 @@ def test_smatrix_4d():
     for d in range(4):
         ne -= np.prod(shape[:4]) / shape[d]
     ne *= 2
-    assert_equal(sm.data.size, ne)
+    assert sm.data.size == ne
 
 
 def test_smatrix_5d():
@@ -83,7 +83,7 @@ def test_smatrix_5d():
     for d in range(5):
         ne -= np.prod(shape) / shape[d]
     ne *= 2
-    assert_equal(sm.data.size, ne)
+    assert sm.data.size == ne
 
 
 def test_smatrix_5d_bis():
@@ -95,7 +95,7 @@ def test_smatrix_5d_bis():
     for d in range(5):
         ne -= np.prod(shape) / shape[d]
     ne *= 2
-    assert_equal(sm.data.size, ne)
+    assert sm.data.size == ne
 
 
 def test_matrix_from_3d_array():
@@ -108,7 +108,7 @@ def test_matrix_from_3d_array():
         ne -= np.prod(shape[:3]) / shape[d]
     ne *= 2
     print(sm.data, ne)
-    assert_equal((sm.data > 0).sum(), ne)
+    assert (sm.data > 0).sum() == ne
 
 
 def test_array_domain():
@@ -116,7 +116,7 @@ def test_array_domain():
     """
     toto = np.ones(shape)
     ddom = domain_from_binary_array(toto)
-    assert_equal(np.sum(ddom.local_volume), np.prod(shape))
+    assert np.sum(ddom.local_volume) == np.prod(shape)
 
 
 def test_connected_components():
@@ -124,7 +124,7 @@ def test_connected_components():
     """
     toto = np.ones(shape)
     ddom = domain_from_binary_array(toto)
-    assert_equal(ddom.connected_components(), np.zeros(ddom.size))
+    assert_array_equal(ddom.connected_components(), np.zeros(ddom.size))
 
 
 def test_image_domain():
@@ -157,7 +157,7 @@ def test_array_grid_domain():
     """
     toto = np.ones(shape)
     ddom = grid_domain_from_binary_array(toto)
-    assert_equal(np.sum(ddom.local_volume), np.prod(shape))
+    assert np.sum(ddom.local_volume) == np.prod(shape)
 
 
 def test_image_grid_domain():
@@ -176,7 +176,7 @@ def test_shape_grid_domain():
     """
     """
     ddom = grid_domain_from_shape(shape)
-    assert_equal(np.sum(ddom.local_volume), np.prod(shape))
+    assert np.sum(ddom.local_volume) == np.prod(shape)
 
 
 def test_feature():
@@ -206,7 +206,7 @@ def test_domain_mask():
     toto = np.random.rand(*shape)
     ddom = domain_from_binary_array(toto)
     mdom = ddom.mask(np.ravel(toto > .5))
-    assert_equal(mdom.size, np.sum(toto > .5))
+    assert mdom.size == np.sum(toto > .5)
 
 
 def test_grid_domain_mask():
@@ -215,7 +215,7 @@ def test_grid_domain_mask():
     toto = np.random.rand(*shape)
     ddom = grid_domain_from_binary_array(toto)
     mdom = ddom.mask(np.ravel(toto > .5))
-    assert_equal(mdom.size, np.sum(toto > .5))
+    assert mdom.size == np.sum(toto > .5)
 
 
 def test_domain_from_mesh():
@@ -234,7 +234,7 @@ def test_domain_from_mesh():
     toy_image = nbg.GiftiImage(darrays=darrays)
     domain = domain_from_mesh(toy_image)
     # if we get there, we could build the domain, and that's what we wanted.
-    assert_equal(domain.get_coord(), coords)
+    assert_array_equal(domain.get_coord(), coords)
 
 
 def test_representative():
@@ -272,8 +272,3 @@ def test_integrate_2d():
     ddom.set_feature('data', f2)
     ts = np.ones(2) * toto.sum()
     assert_almost_equal(ddom.integrate('data'), ts)
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

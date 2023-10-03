@@ -3,7 +3,6 @@
 # Test numpy bindings
 
 import numpy as np
-from nose.tools import assert_equal
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from .. import (
@@ -44,13 +43,13 @@ def test_type_conversions_to_fff():
         for npy_t in np.sctypes[type_key]:
             t, nbytes = fff_type(np.dtype(npy_t))
             if t != 'unknown type':
-                yield assert_equal, nbytes, np.dtype(npy_t).itemsize
+                assert nbytes == np.dtype(npy_t).itemsize
 
 
 def test_type_conversions_in_C():
     for t in c_types:
         npy_t, nbytes = npy_type(t)
-        yield assert_equal, npy_t, t
+        assert npy_t == t
 
 
 #
@@ -62,8 +61,8 @@ def _test_copy_vector(x):
     y0 = copy_vector(x, 0)
     # use numpy
     y1 = copy_vector(x, 1)
-    yield assert_equal, y0, x
-    yield assert_equal, y1, x
+    assert_array_equal(y0, x)
+    assert_array_equal(y1, x)
 
 
 def test_copy_vector_contiguous():
@@ -109,9 +108,9 @@ def test_pass_vector_uint8():
 
 def _test_pass_matrix(x):
     y = pass_matrix(x)
-    yield assert_equal, y, x
+    assert_array_equal(y, x)
     y = pass_matrix(x.T)
-    yield assert_equal, y, x.T
+    assert_array_equal(y, x.T)
 
 
 def test_pass_matrix():
@@ -134,9 +133,9 @@ def test_pass_matrix_uint8():
 
 def _test_pass_array(x):
     y = pass_array(x)
-    yield assert_equal, y, x
+    assert_array_equal(y, x)
     y = pass_array(x.T)
-    yield assert_equal, y, x.T
+    assert_array_equal(y, x.T)
 
 
 def test_pass_array():
@@ -166,10 +165,10 @@ def _test_pass_vector_via_iterator(X, pos=0):
     """
     # axis == 0
     x = pass_vector_via_iterator(X, axis=0, niters=pos)
-    yield assert_equal, x, X[:, pos]
+    assert_array_equal(x, X[:, pos])
     # axis == 1
     x = pass_vector_via_iterator(X, axis=1, niters=pos)
-    yield assert_equal, x, X[pos, :]
+    assert_array_equal(x, X[pos, :])
 
 
 def test_pass_vector_via_iterator():
@@ -211,9 +210,9 @@ def test_pass_vector_via_iterator_shift_uint8():
 def _test_copy_via_iterators(Y):
     for axis in range(4):
         Z = copy_via_iterators(Y, axis)
-        yield assert_equal, Z, Y
+        assert_array_equal(Z, Y)
         ZT = copy_via_iterators(Y.T, axis)
-        yield assert_equal, ZT, Y.T
+        assert_array_equal(ZT, Y.T)
 
 
 def test_copy_via_iterators():
@@ -237,9 +236,9 @@ def test_copy_via_iterators_uint8():
 def _test_sum_via_iterators(Y):
     for axis in range(4):
         Z = sum_via_iterators(Y, axis)
-        yield assert_almost_equal, Z, Y.sum(axis)
+        assert_almost_equal(Z, Y.sum(axis))
         ZT = sum_via_iterators(Y.T, axis)
-        yield assert_almost_equal, ZT, Y.T.sum(axis)
+        assert_almost_equal(ZT, Y.T.sum(axis))
 
 
 def test_sum_via_iterators():
@@ -258,8 +257,3 @@ def test_sum_via_iterators_uint8():
     d0, d1, d2, d3 = random_shape(4)
     Y = (256*(np.random.rand(d0, d1, d2, d3))).astype('uint8')
     _test_sum_via_iterators(Y)
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

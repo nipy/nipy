@@ -40,9 +40,6 @@ distclean: clean
 dev: cythonize
 	$(PYTHON) setup.py build_ext --inplace
 
-test:
-	cd .. && $(PYTHON) -c 'import nipy; nipy.test()'
-
 install:
 	$(PYTHON) setup.py install
 
@@ -70,11 +67,6 @@ tox-fresh:
 	# tox tests with fresh-installed virtualenvs.  Needs network.  And
 	# pytox, obviously.
 	tox -c tox.ini
-
-tox-stale:
-	# tox tests with MB's already-installed virtualenvs (numpy and nose
-	# installed)
-	tox -e python25,python26,python27,python32,np-1.2.1
 
 recythonize:
 	# Recythonize all pyx files

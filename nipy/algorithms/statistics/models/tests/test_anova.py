@@ -5,7 +5,7 @@ from io import StringIO
 import numpy as np
 import scipy.stats
 
-from nipy.testing import assert_almost_equal, assert_equal
+from nipy.testing import assert_almost_equal
 
 from ....utils.matrices import matrix_rank
 from ...formula.formulae import Factor, make_recarray
@@ -104,7 +104,7 @@ twoway = f1 * f2
 def test_names():
     # Check that the design column names are what we expect
     X = twoway.design(D, return_float=False)
-    assert_equal(set(X.dtype.names), {'Duration_1*Weight_1', 'Duration_1*Weight_2', 'Duration_1*Weight_3', 'Duration_2*Weight_1', 'Duration_2*Weight_2', 'Duration_2*Weight_3'})
+    assert set(X.dtype.names) == {'Duration_1*Weight_1', 'Duration_1*Weight_2', 'Duration_1*Weight_3', 'Duration_2*Weight_1', 'Duration_2*Weight_2', 'Duration_2*Weight_3'}
 
 # If we ask for contrasts, the resulting matrix is
 # of dtype np.float64

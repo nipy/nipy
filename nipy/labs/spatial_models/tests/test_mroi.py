@@ -12,7 +12,7 @@ from os.path import join as pjoin
 
 import numpy as np
 from nibabel import Nifti1Image, load
-from numpy.testing import assert_almost_equal, assert_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nipy.io.nibcompat import get_affine
 
@@ -46,16 +46,16 @@ def test_subdomain():
     """Test basic construction of multiple_roi
     """
     mroi = make_subdomain()
-    assert_equal(mroi.k, 8)
+    assert mroi.k == 8
 
 
 def test_subdomain2():
     """Test mroi.size
     """
     mroi = make_subdomain()
-    assert_equal(len(mroi.get_size()), 8)
+    assert len(mroi.get_size()) == 8
     for k in mroi.get_id():
-        assert_equal(mroi.get_size(k),
+        assert (mroi.get_size(k) ==
                      np.sum(mroi.label == mroi.select_id(k)))
 
 
@@ -69,18 +69,18 @@ def test_copy_subdomain():
     mroi.set_roi_feature('b', foo_roi_feature)
     mroi_copy = mroi.copy()
     # check some properties of mroi
-    assert_equal(mroi.k, 8)
+    assert mroi.k == 8
     for k in mroi.get_id():
-        assert_equal(mroi.get_feature('a', k), foo_feature[mroi.select_id(k)])
-    assert_equal(mroi.get_roi_feature('b'), foo_roi_feature)
+        assert_array_equal(mroi.get_feature('a', k), foo_feature[mroi.select_id(k)])
+    assert_array_equal(mroi.get_roi_feature('b'), foo_roi_feature)
     # delete mroi
     del mroi
     # check mroi_copy
-    assert_equal(mroi_copy.k, 8)
+    assert mroi_copy.k == 8
     for k in mroi_copy.get_id():
-        assert_equal(mroi_copy.get_feature('a', k),
+        assert_array_equal(mroi_copy.get_feature('a', k),
                      foo_feature[mroi_copy.select_id(k)])
-    assert_equal(mroi_copy.get_roi_feature('b'), foo_roi_feature)
+    assert_array_equal(mroi_copy.get_roi_feature('b'), foo_roi_feature)
 
 
 def test_select_roi():
@@ -92,12 +92,12 @@ def test_select_roi():
     mroi.set_roi_feature('data_mean', list(range(8)))
     mroi.select_roi([0])
     assert(mroi.k == 1)
-    assert_equal(mroi.roi_features['id'], [0])
-    assert_equal(mroi.get_roi_feature('data_mean', 0), 0)
+    assert mroi.roi_features['id'] == [0]
+    assert mroi.get_roi_feature('data_mean', 0) == 0
     mroi.select_roi([])
     assert(mroi.k == 0)
-    assert_equal(list(mroi.roi_features), ['id'])
-    assert_equal(mroi.roi_features['id'], [])
+    assert list(mroi.roi_features) == ['id']
+    assert list(mroi.roi_features['id']) == []
 
 
 def test_roi_features():
@@ -117,7 +117,7 @@ def test_subdomain_feature():
     aux = np.random.randn(np.prod(shape))
     data = [aux[mroi.label == k] for k in range(8)]
     mroi.set_feature('data', data)
-    assert_equal(mroi.features['data'][0], data[0])
+    assert mroi.features['data'][0] == data[0]
 
 
 def test_sd_integrate():
@@ -129,7 +129,7 @@ def test_sd_integrate():
     mroi.set_feature('data', data)
     sums = mroi.integrate('data')
     for k in range(8):
-        assert_equal(sums[k], np.sum(data[k]))
+        assert sums[k] == np.sum(data[k])
 
 
 def test_sd_integrate2():
@@ -137,11 +137,11 @@ def test_sd_integrate2():
     """
     mroi = make_subdomain()
     for k in mroi.get_id():
-        assert_equal(mroi.get_volume(k), mroi.integrate(id=k))
+        assert mroi.get_volume(k) == mroi.integrate(id=k)
     volume_from_integration = mroi.integrate()
     volume_from_feature = mroi.get_volume()
     for i in range(mroi.k):
-        assert_equal(volume_from_feature[i], volume_from_integration[i])
+        assert volume_from_feature[i] == volume_from_integration[i]
 
 
 def test_sd_representative():
@@ -152,7 +152,7 @@ def test_sd_representative():
     mroi.set_feature('data', data)
     sums = mroi.representative_feature('data')
     for k in mroi.get_id():
-        assert_equal(sums[mroi.select_id(k)], k)
+        assert sums[mroi.select_id(k)] == k
 
 
 def test_sd_from_ball():
@@ -160,8 +160,8 @@ def test_sd_from_ball():
     radii = np.array([2, 2, 2])
     positions = np.array([[3, 3], [3, 7], [7, 7]])
     subdomain = subdomain_from_balls(dom, positions, radii)
-    assert_equal(subdomain.k, 3)
-    assert_equal(subdomain.get_size(), np.array([9, 9, 9]))
+    assert subdomain.k == 3
+    assert_array_equal(subdomain.get_size(), np.array([9, 9, 9]))
 
 
 def test_set_feature():
@@ -173,12 +173,12 @@ def test_set_feature():
                     for k in mroi.get_id()]
     mroi.set_feature('data', feature_data)
     get_feature_output = mroi.get_feature('data')
-    assert_equal([len(k) for k in mroi.get_feature('data')],
+    assert_array_equal([len(k) for k in mroi.get_feature('data')],
                  mroi.get_size())
     for k in mroi.get_id():
-        assert_equal(mroi.get_feature('data', k),
+        assert_array_equal(mroi.get_feature('data', k),
                      data[mroi.select_id(k, roi=False)])
-        assert_equal(get_feature_output[k],
+        assert_array_equal(get_feature_output[k],
                      data[mroi.select_id(k, roi=False)])
 
 
@@ -189,13 +189,13 @@ def test_set_feature2():
                     for k in mroi.get_id()]
     mroi.set_feature('data', feature_data)
     mroi.set_feature('data', np.asarray([1000]), id=0, override=True)
-    assert_equal(mroi.get_feature('data', 0), [1000])
+    assert mroi.get_feature('data', 0) == [1000]
 
 
 def test_get_coord():
     mroi = make_subdomain()
     for k in mroi.get_id():
-        assert_equal(mroi.get_coord(k),
+        assert_array_equal(mroi.get_coord(k),
                      mroi.domain.coord[mroi.select_id(k, roi=False)])
 
 
@@ -224,28 +224,23 @@ def test_example():
     averages = [blob.mean() for blob in nroi.get_feature('activation')]
     assert_almost_equal(averages, average_activation, 6)
     # Test repeat
-    assert_equal(average_activation, nroi.representative_feature('activation'))
+    assert_array_equal(average_activation, nroi.representative_feature('activation'))
     # Binary image is default
     bin_wim = nroi.to_image()
     bin_vox = bin_wim.get_fdata()
-    assert_equal(np.unique(bin_vox), [0, 1])
+    assert_array_equal(np.unique(bin_vox), [0, 1])
     id_wim = nroi.to_image('id', roi=True, descrip='description')
     id_vox = id_wim.get_fdata()
     mask = bin_vox.astype(bool)
-    assert_equal(id_vox[~mask], -1)
+    assert_array_equal(id_vox[~mask], -1)
     ids = nroi.get_id()
-    assert_equal(np.unique(id_vox), [-1] + list(ids))
+    assert_array_equal(np.unique(id_vox), [-1] + list(ids))
     # Test activation
     wim = nroi.to_image('activation', roi=True, descrip='description')
     # Sadly, all cast to int
-    assert_equal(np.unique(wim.get_fdata().astype(np.int32)), [-1, 3, 4, 5])
+    assert_array_equal(np.unique(wim.get_fdata().astype(np.int32)), [-1, 3, 4, 5])
     # end blobs or leaves
     lroi = nroi.copy()
     lroi.reduce_to_leaves()
-    assert_equal(lroi.k, 14)
-    assert_equal(len(lroi.get_feature('activation')), lroi.k)
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])
+    assert lroi.k == 14
+    assert len(lroi.get_feature('activation')) == lroi.k

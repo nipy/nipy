@@ -12,9 +12,6 @@ from nibabel.tmpdirs import InTemporaryDirectory
 from nipy.testing import (
     anatfile,
     assert_array_equal,
-    assert_equal,
-    assert_false,
-    assert_true,
 )
 
 from .. import mask as nnm
@@ -26,10 +23,10 @@ def test_largest_cc():
     """
     a = np.zeros((6, 6, 6))
     a[1:3, 1:3, 1:3] = 1
-    assert_equal(a, largest_cc(a))
+    assert_array_equal(a, largest_cc(a))
     b = a.copy()
     b[5, 5, 5] = 1
-    assert_equal(a, largest_cc(b))
+    assert_array_equal(a, largest_cc(b))
 
 
 def test_threshold_connect_components():
@@ -37,10 +34,10 @@ def test_threshold_connect_components():
     a[0, 0] = 1
     a[3, 4] = 1
     a = threshold_connect_components(a, 2)
-    assert_true(np.all(a == 0))
+    assert np.all(a == 0)
     a[0, 0:3] = 1
     b = threshold_connect_components(a, 2)
-    assert_true(np.all(a == b))
+    assert np.all(a == b)
 
 
 def test_mask():
@@ -59,13 +56,13 @@ def test_mask():
     assert_array_equal(mask1, mask3[:9, :9])
     # However, without exclude_zeros, it does
     mask3 = nnm.compute_mask(mean_image2)
-    assert_false(np.allclose(mask1, mask3[:9, :9]))
+    assert not np.allclose(mask1, mask3[:9, :9])
     # check that  opening is 2 by default
     mask4 = nnm.compute_mask(mean_image, exclude_zeros=True, opening=2)
     assert_array_equal(mask1, mask4)
     # check that opening has an effect
     mask5 = nnm.compute_mask(mean_image, exclude_zeros=True, opening=0)
-    assert_true(mask5.sum() > mask4.sum())
+    assert mask5.sum() > mask4.sum()
 
 
 def test_mask_files():
@@ -109,14 +106,14 @@ def test_series_from_mask():
             for axis in (0, 1, 2):
                 proj = np.any(np.any(np.rollaxis(above_half_max,
                                 axis=axis), axis=-1), axis=-1)
-                assert_equal(proj.sum(), 9/np.abs(affine[axis, axis]))
+                assert proj.sum() == 9/np.abs(affine[axis, axis])
 
         # Check that NaNs in the data do not propagate
         data[10, 10, 10] = np.NaN
         img = nib.Nifti1Image(data, affine)
         nib.save(img, 'testing.nii')
         series, header = series_from_mask('testing.nii', mask, smooth=9)
-        assert_true(np.all(np.isfinite(series)))
+        assert np.all(np.isfinite(series))
 
 def test_compute_mask_sessions():
     """Test that the mask computes well on multiple sessions
@@ -143,7 +140,3 @@ def test_compute_mask_sessions():
         msk5 = nnm.compute_mask_sessions([a_fname, a_fname])
         assert_array_equal(msk1, msk3)
         assert_array_equal(msk4, msk5)
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

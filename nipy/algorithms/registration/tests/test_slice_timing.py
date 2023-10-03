@@ -1,6 +1,5 @@
 
 import numpy as np
-from nose.tools import assert_false, assert_true
 from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy.ndimage import gaussian_filter, gaussian_filter1d
 
@@ -30,7 +29,7 @@ def check_stc(true_signal, corrected_signal, ref_slice=0,
         fails = abs_fails & rel_fails
         abs_only = abs_diff[fails]
         rel_only = rel_diff[fails]
-        assert_true(np.allclose(arr0, arr1, rtol=rtol, atol=atol))
+        assert np.allclose(arr0, arr1, rtol=rtol, atol=atol)
 
 
 def test_slice_time_correction():
@@ -73,7 +72,7 @@ def test_slice_time_correction():
         assert_array_equal([t.param for t in stc._transforms[0]], 0)
         corrected = stc.resample()[0].get_fdata()
         # check we approximate first time slice with correction
-        assert_false(np.allclose(acquired_signal, corrected, rtol=1e-3,
-                                 atol=0.1))
+        assert not np.allclose(acquired_signal, corrected, rtol=1e-3,
+                                 atol=0.1)
         check_stc(first_signal, corrected, ref_slice=slice_to_time[0],
                   rtol=5e-4, atol=1e-6)

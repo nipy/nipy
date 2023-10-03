@@ -1,6 +1,6 @@
 
 import numpy as np
-from nose.tools import assert_equal, assert_raises, assert_true
+import pytest
 from scipy.linalg import expm
 
 import nipy.core.reference.tests.matrix_groups as MG
@@ -30,14 +30,14 @@ def test_init():
     SO_B = MG.O(B, 'xy')
 
     B[1] = -B[1]
-    assert_raises(ValueError, MG.SO, B, 'xy')
+    pytest.raises(ValueError, MG.SO, B, 'xy')
     O_B = MG.O(B, 'xy')
 
 def test2():
     Z = np.random.standard_normal((3,3))
     GL_Z = MG.GLR(Z, 'xyz')
 
-    assert_raises(ValueError, MG.SO, Z, 'zxy')
+    pytest.raises(ValueError, MG.SO, Z, 'zxy')
 
     detZ = np.linalg.det(Z)
     if detZ < 0:
@@ -68,7 +68,7 @@ def test_basis_change():
     #print basis1.coords
     new = MG.change_basis(basis1, bchange)
 
-    assert_true(MG.same_transformation(basis1, new, bchange))
+    assert MG.same_transformation(basis1, new, bchange)
 
 def test_product():
 
@@ -77,11 +77,10 @@ def test_product():
     GLZ_C = MG.GLZ(B, 'ij')
 
     GLZ_AB = MG.product(GLZ_A, GLZ_B)
-    yield (assert_true,
-           np.allclose(GLZ_AB.matrix, np.dot(GLZ_A.matrix, GLZ_B.matrix)))
+    assert np.allclose(GLZ_AB.matrix, np.dot(GLZ_A.matrix, GLZ_B.matrix))
 
     # different coordinates: can't make the product
-    yield assert_raises, ValueError, MG.product, GLZ_A, GLZ_C
+    pytest.raises(ValueError, MG.product, GLZ_A, GLZ_C)
 
 def test_product2():
     O_1 = random_orth(names='xyz')
@@ -95,14 +94,14 @@ def test_homomorphism():
     GLZ_D = MG.GLZ(D, 'ij')
     GLZ_BD = MG.product_homomorphism(GLZ_B, GLZ_D)
 
-    yield assert_true, np.allclose(GLZ_BD.matrix[:2,:2], GLZ_B.matrix)
-    yield assert_true, np.allclose(GLZ_BD.matrix[2:,2:], GLZ_D.matrix)
-    yield assert_true, np.allclose(GLZ_BD.matrix[2:,:2], 0)
-    yield assert_true, np.allclose(GLZ_BD.matrix[:2,2:], 0)
+    assert np.allclose(GLZ_BD.matrix[:2,:2], GLZ_B.matrix)
+    assert np.allclose(GLZ_BD.matrix[2:,2:], GLZ_D.matrix)
+    assert np.allclose(GLZ_BD.matrix[2:,:2], 0)
+    assert np.allclose(GLZ_BD.matrix[:2,2:], 0)
 
     GLZ_C = MG.GLZ(D, 'xy')
     # have the same axisnames, an exception will be raised
-    yield assert_raises, ValueError, MG.product_homomorphism, GLZ_C, GLZ_B
+    pytest.raises(ValueError, MG.product_homomorphism, GLZ_C, GLZ_B)
 
     E = np.array([[7,8],
                   [8,9]])
@@ -116,7 +115,7 @@ def test_homomorphism():
 
     test1 = MG.product(GLZ_FE, GLZ_BD)
     test2 = MG.product_homomorphism(MG.product(GLZ_F, GLZ_B), MG.product(GLZ_E, GLZ_D))
-    yield assert_true, np.allclose(test1.matrix, test2.matrix)
+    assert np.allclose(test1.matrix, test2.matrix)
 
 
 def test_32():
@@ -136,7 +135,7 @@ def test_32():
     A = O32(a, 'xyz')
     B = O32(random_orth(3).matrix.astype(np.float32), 'xyz')
     C = MG.product(A, B)
-    yield assert_equal, C.dtype, np.float32
+    assert C.dtype == np.float32
 
     ev = ArrayCoordMap.from_shape(C, (20,30,40))
-    yield assert_equal, ev.values.dtype, np.float32
+    assert ev.values.dtype == np.float32

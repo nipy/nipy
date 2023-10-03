@@ -8,17 +8,10 @@ from os.path import join as pjoin
 
 import nibabel as nib
 import numpy as np
+import pytest
 from nibabel import AnalyzeImage, Nifti1Image, Nifti1Pair, Spm2AnalyzeImage
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose import SkipTest
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    assert_raises,
-    assert_true,
-)
-from numpy.testing import assert_almost_equal, assert_array_equal
+from numpy.testing import assert_array_equal
 
 from nipy import load_image
 from nipy.io.nibcompat import get_header
@@ -63,8 +56,8 @@ def test_parse_fname_axes():
                         fname,
                         in_time,
                         in_sax)
-                    assert_equal(time_axis, out_time)
-                    assert_equal(slice_axis, out_sax)
+                    assert time_axis == out_time
+                    assert slice_axis == out_sax
                     del img
             # For some images, we can set the slice dimension. This becomes the
             # default if input slice_axis is None
@@ -75,32 +68,32 @@ def test_parse_fname_axes():
                     img, time_axis, slice_axis = parse_fname_axes(fname,
                                                                   None,
                                                                   None)
-                    assert_equal(time_axis, 't')
-                    assert_equal(slice_axis, 'slice')
+                    assert time_axis == 't'
+                    assert slice_axis == 'slice'
                     del img
             # Images other than 4D don't get the slice axis default
             for new_arr in (arr[..., 0], arr[..., None]):
                 new_nib = img_class(new_arr, None, hdr)
                 nib.save(new_nib, fname)
-                assert_raises(ValueError, parse_fname_axes, fname, None, None)
+                pytest.raises(ValueError, parse_fname_axes, fname, None, None)
                 # But you can still set slice axis
                 img, time_axis, slice_axis = parse_fname_axes(fname, None, 'j')
-                assert_equal(time_axis, 't')
-                assert_equal(slice_axis, 'j')
+                assert time_axis == 't'
+                assert slice_axis == 'j'
     # Non-analyze image types don't get the slice default
     nib_data = pjoin(dirname(nib.__file__), 'tests', 'data')
     mnc_4d_fname = pjoin(nib_data, 'minc1_4d.mnc')
     if isfile(mnc_4d_fname):
-        assert_raises(ValueError, parse_fname_axes, mnc_4d_fname, None, None)
+        pytest.raises(ValueError, parse_fname_axes, mnc_4d_fname, None, None)
         # At the moment we can't even load these guys
         try:
             img, time_axis, slice_axis = parse_fname_axes(
                 mnc_4d_fname, None, 'j')
         except ValueError: # failed load
-            raise SkipTest('Hoping for a time when we can use MINC')
+            pytest.skip('Hoping for a time when we can use MINC')
         # But you can still set slice axis (if we can load them)
-        assert_equal(time_axis, 't')
-        assert_equal(slice_axis, 'j')
+        assert time_axis == 't'
+        assert slice_axis == 'j'
 
 
 class Args: pass
@@ -108,7 +101,7 @@ class Args: pass
 
 def check_axes(axes, img_shape, time_axis, slice_axis):
     # Check axes as expected for plot
-    assert_equal(len(axes), 4)
+    assert len(axes) == 4
     # First x axis is time point differences
     assert_array_equal(axes[0].xaxis.get_data_interval(),
                        [0, img_shape[time_axis]-2])
@@ -131,7 +124,7 @@ def test_tsdiffana():
         args.out_fname_label = None
         args.out_file = 'test.png'
         check_axes(tsdiffana(args), img.shape, -1, -2)
-        assert_true(isfile('test.png'))
+        assert isfile('test.png')
         args.time_axis = 't'
         check_axes(tsdiffana(args), img.shape, -1, -2)
         args.time_axis = '3'
@@ -151,7 +144,7 @@ def test_tsdiffana():
         check_axes(tsdiffana(args), img.shape, -1, -3)
         # Check that --out-images incompatible with --out-file
         args.write_results=True
-        assert_raises(ValueError, tsdiffana, args)
+        pytest.raises(ValueError, tsdiffana, args)
         args.out_file=None
         # Copy the functional file to a temporary writeable directory
         os.mkdir('mydata')
@@ -160,11 +153,11 @@ def test_tsdiffana():
         args.filename = tmp_funcfile
         # Check write-results generates expected images
         check_axes(tsdiffana(args), img.shape, -1, -3)
-        assert_true(isfile(pjoin('mydata', 'tsdiff_myfunc.png')))
+        assert isfile(pjoin('mydata', 'tsdiff_myfunc.png'))
         max_img = load_image(pjoin('mydata', 'dv2_max_myfunc.nii.gz'))
-        assert_equal(max_img.shape, img.shape[:-1])
+        assert max_img.shape == img.shape[:-1]
         mean_img = load_image(pjoin('mydata', 'dv2_max_myfunc.nii.gz'))
-        assert_equal(mean_img.shape, img.shape[:-1])
+        assert mean_img.shape == img.shape[:-1]
         exp_results = time_slice_diffs_image(img, 't', 'j')
         saved_results = np.load(pjoin('mydata', 'tsdiff_myfunc.npz'))
         for key in ('volume_means', 'slice_mean_diff2'):
@@ -173,16 +166,16 @@ def test_tsdiffana():
         os.mkdir('myresults')
         args.out_path = 'myresults'
         check_axes(tsdiffana(args), img.shape, -1, -3)
-        assert_true(isfile(pjoin('myresults', 'tsdiff_myfunc.png')))
+        assert isfile(pjoin('myresults', 'tsdiff_myfunc.png'))
         max_img = load_image(pjoin('myresults', 'dv2_max_myfunc.nii.gz'))
-        assert_equal(max_img.shape, img.shape[:-1])
+        assert max_img.shape == img.shape[:-1]
         # And out-fname-label
         args.out_fname_label = 'vr2'
         check_axes(tsdiffana(args), img.shape, -1, -3)
-        assert_true(isfile(pjoin('myresults', 'tsdiff_vr2.png')))
+        assert isfile(pjoin('myresults', 'tsdiff_vr2.png'))
         max_img = load_image(pjoin('myresults', 'dv2_max_vr2.nii.gz'))
-        assert_equal(max_img.shape, img.shape[:-1])
-        del max_img, mean_img
+        assert max_img.shape == img.shape[:-1]
+        del max_img, mean_img, saved_results
 
 
 def check_diag_results(results, img_shape,
@@ -193,8 +186,8 @@ def check_diag_results(results, img_shape,
     T = img_shape[time_axis]
     pca_shape = list(img_shape)
     pca_shape[time_axis] = ncomps
-    assert_equal(results['pca'].shape, tuple(pca_shape))
-    assert_equal(results['pca_res']['basis_projections'].shape,
+    assert results['pca'].shape == tuple(pca_shape)
+    assert (results['pca_res']['basis_projections'].shape ==
                  tuple(pca_shape))
     # Roll pca axis last to test shape of output image
     ax_order = list(range(4))
@@ -202,18 +195,18 @@ def check_diag_results(results, img_shape,
     ax_order.append(time_axis)
     rolled_shape = tuple(pca_shape[i] for i in ax_order)
     pca_img = load_image(pjoin(out_path, 'pca_' + froot + ext))
-    assert_equal(pca_img.shape, rolled_shape)
+    assert pca_img.shape == rolled_shape
     for prefix in ('mean', 'min', 'max', 'std'):
         fname = pjoin(out_path, prefix + '_' + froot + ext)
         img = load_image(fname)
-        assert_equal(img.shape, rolled_shape[:-1])
+        assert img.shape == rolled_shape[:-1]
     vars = np.load(pjoin(out_path, 'vectors_components_' + froot + '.npz'))
-    assert_equal(set(vars),
+    assert (set(vars) ==
                  {'basis_vectors', 'pcnt_var', 'volume_means',
                       'slice_mean_diff2'})
-    assert_equal(vars['volume_means'].shape, (T,))
-    assert_equal(vars['basis_vectors'].shape, (T, T-1))
-    assert_equal(vars['slice_mean_diff2'].shape, (T-1, S))
+    assert vars['volume_means'].shape == (T,)
+    assert vars['basis_vectors'].shape == (T, T-1)
+    assert vars['slice_mean_diff2'].shape == (T-1, S)
 
 
 @needs_mpl_agg
@@ -239,7 +232,7 @@ def test_diagnose():
         # Time axis is not going to work because we'd have to use up one of the
         # needed spatial axes
         args.time_axis = 'i'
-        assert_raises(NiftiError, diagnose, args)
+        pytest.raises(NiftiError, diagnose, args)
         args.time_axis = 't'
         # Check that output works
         os.mkdir('myresults')

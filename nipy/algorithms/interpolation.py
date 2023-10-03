@@ -9,8 +9,8 @@ from distutils.version import LooseVersion as LV
 import numpy as np
 import scipy
 from scipy import ndimage
+from scipy.ndimage import map_coordinates
 
-from ..fixes.scipy.ndimage import map_coordinates
 from ..utils import seq_prod
 
 # Earlier versions of Scipy don't have mode for spline_filter

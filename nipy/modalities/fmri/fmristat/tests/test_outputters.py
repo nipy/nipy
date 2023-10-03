@@ -2,8 +2,7 @@
 """
 
 import numpy as np
-from nose.tools import assert_equal, assert_raises, assert_true
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import assert_array_almost_equal
 
 from nipy.algorithms.statistics.api import OLSModel
 

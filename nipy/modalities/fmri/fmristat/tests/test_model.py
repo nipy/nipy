@@ -2,8 +2,8 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import numpy as np
+import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, assert_raises, assert_true
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nipy.algorithms.statistics.formula.formulae import Formula, Term, make_recarray
@@ -33,8 +33,8 @@ def test_model_out_img():
         for i in range(shape[0]):
             assert_array_equal(moi[i], i)
         moi.save()
-        assert_raises(ValueError, moi.__setitem__, 0, 1)
-        assert_raises(ValueError, moi.__getitem__, 0)
+        pytest.raises(ValueError, moi.__setitem__, 0, 1)
+        pytest.raises(ValueError, moi.__getitem__, 0)
         new_img = load_image(fname)
         for i in range(shape[0]):
             assert_array_equal(new_img[i].get_fdata(), i)
@@ -75,11 +75,11 @@ def test_run():
             ar = model.AR1(fmriims, f, rho, outputs)
             ar.execute()
             f_img = load_image('F_out.nii')
-            assert_equal(f_img.shape, one_vol.shape)
+            assert f_img.shape == one_vol.shape
             f_data = f_img.get_fdata()
-            assert_true(np.all((f_data>=0) & (f_data<30)))
+            assert np.all((f_data>=0) & (f_data<30))
             resid_img = load_image('resid_AR_out.nii')
-            assert_equal(resid_img.shape, funcim.shape)
+            assert resid_img.shape == funcim.shape
             assert_array_almost_equal(np.mean(resid_img.get_fdata()), 0, 3)
             e_img = load_image('T_out_effect.nii')
             sd_img = load_image('T_out_sd.nii')
@@ -87,7 +87,7 @@ def test_run():
             t_data = t_img.get_fdata()
             assert_array_almost_equal(t_data,
                                       e_img.get_fdata() / sd_img.get_fdata())
-            assert_true(np.all(np.abs(t_data) < 6))
+            assert np.all(np.abs(t_data) < 6)
             # Need to delete to help windows delete temporary files
             del rho, resid_img, f_img, e_img, sd_img, t_img, f_data, t_data
 
@@ -102,8 +102,8 @@ def test_ar_modeling():
     results = my_model.fit(Y)
     # fmristat wrapper
     rhos = estimateAR(results.resid, my_model.design, order=2)
-    assert_equal(rhos.shape, (2,))
-    assert_true(np.all(np.abs(rhos <= 1)))
+    assert rhos.shape == (2,)
+    assert np.all(np.abs(rhos <= 1))
     # standard routine
     rhos2 = ar_bias_correct(results, 2)
     assert_array_almost_equal(rhos, rhos2, 8)
@@ -111,14 +111,14 @@ def test_ar_modeling():
     Y = rng.normal(size=(N,4)) * 10 + 100
     results = my_model.fit(Y)
     rhos = estimateAR(results.resid, my_model.design, order=2)
-    assert_equal(rhos.shape, (2,4))
-    assert_true(np.all(np.abs(rhos <= 1)))
+    assert rhos.shape == (2,4)
+    assert np.all(np.abs(rhos <= 1))
     rhos2 = ar_bias_correct(results, 2)
     assert_array_almost_equal(rhos, rhos2, 8)
     # 3D
     results.resid = np.reshape(results.resid, (N,2,2))
     rhos = estimateAR(results.resid, my_model.design, order=2)
-    assert_equal(rhos.shape, (2,2,2))
-    assert_true(np.all(np.abs(rhos <= 1)))
+    assert rhos.shape == (2,2,2)
+    assert np.all(np.abs(rhos <= 1))
     rhos2 = ar_bias_correct(results, 2)
     assert_array_almost_equal(rhos, rhos2, 8)

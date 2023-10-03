@@ -5,7 +5,6 @@ Test functions for models.GLM
 """
 
 import numpy as np
-from nose.tools import assert_equal, assert_false, assert_true
 
 from .. import family
 from ..glm import Model as GLM
@@ -24,7 +23,7 @@ def test_Logistic():
     Y = VARS['Y']
     cmodel = GLM(design=X, family=family.Binomial())
     results = cmodel.fit(Y)
-    assert_equal(results.df_resid, 30)
+    assert results.df_resid == 30
 
 
 def test_cont():
@@ -33,8 +32,8 @@ def test_cont():
     Y = VARS['Y']
     cmodel = GLM(design=X, family=family.Binomial())
     cmodel.fit(Y)
-    assert_true(cmodel.cont(0))
-    assert_false(cmodel.cont(np.inf))
+    assert cmodel.cont(0)
+    assert not cmodel.cont(np.inf)
 
 
 def test_Logisticdegenerate():
@@ -43,4 +42,4 @@ def test_Logisticdegenerate():
     Y = VARS['Y']
     cmodel = GLM(design=X, family=family.Binomial())
     results = cmodel.fit(Y)
-    assert_equal(results.df_resid, 31)
+    assert results.df_resid == 31

@@ -393,7 +393,7 @@ def test_EC3(shape):
         ec += 1; vs += 1
     return ts, fs, es, vs, ec
 
-# Tell nose testing framework not to run this as a test
+# Tell testing framework not to run this as a test
 test_EC3.__test__ = False
 
 
@@ -412,7 +412,7 @@ def test_EC2(shape):
         ec += 1; vs += 1
     return fs, es, vs, ec
 
-# Tell nose testing framework not to run this as a test
+# Tell testing framework not to run this as a test
 test_EC2.__test__ = False
 
 

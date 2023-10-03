@@ -18,8 +18,6 @@ notation to create an ArrayCoordMap.
 import numpy as np
 
 # Legacy repr printing from numpy.
-from nipy.testing import legacy_printing as setup_module  # noqa
-
 from .coordinate_map import (
     AffineTransform,
     CoordinateMap,

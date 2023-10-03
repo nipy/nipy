@@ -8,11 +8,10 @@ from os.path import join as pjoin
 from warnings import catch_warnings, simplefilter
 
 import numpy as np
+import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
 from numpy.testing import (
     assert_almost_equal,
-    assert_array_almost_equal,
     assert_array_equal,
 )
 
@@ -47,9 +46,9 @@ def test_screen():
     # slice axis below
     img = img.renamed_axes(k='slice')
     res = screen(img)
-    assert_equal(res['mean'].ndim, 3)
-    assert_equal(res['pca'].ndim, 4)
-    assert_equal(sorted(res.keys()),
+    assert res['mean'].ndim == 3
+    assert res['pca'].ndim == 4
+    assert (sorted(res.keys()) ==
                  ['max', 'mean', 'min',
                   'pca', 'pca_res',
                   'std', 'ts_res'])
@@ -97,12 +96,12 @@ def test_screen():
     # First re-show that when we don't specify, we get the default
     res = screen(img)
     _check_ts(res, data, 3, 2)
-    assert_raises(AssertionError, _check_ts, res, data, 3, 0)
+    pytest.raises(AssertionError, _check_ts, res, data, 3, 0)
     # Then specify, get non-default
     slicey_img = img.renamed_axes(slice='k', i='slice')
     res = screen(slicey_img)
     _check_ts(res, data, 3, 0)
-    assert_raises(AssertionError, _check_ts, res, data, 3, 2)
+    pytest.raises(AssertionError, _check_ts, res, data, 3, 2)
 
 
 def pca_pos(data4d):
@@ -121,8 +120,8 @@ def test_screen_slice_axis():
     exp_res = screen(img, slice_axis='k')
     with catch_warnings():
         simplefilter('error')
-        assert_raises(FutureWarning, screen, img)
-        assert_raises(FutureWarning, screen, img, slice_axis=None)
+        pytest.raises(FutureWarning, screen, img)
+        pytest.raises(FutureWarning, screen, img, slice_axis=None)
         explicit_img = img.renamed_axes(k='slice')
         # Now the analysis works without warning
         res = screen(explicit_img)
@@ -148,7 +147,7 @@ def test_write_screen_res():
         os.mkdir('myresults')
         write_screen_res(res, 'myresults', 'myana')
         pca_img = ni.load_image(pjoin('myresults', 'pca_myana.nii'))
-        assert_equal(pca_img.shape, img.shape[:-1] + (10,))
+        assert pca_img.shape == img.shape[:-1] + (10,)
         # Make sure we get the same output image even from rolled image
         # Do fancy roll to put time axis first, and slice axis last. This does
         # a stress test on the axis ordering, but also makes sure that we are
@@ -162,5 +161,5 @@ def test_write_screen_res():
         rres = screen(rimg)
         write_screen_res(rres, 'rmyresults', 'myana')
         rpca_img = ni.load_image(pjoin('rmyresults', 'pca_myana.nii'))
-        assert_equal(rpca_img.shape, img.shape[:-1] + (10,))
+        assert rpca_img.shape == img.shape[:-1] + (10,)
         del pca_img, rpca_img

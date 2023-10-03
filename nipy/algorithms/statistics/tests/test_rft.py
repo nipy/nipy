@@ -10,7 +10,7 @@ try:
 except ImportError:
     from scipy.special import factorial
 
-from nose.tools import assert_raises
+import pytest
 from numpy.testing import assert_almost_equal
 
 from .. import rft
@@ -40,8 +40,8 @@ from .. import rft
 #            return scipy.stats.norm.sf(x)
 
 def test_Q():
-    assert_raises(ValueError, rft.Q, -1)
-    assert_raises(ValueError, rft.Q, 0)
+    pytest.raises(ValueError, rft.Q, -1)
+    pytest.raises(ValueError, rft.Q, 0)
     x = np.arange(-9, 10)
     for dim in range(1, 4):
         res = rft.Q(dim)
@@ -170,7 +170,7 @@ def test_polynomial1():
     for dim in range(1,10):
         q = rft.Gaussian().quasi(dim)
         h = hermitenorm(dim-1)
-        yield assert_almost_equal, q.c, h.c
+        assert_almost_equal(q.c, h.c)
 
 
 def test_polynomial2():
@@ -179,7 +179,7 @@ def test_polynomial2():
     for dim in range(1,10):
         q = rft.ChiSquared(dfn=1).quasi(dim)
         h = hermitenorm(dim-1)
-        yield assert_almost_equal, q.c, 2*h.c
+        assert_almost_equal(q.c, 2*h.c)
 
 
 # @dec.slow
@@ -190,7 +190,7 @@ def test_polynomial3():
         for dfn in range(5,10):
             q1 = rft.FStat(dfn=dfn, dfd=np.inf).quasi(dim)
             q2 = rft.ChiSquared(dfn=dfn).quasi(dim)
-            yield assert_almost_equal, q1.c, q2.c
+            assert_almost_equal(q1.c, q2.c)
 
 
 # @dec.slow
@@ -204,7 +204,7 @@ def test_chi1():
             f = rft.FStat(dfn=dfn, dfd=np.inf)
             chi1 = c.density(dfn*x, dim)
             chi2 = f.density(x, dim)
-            yield assert_almost_equal, chi1, chi2
+            assert_almost_equal(chi1, chi2)
 
 
 def test_chi2():
@@ -215,7 +215,7 @@ def test_chi2():
             c = rft.ChiSquared(dfn=dfn)
             p1 = c.quasi(dim=dim)
             p2 = polyF(dim=dim, dfn=dfn)
-            yield assert_almost_equal, p1.c, p2.c
+            assert_almost_equal(p1.c, p2.c)
 
 
 def test_chi3():
@@ -227,7 +227,7 @@ def test_chi3():
         c = rft.ChiSquared(dfn=1)
         ec1 = g.density(np.sqrt(x), dim)
         ec2 = c.density(x, dim)
-        yield assert_almost_equal, 2*ec1, ec2
+        assert_almost_equal(2*ec1, ec2)
 
 
 def test_T1():
@@ -235,9 +235,9 @@ def test_T1():
     x = np.linspace(0.1,10,100)
     for dfd in [40,50]:
         t = rft.TStat(dfd=dfd)
-        yield assert_almost_equal, t(x), scipy.stats.t.sf(x, dfd)
+        assert_almost_equal(t(x), scipy.stats.t.sf(x, dfd))
     t = rft.TStat(dfd=np.inf)
-    yield assert_almost_equal, t(x), scipy.stats.norm.sf(x)
+    assert_almost_equal(t(x), scipy.stats.norm.sf(x))
 
 
 def test_search():
@@ -346,7 +346,7 @@ def test_T2():
         for dim in range(7):
             y = 2*t.density(x, dim)
             z = f.density(x**2, dim)
-            yield assert_almost_equal, y, z
+            assert_almost_equal(y, z)
 
 
 # @dec.slow
@@ -357,7 +357,7 @@ def test_hotelling1():
         for dfn in range(5,10):
             h = rft.Hotelling(k=dfn).density(x*dfn, dim)
             f = rft.FStat(dfn=dfn).density(x, dim)
-            yield assert_almost_equal, h, f
+            assert_almost_equal(h, f)
 
 
 # @dec.slow
@@ -374,9 +374,9 @@ def test_hotelling4():
                 h2 = 2*rft.Hotelling(k=k, dfd=dfd).density(x, dim)
                 h = 2*rft.Hotelling(k=k, dfd=dfd)(x, search=search)
 
-                yield assert_almost_equal, h, t
-                yield assert_almost_equal, h, f
-                yield assert_almost_equal, h, h2
+                assert_almost_equal(h, t)
+                assert_almost_equal(h, f)
+                assert_almost_equal(h, h2)
     search = rft.IntrinsicVolumes([3,4,5])
     for k in range(5, 10):
         p = rft.spherical_search(k)
@@ -387,8 +387,8 @@ def test_hotelling4():
             h2 = 0
             for i in range(search.mu.shape[0]):
                 h2 += 2*rft.Hotelling(k=k, dfd=dfd).density(x, i) * search.mu[i]
-            yield assert_almost_equal, h, f
-            yield assert_almost_equal, h, h2
+            assert_almost_equal(h, f)
+            assert_almost_equal(h, h2)
 
 
 def test_hotelling2():
@@ -423,7 +423,7 @@ def test_roy1():
             for dim in range(7):
                 h = 2*rft.Hotelling(dfd=dfd,k=k).density(x, dim)
                 r = rft.Roy(dfd=dfd,k=k,dfn=1).density(x, dim)
-                yield assert_almost_equal, h, r
+                assert_almost_equal(h, r)
 
 
 # @dec.slow
@@ -437,7 +437,7 @@ def test_onesidedF():
                 f1 = rft.FStat(dfd=dfd,dfn=dfn).density(x, dim)
                 f2 = rft.FStat(dfd=dfd,dfn=dfn-1).density(x, dim)
                 onesided = rft.OneSidedF(dfd=dfd,dfn=dfn).density(x, dim)
-                yield assert_almost_equal, onesided, 0.5*(f1-f2)
+                assert_almost_equal(onesided, 0.5*(f1-f2))
 
 
 # @dec.slow
@@ -451,14 +451,14 @@ def test_multivariate_forms():
         for dim in range(7):
             mx = m.density(x, dim)
             cx = c.density(x**2, dim)
-            yield assert_almost_equal, mx, cx
+            assert_almost_equal(mx, cx)
         for k2 in range(5,10):
             m = rft.MultilinearForm(k1,k2)
             r = rft.Roy(k=k1, dfn=k2, dfd=np.inf)
             for dim in range(7):
                 mx = 2*m.density(x, dim)
                 rx = r.density(x**2/k2, dim)
-                yield assert_almost_equal, mx, rx
+                assert_almost_equal(mx, rx)
 
 
 def test_scale():
@@ -474,7 +474,7 @@ def test_F1():
             for dfd in [40,50,np.inf]:
                 f1 = F(x, dim, dfn=dfn, dfd=dfd)
                 f2 = F_alternative(x, dim, dfn=dfn, dfd=dfd)
-                yield assert_almost_equal, f1, f2
+                assert_almost_equal(f1, f2)
 
 
 # @dec.slow
@@ -485,7 +485,7 @@ def test_F2():
             for dfd in [40,50,np.inf]:
                 f1 = rft.FStat(dfn=dfn, dfd=dfd).density(x, dim)
                 f2 = F_alternative(x, dim, dfn=dfn, dfd=dfd)
-                yield assert_almost_equal, f1, f2
+                assert_almost_equal(f1, f2)
 
 
 # @dec.slow
@@ -496,4 +496,4 @@ def test_F3():
             for dfd in [40,50,np.inf]:
                 f1 = rft.FStat(dfn=dfn, dfd=dfd).density(x, dim)
                 f2 = F(x, dim, dfn=dfn, dfd=dfd)
-                yield assert_almost_equal, f1, f2
+                assert_almost_equal(f1, f2)

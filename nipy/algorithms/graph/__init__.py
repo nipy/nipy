@@ -1,6 +1,5 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-from nipy.testing import Tester
 
 from .graph import (
     Graph,
@@ -16,6 +15,3 @@ from .graph import (
     wgraph_from_adjacency,
     wgraph_from_coo_matrix,
 )
-
-test = Tester().test
-bench = Tester().bench

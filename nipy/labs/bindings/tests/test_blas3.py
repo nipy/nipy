@@ -178,8 +178,3 @@ def test_dsyr2k():
     Lgold = np.tril(Dgold)
     assert_almost_equal(Ugold, U)
     assert_almost_equal(Lgold, L)
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

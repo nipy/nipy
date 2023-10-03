@@ -1,11 +1,9 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Extend numpy's decorators to use nipy's gui and data labels.
-
-This module should not import nose at the top level to avoid a run-time
-dependency on nose.
 """
 
+import functools
 from unittest import skipIf
 
 from nibabel.optpkg import optional_package
@@ -91,11 +89,6 @@ def needs_review(msg):
     return skip_func
 
 
-# Easier version of the numpy knownfailure
-def knownfailure(f):
-    return knownfailureif(True)(f)
-
-
 def if_datasource(ds, msg):
     try:
         ds.get_filename()
@@ -118,9 +111,11 @@ def needs_mpl_agg(func):
     if not HAVE_MPL:
         return needs_mpl(func)
     import matplotlib.pyplot as plt
-    from nose.tools import make_decorator
+
+    @functools.wraps(func)
     def agg_func(*args, **kwargs):
         matplotlib.use('agg')
         plt.switch_backend('agg')
         return func(*args, **kwargs)
-    return make_decorator(func)(agg_func)
+
+    return agg_func

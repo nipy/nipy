@@ -8,14 +8,8 @@ from os.path import dirname
 from os.path import join as pjoin
 
 import numpy as np
+import pytest
 import scipy.io as sio
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    assert_raises,
-    assert_true,
-)
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nipy import load_image
@@ -87,13 +81,13 @@ def test_time_slice_axes():
         assert_array_almost_equal(orig_results[key], s0_results[key])
     # Incorrect slice axis
     bad_s0_results = tsd.time_slice_diffs(s0_data)
-    assert_not_equal(orig_results['slice_mean_diff2'].shape,
+    assert (orig_results['slice_mean_diff2'].shape !=
                      bad_s0_results['slice_mean_diff2'].shape)
     # Slice axis equal to time axis - ValueError
-    assert_raises(ValueError, tsd.time_slice_diffs, data, -1, -1)
-    assert_raises(ValueError, tsd.time_slice_diffs, data, -1, 3)
-    assert_raises(ValueError, tsd.time_slice_diffs, data, 1, 1)
-    assert_raises(ValueError, tsd.time_slice_diffs, data, 1, -3)
+    pytest.raises(ValueError, tsd.time_slice_diffs, data, -1, -1)
+    pytest.raises(ValueError, tsd.time_slice_diffs, data, -1, 3)
+    pytest.raises(ValueError, tsd.time_slice_diffs, data, 1, 1)
+    pytest.raises(ValueError, tsd.time_slice_diffs, data, 1, -3)
 
 
 def test_against_matlab_results():
@@ -135,7 +129,7 @@ def test_tsd_image():
     tsdi = tsd.time_slice_diffs_image
     arr_results = tsda(data)
     # image routine insists on named slice axis, no default
-    assert_raises(AxisError, tsdi, fimg)
+    pytest.raises(AxisError, tsdi, fimg)
     # Works when specifying slice axis as keyword argument
     img_results = tsdi(fimg, slice_axis='k')
     assert_arr_img_res(arr_results, img_results)
@@ -146,11 +140,11 @@ def test_tsd_image():
         for slice_ax in range(4):
             slice_name = ax_names[slice_ax]
             if time_ax == slice_ax:
-                assert_raises(ValueError, tsda, data, time_ax, slice_ax)
-                assert_raises(ValueError, tsdi, fimg, time_ax, slice_ax)
-                assert_raises(ValueError, tsdi, fimg, time_name, slice_ax)
-                assert_raises(ValueError, tsdi, fimg, time_ax, slice_name)
-                assert_raises(ValueError, tsdi, fimg, time_name, slice_name)
+                pytest.raises(ValueError, tsda, data, time_ax, slice_ax)
+                pytest.raises(ValueError, tsdi, fimg, time_ax, slice_ax)
+                pytest.raises(ValueError, tsdi, fimg, time_name, slice_ax)
+                pytest.raises(ValueError, tsdi, fimg, time_ax, slice_name)
+                pytest.raises(ValueError, tsdi, fimg, time_name, slice_name)
                 continue
             arr_res = tsda(data, time_ax, slice_ax)
             assert_arr_img_res(arr_res, tsdi(fimg, time_ax, slice_ax))
@@ -161,12 +155,12 @@ def test_tsd_image():
             exp_ax_names = tuple(n for n in ax_names if n != time_name)
             for key in ('slice_diff2_max_vol', 'diff2_mean_vol'):
                 img = img_results[key]
-                assert_equal(img.coordmap.function_domain.coord_names,
+                assert (img.coordmap.function_domain.coord_names ==
                              exp_ax_names)
     # Test defaults on rolled image
     fimg_rolled = rollimg(fimg, 't')
     # Still don't have a slice axis specified
-    assert_raises(AxisError, tsdi, fimg_rolled)
+    pytest.raises(AxisError, tsdi, fimg_rolled)
     # Test default time axis
     assert_arr_img_res(arr_results, tsdi(fimg_rolled, slice_axis='k'))
     # Test axis named slice overrides default guess

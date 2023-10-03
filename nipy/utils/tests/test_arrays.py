@@ -2,7 +2,7 @@
 """
 
 import numpy as np
-from nose.tools import assert_equal, assert_raises, assert_true
+import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from ..arrays import strides_from
@@ -19,8 +19,8 @@ def test_strides_from():
                 elif dtype is np.void:
                     continue
                 exp = np.empty(shape, dtype=dtype, order=order).strides
-                assert_equal(strides_from(shape, dtype, order), exp)
-            assert_raises(ValueError, strides_from, shape, np.void, order)
-            assert_raises(ValueError, strides_from, shape, bytes, order)
-            assert_raises(ValueError, strides_from, shape, str, order)
-    assert_raises(ValueError, strides_from, (3,2), 'f8', 'G')
+                assert strides_from(shape, dtype, order) == exp
+            pytest.raises(ValueError, strides_from, shape, np.void, order)
+            pytest.raises(ValueError, strides_from, shape, bytes, order)
+            pytest.raises(ValueError, strides_from, shape, str, order)
+    pytest.raises(ValueError, strides_from, (3,2), 'f8', 'G')

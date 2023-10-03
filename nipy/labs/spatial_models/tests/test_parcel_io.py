@@ -3,7 +3,7 @@ from os.path import exists
 import numpy as np
 from nibabel import Nifti1Image, save
 from nibabel.tmpdirs import InTemporaryDirectory
-from numpy.testing import assert_equal
+from numpy.testing import assert_array_equal
 
 from ...utils.simul_multisubject_fmri_dataset import surrogate_3d_dataset
 from ..discrete_domain import grid_domain_from_shape
@@ -22,7 +22,7 @@ def test_mask_parcel():
     shape = (10, 10, 10)
     mask_image = Nifti1Image(np.ones(shape).astype('u1'), np.eye(4))
     wim = mask_parcellation(mask_image, n_parcels)
-    assert_equal(np.unique(wim.get_fdata()), np.arange(n_parcels))
+    assert_array_equal(np.unique(wim.get_fdata()), np.arange(n_parcels))
 
 
 def test_mask_parcel_multi_subj():
@@ -41,7 +41,7 @@ def test_mask_parcel_multi_subj():
             mask_images.append(path)
 
         wim = mask_parcellation(mask_images, n_parcels)
-        assert_equal(np.unique(wim.get_fdata()), np.arange(n_parcels))
+        assert_array_equal(np.unique(wim.get_fdata()), np.arange(n_parcels))
 
 
 def test_parcel_intra_from_3d_image():
@@ -60,7 +60,7 @@ def test_parcel_intra_from_3d_image():
                                      method, dir_context, mu)
             result = f'parcel_{method}.nii'
             assert exists(result)
-            assert_equal(osp.k, n_parcel)
+            assert osp.k == n_parcel
 
 
 def test_parcel_intra_from_3d_images_list():
@@ -81,7 +81,7 @@ def test_parcel_intra_from_3d_images_list():
         osp = fixed_parcellation(mask_image, data_image, n_parcel, nn,
                                  method, dir_context, mu)
         assert exists(f'parcel_{method}.nii')
-        assert_equal(osp.k, n_parcel)
+        assert osp.k == n_parcel
 
 
 def test_parcel_intra_from_4d_image():
@@ -98,7 +98,7 @@ def test_parcel_intra_from_4d_image():
         osp = fixed_parcellation(mask_image, ['image.nii'], n_parcel, nn,
                                  method, dir_context, mu)
         assert exists(f'parcel_{method}.nii')
-        assert_equal(osp.k, n_parcel)
+        assert osp.k == n_parcel
 
 def test_parcel_based_analysis():
     # Generate an image
@@ -118,7 +118,3 @@ def test_parcel_based_analysis():
             condition_id='', swd=dir_context)
         assert exists('prfx.nii')
         assert np.abs(prfx).max() < 15
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])

@@ -1,6 +1,7 @@
 
 import numpy as np
 import scipy.stats
+from numpy.testing import assert_almost_equal, assert_array_almost_equal
 
 import nipy.testing as niptest
 
@@ -131,14 +132,14 @@ def test_results():
     r = m.fit(y)
     # results hand compared with R's printout
 
-    yield niptest.assert_equal, f'{r.R2:0.4f}', '0.5737'
-    yield niptest.assert_equal, f'{r.R2_adj:0.4f}', '0.5242'
+    assert f'{r.R2:0.4f}' == '0.5737'
+    assert f'{r.R2_adj:0.4f}' == '0.5242'
 
     f = r.F_overall
-    yield niptest.assert_equal, f"{f['F']:0.2f}", '11.59'
-    yield niptest.assert_equal, f['df_num'], 13
-    yield niptest.assert_equal, f['df_den'], 112
-    yield niptest.assert_equal, f"{f['p_value']:0.3e}", '1.818e-15'
+    assert f"{f['F']:0.2f}" == '11.59'
+    assert f['df_num'] == 13
+    assert f['df_den'] == 112
+    assert f"{f['p_value']:0.3e}" == '1.818e-15'
 
     # test Fcontrast, the 8th column of m.design is all 1s
     # let's construct a contrast matrix that tests everything
@@ -148,9 +149,9 @@ def test_results():
     M = np.identity(14)
     M = np.array([M[i] for i in [0,1,2,3,4,5,6,8,9,10,11,12,13]])
     Fc = r.Fcontrast(M)
-    yield niptest.assert_array_almost_equal, [Fc.F], [f['F']], 6
-    yield niptest.assert_array_almost_equal, [Fc.df_num], [f['df_num']], 6
-    yield niptest.assert_array_almost_equal, [Fc.df_den], [f['df_den']], 6
+    assert_array_almost_equal([Fc.F], [f['F']], 6)
+    assert_array_almost_equal([Fc.df_num], [f['df_num']], 6)
+    assert_array_almost_equal([Fc.df_den], [f['df_den']], 6)
 
     thetas = []
     sds = []
@@ -159,17 +160,17 @@ def test_results():
 
     # the model has an intercept
 
-    yield niptest.assert_true, r.model.has_intercept
+    assert r.model.has_intercept
 
     # design matrix has full rank
 
-    yield niptest.assert_equal, r.model.rank, 14
+    assert r.model.rank == 14
 
     # design matrix has full rank
 
-    yield niptest.assert_equal, r.df_model, 14
-    yield niptest.assert_equal, r.df_total, 126
-    yield niptest.assert_equal, r.df_resid, 112
+    assert r.df_model == 14
+    assert r.df_total == 126
+    assert r.df_resid == 112
 
     # entries with '*****' are not tested as they were a different format
 
@@ -214,13 +215,13 @@ X14 -1.044e-05  7.215e-06  -1.448   0.1505
         ps.append(p)
 
     for th, thstr in zip(r.theta, thetas):
-        yield niptest.assert_equal, f'{th:0.3e}', thstr
+        assert f'{th:0.3e}' == thstr
 
     for sd, sdstr in zip([np.sqrt(r.vcov(column=i)) for i in range(14)], sds):
-        yield niptest.assert_equal, f'{sd:0.3e}', sdstr
+        assert f'{sd:0.3e}' == sdstr
 
     for t, tstr in zip([r.t(column=i) for i in range(14)], ts):
-        yield niptest.assert_equal, f'{t:0.3f}', tstr
+        assert f'{t:0.3f}' == tstr
 
     for i, t in enumerate([r.t(column=i) for i in range(14)]):
         m = np.zeros((14,))
@@ -228,31 +229,31 @@ X14 -1.044e-05  7.215e-06  -1.448   0.1505
         tv = r.Tcontrast(m)
         e = r.theta[i]
         sd = np.sqrt(r.vcov(column=i))
-        yield niptest.assert_almost_equal, tv.t, t, 6
-        yield niptest.assert_almost_equal, tv.sd, sd, 6
-        yield niptest.assert_almost_equal, tv.effect, e, 6
+        assert_almost_equal(tv.t, t, 6)
+        assert_almost_equal(tv.sd, sd, 6)
+        assert_almost_equal(tv.effect, e, 6)
 
 
     for p, pstr in zip([2*scipy.stats.t.sf(np.fabs(r.t(column=i)), r.df_resid) for i in range(14)], ps):
         if pstr.find('*') < 0:
-            yield niptest.assert_equal, f'{p:0.4f}', pstr
+            assert f'{p:0.4f}' == pstr
 
-    yield niptest.assert_equal, f"{r.SSE:0.5f}", "72.02328"
-    yield niptest.assert_equal, f"{r.SST:0.4f}", "168.9401"
-    yield niptest.assert_equal, f"{r.SSR:0.5f}", "96.91685"
+    assert f"{r.SSE:0.5f}" == "72.02328"
+    assert f"{r.SST:0.4f}" == "168.9401"
+    assert f"{r.SSR:0.5f}" == "96.91685"
 
-    yield niptest.assert_equal, f"{r.MSE:0.6f}", "0.643065"
-    yield niptest.assert_equal, f"{r.MST:0.6f}", "1.351521"
-    yield niptest.assert_equal, f"{r.MSR:0.6f}", "7.455142"
+    assert f"{r.MSE:0.6f}" == "0.643065"
+    assert f"{r.MST:0.6f}" == "1.351521"
+    assert f"{r.MSR:0.6f}" == "7.455142"
 
-    yield niptest.assert_equal, f"{np.sqrt(r.MSE):0.4f}", "0.8019"
+    assert f"{np.sqrt(r.MSE):0.4f}" == "0.8019"
 
     # the difference here comes from the fact that
     # we've treated sigma as a nuisance parameter,
     # so our AIC is the AIC of the profiled log-likelihood...
 
-    yield niptest.assert_equal, f'{r.AIC + 2:0.4f}', '317.1017'
-    yield niptest.assert_equal, f'{r.BIC + np.log(126):0.4f}', '359.6459'
+    assert f'{r.AIC + 2:0.4f}' == '317.1017'
+    assert f'{r.BIC + np.log(126):0.4f}' == '359.6459'
 
 
 # this is the file "data.csv" referred to in Rscript above

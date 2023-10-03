@@ -34,20 +34,30 @@ jobs:
           allow-prereleases: true
       - name: Install
         run: |
-          pip install nose3 coverage
-          pip install .
+          pip install -r dev-requirements.txt
+          pip install -e .
       - name: Show environment
         run: env
       - name: Library tests
         run: |
-          mkdir ../tmp
-          cd ../tmp
-          python ../nipy/tools/nipnost --traverse-namespace --verbosity=3 \
-            --with-coverage --cover-xml-file=../nipy/coverage.xml --cover-config-file=../nipy/.coveragerc \
-            nipy
-      - name: See what's where
-        run: ls -lR ..
-      - name: Upload to codecov
-        uses: codecov/codecov-action@v3
+          mkdir tmp
+          cd tmp
+          pytest --doctest-plus --pyargs nipy
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
         with:
-          files: ./coverage.xml
+          python-version: "3.11"
+      - name: Install
+        run: |
+          pip install -r dev-requirements.txt
+          pip install -e .
+      - name: Show environment
+        run: env
+      - name: Library tests
+        run: |
+          mkdir tmp
+          cd tmp
+          pytest -s -c ../bench.ini --pyargs nipy

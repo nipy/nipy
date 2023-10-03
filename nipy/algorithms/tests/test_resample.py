@@ -3,11 +3,11 @@
 from itertools import product
 
 import numpy as np
-from nose.tools import assert_raises, assert_true
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+import pytest
+from numpy.testing import assert_array_almost_equal
 
 from nipy.algorithms.resample import resample, resample_img2img
-from nipy.core.api import AffineTransform, ArrayCoordMap, CoordinateMap, Image, vox2mni
+from nipy.core.api import AffineTransform, ArrayCoordMap, Image, vox2mni
 from nipy.core.reference import slices
 from nipy.io.api import load_image
 from nipy.testing import anatfile, funcfile
@@ -17,11 +17,11 @@ def test_resample_img2img():
     fimg = load_image(funcfile)
     aimg = load_image(anatfile)
     resimg = resample_img2img(fimg, fimg)
-    yield assert_true, np.allclose(resimg.get_fdata(), fimg.get_fdata())
-    yield assert_raises, ValueError, resample_img2img, fimg, aimg
+    assert np.allclose(resimg.get_fdata(), fimg.get_fdata())
+    pytest.raises(ValueError, resample_img2img, fimg, aimg)
 
 
-# Hackish flag for enabling of pylab plots of resamplingstest_2d_from_3d
+# Hackish flag for enabling of pyplots of resamplingstest_2d_from_3d
 gui_review = False
 
 def test_rotate2d():
@@ -214,7 +214,6 @@ def test_nonaffine():
     # resamples an image along a curve through the image.
     #
     # FIXME: use the reference.evaluate.Grid to perform this nicer
-    # FIXME: Remove pylab references
     def curve(x): # function accept N by 1, returns N by 2
         return (np.vstack([5*np.sin(x.T),5*np.cos(x.T)]).T + [52,47])
     for names in (('xy', 'ij', 't', 'u'),('ij', 'xy', 't', 's')):
@@ -229,15 +228,15 @@ def test_nonaffine():
             [np.pi*1.8/100])
         ir = resample(img, tcoordmap, curve, (100,))
     if gui_review:
-        import pylab
-        pylab.figure(num=3)
-        pylab.imshow(img, interpolation='nearest')
+        import matplotlib.pyplot as plt
+        plt.figure(num=3)
+        plt.imshow(img, interpolation='nearest')
         d = curve(np.linspace(0,1.8*np.pi,100))
-        pylab.plot(d[0], d[1])
-        pylab.gca().set_ylim([0,99])
-        pylab.gca().set_xlim([0,89])
-        pylab.figure(num=4)
-        pylab.plot(ir.get_fdata())
+        plt.plot(d[0], d[1])
+        plt.gca().set_ylim([0,99])
+        plt.gca().set_xlim([0,89])
+        plt.figure(num=4)
+        plt.plot(ir.get_fdata())
 
 
 def test_2d_from_3d():

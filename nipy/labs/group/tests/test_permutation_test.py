@@ -3,7 +3,6 @@
 import unittest
 
 import numpy as np
-from nose.tools import assert_true
 from numpy.testing import assert_array_equal
 
 from nipy.algorithms.graph import wgraph_from_3d_grid
@@ -86,7 +85,7 @@ class test_permutation_test(unittest.TestCase):
         p_values, cluster_results, region_results = P.calibrate(
             nperms=nperms)
         cpval = p_values['Corr_p_values']
-        assert_true(np.sum(cpval > .5 * np.ones_like(cpval)) > .9 * len(cpval))
+        assert np.sum(cpval > .5 * np.ones_like(cpval)) > .9 * len(cpval)
 
     def test_twosample_non_null(self):
         data1, vardata1, XYZ = make_data(n=20)
@@ -101,7 +100,3 @@ class test_permutation_test(unittest.TestCase):
             nperms=nperms)
         cpval = p_values['Corr_p_values']
         assert_array_equal(cpval, np.zeros_like(cpval))
-
-
-if __name__ == "__main__":
-    unittest.main()

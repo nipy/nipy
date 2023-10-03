@@ -34,8 +34,3 @@ def test_euclidean_2():
     	ref[i] = np.sqrt(np.sum((X - X[i])**2, 1))
 
     assert_almost_equal(ED, ref)
-
-
-if __name__ == "__main__":
-    import nose
-    nose.run(argv=['', __file__])
