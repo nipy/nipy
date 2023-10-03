@@ -43,3 +43,21 @@ jobs:
           mkdir tmp
           cd tmp
           pytest --doctest-plus --pyargs nipy
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: |
+          pip install -r dev-requirements.txt
+          pip install -e .
+      - name: Show environment
+        run: env
+      - name: Library tests
+        run: |
+          mkdir tmp
+          cd tmp
+          pytest -s -c ../bench.ini --pyargs nipy
