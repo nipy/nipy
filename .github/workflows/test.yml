@@ -35,7 +35,7 @@ jobs:
       - name: Install
         run: |
           pip install -r dev-requirements.txt
-          pip install -e .
+          pip install .
       - name: Show environment
         run: env
       - name: Library tests
@@ -53,7 +53,7 @@ jobs:
       - name: Install
         run: |
           pip install -r dev-requirements.txt
-          pip install -e .
+          pip install .
       - name: Show environment
         run: env
       - name: Library tests
