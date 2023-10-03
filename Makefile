@@ -40,9 +40,6 @@ distclean: clean
 dev: cythonize
 	$(PYTHON) setup.py build_ext --inplace
 
-test:
-	cd .. && $(PYTHON) -c 'import nipy; nipy.test()'
-
 install:
 	$(PYTHON) setup.py install
 
