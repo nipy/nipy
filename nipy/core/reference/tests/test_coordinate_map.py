@@ -26,11 +26,7 @@ from ..coordinate_map import (
     shifted_domain_origin,
     shifted_range_origin,
 )
-from ..coordinate_system import (
-    CoordinateSystem,
-    CoordSysMaker,
-    CoordinateSystemError
-)
+from ..coordinate_system import CoordinateSystem, CoordinateSystemError, CoordSysMaker
 
 # shortcut
 CS = CoordinateSystem
