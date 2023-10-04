@@ -16,14 +16,14 @@ from ..pca import pca as pca_array
 from ..pca import pca_image
 from .test_pca import res2pos1
 
-data_dict = {}
 
-def setup():
+@pytest.fixture(scope='module')
+def data_dict():
     img = load_image(funcfile)
     # Here, I'm just doing this so I know that img.shape[0] is the number of
     # volumes
     t0_img = rollimg(img, 't')
-    data_dict['nimages'] = t0_img.shape[0]
+    out = {'nimages': t0_img.shape[0]}
     # Below, I am just making a mask because I already have img, I know I can do
     # this. In principle, though, the pca function will just take another Image
     # as a mask
@@ -32,18 +32,20 @@ def setup():
     first_frame = img_data[0]
     mask = Image(np.greater(first_frame, 500).astype(np.float64),
                  mask_cmap)
-    data_dict['fmridata'] = img
-    data_dict['mask'] = mask
+    out['fmridata'] = img
+    out['mask'] = mask
 
     # print data_dict['mask'].shape, np.sum(data_dict['mask'].get_fdata())
-    assert data_dict['mask'].shape == (17, 21, 3)
-    assert_almost_equal(np.sum(data_dict['mask'].get_fdata()), 1071.0)
+    assert out['mask'].shape == (17, 21, 3)
+    assert_almost_equal(np.sum(out['mask'].get_fdata()), 1071.0)
+    return out
+
 
 def _rank(p):
     return p['basis_vectors'].shape[1]
 
 
-def test_PCAMask():
+def test_PCAMask(data_dict):
     nimages = data_dict['nimages']
     ntotal = nimages - 1
     ncomp = 5
@@ -62,7 +64,7 @@ def test_PCAMask():
                        data_dict['fmridata'].coordmap.affine)
 
 
-def test_mask_match():
+def test_mask_match(data_dict):
     # we can't do PCA over spatial axes if we use a spatial mask
     ncomp = 5
     out_coords = data_dict['mask'].reference.coord_names
@@ -87,7 +89,7 @@ def test_mask_match():
                       ncomp)
 
 
-def test_PCAMask_nostandardize():
+def test_PCAMask_nostandardize(data_dict):
     nimages = data_dict['nimages']
     ntotal = nimages - 1
     ncomp = 5
@@ -105,7 +107,7 @@ def test_PCAMask_nostandardize():
                        data_dict['fmridata'].coordmap.affine)
 
 
-def test_PCANoMask():
+def test_PCANoMask(data_dict):
     nimages = data_dict['nimages']
     ntotal = nimages - 1
     ncomp = 5
@@ -122,7 +124,7 @@ def test_PCANoMask():
                        data_dict['fmridata'].coordmap.affine)
 
 
-def test_PCANoMask_nostandardize():
+def test_PCANoMask_nostandardize(data_dict):
     nimages = data_dict['nimages']
     ntotal = nimages - 1
     ncomp = 5
@@ -139,7 +141,7 @@ def test_PCANoMask_nostandardize():
                        data_dict['fmridata'].coordmap.affine)
 
 
-def test_keep():
+def test_keep(data_dict):
     # Data is projected onto k=10 dimensional subspace then has its mean
     # removed. Should still have rank 10.
     k = 10
@@ -160,7 +162,7 @@ def test_keep():
                        data_dict['fmridata'].coordmap.affine)
 
 
-def test_resid():
+def test_resid(data_dict):
     # Data is projected onto k=10 dimensional subspace then has its mean
     # removed.  Should still have rank 10.
     k = 10
@@ -181,7 +183,7 @@ def test_resid():
                        data_dict['fmridata'].coordmap.affine)
 
 
-def test_both():
+def test_both(data_dict):
     k1 = 10
     k2 = 8
     ncomp = 5
@@ -204,7 +206,7 @@ def test_both():
                        data_dict['fmridata'].coordmap.affine)
 
 
-def test_5d():
+def test_5d(data_dict):
     # What happened to a 5d image? We should get 4d images back
     img = data_dict['fmridata']
     data = img.get_fdata()
@@ -278,7 +280,7 @@ def img_res2pos1(res, bv_key):
     return res
 
 
-def test_other_axes():
+def test_other_axes(data_dict):
     # With a diagonal affine, we can do PCA on any axis
     ncomp = 5
     img = data_dict['fmridata']
