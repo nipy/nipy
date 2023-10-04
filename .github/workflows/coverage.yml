@@ -33,7 +33,8 @@ jobs:
         run: |
           mkdir tmp
           cd tmp
-          pytest --doctest-plus --cov=nipy --cov-config=../.coveragerc --pyargs nipy
+          pytest --doctest-plus --cov=nipy  --cov-report xml \
+            --cov-config=../.coveragerc --pyargs nipy
       - name: See what's where
         run: |
           pwd
@@ -41,4 +42,4 @@ jobs:
       - name: Upload to codecov
         uses: codecov/codecov-action@v3
         with:
-          files: tmp/.coverage
+          files: tmp/coverage.xml
