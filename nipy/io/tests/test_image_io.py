@@ -26,20 +26,15 @@ from nipy.utils import DataError, templates
 
 from ..api import as_image, load_image, save_image
 
-gimg = None
 
-def setup_module():
-    global gimg
+@pytest.fixture(scope='module')
+def tpl_img():
     try:
-        gimg = load_template_img()
-    except DataError:
-        pass
-
-
-def load_template_img():
-    return load_image(
-        templates.get_filename(
+        gimg = load_image(templates.get_filename(
             'ICBM152', '2mm', 'T1.nii.gz'))
+    except DataError:
+        gimg = None
+    return gimg
 
 
 def test_badfile():
@@ -50,22 +45,22 @@ def test_badfile():
 
 
 @if_templates
-def test_maxminmean_values():
+def test_maxminmean_values(tpl_img):
     # loaded array values from SPM
-    y = gimg.get_fdata()
-    assert y.shape == tuple(gimg.shape)
+    y = tpl_img.get_fdata()
+    assert y.shape == tuple(tpl_img.shape)
     assert_array_almost_equal(y.max(), 1.000000059)
     assert_array_almost_equal(y.mean(), 0.273968048)
     assert y.min() == 0.0
 
 
 @if_templates
-def test_nondiag():
-    gimg.affine[0,1] = 3.0
+def test_nondiag(tpl_img):
+    tpl_img.affine[0,1] = 3.0
     with InTemporaryDirectory():
-        save_image(gimg, 'img.nii')
+        save_image(tpl_img, 'img.nii')
         img2 = load_image('img.nii')
-        assert_almost_equal(img2.affine, gimg.affine)
+        assert_almost_equal(img2.affine, tpl_img.affine)
 
 
 def randimg_in2out(rng, in_dtype, out_dtype, name):
