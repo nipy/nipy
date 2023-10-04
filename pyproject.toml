@@ -1,13 +1,26 @@
 [build-system]
+build-backend = "mesonpy"
 requires = [
+  "meson-python>=0.13",
   "setuptools",
-  "cython<3",
+  "cython>=3",
   # Newer than NEP29-minimum: compile against oldest numpy available
   "numpy>=1.25; python_version > '3.8'",
   # NEP29-minimum as of Sep 21, 2023
   "numpy==1.22; python_version >= '3.7' and python_version < '3.9'",
 ]
-build-backend = "setuptools.build_meta"
+
+[project]
+name = "nipy"
+version = "0.5.1.dev1"
+license = {file = "LICENSE"}
+
+[project.scripts]
+nipy_3dto4d = 'nipy.cli.img3dto4d:main'
+nipy_4dto3d = 'nipy.cli.img4dto3d:main'
+nipy_4d_realign = 'nipy.cli.realign4d:main'
+nipy_tsdiffana = 'nipy.cli.tsdiffana:main'
+nipy_diagnose = 'nipy.cli.diagnose:main'
 
 [tool.ruff]
 line-length = 88
@@ -25,5 +38,19 @@ select = [
     'SIM110',
     'SIM111',
     'SIM118',
-    'SIM2',
+    'SIM2'
+]
+
+[tool.spin]
+package = 'nipy'
+
+[tool.spin.commands]
+Build = [
+    'spin.cmds.meson.build',
+    'spin.cmds.meson.test'
+]
+Environments = [
+    'spin.cmds.meson.ipython',
+    'spin.cmds.meson.python',
+    'spin.cmds.meson.run'
 ]
