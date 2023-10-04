@@ -32,10 +32,9 @@ from ..spaces import (
     xyz_order,
 )
 
-VARS = {}
 
-
-def setup():
+@pytest.fixture
+def vars():
     d_names = list('ijkl')
     xyzs = 'x=L->R', 'y=P->A', 'z=I->S'
     mni_xyzs = ['mni-' + suff for suff in xyzs]
@@ -48,7 +47,7 @@ def setup():
     d_cs_r4 = CS(d_names[:4], 'voxels')
     r_cs_r3 = CS(r_names[:3], 'mni')
     r_cs_r4 = CS(r_names[:4], 'mni')
-    VARS.update(locals())
+    return locals()
 
 
 def test_xyz_space():
@@ -125,7 +124,7 @@ def test_known_space():
         assert known_space(cs, custom_spaces) == sp
 
 
-def test_image_creation():
+def test_image_creation(vars):
     # 3D image
     arr = np.arange(24).reshape(2,3,4)
     aff = np.diag([2,3,4,1])
@@ -133,24 +132,24 @@ def test_image_creation():
     assert img.shape == (2,3,4)
     assert_array_equal(img.affine, aff)
     assert_array_equal(img.coordmap,
-                       AffineTransform(VARS['d_cs_r3'], VARS['r_cs_r3'], aff))
+                       AffineTransform(vars['d_cs_r3'], vars['r_cs_r3'], aff))
     # 4D image
     arr = np.arange(24).reshape(2,3,4,1)
     img = Image(arr, vox2mni(aff, 7))
     exp_aff = np.diag([2,3,4,7,1])
     assert img.shape == (2,3,4,1)
-    exp_cmap = AffineTransform(VARS['d_cs_r4'], VARS['r_cs_r4'], exp_aff)
+    exp_cmap = AffineTransform(vars['d_cs_r4'], vars['r_cs_r4'], exp_aff)
     assert img.coordmap == exp_cmap
 
 
-def test_default_makers():
+def test_default_makers(vars):
     # Tests that the makers make expected coordinate maps
     for csm, r_names, r_name in (
-        (vox2scanner, VARS['scanner_xyzs'] + ['t'], 'scanner'),
-        (vox2unknown, VARS['unknown_xyzs'] + ['t'], 'unknown'),
-        (vox2aligned, VARS['aligned_xyzs'] + ['t'], 'aligned'),
-        (vox2mni, VARS['mni_xyzs'] + ['t'], 'mni'),
-        (vox2talairach, VARS['talairach_xyzs'] + ['t'], 'talairach')):
+        (vox2scanner, vars['scanner_xyzs'] + ['t'], 'scanner'),
+        (vox2unknown, vars['unknown_xyzs'] + ['t'], 'unknown'),
+        (vox2aligned, vars['aligned_xyzs'] + ['t'], 'aligned'),
+        (vox2mni, vars['mni_xyzs'] + ['t'], 'mni'),
+        (vox2talairach, vars['talairach_xyzs'] + ['t'], 'talairach')):
         for i in range(1,5):
             dom_cs = CS('ijkl'[:i], 'voxels')
             ran_cs = CS(r_names[:i], r_name)
@@ -174,23 +173,23 @@ def test_get_world_cs():
     pytest.raises(ValueError, get_world_cs, 0)
 
 
-def test_xyz_affine():
+def test_xyz_affine(vars):
     # Getting an xyz affine from coordmaps
     aff3d = from_matvec(np.arange(9).reshape((3,3)), [15,16,17])
-    cmap3d = AffineTransform(VARS['d_cs_r3'], VARS['r_cs_r3'], aff3d)
+    cmap3d = AffineTransform(vars['d_cs_r3'], vars['r_cs_r3'], aff3d)
     rzs = np.c_[np.arange(12).reshape((4,3)), [0,0,0,12]]
     aff4d = from_matvec(rzs, [15,16,17,18])
-    cmap4d = AffineTransform(VARS['d_cs_r4'], VARS['r_cs_r4'], aff4d)
+    cmap4d = AffineTransform(vars['d_cs_r4'], vars['r_cs_r4'], aff4d)
     # Simplest case of 3D affine -> affine unchanged
     assert_array_equal(xyz_affine(cmap3d), aff3d)
     # 4D (5, 5) affine -> 3D equivalent
     assert_array_equal(xyz_affine(cmap4d), aff3d)
     # Any dimensions not spatial, AxesError
     r_cs = CS(('mni-x', 'mni-y', 'mni-q'), 'mni')
-    funny_cmap = AffineTransform(VARS['d_cs_r3'],r_cs, aff3d)
+    funny_cmap = AffineTransform(vars['d_cs_r3'],r_cs, aff3d)
     pytest.raises(AxesError, xyz_affine, funny_cmap)
     r_cs = CS(('mni-x', 'mni-q', 'mni-z'), 'mni')
-    funny_cmap = AffineTransform(VARS['d_cs_r3'],r_cs, aff3d)
+    funny_cmap = AffineTransform(vars['d_cs_r3'],r_cs, aff3d)
     pytest.raises(AxesError, xyz_affine, funny_cmap)
     # We insist that the coordmap is in output xyz order
     permutations = (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)
@@ -208,7 +207,7 @@ def test_xyz_affine():
     for i in range(3):
         aff = aff4d.copy()
         aff[i,3] = 1
-        cmap = AffineTransform(VARS['d_cs_r4'], VARS['r_cs_r4'], aff)
+        cmap = AffineTransform(vars['d_cs_r4'], vars['r_cs_r4'], aff)
         pytest.raises(AffineError, xyz_affine, cmap)
         # And if reordered
         pytest.raises(AxesError, xyz_affine, cmap.reordered_range([2,0,1,3]))
@@ -218,7 +217,7 @@ def test_xyz_affine():
                       [6, 7, 8, 17],
                       [0, 0, 0, 18],
                       [0, 0, 0, 1]])
-    cmap = AffineTransform(VARS['d_cs_r3'], VARS['r_cs_r4'], aff54)
+    cmap = AffineTransform(vars['d_cs_r3'], vars['r_cs_r4'], aff54)
     assert_array_equal(xyz_affine(cmap), aff3d)
     aff57 = np.array([[0, 1, 2, 0, 0, 0, 15],
                       [3, 4, 5, 0, 0, 0, 16],
@@ -226,21 +225,21 @@ def test_xyz_affine():
                       [0, 0, 0, 0, 0, 0, 18],
                       [0, 0, 0, 0, 0, 0, 1]])
     d_cs_r6 = CS('ijklmn', 'voxels')
-    cmap = AffineTransform(d_cs_r6, VARS['r_cs_r4'], aff57)
+    cmap = AffineTransform(d_cs_r6, vars['r_cs_r4'], aff57)
     assert_array_equal(xyz_affine(cmap), aff3d)
     # Non-affine raises SpaceTypeError
-    cmap_cmap = CoordinateMap(VARS['d_cs_r4'], VARS['r_cs_r4'], lambda x:x*3)
+    cmap_cmap = CoordinateMap(vars['d_cs_r4'], vars['r_cs_r4'], lambda x:x*3)
     pytest.raises(SpaceTypeError, xyz_affine, cmap_cmap)
     # Not enough dimensions - SpaceTypeError
     d_cs_r2 = CS('ij', 'voxels')
-    r_cs_r2 = CS(VARS['r_names'][:2], 'mni')
+    r_cs_r2 = CS(vars['r_names'][:2], 'mni')
     cmap = AffineTransform(d_cs_r2, r_cs_r2,
                            np.array([[2,0,10],[0,3,11],[0,0,1]]))
     pytest.raises(AxesError, xyz_affine, cmap)
     # Can pass in own validator
     my_valtor = {'blind': 'x', 'leading': 'y', 'ditch': 'z'}
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
-    cmap = AffineTransform(VARS['d_cs_r3'],r_cs, aff3d)
+    cmap = AffineTransform(vars['d_cs_r3'],r_cs, aff3d)
     pytest.raises(AxesError, xyz_affine, cmap)
     assert_array_equal(xyz_affine(cmap, my_valtor), aff3d)
     # Slices in x, y, z coordmaps raise error because of missing spatial
@@ -253,10 +252,10 @@ def test_xyz_affine():
     pytest.raises(AxesError, xyz_affine, img[:,:,1].coordmap)
 
 
-def test_xyz_order():
+def test_xyz_order(vars):
     # Getting xyz ordering from a coordinate system
-    assert_array_equal(xyz_order(VARS['r_cs_r3']), [0,1,2])
-    assert_array_equal(xyz_order(VARS['r_cs_r4']), [0,1,2,3])
+    assert_array_equal(xyz_order(vars['r_cs_r3']), [0,1,2])
+    assert_array_equal(xyz_order(vars['r_cs_r4']), [0,1,2,3])
     r_cs = CS(('mni-x=L->R', 'mni-y=P->A', 'mni-q'), 'mni')
     pytest.raises(AxesError, xyz_order, r_cs)
     r_cs = CS(('t', 'mni-x=L->R', 'mni-z=I->S', 'mni-y=P->A'), 'mni')
@@ -268,10 +267,10 @@ def test_xyz_order():
     assert_array_equal(xyz_order(r_cs, my_valtor), [2,1,0])
 
 
-def test_is_xyz_affable():
+def test_is_xyz_affable(vars):
     # Whether there exists an xyz affine for this coordmap
     affine = np.diag([2,4,5,6,1])
-    cmap = AffineTransform(VARS['d_cs_r4'], VARS['r_cs_r4'], affine)
+    cmap = AffineTransform(vars['d_cs_r4'], vars['r_cs_r4'], affine)
     assert is_xyz_affable(cmap)
     assert not is_xyz_affable(cmap.reordered_range([3,0,1,2]))
     assert not is_xyz_affable(cmap.reordered_domain([3,0,1,2]))
@@ -279,7 +278,7 @@ def test_is_xyz_affable():
     my_valtor = {'blind': 'x', 'leading': 'y', 'ditch': 'z'}
     r_cs = CS(('blind', 'leading', 'ditch'), 'fall')
     affine = from_matvec(np.arange(9).reshape((3, 3)), [11, 12, 13])
-    cmap = AffineTransform(VARS['d_cs_r3'], r_cs, affine)
+    cmap = AffineTransform(vars['d_cs_r3'], r_cs, affine)
     # No xyz affine if we don't use our custom dictionary
     assert not is_xyz_affable(cmap)
     # Is if we do
