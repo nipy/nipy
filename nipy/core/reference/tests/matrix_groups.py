@@ -147,8 +147,8 @@ class SO(O,SLR):
 
 class GLZ(GLR):
 
-    """
-    Matrices with integer entries and determinant \pm 1
+    r"""
+    Matrices with integer entries and determinant $\pm$ 1
     """
 
     dtype = np.int_
@@ -162,9 +162,8 @@ class GLZ(GLR):
         GLR.__init__(self, M, coords, dtype=self.dtype)
 
     def validate(self):
-        """
-        Must have determinant  \pm 1
-
+        r"""
+        Must have determinant  $\pm$ 1
         """
         M = self.matrix
         return np.allclose(np.fabs(np.linalg.det(M)), 1)
