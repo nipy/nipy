@@ -18,7 +18,6 @@ from ...reference.coordinate_system import CoordinateSystem
 from .. import image
 from ..image import Image, is_image, iter_axis, rollimg
 
-
 _data = np.arange(24).reshape((4,3,2))
 gimg = Image(_data, AffineTransform('ijk', 'xyz', np.eye(4)))
 

@@ -12,7 +12,6 @@ from nipy.io.api import load_image
 from nipy.modalities.fmri.api import FmriImageList, axis0_generator
 from nipy.testing import funcfile
 
-
 # Module globals
 FIMG = load_image(funcfile)
 # Put time on first axis

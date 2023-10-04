@@ -30,7 +30,6 @@ from ..files import load
 from ..nibcompat import get_affine, get_header
 from ..nifti_ref import NiftiError, nifti2nipy, nipy2nifti
 
-
 pytestmark = pytest.mark.filterwarnings("ignore:"
                                         "Default `strict` currently False:"
                                         "FutureWarning")
