@@ -1,6 +1,5 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import warnings
 
 import numpy as np
 from numpy.random import standard_normal as noise
@@ -12,16 +11,6 @@ from nipy.core.utils.generators import f_generator, parcels, write_data
 from nipy.io.api import load_image
 from nipy.modalities.fmri.api import FmriImageList, axis0_generator
 from nipy.testing import funcfile
-
-
-def setup():
-    # Suppress warnings during tests to reduce noise
-    warnings.simplefilter("ignore")
-
-
-def teardown():
-    # Clear list of warning filters
-    warnings.resetwarnings()
 
 
 # Module globals
