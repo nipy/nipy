@@ -9,7 +9,7 @@ def add_np(doctest_namespace):
     doctest_namespace["np"] = numpy
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def mpl_imports():
     """ Force matplotlib to use agg backend for tests
     """
