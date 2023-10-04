@@ -2,7 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import gc
-import warnings
+import pytest
 
 import numpy as np
 from nibabel.tmpdirs import InTemporaryDirectory
@@ -14,16 +14,9 @@ from nipy.modalities.fmri.api import FmriImageList, axis0_generator
 from nipy.testing import funcfile
 
 
-def setup():
-    # Suppress warnings during tests to reduce noise
-    warnings.simplefilter("ignore")
-
-
-def teardown():
-    # Clear list of warning filters
-    warnings.resetwarnings()
-
-
+@pytest.mark.filterwarnings("ignore:"
+                            "Default `strict` currently False:"
+                            "FutureWarning")
 def test_write():
     fname = 'myfile.nii'
     img = load_image(funcfile)
