@@ -786,7 +786,7 @@ class NDGridDomain(StructuredDomain):
 
         data = nim.get_fdata()
         feature = data[self.ijk[:, 0], self.ijk[:, 1], self.ijk[:, 2]]
-        if fid is not '':
+        if fid != '':
             self.features[fid] = feature
 
         return feature

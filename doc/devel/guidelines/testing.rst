@@ -96,9 +96,9 @@ use one of these three methods, in order of convenience:
     finally:
         os.unlink(name)  # This deletes the temp file
 
-Please don't just create a file in the test directory and then remove it with a
-call to ``os.remove``.  For various reasons, sometimes ``os.remove`` doesn't get
-called and temp files get left around.
+Please don't just create a file in the test directory and then remove it with
+a call to ``os.remove``.  For various reasons, sometimes ``os.remove`` doesn't
+get called and temp files get left around.
 
 Many tests in one test function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -125,20 +125,9 @@ Suppress *warnings* on test output
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In order to reduce noise when running the tests, consider suppressing
-*warnings* in your test modules.  This can be done in the module-level
-setup and teardown functions::
-
-      import warnings
-      ...
-
-      def setup():
-          # Suppress warnings during tests to reduce noise
-          warnings.simplefilter("ignore")
-
-      def teardown():
-          # Clear list of warning filters
-          warnings.resetwarnings()
-
+*warnings* in your test modules.  See the `pytest documentation
+<https://docs.pytest.org/en/7.1.x/how-to/capture-warnings.html>`_ for various
+ways to do that, or search our code for `pytest.mark` for examples.
 
 Running tests
 -------------
@@ -183,7 +172,7 @@ To test a class::
 
 To test a class method::
 
-    pytest nipy/algorithms/clustering/tests/test_clustering.py::TestClustering::testkmeans1
+    pytest nipy/algorithms/clustering/tests/test_clustering.py::TestClustering.testkmeans1
 
 Verbose mode (*-v* option) will print out the function names as they
 are executed.  Standard output is normally supressed by Pytest, to see
