@@ -5,8 +5,8 @@
 """
 
 import numpy as np
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+import pytest
+from numpy.testing import assert_array_almost_equal
 
 import nipy.core.reference.array_coords as acs
 from nipy.core.api import (
@@ -75,7 +75,7 @@ def test_array_coord_map():
                                   [0, 0, 2*zz+zt],
                                   [0, 0, 1]]))
     # that there can be only one ellipsis
-    assert_raises(ValueError, acm.__getitem__, (
+    pytest.raises(ValueError, acm.__getitem__, (
         (Ellipsis, Ellipsis,2)))
     # that you can integer slice in all three dimensions, leaving only
     # the translation column
@@ -87,8 +87,8 @@ def test_array_coord_map():
                                   [2*zz+zt],
                                   [1]]))
     # that anything other than an int, slice or Ellipsis is an error
-    assert_raises(ValueError, acm.__getitem__, ([0,2],))
-    assert_raises(ValueError, acm.__getitem__, (np.array([0,2]),))
+    pytest.raises(ValueError, acm.__getitem__, ([0,2],))
+    pytest.raises(ValueError, acm.__getitem__, (np.array([0,2]),))
 
 
 def test_grid():
@@ -101,7 +101,7 @@ def test_grid():
     cmap = CoordinateMap(input, output, f)
     grid = Grid(cmap)
     eval = ArrayCoordMap.from_shape(cmap, (50,40))
-    assert_true(np.allclose(grid[0:50,0:40].values, eval.values))
+    assert np.allclose(grid[0:50,0:40].values, eval.values)
 
 
 def test_eval_slice():
@@ -119,11 +119,11 @@ def test_eval_slice():
     e = grid[0:50,0:40]
     ee = e[0:20:3]
 
-    yield assert_equal, ee.shape, (7,40)
-    yield assert_equal, ee.values.shape, (280,2)
-    yield assert_equal, ee.transposed_values.shape, (2,7,40)
+    assert ee.shape == (7,40)
+    assert ee.values.shape == (280,2)
+    assert ee.transposed_values.shape == (2,7,40)
 
     ee = e[0:20:2,3]
-    yield assert_equal, ee.values.shape, (10,2)
-    yield assert_equal, ee.transposed_values.shape, (2,10)
-    yield assert_equal, ee.shape, (10,)
+    assert ee.values.shape == (10,2)
+    assert ee.transposed_values.shape == (2,10)
+    assert ee.shape == (10,)

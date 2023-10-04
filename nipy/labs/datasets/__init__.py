@@ -5,7 +5,6 @@ Package containing core nipy classes.
 """
 __docformat__ = 'restructuredtext'
 
-from nipy.testing import Tester
 
 from .converters import as_volume_img, save
 from .transforms.affine_transform import AffineTransform
@@ -14,6 +13,3 @@ from .transforms.transform import CompositionError, Transform
 from .volumes.volume_field import VolumeField
 from .volumes.volume_grid import VolumeGrid
 from .volumes.volume_img import VolumeImg
-
-test = Tester().test
-bench = Tester().bench

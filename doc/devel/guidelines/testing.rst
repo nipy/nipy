@@ -4,9 +4,9 @@
 Testing
 =======
 
-Nipy uses the Numpy_ test framework which is based on nose_.  If you
-plan to do development on nipy please have a look at the `nose docs <nose>`_
-and read through the `numpy testing guidelines
+Nipy uses the the Pytest_ framework.  If you plan to do development on nipy
+please have a look at the `Pytest docs <pytest>`_ and read through the `numpy
+testing guidelines
 <http://projects.scipy.org/scipy/numpy/wiki/TestingGuidelines>`_.
 
 .. _automated-testing:
@@ -27,11 +27,9 @@ Test files
 
 We like test modules to import their testing functions and classes from the
 module in which they are defined.  For example, we might want to use the
-``assert_true``, ``assert_equal`` functions defined by ``nose``, the
 ``assert_array_equal``, ``assert_almost_equal`` functions defined by
 ``numpy``, and the ``funcfile, anatfile`` variables from ``nipy``::
 
-    from nose.tools import assert_true, assert_equal
     from numpy.testing import assert_array_equal, assert_almost_equal
     from nipy.testing import funcfile, anatfile
 
@@ -98,21 +96,21 @@ use one of these three methods, in order of convenience:
     finally:
         os.unlink(name)  # This deletes the temp file
 
-Please don't just create a file in the test directory and then remove it with a
-call to ``os.remove``.  For various reasons, sometimes ``os.remove`` doesn't get
-called and temp files get left around.
+Please don't just create a file in the test directory and then remove it with
+a call to ``os.remove``.  For various reasons, sometimes ``os.remove`` doesn't
+get called and temp files get left around.
 
 Many tests in one test function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To keep tests organized, it's best to have one test function
-correspond to one class method or module-level function.  Often
-though, you need many individual tests to thoroughly cover the
-method/function.  For convenience, we often write many tests in a single test
-function.  This has the disadvantage that if one test fails, nose will not run
-any of the subsequent tests in the same function.  This isn't a big problem in
-practice, because we run the tests so often (:ref:`automated-testing`) that we
-can quickly pick up and fix the failures.
+To keep tests organized, it's best to have one test function correspond to one
+class method or module-level function.  Often though, you need many individual
+tests to thoroughly cover the method/function.  For convenience, we often
+write many tests in a single test function.  This has the disadvantage that if
+one test fails, the testing framework will not run any of the subsequent tests
+in the same function.  This isn't a big problem in practice, because we run
+the tests so often (:ref:`automated-testing`) that we can quickly pick up and
+fix the failures.
 
 For axample, this test function executes four tests::
 
@@ -123,31 +121,13 @@ For axample, this test function executes four tests::
         assert_equal(cs.index('k'), 2)
         assert_raises(ValueError, cs.index, 'x')
 
-We used to use `nose test generators
-<http://nose.readthedocs.org/en/latest/writing_tests.html#test-generators>`_
-for multiple tests in one function.  Test generators are test functions that
-return tests and parameters from ``yield`` statements.  You will still find
-many examples of these in the nipy codebase, but they made test failures
-rather hard to debug, so please don't use test generators in new tests.
-
 Suppress *warnings* on test output
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In order to reduce noise when running the tests, consider suppressing
-*warnings* in your test modules.  This can be done in the module-level
-setup and teardown functions::
-
-      import warnings
-      ...
-
-      def setup():
-          # Suppress warnings during tests to reduce noise
-          warnings.simplefilter("ignore")
-
-      def teardown():
-          # Clear list of warning filters
-          warnings.resetwarnings()
-
+*warnings* in your test modules.  See the `pytest documentation
+<https://docs.pytest.org/en/7.1.x/how-to/capture-warnings.html>`_ for various
+ways to do that, or search our code for `pytest.mark` for examples.
 
 Running tests
 -------------
@@ -155,21 +135,15 @@ Running tests
 Running the full test suite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To run nipy's tests, you will need to nose_ installed.  Then::
+To run nipy's tests, you will need to pytest_ installed.  Then::
 
-    python -c "import nipy; nipy.test()"
+    pytest nipy
 
-You can also run nipy's tests with the ``nipnost`` script in the ``tools``
-directory of the nipy distribution::
+You can run the full tests, including doctests with::
 
-    ./tools/nipnost nipy
+    pip install pytest-doctestplus
 
-``nipnost`` is a thin wrapper around the standard ``nosetests`` program that
-is part of the nose package. The ``nipnost`` wrapper sets up some custom
-doctest machinery and makes sure that `matplotlib`_ is using non-interactive
-plots.  ``nipy.test()`` does the same thing.
-
-Try ``nipnost --help`` to see a large number of command-line options.
+    pytest --doctest-plus nipy
 
 Install optional data packages for testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -184,38 +158,32 @@ Running individual tests
 
 You can also run the tests from the command line with a variety of options.
 
-See above for a description of the ``nipnost`` program.
-
 To test an individual module::
 
-    nipnost test_image.py
+    pytest nipy/core/image/tests/test_image.py
 
 To test an individual function::
 
-    nipnost test_module:test_function
+    pytest nipy/core/image/tests/test_image.py::test_maxmin_values
 
 To test a class::
 
-    nipnost test_module:TestClass
+    pytest nipy/algorithms/clustering/tests/test_clustering.py::TestClustering
 
 To test a class method::
 
-   nipnost test_module:TestClass.test_method
+    pytest nipy/algorithms/clustering/tests/test_clustering.py::TestClustering.testkmeans1
 
 Verbose mode (*-v* option) will print out the function names as they
-are executed.  Standard output is normally supressed by nose, to see
+are executed.  Standard output is normally supressed by Pytest, to see
 any print statements you must include the *-s* option.  In order to
-get a "full verbose" output, call nose like this::
+get a "full verbose" output, call Pytest like this::
 
-    nipnost -sv test_module.py
+    pytest -sv nipy
 
-To include doctests in the nose test::
+To include doctests in the tests::
 
-   nipnost -sv --with-doctest test_module.py
-
-For details on all the command line options::
-
-    nipnost --help
+   pytest -sv --docest-plus nipy
 
 .. _coverage:
 

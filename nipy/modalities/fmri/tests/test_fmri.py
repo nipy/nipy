@@ -2,11 +2,10 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 import gc
-import warnings
 
 import numpy as np
+import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_equal, assert_true
 
 from nipy.core.api import AffineTransform as AfT
 from nipy.core.api import Image, parcels
@@ -15,29 +14,22 @@ from nipy.modalities.fmri.api import FmriImageList, axis0_generator
 from nipy.testing import funcfile
 
 
-def setup():
-    # Suppress warnings during tests to reduce noise
-    warnings.simplefilter("ignore")
-
-
-def teardown():
-    # Clear list of warning filters
-    warnings.resetwarnings()
-
-
+@pytest.mark.filterwarnings("ignore:"
+                            "Default `strict` currently False:"
+                            "FutureWarning")
 def test_write():
     fname = 'myfile.nii'
     img = load_image(funcfile)
     with InTemporaryDirectory():
         save_image(img, fname)
         test = FmriImageList.from_image(load_image(fname))
-        assert_equal(test[0].affine.shape, (4,4))
-        assert_equal(img[0].affine.shape, (5,4))
+        assert test[0].affine.shape == (4,4)
+        assert img[0].affine.shape == (5,4)
         # Check the affine...
         A = np.identity(4)
         A[:3,:3] = img[:,:,:,0].affine[:3,:3]
         A[:3,-1] = img[:,:,:,0].affine[:3,-1]
-        assert_true(np.allclose(test[0].affine, A))
+        assert np.allclose(test[0].affine, A)
         del test
 
 
@@ -48,17 +40,17 @@ def test_iter():
     j = 0
     for i, d in axis0_generator(img.get_fdata()):
         j += 1
-        assert_equal(d.shape, exp_shape)
+        assert d.shape == exp_shape
         del(i); gc.collect()
-    assert_equal(j, img_shape[1])
+    assert j == img_shape[1]
 
 
 def test_subcoordmap():
     img = load_image(funcfile)
     subcoordmap = img[3].coordmap
     xform = img.affine[:,1:]
-    assert_true(np.allclose(subcoordmap.affine[1:], xform[1:]))
-    assert_true(np.allclose(subcoordmap.affine[0], [0,0,0,img.coordmap([3,0,0,0])[0]]))
+    assert np.allclose(subcoordmap.affine[1:], xform[1:])
+    assert np.allclose(subcoordmap.affine[0], [0,0,0,img.coordmap([3,0,0,0])[0]])
 
 
 def test_labels1():
@@ -69,4 +61,4 @@ def test_labels1():
     v = 0
     for i, d in axis0_generator(data, parcels(parcelmap)):
         v += d.shape[1]
-    assert_equal(v, parcelmap.size)
+    assert v == parcelmap.size

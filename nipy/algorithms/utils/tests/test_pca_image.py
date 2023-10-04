@@ -1,9 +1,9 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import numpy as np
+import pytest
 from nibabel.affines import from_matvec
-from nose.tools import assert_raises
-from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ....core.api import AffineTransform, Image
 from ....core.api import CoordinateSystem as CS
@@ -16,14 +16,14 @@ from ..pca import pca as pca_array
 from ..pca import pca_image
 from .test_pca import res2pos1
 
-data_dict = {}
 
-def setup():
+@pytest.fixture(scope='module')
+def data_dict():
     img = load_image(funcfile)
     # Here, I'm just doing this so I know that img.shape[0] is the number of
     # volumes
     t0_img = rollimg(img, 't')
-    data_dict['nimages'] = t0_img.shape[0]
+    out = {'nimages': t0_img.shape[0]}
     # Below, I am just making a mask because I already have img, I know I can do
     # this. In principle, though, the pca function will just take another Image
     # as a mask
@@ -32,54 +32,56 @@ def setup():
     first_frame = img_data[0]
     mask = Image(np.greater(first_frame, 500).astype(np.float64),
                  mask_cmap)
-    data_dict['fmridata'] = img
-    data_dict['mask'] = mask
+    out['fmridata'] = img
+    out['mask'] = mask
 
     # print data_dict['mask'].shape, np.sum(data_dict['mask'].get_fdata())
-    assert_equal(data_dict['mask'].shape, (17, 21, 3))
-    assert_almost_equal(np.sum(data_dict['mask'].get_fdata()), 1071.0)
+    assert out['mask'].shape == (17, 21, 3)
+    assert_almost_equal(np.sum(out['mask'].get_fdata()), 1071.0)
+    return out
+
 
 def _rank(p):
     return p['basis_vectors'].shape[1]
 
 
-def test_PCAMask():
+def test_PCAMask(data_dict):
     nimages = data_dict['nimages']
     ntotal = nimages - 1
     ncomp = 5
     p = pca_image(data_dict['fmridata'], 't',
                   data_dict['mask'], ncomp=ncomp)
-    assert_equal(_rank(p), ntotal)
-    assert_equal(p['axis'], 3)
-    assert_equal(p['basis_vectors over t'].shape, (nimages, ntotal))
-    assert_equal(p['basis_projections'].shape, data_dict['mask'].shape +
+    assert _rank(p) == ntotal
+    assert p['axis'] == 3
+    assert p['basis_vectors over t'].shape == (nimages, ntotal)
+    assert (p['basis_projections'].shape == data_dict['mask'].shape +
                  (ncomp,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
-    assert_equal(p['basis_projections'].axes.coord_names,
-                 ['i','j','k','PCA components'])
-    assert_equal(p['basis_projections'].coordmap.affine,
-                 data_dict['fmridata'].coordmap.affine)
+    assert (p['basis_projections'].axes.coord_names ==
+            ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
-def test_mask_match():
+def test_mask_match(data_dict):
     # we can't do PCA over spatial axes if we use a spatial mask
     ncomp = 5
     out_coords = data_dict['mask'].reference.coord_names
     for i, o, n in zip('ijk', out_coords, [0,1,2]):
-        assert_raises(ValueError,
+        pytest.raises(ValueError,
                       pca_image,
                       data_dict['fmridata'],
                       i,
                       data_dict['mask'],
                       ncomp)
-        assert_raises(ValueError,
+        pytest.raises(ValueError,
                       pca_image,
                       data_dict['fmridata'],
                       o,
                       data_dict['mask'],
                       ncomp)
-        assert_raises(ValueError,
+        pytest.raises(ValueError,
                       pca_image,
                       data_dict['fmridata'],
                       n,
@@ -87,58 +89,59 @@ def test_mask_match():
                       ncomp)
 
 
-def test_PCAMask_nostandardize():
+def test_PCAMask_nostandardize(data_dict):
     nimages = data_dict['nimages']
     ntotal = nimages - 1
     ncomp = 5
     p = pca_image(data_dict['fmridata'], 't',
                   data_dict['mask'],
                   ncomp=ncomp, standardize=False)
-    assert_equal(_rank(p), ntotal)
-    assert_equal(p['basis_vectors over t'].shape, (nimages, ntotal))
-    assert_equal(p['basis_projections'].shape, data_dict['mask'].shape + (ncomp,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert _rank(p) == ntotal
+    assert p['basis_vectors over t'].shape == (nimages, ntotal)
+    assert p['basis_projections'].shape == data_dict['mask'].shape + (ncomp,)
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
-    assert_equal(p['basis_projections'].axes.coord_names, ['i','j','k','PCA components'])
-    assert_equal(p['basis_projections'].coordmap.affine,
-                 data_dict['fmridata'].coordmap.affine)
+    assert (p['basis_projections'].axes.coord_names ==
+            ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
-def test_PCANoMask():
+def test_PCANoMask(data_dict):
     nimages = data_dict['nimages']
     ntotal = nimages - 1
     ncomp = 5
     p = pca_image(data_dict['fmridata'], ncomp=ncomp)
-    assert_equal(_rank(p), ntotal)
-    assert_equal(p['basis_vectors over t'].shape, (nimages, ntotal))
-    assert_equal(p['basis_projections'].shape, data_dict['mask'].shape +
+    assert _rank(p) == ntotal
+    assert p['basis_vectors over t'].shape == (nimages, ntotal)
+    assert (p['basis_projections'].shape == data_dict['mask'].shape +
                  (ncomp,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
-    assert_equal(p['basis_projections'].axes.coord_names,
-                 ['i','j','k','PCA components'])
-    assert_equal(p['basis_projections'].coordmap.affine,
-                 data_dict['fmridata'].coordmap.affine)
+    assert (p['basis_projections'].axes.coord_names ==
+            ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
-def test_PCANoMask_nostandardize():
+def test_PCANoMask_nostandardize(data_dict):
     nimages = data_dict['nimages']
     ntotal = nimages - 1
     ncomp = 5
     p = pca_image(data_dict['fmridata'], ncomp=ncomp, standardize=False)
-    assert_equal(_rank(p), ntotal)
-    assert_equal(p['basis_vectors over t'].shape, (nimages, ntotal))
-    assert_equal(p['basis_projections'].shape,
+    assert _rank(p) == ntotal
+    assert p['basis_vectors over t'].shape == (nimages, ntotal)
+    assert (p['basis_projections'].shape ==
                  data_dict['mask'].shape + (ncomp,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
-    assert_equal(p['basis_projections'].axes.coord_names,
-                 ['i','j','k','PCA components'])
-    assert_equal(p['basis_projections'].coordmap.affine,
-                 data_dict['fmridata'].coordmap.affine)
+    assert (p['basis_projections'].axes.coord_names ==
+                 ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
-def test_keep():
+def test_keep(data_dict):
     # Data is projected onto k=10 dimensional subspace then has its mean
     # removed. Should still have rank 10.
     k = 10
@@ -147,19 +150,19 @@ def test_keep():
     ntotal = k
     X = np.random.standard_normal((nimages, k))
     p = pca_image(data_dict['fmridata'], ncomp=ncomp, design_keep=X)
-    assert_equal(_rank(p), ntotal)
-    assert_equal(p['basis_vectors over t'].shape, (nimages, ntotal))
-    assert_equal(p['basis_projections'].shape,
+    assert _rank(p) == ntotal
+    assert p['basis_vectors over t'].shape == (nimages, ntotal)
+    assert (p['basis_projections'].shape ==
                  data_dict['mask'].shape + (ncomp,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
-    assert_equal(p['basis_projections'].axes.coord_names,
-                 ['i','j','k','PCA components'])
-    assert_equal(p['basis_projections'].coordmap.affine,
-                 data_dict['fmridata'].coordmap.affine)
+    assert (p['basis_projections'].axes.coord_names ==
+                 ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
-def test_resid():
+def test_resid(data_dict):
     # Data is projected onto k=10 dimensional subspace then has its mean
     # removed.  Should still have rank 10.
     k = 10
@@ -168,19 +171,19 @@ def test_resid():
     ntotal = k
     X = np.random.standard_normal((nimages, k))
     p = pca_image(data_dict['fmridata'], ncomp=ncomp, design_resid=X)
-    assert_equal(_rank(p), ntotal)
-    assert_equal(p['basis_vectors over t'].shape, (nimages, ntotal))
-    assert_equal(p['basis_projections'].shape,
+    assert _rank(p) == ntotal
+    assert p['basis_vectors over t'].shape == (nimages, ntotal)
+    assert (p['basis_projections'].shape ==
                  data_dict['mask'].shape + (ncomp,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
-    assert_equal(p['basis_projections'].axes.coord_names,
-                 ['i','j','k','PCA components'])
-    assert_equal(p['basis_projections'].coordmap.affine,
-                 data_dict['fmridata'].coordmap.affine)
+    assert (p['basis_projections'].axes.coord_names ==
+                 ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
-def test_both():
+def test_both(data_dict):
     k1 = 10
     k2 = 8
     ncomp = 5
@@ -190,20 +193,20 @@ def test_both():
     X2 = np.random.standard_normal((nimages, k2))
     p = pca_image(data_dict['fmridata'], ncomp=ncomp, design_resid=X2, design_keep=X1)
 
-    assert_equal(_rank(p), ntotal)
-    assert_equal(p['basis_vectors over t'].shape, (nimages, ntotal))
-    assert_equal(p['basis_projections'].shape,
+    assert _rank(p) == ntotal
+    assert p['basis_vectors over t'].shape == (nimages, ntotal)
+    assert (p['basis_projections'].shape ==
                  data_dict['mask'].shape + (ncomp,))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
-    assert_equal(p['basis_projections'].axes.coord_names,
-                 ['i','j','k','PCA components'])
-    assert_equal(p['basis_projections'].coordmap.affine,
-                 data_dict['fmridata'].coordmap.affine)
+    assert (p['basis_projections'].axes.coord_names ==
+                 ('i','j','k','PCA components'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       data_dict['fmridata'].coordmap.affine)
 
 
-def test_5d():
+def test_5d(data_dict):
     # What happened to a 5d image? We should get 4d images back
     img = data_dict['fmridata']
     data = img.get_fdata()
@@ -222,16 +225,16 @@ def test_5d():
     ntotal = nimages - 1
     ncomp = 5
     p = pca_image(fived, 't', mask4d, ncomp=ncomp)
-    assert_equal(_rank(p), ntotal)
-    assert_equal(p['basis_vectors over t'].shape, (nimages, ntotal))
-    assert_equal(p['basis_projections'].shape, data.shape[:3] + (ncomp, 1))
-    assert_equal(p['pcnt_var'].shape, (ntotal,))
+    assert _rank(p) == ntotal
+    assert p['basis_vectors over t'].shape == (nimages, ntotal)
+    assert p['basis_projections'].shape == data.shape[:3] + (ncomp, 1)
+    assert p['pcnt_var'].shape == (ntotal,)
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
-    assert_equal(p['basis_projections'].axes.coord_names,
-                 ['i','j','k','PCA components','v'])
-    assert_equal(p['basis_projections'].coordmap.affine,
-                 fived.coordmap.affine)
+    assert (p['basis_projections'].axes.coord_names ==
+                 ('i','j','k','PCA components','v'))
+    assert_array_equal(p['basis_projections'].coordmap.affine,
+                       fived.coordmap.affine)
     # flip the PCA dimension to end
     data_5d = data.reshape(data.shape[:3] + (1, data.shape[3]))
     # Make the last axis name be 'group'.  't' is not a length 1 dimension we
@@ -254,10 +257,10 @@ def test_5d():
     ncomp = 5
     # We can now show the axis does not have to be time
     p = pca_image(fived, mask=mask4d, ncomp=ncomp, axis='group')
-    assert_equal(p['basis_vectors over group'].shape, (nimages, ntotal))
-    assert_equal(p['basis_projections'].axes.coord_names,
-                 ['i','j','k','t','PCA components'])
-    assert_equal(p['basis_projections'].shape,
+    assert p['basis_vectors over group'].shape == (nimages, ntotal)
+    assert (p['basis_projections'].axes.coord_names ==
+                 ('i','j','k','t','PCA components'))
+    assert (p['basis_projections'].shape ==
                  data.shape[:3] + (1, ncomp))
 
 
@@ -277,7 +280,7 @@ def img_res2pos1(res, bv_key):
     return res
 
 
-def test_other_axes():
+def test_other_axes(data_dict):
     # With a diagonal affine, we can do PCA on any axis
     ncomp = 5
     img = data_dict['fmridata']
@@ -287,8 +290,8 @@ def test_other_axes():
         p = pca_image(img, axis_name, ncomp=ncomp)
         n = img.shape[axis_no]
         bv_key = 'basis_vectors over ' + axis_name
-        assert_equal(_rank(p), n - 1)
-        assert_equal(p[bv_key].shape, (n, n - 1))
+        assert _rank(p) == n - 1
+        assert p[bv_key].shape == (n, n - 1)
         # We get the expected data back
         dp = pca_array(img_data, axis_no, ncomp=ncomp)
         # We have to make sure the signs are the same; on Windows it seems the
@@ -301,13 +304,13 @@ def test_other_axes():
         # And we've replaced the expected axis
         exp_coords = in_coords[:]
         exp_coords[exp_coords.index(axis_name)] = 'PCA components'
-        assert_equal(img_bps.axes.coord_names, exp_coords)
+        assert img_bps.axes.coord_names == tuple(exp_coords)
     # If the affine is not diagonal, we'll get an error
     aff = from_matvec(np.arange(16).reshape(4,4))
     nd_cmap = AffineTransform(img.axes, img.reference, aff)
     nd_img = Image(img_data, nd_cmap)
     for axis_name in 'ijkt':
-        assert_raises(AxisError, pca_image, nd_img, axis_name)
+        pytest.raises(AxisError, pca_image, nd_img, axis_name)
     # Only for the non-diagonal parts
     aff = np.array([[1, 2, 0, 0, 10],
                     [2, 1, 0, 0, 11],
@@ -317,9 +320,9 @@ def test_other_axes():
     nd_cmap = AffineTransform(img.axes, img.reference, aff)
     nd_img = Image(img_data, nd_cmap)
     for axis_name in 'ij':
-        assert_raises(AxisError, pca_image, nd_img, axis_name)
+        pytest.raises(AxisError, pca_image, nd_img, axis_name)
     for axis_name in 'kt':
         p = pca_image(img, axis_name, ncomp=ncomp)
         exp_coords = in_coords[:]
         exp_coords[exp_coords.index(axis_name)] = 'PCA components'
-        assert_equal(p['basis_projections'].axes.coord_names, exp_coords)
+        assert p['basis_projections'].axes.coord_names == tuple(exp_coords)

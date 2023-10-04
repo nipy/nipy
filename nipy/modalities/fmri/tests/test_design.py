@@ -5,13 +5,7 @@ from os.path import dirname
 from os.path import join as pjoin
 
 import numpy as np
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    assert_raises,
-    assert_true,
-)
+import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nipy.algorithms.statistics.formula import make_recarray
@@ -32,7 +26,7 @@ THIS_DIR = dirname(__file__)
 
 def assert_dict_almost_equal(obs, exp):
     # Check that two dictionaries with array keys are almost equal
-    assert_equal(set(obs), set(exp))
+    assert set(obs) == set(exp)
     for key in exp:
         assert_almost_equal(exp[key], obs[key])
 
@@ -161,24 +155,24 @@ def test_event_design():
                                 })
     # events : test field called "time" is necessary
     spec_1d = make_recarray(zip(onsets, fac_1), ('brighteyes', 'smt'))
-    assert_raises(ValueError, event_design, spec_1d, t)
+    pytest.raises(ValueError, event_design, spec_1d, t)
     # blocks : test fields called "start" and "end" are necessary
     spec_1d = make_recarray(zip(onsets, offsets, fac_1),
                             ('mister', 'brighteyes', 'smt'))
-    assert_raises(ValueError, block_design, spec_1d, t)
+    pytest.raises(ValueError, block_design, spec_1d, t)
     spec_1d = make_recarray(zip(onsets, offsets, fac_1),
                             ('start', 'brighteyes', 'smt'))
-    assert_raises(ValueError, block_design, spec_1d, t)
+    pytest.raises(ValueError, block_design, spec_1d, t)
     spec_1d = make_recarray(zip(onsets, offsets, fac_1),
                             ('mister', 'end', 'smt'))
-    assert_raises(ValueError, block_design, spec_1d, t)
+    pytest.raises(ValueError, block_design, spec_1d, t)
 
 
 def assert_des_con_equal(one, two):
     des1, con1 = one
     des2, con2 = two
     assert_array_equal(des1, des2)
-    assert_equal(set(con1), set(con2))
+    assert set(con1) == set(con2)
     for key in con1:
         assert_array_equal(con1[key], con2[key])
 
@@ -237,7 +231,7 @@ def test_openfmri2nipy():
     onsets, durations, amplitudes = ons_dur_amp.T
     for in_param in (stim_file, ons_dur_amp):
         res = openfmri2nipy(in_param)
-        assert_equal(res.dtype.names, ('start', 'end', 'amplitude'))
+        assert res.dtype.names == ('start', 'end', 'amplitude')
         assert_array_equal(res['start'], onsets)
         assert_array_equal(res['end'], onsets + durations)
         assert_array_equal(res['amplitude'], amplitudes)
@@ -292,12 +286,12 @@ def test_block_amplitudes():
                              {'ev0_0': [1, 0], 'ev0_1': [0, 1]})
     # Errors on bad input
     no_start = make_recarray(zip(onsets, offsets), ('begin', 'end'))
-    assert_raises(ValueError, block_amplitudes, 'ev0', no_start, t)
+    pytest.raises(ValueError, block_amplitudes, 'ev0', no_start, t)
     no_end = make_recarray(zip(onsets, offsets), ('start', 'finish'))
-    assert_raises(ValueError, block_amplitudes, 'ev0', no_end, t)
+    pytest.raises(ValueError, block_amplitudes, 'ev0', no_end, t)
     funny_amp = make_recarray(zip(onsets, offsets, amplitudes),
                               ('start', 'end', 'intensity'))
-    assert_raises(ValueError, block_amplitudes, 'ev0', funny_amp, t)
+    pytest.raises(ValueError, block_amplitudes, 'ev0', funny_amp, t)
     funny_extra = make_recarray(zip(onsets, offsets, amplitudes, onsets),
                               ('start', 'end', 'amplitude', 'extra_field'))
-    assert_raises(ValueError, block_amplitudes, 'ev0', funny_extra, t)
+    pytest.raises(ValueError, block_amplitudes, 'ev0', funny_extra, t)

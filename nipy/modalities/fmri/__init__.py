@@ -6,9 +6,5 @@ TODO
 
 __docformat__ = 'restructuredtext'
 
-from nipy.testing import Tester
 
 from . import fmristat
-
-test = Tester().test
-bench = Tester().bench

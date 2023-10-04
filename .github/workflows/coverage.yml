@@ -31,11 +31,11 @@ jobs:
         run: env
       - name: Library tests
         run: |
-          mkdir ../tmp
-          cd ../tmp
-          python ../nipy/tools/nipnost \
-            --with-coverage --cover-xml --cover-config-file=../nipy/.coveragerc \
-            --cover-package=nipy nipy
+          mkdir tmp
+          cd tmp
+          pytest --doctest-plus --ignore-glob="__config__.py" \
+            --cov=nipy  --cov-report xml  --cov-config=../.coveragerc \
+            --pyargs nipy
       - name: See what's where
         run: |
           pwd
@@ -43,4 +43,4 @@ jobs:
       - name: Upload to codecov
         uses: codecov/codecov-action@v3
         with:
-          files: ../tmp/coverage.xml
+          files: tmp/coverage.xml

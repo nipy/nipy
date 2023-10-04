@@ -3,13 +3,6 @@
 import nibabel as nib
 import numpy as np
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    assert_raises,
-    assert_true,
-)
 from numpy.testing import assert_array_equal
 
 from ..nibcompat import get_affine, get_dataobj, get_header, get_unscaled_data
@@ -27,9 +20,9 @@ def test_funcs():
         affine = np.eye(4)
         dataobj = 3
     for img in OldNib(), NewNib():
-        assert_equal(get_header(img), 1)
+        assert get_header(img) == 1
         assert_array_equal(get_affine(img), np.eye(4))
-        assert_equal(get_dataobj(img), 3)
+        assert get_dataobj(img) == 3
 
 
 def test_unscaled_data():
@@ -54,13 +47,13 @@ def test_unscaled_data():
             if np.isnan(slope):
                 slope, inter = dao.slope, dao.inter
             data_back = np.array(dao)
-            assert_true(np.allclose(data, data_back, atol=slope / 2.))
+            assert np.allclose(data, data_back, atol=slope / 2.)
             header_copy = header.copy()
             header_copy['vox_offset'] = default_offset
             with open(fname, 'rb') as fobj:
                 raw_back = header_copy.raw_data_from_fileobj(fobj)
             unscaled = get_unscaled_data(img_back)
             assert_array_equal(unscaled, raw_back)
-            assert_true(np.allclose(unscaled * slope + inter, data_back))
+            assert np.allclose(unscaled * slope + inter, data_back)
             # delete objects to allow file deletion on Windows
             del raw_back, unscaled

@@ -5,7 +5,7 @@ from itertools import combinations
 
 import numpy as np
 import numpy.linalg as npl
-from nose.tools import assert_equal, assert_raises
+import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from .. import intvol
@@ -56,7 +56,7 @@ def elsym(edgelen, order=1):
         return 1
     r = 0
     for v in combinations(range(l), order):
-        r += np.product([edgelen[vv] for vv in v])
+        r += np.prod([edgelen[vv] for vv in v])
     return r
 
 
@@ -128,24 +128,24 @@ def wiki_tet_vol(d, a, b, c):
 
 
 def test_mu3tet():
-    assert_equal(intvol.mu3_tet(0,0,0,0,1,0,0,1,0,1), 1./6)
-    assert_equal(intvol.mu3_tet(0,0,0,0,0,0,0,0,0,0), 0)
+    assert intvol.mu3_tet(0,0,0,0,1,0,0,1,0,1) == 1./6
+    assert intvol.mu3_tet(0,0,0,0,0,0,0,0,0,0) == 0
     d = [2,2,2]
     a = [3,2,2]
     b = [2,3,2]
     c = [2,2,3]
-    assert_equal(pts2mu3_tet(d, a, b, c), 1./6)
-    assert_equal(wiki_tet_vol(d, a, b, c), 1./6)
+    assert pts2mu3_tet(d, a, b, c) == 1./6
+    assert wiki_tet_vol(d, a, b, c) == 1./6
     # This used to generate nan values
-    assert_equal(intvol.mu3_tet(0,0,0,0,1,0,0,-1,0,1), 0)
+    assert intvol.mu3_tet(0,0,0,0,1,0,0,-1,0,1) == 0
 
 
 def test_mu2tri():
-    assert_equal(intvol.mu2_tri(0,0,0,1,0,1), 1./2)
+    assert intvol.mu2_tri(0,0,0,1,0,1) == 1./2
 
 
 def test_mu1tri():
-    assert_equal(intvol.mu1_tri(0,0,0,1,0,1), 1+np.sqrt(2)/2)
+    assert intvol.mu1_tri(0,0,0,1,0,1) == 1+np.sqrt(2)/2
 
 
 def test_mu2tet():
@@ -164,10 +164,10 @@ def pts2mu1_tet(d, a, b, c):
 def test_mu1_tet():
     res1 = pts2mu1_tet([2,2,2],[3,2,2],[2,3,2],[2,2,3])
     res2 = pts2mu1_tet([0,0,0],[1,0,0],[0,1,0],[0,0,1])
-    assert_equal(res1, res2)
-    assert_equal(intvol.mu1_tet(0,0,0,0,0,0,0,0,0,0), 0)
+    assert res1 == res2
+    assert intvol.mu1_tet(0,0,0,0,0,0,0,0,0,0) == 0
     # This used to generate nan values
-    assert_equal(intvol.mu1_tet(0,0,0,0,1,0,0,-1,0,1), 0)
+    assert intvol.mu1_tet(0,0,0,0,1,0,0,-1,0,1) == 0
 
 
 def test__mu1_tetface():
@@ -194,7 +194,7 @@ def test_ec():
             box1_again = box1.copy().astype(dtt)
             assert_almost_equal(f(box1_again), 1)
             box1_again[(10,) * i] = 2
-            assert_raises(ValueError, f, box1_again)
+            pytest.raises(ValueError, f, box1_again)
 
 
 def test_ec_disjoint():
@@ -211,7 +211,7 @@ def test_lips_wrapping():
     b2 = np.zeros(40, np.int_)
     b2[11:] = 1
     # lines are disjoint
-    assert_equal((b1*b2).sum(), 0)
+    assert (b1*b2).sum() == 0
     c = np.indices(b1.shape).astype(np.float64)
     assert_array_equal(intvol.Lips1d(c, b1), (1, 10))
     assert_array_equal(intvol.Lips1d(c, b2), (1, 28))
@@ -220,7 +220,7 @@ def test_lips_wrapping():
     b1 = b1[:,None]
     b2 = b2[:,None]
     # boxes are disjoint
-    assert_equal((b1*b2).sum(), 0)
+    assert (b1*b2).sum() == 0
     c = np.indices(b1.shape).astype(np.float64)
     assert_array_equal(intvol.Lips2d(c, b1), (1, 10, 0))
     assert_array_equal(intvol.Lips2d(c, b2), (1, 28, 0))
@@ -228,9 +228,9 @@ def test_lips_wrapping():
     # 3D
     b1 = b1[:,:,None]
     b2 = b2[:,:,None]
-    assert_equal(b1.shape, (40,1,1))
+    assert b1.shape == (40,1,1)
     # boxes are disjoint
-    assert_equal((b1*b2).sum(), 0)
+    assert (b1*b2).sum() == 0
     c = np.indices(b1.shape).astype(np.float64)
     assert_array_equal(intvol.Lips3d(c, b1), (1, 10, 0, 0))
     assert_array_equal(intvol.Lips3d(c, b2), (1, 28, 0, 0))
@@ -248,7 +248,7 @@ def test_lips_wrapping():
         c = np.indices(box_shape).astype(np.float64)
         b = np.ones(box_shape, dtype=np.int_)
         assert_array_equal(lips_func(c, b), exp_ivs)
-        assert_equal(ec_func(b), exp_ivs[0])
+        assert ec_func(b) == exp_ivs[0]
 
 
 def test_lips1_disjoint():
@@ -259,7 +259,7 @@ def test_lips1_disjoint():
     d = np.random.standard_normal((10,)+(30,))
     # Test rotation causes no change in volumes
     U = randorth(p=6)[:1]
-    e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
+    e = np.dot(U.T, c.reshape((c.shape[0], np.prod(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
 
     assert_almost_equal(phi(c, box1 + box2), phi(c, box1) + phi(c, box2))
@@ -273,7 +273,7 @@ def test_lips1_disjoint():
                         np.array(
                             [elsym([e[1]-e[0]-1
                                     for e in edge2], i) for i in range(2)])))
-    assert_raises(ValueError, phi, c[...,None], box1)
+    pytest.raises(ValueError, phi, c[...,None], box1)
 
 
 def test_lips2_disjoint():
@@ -284,7 +284,7 @@ def test_lips2_disjoint():
     d = np.random.standard_normal((10,40,40))
     # Test rotation causes no change in volumes
     U = randorth(p=6)[0:2]
-    e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
+    e = np.dot(U.T, c.reshape((c.shape[0], np.prod(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
     assert_almost_equal(phi(c, box1 + box2),
                         phi(c, box1) + phi(c, box2))
@@ -299,8 +299,8 @@ def test_lips2_disjoint():
                         np.array([elsym([e[1]-e[0]-1 for e in edge2], i)
                                   for i in range(3)])
                        )
-    assert_raises(ValueError, phi, c[...,None], box1)
-    assert_raises(ValueError, phi, c[:,:,1], box1)
+    pytest.raises(ValueError, phi, c[...,None], box1)
+    pytest.raises(ValueError, phi, c[:,:,1], box1)
 
 
 def test_lips3_disjoint():
@@ -311,7 +311,7 @@ def test_lips3_disjoint():
     d = np.random.standard_normal((10,40,40,40))
     # Test rotation causes no change in volumes
     U = randorth(p=6)[0:3]
-    e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
+    e = np.dot(U.T, c.reshape((c.shape[0], np.prod(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
 
     assert_almost_equal(phi(c, box1 + box2), phi(c, box1) + phi(c, box2))
@@ -322,8 +322,8 @@ def test_lips3_disjoint():
         phi(e, box1 + box2),
         (np.array([elsym([e[1]-e[0]-1 for e in edge1], i) for i in range(4)]) +
          np.array([elsym([e[1]-e[0]-1 for e in edge2], i) for i in range(4)])))
-    assert_raises(ValueError, phi, c[...,None], box1)
-    assert_raises(ValueError, phi, c[:,:,:,1], box1)
+    pytest.raises(ValueError, phi, c[...,None], box1)
+    pytest.raises(ValueError, phi, c[:,:,:,1], box1)
 
 
 def test_lips3_nans():
@@ -336,7 +336,7 @@ def test_lips3_nans():
     c = np.indices(box1.shape).astype(np.float64)
     assert_array_equal(np.isnan(phi(c, box2)), False)
     U = randorth(p=6)[0:3]
-    e = np.dot(U.T, c.reshape((c.shape[0], np.product(c.shape[1:]))))
+    e = np.dot(U.T, c.reshape((c.shape[0], np.prod(c.shape[1:]))))
     e.shape = (e.shape[0],) +  c.shape[1:]
     assert_array_equal(np.isnan(phi(e, box1 + box2)), False)
 
@@ -348,34 +348,34 @@ def test_slices():
     m = np.zeros((40,)*3, np.int_)
     D = np.indices(m.shape).astype(np.float64)
     m[10,10,10] = 1
-    yield assert_almost_equal, e(m), 1
-    yield assert_almost_equal, p(D,m), [1,0,0,0]
+    assert_almost_equal(e(m), 1)
+    assert_almost_equal(p(D,m), [1,0,0,0])
 
     m = np.zeros((40,)*3, np.int_)
     m[10,10:14,10] = 1
-    yield assert_almost_equal, e(m), 1
-    yield assert_almost_equal, p(D,m), [1,3,0,0]
+    assert_almost_equal(e(m), 1)
+    assert_almost_equal(p(D,m), [1,3,0,0])
 
     m = np.zeros((40,)*3, np.int_)
     m[10,10:14,9:15] = 1
-    yield assert_almost_equal, e(m), 1
-    yield assert_almost_equal, p(D,m), [1,8,15,0]
+    assert_almost_equal(e(m), 1)
+    assert_almost_equal(p(D,m), [1,8,15,0])
 
 
 def test_ec_wrapping():
     # Test wrapping for EC1 calculation
-    assert_equal(intvol.EC1d(np.ones((6,), dtype=np.int_)), 1)
+    assert intvol.EC1d(np.ones((6,), dtype=np.int_)) == 1
     box1 = np.array([1, 1, 0, 1, 1, 1], dtype=np.int_)
-    assert_equal(intvol.EC1d(box1), 2)
+    assert intvol.EC1d(box1) == 2
     # 2D
     box1 = np.zeros((3,6), dtype=np.int_)
     box1[1] = 1
-    assert_equal(intvol.EC2d(box1), 1)
+    assert intvol.EC2d(box1) == 1
     box1[1, 3] = 0
-    assert_equal(intvol.EC2d(box1), 2)
+    assert intvol.EC2d(box1) == 2
     # 3D
     box1 = np.zeros((3,6,3), dtype=np.int_)
     box1[1, :, 1] = 1
-    assert_equal(intvol.EC3d(box1), 1)
+    assert intvol.EC3d(box1) == 1
     box1[1, 3, 1] = 0
-    assert_equal(intvol.EC3d(box1), 2)
+    assert intvol.EC3d(box1) == 2

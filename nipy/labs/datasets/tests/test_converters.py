@@ -7,7 +7,7 @@ import os
 import tempfile
 
 import nibabel as nib
-import nose
+import pytest
 
 from .. import as_volume_img, save
 
@@ -18,14 +18,12 @@ def test_conversion():
 
     brifti_obj = nib.load(data_file)
     vol_img = as_volume_img(data_file)
-    yield nose.tools.assert_equal, as_volume_img(vol_img), \
-                    vol_img
-    yield nose.tools.assert_equal, as_volume_img(brifti_obj), \
-                    vol_img
+    assert as_volume_img(vol_img) == vol_img
+    assert as_volume_img(brifti_obj) == vol_img
 
 
 def test_basics():
-    yield nose.tools.assert_raises, ValueError, as_volume_img, 'foobar'
+    pytest.raises(ValueError, as_volume_img, 'foobar')
 
 
 def test_save():
@@ -42,8 +40,7 @@ try:
     import nifti
     def test_from_nifti():
         nim = nifti.NiftiImage(data_file)
-        yield nose.tools.assert_equal, as_volume_img(data_file), \
-                    as_volume_img(nim)
+        assert as_volume_img(data_file) == as_volume_img(nim)
 
 except ImportError:
     pass

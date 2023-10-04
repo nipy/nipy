@@ -1,15 +1,10 @@
 
 import os
 
-from nipy.testing import Tester
-
 from .info import LONG_DESCRIPTION as __doc__
 from .info import STATUS as __status__
 from .info import URL as __url__
 from .info import __version__
-
-test = Tester().test
-bench = Tester().bench
 
 
 def _test_local_install():

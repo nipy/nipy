@@ -29,12 +29,8 @@ except DataError:
 else:
     HAVE_TEMPLATES = True
 
-from nipy.testing import Tester
 
 from .utilities import is_iterable, is_numlike, seq_prod
-
-test = Tester().test
-bench = Tester().bench
 
 
 class VisibleDeprecationWarning(UserWarning):

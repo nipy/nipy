@@ -42,9 +42,9 @@ def estimate_pooled_covariance(resid, ARtarget=[0.3], mask=None):
     nvox = 0
     for i in range(resid.shape[1]):
         d = np.asarray(resid[:,i])
-        d.shape = (d.shape[0], np.product(d.shape[1:]))
+        d.shape = (d.shape[0], np.prod(d.shape[1:]))
         keep = np.asarray(mask[i])
-        keep.shape = np.product(keep.shape)
+        keep.shape = np.prod(keep.shape)
         d = d.compress(keep, axis=1)
         raw_sigma += np.dot(d, d.T)
         nvox += d.shape[1]

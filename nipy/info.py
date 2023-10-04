@@ -98,24 +98,22 @@ You can find our sources and single-click downloads:
 Tests
 =====
 
-To run nipy's tests, you will need to install the nose_ Python testing
+To run nipy's tests, you will need to install the pytest_ Python testing
 package::
 
-    pip install nose3
-
+    pip install pytest
 
 Then::
 
-    python -c "import nipy; nipy.test()"
+    pytest nipy
 
-You can also run nipy's tests with the ``nipnost`` script in the ``tools``
-directory of the nipy distribution::
+You can run the doctests along with the other tests with::
 
-    ./tools/nipnost nipy
+    pip install pytest-doctestplus
 
-``nipnost`` is a thin wrapper around the standard ``nosetests`` program that
-is part of the nose package.  Try ``nipnost --help`` to see a large number of
-command-line options.
+Then::
+
+    pytest --doctest-plus nipy
 
 Installation
 ============
@@ -136,7 +134,7 @@ the nipy distribution.
 .. _nibabel: http://nipy.org/nibabel
 .. _ipython: http://ipython.org
 .. _matplotlib: http://matplotlib.org
-.. _nose: http://nose.readthedocs.org/en/latest
+.. _pytest: http://pytest.org
 .. _installation instructions: http://nipy.org/nipy/users/installation.html
 """
 

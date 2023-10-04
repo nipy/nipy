@@ -5,6 +5,7 @@ from os.path import join as pjoin
 
 import nibabel as nib
 import numpy as np
+import pytest
 from nibabel import Nifti1Header
 from nibabel.filebasedimages import ImageFileError
 from nibabel.spatialimages import HeaderDataError
@@ -18,9 +19,6 @@ from nipy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,
     assert_array_equal,
-    assert_equal,
-    assert_raises,
-    assert_true,
     funcfile,
 )
 from nipy.testing.decorators import if_templates
@@ -28,46 +26,41 @@ from nipy.utils import DataError, templates
 
 from ..api import as_image, load_image, save_image
 
-gimg = None
 
-def setup_module():
-    global gimg
+@pytest.fixture(scope='module')
+def tpl_img():
     try:
-        gimg = load_template_img()
-    except DataError:
-        pass
-
-
-def load_template_img():
-    return load_image(
-        templates.get_filename(
+        gimg = load_image(templates.get_filename(
             'ICBM152', '2mm', 'T1.nii.gz'))
+    except DataError:
+        gimg = None
+    return gimg
 
 
 def test_badfile():
     filename = "bad_file.foo"
     # nibabel prior 2.1.0 was throwing a ImageFileError for the not-recognized
     # file type.  >=2.1.0 give a FileNotFoundError.
-    assert_raises((ImageFileError, FileNotFoundError), load_image, filename)
+    pytest.raises((ImageFileError, FileNotFoundError), load_image, filename)
 
 
 @if_templates
-def test_maxminmean_values():
+def test_maxminmean_values(tpl_img):
     # loaded array values from SPM
-    y = gimg.get_fdata()
-    yield assert_equal, y.shape, tuple(gimg.shape)
-    yield assert_array_almost_equal, y.max(), 1.000000059
-    yield assert_array_almost_equal, y.mean(), 0.273968048
-    yield assert_equal, y.min(), 0.0
+    y = tpl_img.get_fdata()
+    assert y.shape == tuple(tpl_img.shape)
+    assert_array_almost_equal(y.max(), 1.000000059)
+    assert_array_almost_equal(y.mean(), 0.273968048)
+    assert y.min() == 0.0
 
 
 @if_templates
-def test_nondiag():
-    gimg.affine[0,1] = 3.0
+def test_nondiag(tpl_img):
+    tpl_img.affine[0,1] = 3.0
     with InTemporaryDirectory():
-        save_image(gimg, 'img.nii')
+        save_image(tpl_img, 'img.nii')
         img2 = load_image('img.nii')
-        assert_almost_equal(img2.affine, gimg.affine)
+        assert_almost_equal(img2.affine, tpl_img.affine)
 
 
 def randimg_in2out(rng, in_dtype, out_dtype, name):
@@ -113,7 +106,7 @@ def test_scaling_io_dtype():
                 img = load_image('img.nii')
                 # Check the output type is as expected
                 hdr = img.metadata['header']
-                assert_equal(hdr.get_data_dtype().type, out_type)
+                assert hdr.get_data_dtype().type == out_type
                 # Check the data is within reasonable bounds. The exact bounds
                 # are a little annoying to calculate - see
                 # nibabel/tests/test_round_trip for inspiration
@@ -134,9 +127,9 @@ def test_scaling_io_dtype():
                 elif np.dtype(out_type).kind == 'f':
                     abs_err_thresh = big_bad_ulp(data.astype(out_type))[nzs]
                     rel_err_thresh = ulp1_f32
-                assert_true(np.all(
+                assert np.all(
                     (abs_err <= abs_err_thresh) |
-                    (rel_err <= rel_err_thresh)))
+                    (rel_err <= rel_err_thresh))
 
 
 def assert_dt_no_end_equal(a, b):
@@ -146,7 +139,7 @@ def assert_dt_no_end_equal(a, b):
     """
     a = np.dtype(a).newbyteorder('=')
     b = np.dtype(b).newbyteorder('=')
-    assert_equal(a.str, b.str)
+    assert a.str == b.str
 
 
 def test_output_dtypes():
@@ -203,7 +196,7 @@ def test_output_dtypes():
         hdr = img_back.metadata['header']
         assert_dt_no_end_equal(hdr.get_data_dtype(), 'u2')
         # Check analyze can't save u2 datatype
-        assert_raises(HeaderDataError, save_image, img, 'my_file.img', 'u2')
+        pytest.raises(HeaderDataError, save_image, img, 'my_file.img', 'u2')
         del img_back
 
 
@@ -221,9 +214,9 @@ def test_header_roundtrip():
     newhdr = newimg.metadata['header']
     assert_array_almost_equal(newhdr['slice_duration'],
                               hdr['slice_duration'])
-    assert_equal(newhdr['intent_p1'], hdr['intent_p1'])
-    assert_equal(newhdr['descrip'], hdr['descrip'])
-    assert_equal(newhdr['slice_end'], hdr['slice_end'])
+    assert newhdr['intent_p1'] == hdr['intent_p1']
+    assert newhdr['descrip'] == hdr['descrip']
+    assert newhdr['slice_end'] == hdr['slice_end']
 
 
 def test_file_roundtrip():
@@ -239,8 +232,8 @@ def test_file_roundtrip():
     assert_almost_equal(data2.min(), data.min())
     assert_almost_equal(data2.max(), data.max())
     # verify shape and ndims
-    assert_equal(img2.shape, img.shape)
-    assert_equal(img2.ndim, img.ndim)
+    assert img2.shape == img.shape
+    assert img2.ndim == img.ndim
     # verify affine
     assert_almost_equal(img2.affine, img.affine)
 
@@ -258,8 +251,8 @@ def test_roundtrip_from_array():
     assert_almost_equal(data2.min(), data.min())
     assert_almost_equal(data2.max(), data.max())
     # verify shape and ndims
-    assert_equal(img2.shape, img.shape)
-    assert_equal(img2.ndim, img.ndim)
+    assert img2.shape == img.shape
+    assert img2.ndim == img.ndim
     # verify affine
     assert_almost_equal(img2.affine, img.affine)
 
@@ -269,13 +262,13 @@ def test_as_image():
     img = as_image(funcfile)  # string filename
     img1 = as_image(funcfile)  # unicode
     img2 = as_image(img)
-    assert_equal(img.affine, img1.affine)
+    assert_array_equal(img.affine, img1.affine)
     assert_array_equal(img.get_fdata(), img1.get_fdata())
-    assert_true(img is img2)
+    assert img is img2
 
 
 def test_no_minc():
     # We can't yet get good axis names for MINC files. Check we reject these
-    assert_raises(ValueError, load_image, 'nofile.mnc')
+    pytest.raises(ValueError, load_image, 'nofile.mnc')
     data_path = pjoin(dirname(nib.__file__), 'tests', 'data')
-    assert_raises(ValueError, load_image, pjoin(data_path, 'tiny.mnc'))
+    pytest.raises(ValueError, load_image, pjoin(data_path, 'tiny.mnc'))

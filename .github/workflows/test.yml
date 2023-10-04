@@ -40,6 +40,24 @@ jobs:
         run: env
       - name: Library tests
         run: |
-          mkdir ../tmp
-          cd ../tmp
-          python ../nipy/tools/nipnost nipy
+          mkdir tmp
+          cd tmp
+          pytest --doctest-plus --ignore-glob="__config__.py" --pyargs nipy
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: |
+          pip install -r dev-requirements.txt
+          pip install .
+      - name: Show environment
+        run: env
+      - name: Library tests
+        run: |
+          mkdir tmp
+          cd tmp
+          pytest -s -c ../bench.ini --pyargs nipy

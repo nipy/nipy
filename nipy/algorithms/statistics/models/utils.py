@@ -15,7 +15,7 @@ def mad(a, c=0.6745, axis=0):
     median(abs(a - median(a))) / c
     """
     _shape = a.shape
-    a.shape = np.product(a.shape, axis=0)
+    a.shape = np.prod(a.shape, axis=0)
     m = np.median(np.fabs(a - np.median(a))) / c
     a.shape = _shape
     return m
@@ -73,7 +73,7 @@ def ECDF(values):
     """
     x = np.array(values, copy=True)
     x.sort()
-    x.shape = np.product(x.shape, axis=0)
+    x.shape = np.prod(x.shape, axis=0)
     n = x.shape[0]
     y = (np.arange(n) + 1.) / n
     return StepFunction(x, y)

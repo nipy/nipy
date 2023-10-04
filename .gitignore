@@ -30,6 +30,7 @@
 *.py[oc]
 *.so
 *.pyd
+__pycache__/
 
 # Packages #
 ############

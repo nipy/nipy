@@ -20,7 +20,6 @@ The above three generators return 2-tuples.
 import numpy as np
 
 # Legacy repr printing from numpy.
-from nipy.testing import legacy_printing as setup_module  # noqa
 from nipy.utils import seq_prod
 
 
@@ -246,7 +245,7 @@ def matrix_generator(img):
     (i, rp) where rp is a 2d array with rp.shape = (r.shape[0], prod(r.shape[1:]))
     """
     for i, r in img:
-        r.shape = (r.shape[0], np.product(r.shape[1:]))
+        r.shape = (r.shape[0], np.prod(r.shape[1:]))
         yield i, r
 
 

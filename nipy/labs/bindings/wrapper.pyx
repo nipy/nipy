@@ -85,7 +85,7 @@ def copy_vector(ndarray X, int flag):
     data = <void*>X.data
     size = X.shape[0]
     stride = X.strides[0]
-    itemsize = X.descr.elsize
+    itemsize = X.itemsize
     type = X.descr.type_num
 
     relstride = stride/itemsize

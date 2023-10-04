@@ -112,7 +112,7 @@ def full_rank(X, r=None):
 
 
 def pos_recipr(X):
-    """ Return element-wise reciprocal of array, setting `X`>=0 to 0
+    """ Return element-wise reciprocal of array, setting `X`<=0 to 0
 
     Return the reciprocal of an array, setting all entries less than or
     equal to 0 to 0. Therefore, it presumes that X should be positive in
@@ -129,7 +129,10 @@ def pos_recipr(X):
        1/X where X > 0, 0 otherwise
     """
     X = np.asarray(X)
-    return np.where(X<=0, 0, 1. / X)
+    out = np.zeros(X.shape)
+    gt_0 = X > 0
+    out[gt_0] = 1. / X[gt_0]
+    return out
 
 
 def recipr0(X):
@@ -147,4 +150,7 @@ def recipr0(X):
     rX : array
     """
     X = np.asarray(X)
-    return np.where(X==0, 0, 1. / X)
+    out = np.zeros(X.shape)
+    ne_0 = X != 0
+    out[ne_0] = 1. / X[ne_0]
+    return out

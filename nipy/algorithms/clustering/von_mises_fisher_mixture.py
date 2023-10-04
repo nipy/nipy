@@ -242,9 +242,9 @@ class VonMisesMixture:
         """
         # label the data
         z = np.argmax(self.responsibilities(x), 1)
+        import matplotlib.pyplot as plt
         import mpl_toolkits.mplot3d.axes3d as p3
-        import pylab
-        fig = pylab.figure()
+        fig = plt.figure()
         ax = p3.Axes3D(fig)
         colors = (['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w'] * \
                       (1 + (1 + self.k) // 8))[:self.k + 1]
@@ -267,7 +267,7 @@ class VonMisesMixture:
                               color=colors[k])
                 ax.plot3D([self.means[k, 0]], [self.means[k, 1]],
                       [self.means[k, 2]], 'o', color=colors[k])
-        pylab.show()
+        plt.show()
 
 
 def estimate_robust_vmm(k, precision, null_class, x, ninit=10, bias=None,

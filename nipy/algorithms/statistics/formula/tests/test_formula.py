@@ -7,8 +7,8 @@ Test functions for formulae
 from warnings import catch_warnings, simplefilter
 
 import numpy as np
+import pytest
 import sympy
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
 from numpy.core.records import fromrecords
 from numpy.testing import assert_almost_equal, assert_array_equal
 from sympy.utilities.lambdify import implemented_function
@@ -21,46 +21,46 @@ from ..formulae import Term, terms
 
 def test_terms():
     t = terms('a')
-    assert_true(isinstance(t, Term))
+    assert isinstance(t, Term)
     a, b, c = Term('a'), Term('b'), Term('c')
-    assert_equal(t, a)
+    assert t == a
     ts = terms(('a', 'b', 'c'))
-    assert_equal(ts, (a, b, c))
+    assert ts == (a, b, c)
     # a string without separator chars returns one symbol.  This is the
     # sympy 0.7 behavior
-    assert_equal(terms('abc'), Term('abc'))
+    assert terms('abc') == Term('abc')
     # separators return multiple symbols
-    assert_equal(terms('a b c'), (a, b, c))
-    assert_equal(terms('a, b, c'), (a, b, c))
+    assert terms('a b c') == (a, b, c)
+    assert terms('a, b, c') == (a, b, c)
     # no arg is an error
-    assert_raises(TypeError, terms)
+    pytest.raises(TypeError, terms)
     # but empty arg returns empty tuple
-    assert_equal(terms(()), ())
+    assert terms(()) == ()
     # Test behavior of deprecated each_char kwarg
-    assert_raises(TypeError, terms, 'abc', each_char=True)
+    pytest.raises(TypeError, terms, 'abc', each_char=True)
 
 
 def test_getparams_terms():
     t = F.Term('t')
     x, y, z = (sympy.Symbol(l) for l in 'xyz')
-    assert_equal(set(F.getparams(x*y*t)), {x,y})
-    assert_equal(set(F.getterms(x*y*t)), {t})
+    assert set(F.getparams(x*y*t)) == {x,y}
+    assert set(F.getterms(x*y*t)) == {t}
 
     matrix_expr = np.array([[x,y*t],[y,z]])
-    assert_equal(set(F.getparams(matrix_expr)), {x,y,z})
-    assert_equal(set(F.getterms(matrix_expr)), {t})
+    assert set(F.getparams(matrix_expr)) == {x,y,z}
+    assert set(F.getterms(matrix_expr)) == {t}
 
 
 def test_formula_params():
     t = F.Term('t')
     x, y = (sympy.Symbol(l) for l in 'xy')
     f = F.Formula([t*x,y])
-    assert_equal(set(f.params), set([x,y] + list(f.coefs.values())))
+    assert set(f.params) == set([x,y] + list(f.coefs.values()))
 
 
 def test_contrast1():
     x = F.Term('x')
-    assert_equal(x, x+x)
+    assert x == x+x
     y = F.Term('y')
     z = F.Term('z')
     f = F.Formula([x,y])
@@ -126,10 +126,10 @@ def test_formula_from_recarray():
                             ('x5', 'i8'),
                             ('x6', '|S5')])
     f = F.Formula.fromrec(D, drop='y')
-    assert_equal({str(t) for t in f.terms},
+    assert ({str(t) for t in f.terms} ==
                  {'x1', 'x2', 'x3', 'x4', 'x5',
                       'x6_green', 'x6_blue', 'x6_red'})
-    assert_equal({str(t) for t in f.design_expr},
+    assert ({str(t) for t in f.design_expr} ==
                  {'x1', 'x2', 'x3', 'x4', 'x5',
                       'x6_green', 'x6_blue', 'x6_red'})
 
@@ -159,21 +159,21 @@ def test_random_effects():
                      [a,a,a,0,0],
                      [0,0,0,b,b],
                      [0,0,0,b,b]])
-    assert_true(np.alltrue(t))
+    assert np.all(t)
 
 
 def test_design_expression():
     t1 = F.Term("x")
     t2 = F.Term('y')
     f = t1.formula + t2.formula
-    assert_true(str(f.design_expr) in ['[x, y]', '[y, x]'])
+    assert str(f.design_expr) in ['[x, y]', '[y, x]']
 
 
 def test_formula_property():
     # Check that you can create a Formula with one term
     t1 = F.Term("x")
     f = t1.formula
-    assert_equal(f.design_expr, [t1])
+    assert f.design_expr == [t1]
 
 
 def test_mul():
@@ -181,10 +181,10 @@ def test_mul():
     f2 = F.Factor('t', [2,3,4])
     t2 = f['t_2']
     x = F.Term('x')
-    assert_equal(t2, t2*t2)
-    assert_equal(f, f*f)
-    assert_false(f == f2)
-    assert_equal(set((t2*x).atoms()), {t2,x})
+    assert t2 == t2*t2
+    assert f == f*f
+    assert f != f2
+    assert set((t2*x).atoms()) == {t2,x}
 
 
 def test_factor_add_sub():
@@ -192,11 +192,11 @@ def test_factor_add_sub():
     f1 = F.Factor('t', [2, 3, 4])
     f2 = F.Factor('t', [2, 3])
     # Terms do not cancel in addition
-    assert_equal(f1 + f2, F.Formula(np.hstack((f1.terms, f2.terms))))
-    assert_equal(f1 - f2, F.Factor('t', [4]))
+    assert f1 + f2 == F.Formula(np.hstack((f1.terms, f2.terms)))
+    assert f1 - f2 == F.Factor('t', [4])
     f3 = F.Factor('p', [0, 1])
-    assert_equal(f1 + f3, F.Formula(np.hstack((f1.terms, f3.terms))))
-    assert_equal(f1 - f3, f1)
+    assert f1 + f3 == F.Formula(np.hstack((f1.terms, f3.terms)))
+    assert f1 - f3 == f1
 
 
 def test_term_order_sub():
@@ -208,11 +208,11 @@ def test_term_order_sub():
 
 
 def assert_starr_equal(a, b):
-    assert_equal(a.shape, b.shape)
-    assert_equal(a.dtype.names, b.dtype.names)
+    assert a.shape == b.shape
+    assert a.dtype.names == b.dtype.names
     for name in a.dtype.names:
         assert_array_equal(a[name], b[name])
-        assert_equal(a[name].dtype, b[name].dtype)
+        assert a[name].dtype == b[name].dtype
 
 
 def test_make_recarray():
@@ -243,7 +243,7 @@ def test_make_recarray():
     assert_starr_equal(F.make_recarray(m2_dash, 'xy'), m2_dash)
     # From an array, drop dim case
     arr = np.array(data_2d)
-    assert_equal(arr.shape, (3, 2))
+    assert arr.shape == (3, 2)
     assert_starr_equal(
         F.make_recarray(arr, 'xy', drop_name_dim=True),
         fromrecords(data_2d, dtype=[('x', int), ('y', int)]))
@@ -275,9 +275,9 @@ def test_make_recarray():
             F.make_recarray(arr, 'xy'),
             fromrecords(data_2d, dtype=[('x', int), ('y', int)]).
             reshape((3, 1)))
-        assert_equal(warn_list[0].category, VisibleDeprecationWarning)
+        assert warn_list[0].category == VisibleDeprecationWarning
     # Can't pass dtypes to array version of function
-    assert_raises(ValueError, F.make_recarray, arr, 'xy', [int, float])
+    pytest.raises(ValueError, F.make_recarray, arr, 'xy', [int, float])
 
 
 def test_make_recarray_axes():
@@ -295,7 +295,7 @@ def test_str_formula():
     t1 = F.Term('x')
     t2 = F.Term('y')
     f = F.Formula([t1, t2])
-    assert_equal(str(f), "Formula([x, y])")
+    assert str(f) == "Formula([x, y])"
 
 
 def test_design():
@@ -320,7 +320,7 @@ def test_design():
     # drop x field, check that design raises error
     ny = np.recarray(n.shape, dtype=[('x', n.dtype['x'])])
     ny['x'] = n['x']
-    assert_raises(ValueError, f.design, ny)
+    pytest.raises(ValueError, f.design, ny)
     n = np.array([(2,3,'a'),(4,5,'b'),(5,6,'a')], np.dtype([('x', np.float64),
                                                             ('y', np.float64),
                                                             ('f', 'S1')]))
@@ -355,11 +355,11 @@ def test_formula_inputs():
     for field_type in ('S', 'U', 'O'):
         levels = np.array(level_names, dtype=field_type)
         f = F.Factor('myname', levels)
-        assert_equal(f.levels, level_names)
+        assert f.levels == level_names
     # Sending in byte objects
     levels = [L.encode() for L in level_names]
     f = F.Factor('myname', levels)
-    assert_equal(f.levels, level_names)
+    assert f.levels == level_names
 
 
 def test_alias():
@@ -374,13 +374,13 @@ def test_alias():
 
 def test_factor_getterm():
     fac = F.Factor('f', 'ab')
-    assert_equal(fac['f_a'], fac.get_term('a'))
+    assert fac['f_a'] == fac.get_term('a')
     fac = F.Factor('f', [1,2])
-    assert_equal(fac['f_1'], fac.get_term(1))
+    assert fac['f_1'] == fac.get_term(1)
     fac = F.Factor('f', [1,2])
-    assert_raises(ValueError, fac.get_term, '1')
+    pytest.raises(ValueError, fac.get_term, '1')
     m = fac.main_effect
-    assert_equal(set(m.terms), {fac['f_1']-fac['f_2']})
+    assert set(m.terms) == {fac['f_1']-fac['f_2']}
 
 
 def test_stratify():
@@ -388,7 +388,7 @@ def test_stratify():
 
     y = sympy.Symbol('y')
     f = sympy.Function('f')
-    assert_raises(ValueError, fac.stratify, f(y))
+    pytest.raises(ValueError, fac.stratify, f(y))
 
 
 def test_nonlin1():
@@ -399,7 +399,7 @@ def test_nonlin1():
     fac = F.Factor('f', 'ab')
     f = F.Formula([sympy.exp(fac.stratify(x).mean)]) + F.I
     params = F.getparams(f.mean)
-    assert_equal({str(p) for p in params},
+    assert ({str(p) for p in params} ==
                  {'_x0', '_x1', '_b0', '_b1'})
     test1 = {'1',
                  'exp(_x0*f_a + _x1*f_b)',
@@ -409,7 +409,7 @@ def test_nonlin1():
                  'exp(_x0*f_a + _x1*f_b)',
                  '_b1*f_a*exp(_x0*f_a + _x1*f_b)',
                  '_b1*f_b*exp(_x0*f_a + _x1*f_b)'}
-    assert_true(test1 or test2)
+    assert test1 or test2
     n = F.make_recarray([(2,3,'a'),(4,5,'b'),(5,6,'a')], 'xyf', ['d','d','S1'])
     p = F.make_recarray([1,2,3,4], ['_x0', '_x1', '_b0', '_b1'])
     A = f.design(n, p)
@@ -419,7 +419,7 @@ def test_nonlin1():
 def test_intercept():
     dz = F.make_recarray([2,3,4],'z')
     v = F.I.design(dz, return_float=False)
-    assert_equal(v.dtype.names, ('intercept',))
+    assert v.dtype.names == ('intercept',)
 
 
 def test_nonlin2():
@@ -428,7 +428,7 @@ def test_nonlin2():
     t = sympy.Symbol('th')
     p = F.make_recarray([3], ['tt'])
     f = F.Formula([sympy.exp(t*z)])
-    assert_raises(ValueError, f.design, dz, p)
+    pytest.raises(ValueError, f.design, dz, p)
 
 
 def test_Rintercept():
@@ -437,7 +437,7 @@ def test_Rintercept():
     xf = x.formula
     yf = y.formula
     newf = (xf+F.I)*(yf+F.I)
-    assert_equal(set(newf.terms), {x,y,x*y,sympy.Number(1)})
+    assert set(newf.terms) == {x,y,x*y,sympy.Number(1)}
 
 
 def test_return_float():
@@ -445,9 +445,9 @@ def test_return_float():
     f = F.Formula([x,x**2])
     xx= F.make_recarray(np.linspace(0,10,11), 'x')
     dtype = f.design(xx).dtype
-    assert_equal(set(dtype.names), {'x', 'x**2'})
+    assert set(dtype.names) == {'x', 'x**2'}
     dtype = f.design(xx, return_float=True).dtype
-    assert_equal(dtype, np.float64)
+    assert dtype == np.float64
 
 
 def test_subtract():
@@ -455,10 +455,10 @@ def test_subtract():
     f1 = F.Formula([x,y])
     f2 = F.Formula([x,y,z])
     f3 = f2 - f1
-    assert_equal(set(f3.terms), {z})
+    assert set(f3.terms) == {z}
     f4 = F.Formula([y,z])
     f5 = f1 - f4
-    assert_equal(set(f5.terms), {x})
+    assert set(f5.terms) == {x}
 
 
 def test_subs():
@@ -467,7 +467,7 @@ def test_subs():
     z = F.Term('z')
     f = F.Formula([t1, t2])
     g = f.subs(t1, z)
-    assert_equal(list(g.terms), [z, t2])
+    assert list(g.terms) == [z, t2]
 
 
 def test_natural_spline():
@@ -506,4 +506,4 @@ def test_factor_term():
             name = np.array('foo', ndt).item()
             level = np.array('bar', ldt).item()
             ft = F.FactorTerm(name, level)
-            assert_equal(str(ft), 'foo_bar')
+            assert str(ft) == 'foo_bar'

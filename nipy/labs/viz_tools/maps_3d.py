@@ -102,7 +102,7 @@ def m2screenshot(mayavi_fig=None, mpl_axes=None, autocrop=True):
     """ Capture a screeshot of the Mayavi figure and display it in the
         matplotlib axes.
     """
-    import pylab as pl
+    import matplotlib.pyplot as plt
     # Late import to avoid triggering wx imports before needed.
     try:
         from mayavi import mlab
@@ -115,16 +115,16 @@ def m2screenshot(mayavi_fig=None, mpl_axes=None, autocrop=True):
     else:
         mlab.figure(mayavi_fig)
     if mpl_axes is not None:
-        pl.axes(mpl_axes)
+        plt.axes(mpl_axes)
 
     filename = tempfile.mktemp('.png')
     mlab.savefig(filename, figure=mayavi_fig)
-    image3d = pl.imread(filename)
+    image3d = plt.imread(filename)
     if autocrop:
         bg_color = mayavi_fig.scene.background
         image3d = autocrop_img(image3d, bg_color)
-    pl.imshow(image3d)
-    pl.axis('off')
+    plt.imshow(image3d)
+    plt.axis('off')
     os.unlink(filename)
     # XXX: Should switch back to previous MPL axes: we have a side effect
     # here.
@@ -288,9 +288,9 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
             The minimal value, for the colormap
         vmax : float, optional
             The maximum value, for the colormap
-        cmap : a callable, or a pylab colormap
+        cmap : a callable, or a pyplot colormap
             A callable returning a (n, 4) array for n values between
-            0 and 1 for the colors. This can be for instance a pylab
+            0 and 1 for the colors. This can be for instance a pyplot
             colormap.
 
         Notes

@@ -4,13 +4,7 @@
 from itertools import product
 
 import numpy as np
-from nose.tools import (
-    assert_equal,
-    assert_false,
-    assert_not_equal,
-    assert_raises,
-    assert_true,
-)
+import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy.ndimage import map_coordinates
 
@@ -24,18 +18,18 @@ def test_interp_obj():
     coordmap =  vox2mni(np.eye(4))
     img = Image(arr, coordmap)
     interp = ImageInterpolator(img)
-    assert_equal(interp.mode, 'constant')
-    assert_equal(interp.order, 3)
+    assert interp.mode == 'constant'
+    assert interp.order == 3
     # order is read-only
-    assert_raises(AttributeError,
+    pytest.raises(AttributeError,
                   setattr,
                   interp,
                   'order',
                   1)
     interp = ImageInterpolator(img, mode='nearest')
-    assert_equal(interp.mode, 'nearest')
+    assert interp.mode == 'nearest'
     # mode is read-only
-    assert_raises(AttributeError,
+    pytest.raises(AttributeError,
                   setattr,
                   interp,
                   'mode',

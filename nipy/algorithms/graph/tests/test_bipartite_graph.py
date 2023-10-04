@@ -1,11 +1,9 @@
 
-from unittest import TestCase
 
 import numpy as np
 import numpy.random as nr
 
 from ..bipartite_graph import (
-    BipartiteGraph,
     check_feature_matrices,
     cross_eps,
     cross_knn,
@@ -102,9 +100,3 @@ def test_subraph_right2():
     assert sr.W == 10
     assert sr.V == 10
     assert sr.edges[:, 1].max() == 6
-
-
-
-if __name__ == '__main__':
-    import nose
-    nose.run(argv=['', __file__])

@@ -97,8 +97,3 @@ def test_gamma_parameters2(verbose=0):
     if verbose:
         G.parameters()
     assert(np.absolute(G.scale-3)<0.5)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.run(argv=['', __file__])

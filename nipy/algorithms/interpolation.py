@@ -4,21 +4,11 @@
 """
 
 import tempfile
-from distutils.version import LooseVersion as LV
 
 import numpy as np
-import scipy
-from scipy import ndimage
+from scipy.ndimage import map_coordinates, spline_filter
 
-from ..fixes.scipy.ndimage import map_coordinates
 from ..utils import seq_prod
-
-# Earlier versions of Scipy don't have mode for spline_filter
-SCIPY_VERSION = LV(scipy.__version__)
-SPLINE_FILTER_HAS_MODE = SCIPY_VERSION >= LV('1.2')
-# Fixes in interpolation in scipy >= 1.6 force pre-padding
-# in knot calculations.
-SPLINE_FILTER_NEEDS_PAD = SCIPY_VERSION >= LV('1.6')
 
 
 class ImageInterpolator:
@@ -29,7 +19,7 @@ class ImageInterpolator:
 
     # Padding for prefilter calculation in 'nearest' and 'grid-constant' mode.
     # See: https://github.com/scipy/scipy/issues/13600
-    n_prepad_if_needed = 12 if SPLINE_FILTER_NEEDS_PAD else 0
+    n_prepad_if_needed = 12
 
     def __init__(self, image, order=3, mode='constant', cval=0.0):
         """
@@ -79,9 +69,8 @@ class ImageInterpolator:
                 if self._n_prepad != 0:
                     data = np.pad(data, self._n_prepad, mode='edge')
             kwargs = {'order': self.order}
-            if SPLINE_FILTER_HAS_MODE:
-                kwargs['mode'] = self.mode
-            data = ndimage.spline_filter(data, **kwargs)
+            kwargs['mode'] = self.mode
+            data = spline_filter(data, **kwargs)
         self._datafile = tempfile.TemporaryFile()
         data.tofile(self._datafile)
         self._data = np.memmap(self._datafile,

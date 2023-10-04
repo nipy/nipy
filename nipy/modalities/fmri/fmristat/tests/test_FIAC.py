@@ -15,8 +15,7 @@ from nipy.algorithms.statistics.formula import formulae
 from nipy.algorithms.statistics.models.regression import OLSModel
 
 # testing imports
-from nipy.testing import assert_almost_equal, assert_true
-from nipy.utils.compat3 import to_str
+from nipy.testing import assert_almost_equal
 
 from ... import design, hrf, utils
 from .. import hrf as delay
@@ -25,6 +24,10 @@ from .. import hrf as delay
 from .FIACdesigns import N_ROWS, altdescr, descriptions, fmristat, time_vector
 
 t = formulae.make_recarray(time_vector, 't')
+
+
+def _to_str(s):
+    return s.decode('latin1') if isinstance(s, bytes) else str(s)
 
 
 def protocol(recarr, design_type, *hrfs):
@@ -81,7 +84,7 @@ def protocol(recarr, design_type, *hrfs):
         k = np.array([events[i] == v for i in range(times.shape[0])])
         for l, h in enumerate(hrfs):
             # Make sure event type is a string (not byte string)
-            term_name = '%s%d' % (to_str(v), l)
+            term_name = '%s%d' % (_to_str(v), l)
             termdict[term_name] = utils.define(term_name,
                                                utils.events(times[k], f=h))
     f = formulae.Formula(list(termdict.values()))
@@ -277,7 +280,7 @@ def test_agreement():
         for i in range(X[design_type].shape[1]):
             _, cmax = matchcol(X[design_type][:,i], fmristat[design_type])
             if not dd.dtype.names[i].startswith('ns'):
-                assert_true(np.greater(np.abs(cmax), 0.999))
+                assert np.greater(np.abs(cmax), 0.999)
 
 
 # @dec.slow

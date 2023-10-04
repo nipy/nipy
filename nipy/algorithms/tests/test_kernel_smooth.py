@@ -2,13 +2,13 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ Test for smoothing with kernels """
 import numpy as np
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+import pytest
 from numpy.random import randint
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import assert_array_almost_equal
+from transforms3d.taitbryan import euler2mat
 
 from ... import load_image
 from ...core.api import AffineTransform, Image, compose, drop_io_dim
-from ...externals.transforms3d.taitbryan import euler2mat
 from ...testing import anatfile, funcfile
 from ..kernel_smooth import LinearFilter, fwhm2sigma, sigma2fwhm
 
@@ -17,9 +17,9 @@ def test_anat_smooth():
     anat = load_image(anatfile)
     smoother = LinearFilter(anat.coordmap, anat.shape)
     sanat = smoother.smooth(anat)
-    assert_equal(sanat.shape, anat.shape)
-    assert_equal(sanat.coordmap, anat.coordmap)
-    assert_false(np.allclose(sanat.get_fdata(), anat.get_fdata()))
+    assert sanat.shape == anat.shape
+    assert sanat.coordmap == anat.coordmap
+    assert not np.allclose(sanat.get_fdata(), anat.get_fdata())
 
 
 def test_funny_coordmap():
@@ -41,13 +41,13 @@ def test_funny_coordmap():
     func3d = Image(func1.get_fdata(), cmap3d)
     smoother = LinearFilter(func3d.coordmap, func3d.shape)
     sfunc3d = smoother.smooth(func3d)
-    assert_equal(sfunc1.shape, sfunc3d.shape)
+    assert sfunc1.shape == sfunc3d.shape
     assert_array_almost_equal(sfunc1.get_fdata(), sfunc3d.get_fdata())
     # And same with no rotation
     func_fresh = func[...,1] # 5x4 affine, no rotation
     smoother = LinearFilter(func_fresh.coordmap, func_fresh.shape)
     sfunc_fresh = smoother.smooth(func_fresh)
-    assert_equal(sfunc1.shape, sfunc_fresh.shape)
+    assert sfunc1.shape == sfunc_fresh.shape
     assert_array_almost_equal(sfunc1.get_fdata(), sfunc_fresh.get_fdata())
 
 
@@ -55,15 +55,15 @@ def test_func_smooth():
     func = load_image(funcfile)
     smoother = LinearFilter(func.coordmap, func.shape)
     # should work, but currently broken : sfunc = smoother.smooth(func)
-    assert_raises(NotImplementedError, smoother.smooth, func)
+    pytest.raises(NotImplementedError, smoother.smooth, func)
 
 
 def test_sigma_fwhm():
     # ensure that fwhm2sigma and sigma2fwhm are inverses of each other
     fwhm = np.arange(1.0, 5.0, 0.1)
     sigma = np.arange(1.0, 5.0, 0.1)
-    assert_true(np.allclose(sigma2fwhm(fwhm2sigma(fwhm)), fwhm))
-    assert_true(np.allclose(fwhm2sigma(sigma2fwhm(sigma)), sigma))
+    assert np.allclose(sigma2fwhm(fwhm2sigma(fwhm)), fwhm)
+    assert np.allclose(fwhm2sigma(sigma2fwhm(sigma)), sigma)
 
 
 def test_kernel():
@@ -92,17 +92,17 @@ def test_kernel():
         ssignal[:] *= kernel.norms[kernel.normalization]
         # 3 points * signal.size array
         I = np.indices(ssignal.shape)
-        I.shape = (kernel.coordmap.ndims[0], np.product(shape))
+        I.shape = (kernel.coordmap.ndims[0], np.prod(shape))
         # location of maximum in smoothed array
         i, j, k = I[:, np.argmax(ssignal[:].flat)]
         # same place as we put it before smoothing?
-        assert_equal((i,j,k), (ii,jj,kk))
+        assert (i,j,k) == (ii,jj,kk)
         # get physical points position relative to position of delta
         Z = kernel.coordmap(I.T) - kernel.coordmap([i,j,k])
         _k = kernel(Z)
         _k.shape = ssignal.shape
-        assert_true(np.corrcoef(_k[:].flat, ssignal[:].flat)[0,1] > tol)
-        assert_true((_k[:] - ssignal[:]).std() < sdtol)
+        assert np.corrcoef(_k[:].flat, ssignal[:].flat)[0,1] > tol
+        assert (_k[:] - ssignal[:]).std() < sdtol
 
         def _indices(i,j,k,axis):
             I = np.zeros((3,20))
@@ -115,10 +115,10 @@ def test_kernel():
         vx = ssignal[i,j,(k-10):(k+10)]
         xformed_ijk = coordmap([i, j, k])
         vvx = coordmap(_indices(i,j,k,2)) - xformed_ijk
-        assert_true(np.corrcoef(vx, kernel(vvx))[0,1] > tol)
+        assert np.corrcoef(vx, kernel(vvx))[0,1] > tol
         vy = ssignal[i,(j-10):(j+10),k]
         vvy = coordmap(_indices(i,j,k,1)) - xformed_ijk
-        assert_true(np.corrcoef(vy, kernel(vvy))[0,1] > tol)
+        assert np.corrcoef(vy, kernel(vvy))[0,1] > tol
         vz = ssignal[(i-10):(i+10),j,k]
         vvz = coordmap(_indices(i,j,k,0)) - xformed_ijk
-        assert_true(np.corrcoef(vz, kernel(vvz))[0,1] > tol)
+        assert np.corrcoef(vz, kernel(vvz))[0,1] > tol

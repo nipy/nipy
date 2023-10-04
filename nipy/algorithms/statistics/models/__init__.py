@@ -6,9 +6,6 @@
 
 __docformat__ = 'restructuredtext'
 
-from nipy.testing import Tester
 
 from . import glm, model, regression
 from .info import __doc__
-
-test = Tester().test

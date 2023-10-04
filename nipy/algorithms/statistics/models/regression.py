@@ -31,8 +31,6 @@ from scipy import stats
 from nipy.algorithms.utils.matrices import matrix_rank, pos_recipr
 
 # Legacy repr printing from numpy.
-from nipy.testing import legacy_printing as setup_module  # noqa
-
 from .model import LikelihoodModel, LikelihoodModelResults
 
 
@@ -81,10 +79,10 @@ class OLSModel(LikelihoodModel):
     array([ 0.25      ,  2.14285714])
     >>> results.t()
     array([ 0.98019606,  1.87867287])
-    >>> print(results.Tcontrast([0,1]))  #doctest: +FP_6DP
+    >>> print(results.Tcontrast([0,1]))  #doctest: +FLOAT_CMP
     <T contrast: effect=2.14285714286, sd=1.14062281591, t=1.87867287326,
     df_den=5>
-    >>> print(results.Fcontrast(np.eye(2)))  #doctest: +FP_6DP
+    >>> print(results.Fcontrast(np.eye(2)))  #doctest: +FLOAT_CMP
     <F contrast: F=19.4607843137, df_den=5, df_num=2>
     """
 
@@ -333,7 +331,7 @@ class ARModel(OLSModel):
     ...     rho, sigma = yule_walker(data["Y"] - results.predicted,
     ...                              order=2,
     ...                              df=model.df_resid)
-    ...     model = ARModel(model.design, rho) #doctest: +FP_6DP
+    ...     model = ARModel(model.design, rho) #doctest: +FLOAT_CMP
     ...
     AR coefficients: [ 0.  0.]
     AR coefficients: [-0.61530877 -1.01542645]
@@ -341,21 +339,21 @@ class ARModel(OLSModel):
     AR coefficients: [-0.7220361  -1.05365352]
     AR coefficients: [-0.72229201 -1.05408193]
     AR coefficients: [-0.722278   -1.05405838]
-    >>> results.theta #doctest: +NP_ALLCLOSE
+    >>> results.theta #doctest: +FLOAT_CMP
     array([ 1.59564228, -0.58562172])
-    >>> results.t() #doctest: +NP_ALLCLOSE
+    >>> results.t() #doctest: +FLOAT_CMP
     array([ 38.0890515 ,  -3.45429252])
-    >>> print(results.Tcontrast([0,1]))  #doctest: +FP_6DP
+    >>> print(results.Tcontrast([0,1]))  #doctest: +FLOAT_CMP
     <T contrast: effect=-0.58562172384377043, sd=0.16953449108110835,
     t=-3.4542925165805847, df_den=5>
-    >>> print(results.Fcontrast(np.identity(2)))  #doctest: +FP_6DP
+    >>> print(results.Fcontrast(np.identity(2)))  #doctest: +FLOAT_CMP
     <F contrast: F=4216.810299725842, df_den=5, df_num=2>
 
     Reinitialize the model, and do the automated iterative fit
 
     >>> model.rho = np.array([0,0])
     >>> model.iterative_fit(data['Y'], niter=3)
-    >>> print(model.rho)  #doctest: +FP_6DP
+    >>> print(model.rho)  #doctest: +FLOAT_CMP
     [-0.7220361  -1.05365352]
     """
 
@@ -597,7 +595,7 @@ def ar_bias_correct(results, order, invM=None):
     cov[0] = sum_sq
     for i in range(1, order + 1):
         cov[i] = np.sum(resid[i:] * resid[0:- i], axis=0)
-    # cov is shape (order + 1, V) where V = np.product(in_shape[1:])
+    # cov is shape (order + 1, V) where V = np.prod(in_shape[1:])
     cov = np.dot(invM, cov)
     output = cov[1:] * pos_recipr(cov[0])
     return np.squeeze(output.reshape((order,) + in_shape[1:]))
@@ -657,10 +655,10 @@ class WLSModel(OLSModel):
     array([ 0.0952381 ,  2.91666667])
     >>> results.t()
     array([ 0.35684428,  2.0652652 ])
-    >>> print(results.Tcontrast([0,1]))  #doctest: +FP_6DP
+    >>> print(results.Tcontrast([0,1]))  #doctest: +FLOAT_CMP
     <T contrast: effect=2.91666666667, sd=1.41224801095, t=2.06526519708,
     df_den=5>
-    >>> print(results.Fcontrast(np.identity(2)))  #doctest: +FP_6DP
+    >>> print(results.Fcontrast(np.identity(2)))  #doctest: +FLOAT_CMP
     <F contrast: F=26.9986072423, df_den=5, df_num=2>
     """
 

@@ -4,15 +4,9 @@
 Matplotlib colormaps useful for neuroimaging.
 """
 import numpy as _np
-
-from nipy.utils.skip_test import skip_if_running_nose
-
-try:
-    from matplotlib import cm as _cm
-    from matplotlib import colors as _colors
-    from matplotlib import rcParams as _rc
-except ImportError:
-    skip_if_running_nose('Could not import matplotlib')
+from matplotlib import cm as _cm
+from matplotlib import colors as _colors
+from matplotlib import rcParams as _rc
 
 ################################################################################
 # Custom colormaps for two-tailed symmetric statistics

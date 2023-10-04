@@ -123,8 +123,7 @@ def main():
           # version set by config.get_version() above
           configuration = configuration,
           cmdclass = cmdclass,
-          tests_require=['nose3'],
-          test_suite='nose.collector',
+          tests_require=['pytest', 'pytest-doctestplus'],
           zip_safe=False,
           entry_points={
               'console_scripts': [

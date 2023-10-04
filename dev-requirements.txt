@@ -1,5 +1,8 @@
 # Requirements for running tests
 -r requirements.txt
-nose3
+pytest>=7.2
+pytest-doctestplus
+pytest-cov>=4.0
+matplotlib
 coverage
 pre-commit

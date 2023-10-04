@@ -5,42 +5,43 @@ Test functions for models.GLM
 """
 
 import numpy as np
-from nose.tools import assert_equal, assert_false, assert_true
+import pytest
 
 from .. import family
 from ..glm import Model as GLM
 
-VARS = {}
 
-def setup():
+@pytest.fixture
+def x_y():
     rng = np.random.RandomState(20110928)
-    VARS['X'] = rng.standard_normal((40,10))
+    X = rng.standard_normal((40,10))
     Y = rng.standard_normal((40,))
-    VARS['Y'] = np.greater(Y, 0)
+    Y = np.greater(Y, 0)
+    return {'X': X, 'Y': Y}
 
 
-def test_Logistic():
-    X = VARS['X']
-    Y = VARS['Y']
+def test_Logistic(x_y):
+    X = x_y['X']
+    Y = x_y['Y']
     cmodel = GLM(design=X, family=family.Binomial())
     results = cmodel.fit(Y)
-    assert_equal(results.df_resid, 30)
+    assert results.df_resid == 30
 
 
-def test_cont():
+def test_cont(x_y):
     # Test continue function works as expected
-    X = VARS['X']
-    Y = VARS['Y']
+    X = x_y['X']
+    Y = x_y['Y']
     cmodel = GLM(design=X, family=family.Binomial())
     cmodel.fit(Y)
-    assert_true(cmodel.cont(0))
-    assert_false(cmodel.cont(np.inf))
+    assert cmodel.cont(0)
+    assert not cmodel.cont(np.inf)
 
 
-def test_Logisticdegenerate():
-    X = VARS['X'].copy()
+def test_Logisticdegenerate(x_y):
+    X = x_y['X'].copy()
     X[:,0] = X[:,1] + X[:,2]
-    Y = VARS['Y']
+    Y = x_y['Y']
     cmodel = GLM(design=X, family=family.Binomial())
     results = cmodel.fit(Y)
-    assert_equal(results.df_resid, 31)
+    assert results.df_resid == 31

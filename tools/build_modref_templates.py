@@ -17,7 +17,6 @@ if __name__ == '__main__':
     outdir = os.path.join('api','generated')
     docwriter = ApiDocWriter(package)
     docwriter.package_skip_patterns += [r'\.fixes$',
-                                        r'\.externals$',
                                         #r'\.labs\.viz',
                                         ]
     # XXX: Avoid nipy.modalities.fmri.aliased due to a bug in python2.6

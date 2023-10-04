@@ -320,7 +320,7 @@ def decompose3d(shape, dim=4):
                     yield [index+ii for ii in l]
 
     if dim == 1:
-        for i in range(np.product(shape)):
+        for i in range(np.prod(shape)):
             yield i
 
 
@@ -371,7 +371,7 @@ def decompose2d(shape, dim=3):
                     yield [index+ii for ii in l]
 
     if dim == 1:
-        for i in range(np.product(shape)):
+        for i in range(np.prod(shape)):
             yield i
 
 
@@ -393,7 +393,7 @@ def test_EC3(shape):
         ec += 1; vs += 1
     return ts, fs, es, vs, ec
 
-# Tell nose testing framework not to run this as a test
+# Tell testing framework not to run this as a test
 test_EC3.__test__ = False
 
 
@@ -412,7 +412,7 @@ def test_EC2(shape):
         ec += 1; vs += 1
     return fs, es, vs, ec
 
-# Tell nose testing framework not to run this as a test
+# Tell testing framework not to run this as a test
 test_EC2.__test__ = False
 
 

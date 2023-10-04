@@ -8,7 +8,6 @@ import nibabel.eulerangles as euler
 import numpy as np
 import numpy.testing as npt
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose.tools import assert_false, assert_true
 
 import nipy.algorithms.registration as reg
 from nipy.io.api import load_image, save_image
@@ -26,8 +25,8 @@ def test_space_time_realign():
         for in_fname, out_fname in ((funcfile, froot + '_mc.nii.gz'),
                                     ('my.test.nii', 'my.test_mc.nii.gz')):
             xforms = reg.space_time_realign(in_fname, 2.0, out_name='.')
-            assert_true(np.allclose(xforms[0].as_affine(), np.eye(4), atol=1e-7))
-            assert_false(np.allclose(xforms[-1].as_affine(), np.eye(4), atol=1e-3))
+            assert np.allclose(xforms[0].as_affine(), np.eye(4), atol=1e-7)
+            assert not np.allclose(xforms[-1].as_affine(), np.eye(4), atol=1e-3)
             img = load_image(out_fname)
             npt.assert_almost_equal(original_affine, img.affine)
         # To avoid Windows "file ... used by another process" error when

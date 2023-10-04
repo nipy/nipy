@@ -2,9 +2,8 @@
 """
 
 import numpy as np
-from nose import SkipTest
-from nose.tools import assert_equal, assert_raises, assert_true
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+import pytest
+from numpy.testing import assert_array_almost_equal
 
 # In fact we're testing methods defined in model
 from ..regression import OLSModel
@@ -55,12 +54,7 @@ def test_model():
     assert_array_almost_equal(RESULTS.theta[1], np.mean(Y))
     # Check we get the same as R
     assert_array_almost_equal(RESULTS.theta, [1.773, 2.5], 3)
-    try:
-        percentile = np.percentile
-    except AttributeError:
-        # Numpy <=1.4.1 does not have percentile function
-        raise SkipTest('Numpy does not have percentile function')
-    pcts = percentile(RESULTS.resid, [0,25,50,75,100])
+    pcts = np.percentile(RESULTS.resid, [0,25,50,75,100])
     assert_array_almost_equal(pcts, [-1.6970, -0.6667, 0, 0.6667, 1.6970], 4)
 
 
@@ -72,10 +66,10 @@ def test_t_contrast():
     assert_array_almost_equal(RESULTS.Tcontrast([1,0]).t, 3.25)
     assert_array_almost_equal(RESULTS.Tcontrast([0,1]).t, 7.181, 3)
     # Input matrix checked for size
-    assert_raises(ValueError, RESULTS.Tcontrast, [1])
-    assert_raises(ValueError, RESULTS.Tcontrast, [1, 0, 0])
+    pytest.raises(ValueError, RESULTS.Tcontrast, [1])
+    pytest.raises(ValueError, RESULTS.Tcontrast, [1, 0, 0])
     # And shape
-    assert_raises(ValueError, RESULTS.Tcontrast, np.array([1, 0])[:,None])
+    pytest.raises(ValueError, RESULTS.Tcontrast, np.array([1, 0])[:,None])
 
 
 def test_t_output():
@@ -88,19 +82,19 @@ def test_t_output():
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)
     res = RESULTS.Tcontrast([1,0], store=('effect',))
-    assert_equal(res.t, None)
+    assert res.t == None
     assert_array_almost_equal(res.effect, exp_effect)
-    assert_equal(res.sd, None)
+    assert res.sd == None
     res = RESULTS.Tcontrast([1,0], store=('t',))
     assert_array_almost_equal(res.t, exp_t)
-    assert_equal(res.effect, None)
-    assert_equal(res.sd, None)
+    assert res.effect == None
+    assert res.sd == None
     res = RESULTS.Tcontrast([1,0], store=('sd',))
-    assert_equal(res.t, None)
-    assert_equal(res.effect, None)
+    assert res.t == None
+    assert res.effect == None
     assert_array_almost_equal(res.sd, exp_sd)
     res = RESULTS.Tcontrast([1,0], store=('effect', 'sd'))
-    assert_equal(res.t, None)
+    assert res.t == None
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)
 
@@ -117,10 +111,10 @@ def test_f_output():
     res = RESULTS.Fcontrast(np.eye(2))
     assert_array_almost_equal(31.06, res.F, 2)
     # Input matrix checked for size
-    assert_raises(ValueError, RESULTS.Fcontrast, [1])
-    assert_raises(ValueError, RESULTS.Fcontrast, [1, 0, 0])
+    pytest.raises(ValueError, RESULTS.Fcontrast, [1])
+    pytest.raises(ValueError, RESULTS.Fcontrast, [1, 0, 0])
     # And shape
-    assert_raises(ValueError, RESULTS.Fcontrast, np.array([1, 0])[:,None])
+    pytest.raises(ValueError, RESULTS.Fcontrast, np.array([1, 0])[:,None])
 
 def test_f_output_new_api():
     res = RESULTS.Fcontrast([1, 0])
@@ -129,8 +123,8 @@ def test_f_output_new_api():
 
 def test_conf_int():
     lower_, upper_ = RESULTS.conf_int()
-    assert_true((lower_ < upper_).all())
-    assert_true((lower_ > upper_ - 10).all())
+    assert (lower_ < upper_).all()
+    assert (lower_ > upper_ - 10).all()
     lower_, upper_ = RESULTS.conf_int(cols=[1]).T
-    assert_true(lower_ < upper_)
-    assert_true(lower_ > upper_ - 10)
+    assert lower_ < upper_
+    assert lower_ > upper_ - 10

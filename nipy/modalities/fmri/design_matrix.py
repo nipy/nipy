@@ -27,7 +27,6 @@ from warnings import warn
 
 import numpy as np
 
-from ...utils.compat3 import open4csv
 from .hemodynamic_models import _orthogonalize, compute_regressor
 
 ######################################################################
@@ -279,7 +278,7 @@ class DesignMatrix:
         The frametimes are not written
         """
         import csv
-        with open4csv(path, "w") as fid:
+        with open(path, "w", newline='') as fid:
             writer = csv.writer(fid)
             writer.writerow(self.names)
             writer.writerows(self.matrix)
@@ -461,7 +460,7 @@ def dmtx_from_csv(path, frametimes=None):
     A DesignMatrix instance
     """
     import csv
-    with open4csv(path, 'r') as csvfile:
+    with open(path, newline='') as csvfile:
         dialect = csv.Sniffer().sniff(csvfile.read())
         csvfile.seek(0)
         reader = csv.reader(csvfile, dialect)

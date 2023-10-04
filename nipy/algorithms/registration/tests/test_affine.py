@@ -1,6 +1,6 @@
 
 import numpy as np
-from nose.tools import assert_false, assert_raises, assert_true
+import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from ....testing import assert_almost_equal
@@ -57,7 +57,7 @@ def test_mat2vec():
 
 def test_rotation_mat2vec():
     r = rotation_mat2vec(np.diag([-1,1,-1]))
-    assert_false(np.isnan(r).max())
+    assert not np.isnan(r).max()
 
 
 def test_composed_affines():
@@ -120,7 +120,7 @@ def test_indirect_affines():
         A = -A
     T[:3,:3] = A
     obj = Affine(T)
-    assert_false(obj.is_direct)
+    assert not obj.is_direct
     assert_array_almost_equal(T, obj.as_affine())
 
 
@@ -168,4 +168,4 @@ def test_subgrid_affine():
                         [0, 0, 0, 1]])
     # Raises error for non-integer slice arguments
     slices[0] = slice(2.1, 11, 4)
-    assert_raises(ValueError, subgrid_affine, np.eye(4), slices)
+    pytest.raises(ValueError, subgrid_affine, np.eye(4), slices)

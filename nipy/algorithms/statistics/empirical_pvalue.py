@@ -143,11 +143,11 @@ def fdr(p_values=None, verbose=0):
     q = q[inverse_order]
 
     if verbose:
-        import matplotlib.pylab as mp
-        mp.figure()
-        mp.xlabel('Input p-value')
-        mp.plot(p_values, q, '.')
-        mp.ylabel('Associated fdr')
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.xlabel('Input p-value')
+        plt.plot(p_values, q, '.')
+        plt.ylabel('Associated fdr')
     return q
 
 
@@ -353,10 +353,10 @@ class NormalEmpiricalNull:
         g = self.p0 * st.norm.pdf(medge, self.mu, self.sigma)
         hist /= step
 
-        import matplotlib.pylab as mp
+        import matplotlib.pyplot as plt
         if mpaxes is None:
-            mp.figure()
-            ax = mp.subplot(1, 1, 1)
+            plt.figure()
+            ax = plt.subplot(1, 1, 1)
         else:
             ax = mpaxes
         if bar:

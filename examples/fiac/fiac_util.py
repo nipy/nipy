@@ -247,8 +247,6 @@ def output_dir(path_dict, tcons, fcons):
 
 
 def test_sanity():
-    from nose.tools import assert_true
-
     import nipy.modalities.fmri.fmristat.hrf as fshrf
     from nipy.algorithms.statistics import formula
     from nipy.modalities.fmri import design, hrf
@@ -296,7 +294,7 @@ def test_sanity():
         # Check our new design can be closely matched to the original
         for i in range(X.shape[1]):
             # Columns can be very well correlated negatively or positively
-            assert_true(abs(matchcol(X[:,i], Xf)[1]) > 0.999)
+            assert abs(matchcol(X[:,i], Xf)[1]) > 0.999
 
 
 def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
