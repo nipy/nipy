@@ -1,5 +1,7 @@
 """ Tests for coordinate_system module
 """
+
+from types import SimpleNamespace
 import numpy as np
 import pytest
 
@@ -15,22 +17,20 @@ from ..coordinate_system import (
 )
 
 
-class empty:
-    pass
-
-E = empty()
-
-def setup():
+@pytest.fixture
+def eg_cs():
+    E = SimpleNamespace()
     E.name = "test"
     E.axes = ('i', 'j', 'k')
     E.coord_dtype = np.float32
     E.cs = CoordinateSystem(E.axes, E.name, E.coord_dtype)
+    return E
 
 
-def test_CoordinateSystem():
-    assert E.cs.name == E.name
-    assert E.cs.coord_names == E.axes
-    assert E.cs.coord_dtype == E.coord_dtype
+def test_CoordinateSystem(eg_cs):
+    assert eg_cs.cs.name == eg_cs.name
+    assert eg_cs.cs.coord_names == eg_cs.axes
+    assert eg_cs.cs.coord_dtype == eg_cs.coord_dtype
 
 
 def test_iterator_coordinate():
@@ -83,8 +83,8 @@ def test_dtypes():
     pytest.raises(AttributeError, setattr, cs, 'coord_dtype', np.float64)
 
 
-def test_readonly_attrs():
-    cs = E.cs
+def test_readonly_attrs(eg_cs):
+    cs = eg_cs.cs
     pytest.raises(AttributeError, setattr, cs, 'coord_dtype',
                   np.dtype(np.int32))
     pytest.raises(AttributeError, setattr, cs, 'coord_names',
@@ -135,8 +135,8 @@ def test_similar_to():
     assert not c0.similar_to(c4)
 
 
-def test___str__():
-    s = str(E.cs)
+def test___str__(eg_cs):
+    s = str(eg_cs.cs)
     assert s == "CoordinateSystem(coord_names=('i', 'j', 'k'), name='test', coord_dtype=float32)"
 
 

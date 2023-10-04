@@ -1,6 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from copy import copy
+from types import SimpleNamespace
 
 import numpy as np
 
@@ -27,9 +28,8 @@ from ..coordinate_map import (
 )
 from ..coordinate_system import (
     CoordinateSystem,
-    CoordinateSystemError,
     CoordSysMaker,
-    CoordSysMakerError,
+    CoordinateSystemError
 )
 
 # shortcut
@@ -48,14 +48,9 @@ if np.longcomplex in _SYMPY_SAFE_DTYPES:  # Not present for Windows
     _SYMPY_SAFE_DTYPES.remove(np.longcomplex)
 
 
-class empty:
-    pass
-
-# object to hold module global setup
-E = empty()
-
-
-def setup():
+@pytest.fixture
+def eg_cmaps():
+    E = SimpleNamespace()
     def f(x):
         return 2*x
     def g(x):
@@ -75,7 +70,7 @@ def setup():
                                               [ 8,  9, 10, 11],
                                               [ 8,  9, 10, 11],
                                               [ 0,  0,  0,  1]]))
-    np.set_printoptions(legacy="1.13")
+    return E
 
 
 def test_shift_origin():
@@ -174,34 +169,34 @@ def test_calling_shapes():
         pytest.raises(CoordinateSystemError, xfm1d2d, np.zeros((3,2)))
 
 
-def test_call():
+def test_call(eg_cmaps):
     value = 10
-    assert np.allclose(E.a(value), 2*value)
-    assert np.allclose(E.b(value), 2*value)
+    assert np.allclose(eg_cmaps.a(value), 2*value)
+    assert np.allclose(eg_cmaps.b(value), 2*value)
     # FIXME: this shape just below is not
     # really expected for a CoordinateMap
-    assert np.allclose(E.b([value]), 2*value)
-    assert np.allclose(E.c(value), value/2)
-    assert np.allclose(E.d(value), value/2)
+    assert np.allclose(eg_cmaps.b([value]), 2*value)
+    assert np.allclose(eg_cmaps.c(value), value/2)
+    assert np.allclose(eg_cmaps.d(value), value/2)
     value = np.array([1., 2., 3.])
-    assert np.allclose(E.e(value), value)
+    assert np.allclose(eg_cmaps.e(value), value)
     # check that error raised for wrong shape
     value = np.array([1., 2.,])
-    pytest.raises(CoordinateSystemError, E.e, value)
+    pytest.raises(CoordinateSystemError, eg_cmaps.e, value)
 
 
-def test_compose():
+def test_compose(eg_cmaps):
     value = np.array([[1., 2., 3.]]).T
-    aa = compose(E.a, E.a)
+    aa = compose(eg_cmaps.a, eg_cmaps.a)
     assert aa.inverse() is None
     assert_almost_equal(aa(value), 4*value)
-    ab = compose(E.a,E.b)
+    ab = compose(eg_cmaps.a,eg_cmaps.b)
     assert ab.inverse() is None
     assert_almost_equal(ab(value), 4*value)
-    ac = compose(E.a,E.c)
+    ac = compose(eg_cmaps.a,eg_cmaps.c)
     assert ac.inverse() is None
     assert_almost_equal(ac(value), value)
-    bb = compose(E.b,E.b)
+    _ = compose(eg_cmaps.b,eg_cmaps.b)
     #    assert bb.inverse() is not None
     aff1 = np.diag([1,2,3,1])
     affine1 = AffineTransform.from_params('ijk', 'xyz', aff1)
@@ -222,15 +217,15 @@ def test_compose():
     pytest.raises(ValueError, compose, cm1, cm2)
 
 
-def test__eq__():
-    assert E.a == E.a
-    assert E.a == E.a
+def test__eq__(eg_cmaps):
+    assert eg_cmaps.a == eg_cmaps.a
+    assert eg_cmaps.a == eg_cmaps.a
 
-    assert E.a != E.b
-    assert E.a != E.b
+    assert eg_cmaps.a != eg_cmaps.b
+    assert eg_cmaps.a != eg_cmaps.b
 
-    assert E.singular == E.singular
-    assert E.singular == E.singular
+    assert eg_cmaps.singular == eg_cmaps.singular
+    assert eg_cmaps.singular == eg_cmaps.singular
 
     A = AffineTransform.from_params('ijk', 'xyz', np.diag([4,3,2,1]))
     B = AffineTransform.from_params('ijk', 'xyz', np.diag([4,3,2,1]))
@@ -259,37 +254,37 @@ def test_similar_to():
         assert c0.similar_to(c3)
 
 
-def test_isinvertible():
-    assert not E.a.inverse()
-    assert E.b.inverse()
-    assert not E.c.inverse()
-    assert E.d.inverse()
-    assert E.e.inverse()
-    assert E.mapping.inverse()
-    assert not E.singular.inverse()
+def test_isinvertible(eg_cmaps):
+    assert not eg_cmaps.a.inverse()
+    assert eg_cmaps.b.inverse()
+    assert not eg_cmaps.c.inverse()
+    assert eg_cmaps.d.inverse()
+    assert eg_cmaps.e.inverse()
+    assert eg_cmaps.mapping.inverse()
+    assert not eg_cmaps.singular.inverse()
 
 
-def test_inverse1():
+def test_inverse1(eg_cmaps):
     inv = lambda a: a.inverse()
-    assert inv(E.a) is None
-    assert inv(E.c) is None
-    inv_b = E.b.inverse()
-    inv_d = E.d.inverse()
-    ident_b = compose(inv_b,E.b)
-    ident_d = compose(inv_d,E.d)
+    assert inv(eg_cmaps.a) is None
+    assert inv(eg_cmaps.c) is None
+    inv_b = eg_cmaps.b.inverse()
+    inv_d = eg_cmaps.d.inverse()
+    ident_b = compose(inv_b,eg_cmaps.b)
+    ident_d = compose(inv_d,eg_cmaps.d)
     value = np.array([[1., 2., 3.]]).T
     assert np.allclose(ident_b(value), value)
     assert np.allclose(ident_d(value), value)
 
 
-def test_compose_cmap():
+def test_compose_cmap(eg_cmaps):
     value = np.array([1., 2., 3.])
-    b = compose(E.e, E.e)
+    b = compose(eg_cmaps.e, eg_cmaps.e)
     assert np.allclose(b(value), value)
 
 
-def test_inverse2():
-    assert np.allclose(E.e.affine, E.e.inverse().inverse().affine)
+def test_inverse2(eg_cmaps):
+    assert np.allclose(eg_cmaps.e.affine, eg_cmaps.e.inverse().inverse().affine)
 
 
 def voxel_to_world():
@@ -377,7 +372,7 @@ def test_affine_bottom_row():
 
 def test_affine_inverse():
     incs, outcs, aff = affine_v2w()
-    inv = np.linalg.inv(aff)
+    _ = np.linalg.inv(aff)
     cm = AffineTransform(incs, outcs, aff)
     x = np.array([10, 20, 30], np.float64)
     x_roundtrip = cm(cm.inverse()(x))
@@ -461,7 +456,8 @@ def test_str():
     range = CoordinateSystem('xyz')
     affine = np.identity(4)
     affine_mapping = AffineTransform(domain, range, affine)
-    assert result == str(affine_mapping)
+    with np.printoptions(legacy='1.13'):
+        assert result == str(affine_mapping)
 
     cmap = CoordinateMap(domain, range, np.exp, np.log)
     result="""CoordinateMap(
