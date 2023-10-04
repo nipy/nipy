@@ -19,14 +19,6 @@ from .. import image
 from ..image import Image, is_image, iter_axis, rollimg
 
 
-def setup():
-    # Suppress warnings during tests to reduce noise
-    warnings.simplefilter("ignore")
-
-def teardown():
-    # Clear list of warning filters
-    warnings.resetwarnings()
-
 _data = np.arange(24).reshape((4,3,2))
 gimg = Image(_data, AffineTransform('ijk', 'xyz', np.eye(4)))
 
@@ -190,8 +182,7 @@ def test_defaults_ND():
         assert img.shape == arr_shape
         assert img.affine.shape == (img.ndim+1, img.ndim+1)
         assert img.affine.diagonal().all()
-        # img.header deprecated, when removed, test will raise Error
-        pytest.raises(AttributeError, getattr, img, 'header')
+        assert img.metadata == {}
 
 
 def test_header():
@@ -202,12 +193,13 @@ def test_header():
     img = Image(arr, coordmap, metadata={'header': header})
     assert img.metadata['header'] == header
     # This interface deprecated
-    assert img.header == header
+    with pytest.deprecated_call():
+        assert img.header == header
     hdr2 = nib.Nifti1Header()
     hdr2['descrip'] = 'from fullness of heart'
-    assert img.header != hdr2
-    img.header = hdr2
-    assert img.header == hdr2
+    assert img.metadata['header'] != hdr2
+    img.metadata['header'] = hdr2
+    assert img.metadata['header'] == hdr2
 
 
 def test_from_image():
@@ -292,9 +284,12 @@ def test_iter_axis():
             assert_array_equal(s, data[tuple(slicer)])
 
 
+@pytest.mark.filterwarnings(r"ignore:\s+`rollaxis` is deprecated:DeprecationWarning")
 def test_rollaxis():
     data = np.random.standard_normal((3,4,7,5))
     im = Image(data, AffineTransform.from_params('ijkl', 'xyzt', np.diag([1,2,3,4,1])))
+    with pytest.deprecated_call():
+        image.rollaxis(im, 1)
     # for the inverse we must specify an integer
     pytest.raises(ValueError, image.rollaxis, im, 'i', True)
     # Check that rollaxis preserves diagonal affines, as claimed
@@ -445,6 +440,7 @@ def test_rollimg_rollaxis():
             assert_array_equal(rdata, rimg.get_fdata())
 
 
+@pytest.mark.filterwarnings(r"ignore:\s+`rollaxis` is deprecated:DeprecationWarning")
 def test_rollaxis_inverse():
     # Test deprecated image rollaxis with inverse
     AT = AffineTransform
