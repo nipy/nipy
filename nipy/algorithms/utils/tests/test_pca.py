@@ -12,17 +12,17 @@ from nipy.testing import (
 
 from ..pca import pca
 
-data = {}
 
-
-def setup():
+@pytest.fixture
+def data():
     img = load_image(funcfile)
     arr = img.get_fdata()
     #arr = np.rollaxis(arr, 3)
-    data['nimages'] = arr.shape[3]
-    data['fmridata'] = arr
-    frame = data['fmridata'][...,0]
-    data['mask'] = (frame > 500).astype(np.float64)
+    out = {'nimages': arr.shape[3]}
+    out['fmridata'] = arr
+    frame = out['fmridata'][...,0]
+    out['mask'] = (frame > 500).astype(np.float64)
+    return out
 
 
 def reconstruct(time_series, images, axis=0):
@@ -64,7 +64,7 @@ def res2pos1(res):
     return res
 
 
-def test_same_basis():
+def test_same_basis(data):
     arr4d = data['fmridata']
     shp = arr4d.shape
     arr2d =  arr4d.reshape((np.prod(shp[:3]), shp[3]))
@@ -75,7 +75,7 @@ def test_same_basis():
         assert_almost_equal(res_again['basis_vectors'], p1b_0)
 
 
-def test_2d_eq_4d():
+def test_2d_eq_4d(data):
     arr4d = data['fmridata']
     shp = arr4d.shape
     arr2d =  arr4d.reshape((np.prod(shp[:3]), shp[3]))
@@ -89,7 +89,7 @@ def test_2d_eq_4d():
                               res3d['basis_vectors'])
 
 
-def test_input_effects():
+def test_input_effects(data):
     # Test effects of axis specifications
     ntotal = data['nimages'] - 1
     # return full rank - mean PCA over last axis
@@ -113,7 +113,7 @@ def test_input_effects():
     pytest.raises(ValueError, pca, data['fmridata'], None)
 
 
-def test_diagonality():
+def test_diagonality(data):
     # basis_projections are diagonal, whether standarized or not
     p = pca(data['fmridata'], -1) # standardized
     assert diagonal_covariance(p['basis_projections'], -1)
@@ -153,7 +153,7 @@ def test_2D():
     assert diagonal_covariance(imgs)
 
 
-def test_PCAMask():
+def test_PCAMask(data):
     # for 2 and 4D case
     ntotal = data['nimages'] - 1
     ncomp = 5
@@ -181,7 +181,7 @@ def test_PCAMask():
     pytest.raises(ValueError, pca, arr4d, -1, mask1d)
 
 
-def test_PCAMask_nostandardize():
+def test_PCAMask_nostandardize(data):
     ntotal = data['nimages'] - 1
     ncomp = 5
     p = pca(data['fmridata'], -1, data['mask'], ncomp=ncomp,
@@ -192,7 +192,7 @@ def test_PCAMask_nostandardize():
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
 
-def test_PCANoMask():
+def test_PCANoMask(data):
     ntotal = data['nimages'] - 1
     ncomp = 5
     p = pca(data['fmridata'], -1, ncomp=ncomp)
@@ -202,7 +202,7 @@ def test_PCANoMask():
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
 
-def test_PCANoMask_nostandardize():
+def test_PCANoMask_nostandardize(data):
     ntotal = data['nimages'] - 1
     ncomp = 5
     p = pca(data['fmridata'], -1, ncomp=ncomp, standardize=False)
@@ -212,7 +212,7 @@ def test_PCANoMask_nostandardize():
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
 
-def test_keep():
+def test_keep(data):
     # Data is projected onto k=10 dimensional subspace
     # then has its mean removed.
     # Should still have rank 10.
@@ -227,7 +227,7 @@ def test_keep():
     assert_almost_equal(p['pcnt_var'].sum(), 100.)
 
 
-def test_resid():
+def test_resid(data):
     # Data is projected onto k=10 dimensional subspace then has its mean
     # removed.  Should still have rank 10.
     k = 10
@@ -250,7 +250,7 @@ def test_resid():
     assert np.allclose(rarr * rmse, data['fmridata'])
 
 
-def test_both():
+def test_both(data):
     k1 = 10
     k2 = 8
     ncomp = 5
