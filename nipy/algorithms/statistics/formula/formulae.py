@@ -708,7 +708,7 @@ class Formula:
         o = np.array(other)
         if s.shape != o.shape:
             return False
-        return np.alltrue(np.equal(np.array(self), np.array(other)))
+        return np.all(np.equal(np.array(self), np.array(other)))
 
     def _setup_design(self):
         """ Initialize design
@@ -1042,7 +1042,7 @@ class Factor(Formula):
         if levelsarr.ndim == 0 and levelsarr.dtype.kind in 'SOU':
             levelsarr = np.asarray(list(levels))
         if levelsarr.dtype.kind not in 'SOU': # the levels are not strings
-            if not np.alltrue(np.equal(levelsarr, np.round(levelsarr))):
+            if not np.all(np.equal(levelsarr, np.round(levelsarr))):
                 raise ValueError('levels must be strings or ints')
             levelsarr = levelsarr.astype(np.int_)
         elif levelsarr.dtype.kind == 'S': # Byte strings, convert

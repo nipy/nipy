@@ -159,7 +159,7 @@ def test_random_effects():
                      [a,a,a,0,0],
                      [0,0,0,b,b],
                      [0,0,0,b,b]])
-    assert np.alltrue(t)
+    assert np.all(t)
 
 
 def test_design_expression():
