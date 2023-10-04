@@ -26,15 +26,16 @@ jobs:
       - name: Install
         run: |
           pip install -r dev-requirements.txt
-          pip install -e .
+          pip install .
       - name: Show environment
         run: env
       - name: Library tests
         run: |
           mkdir tmp
           cd tmp
-          pytest --doctest-plus --cov=nipy  --cov-report xml \
-            --cov-config=../.coveragerc --pyargs nipy
+          pytest --doctest-plus --ignore-glob="__config__.py" \
+            --cov=nipy  --cov-report xml  --cov-config=../.coveragerc \
+            --pyargs nipy
       - name: See what's where
         run: |
           pwd
