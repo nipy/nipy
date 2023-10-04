@@ -31,6 +31,11 @@ from ..nibcompat import get_affine, get_header
 from ..nifti_ref import NiftiError, nifti2nipy, nipy2nifti
 
 
+pytestmark = pytest.mark.filterwarnings("ignore:"
+                                        "Default `strict` currently False:"
+                                        "FutureWarning")
+
+
 def copy_of(fname):
     # Make a fresh copy of a image stored in a file
     img = load(fname)
@@ -38,16 +43,6 @@ def copy_of(fname):
     return Image(img.get_fdata().copy(),
                  copy(img.coordmap),
                  {'header': hdr})
-
-
-def setup():
-    # Suppress warnings during tests
-    warnings.simplefilter("ignore")
-
-
-def teardown():
-    # Clear list of warning filters
-    warnings.resetwarnings()
 
 
 def test_basic_nipy2nifti():
@@ -463,7 +458,10 @@ def test_save_dtype():
     for dt_code in ('i1', 'u1', 'i2', 'u2', 'i4', 'u4', 'i8', 'u8',
                     'f4', 'f8', 'c8', 'c16'):
         dt = np.dtype(dt_code)
-        img = Image(data.astype(dt_code), cmap)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            out_data = data.astype(dt_code)
+        img = Image(out_data, cmap)
         ni_img = nipy2nifti(img, data_dtype=dt_code)
         assert get_header(ni_img).get_data_dtype() == dt
         ni_img = nipy2nifti(img, data_dtype=dt)
@@ -660,18 +658,21 @@ def test_mm_scaling():
     # microns !
     hdr.set_xyzt_units('micron')
     scaler = np.diag([1 / 1000., 1 / 1000., 1 / 1000., 1, 1])
-    assert (nifti2nipy(ni_img).coordmap ==
-                 AT(in_cs, out_cs, np.dot(scaler, exp_aff)))
+    with pytest.warns(UserWarning, match='"micron" space scaling'):
+        out_img = nifti2nipy(ni_img)
+    assert out_img.coordmap == AT(in_cs, out_cs, np.dot(scaler, exp_aff))
     # mm again !  This test implicitly asserts that the nifti image affine is
     # not being changed by the conversion routine, otherwise we'd pick up the
     # microns scaling above.
     hdr.set_xyzt_units('mm')
-    assert nifti2nipy(ni_img).coordmap == AT(in_cs, out_cs, exp_aff)
+    out_img = nifti2nipy(ni_img)
+    assert out_img.coordmap == AT(in_cs, out_cs, exp_aff)
     # meters !
     hdr.set_xyzt_units('meter')
     scaler = np.diag([1000., 1000., 1000., 1, 1])
-    assert (nifti2nipy(ni_img).coordmap ==
-                 AT(in_cs, out_cs, np.dot(scaler, exp_aff)))
+    with pytest.warns(UserWarning, match='"meter" space scaling'):
+        out_img = nifti2nipy(ni_img)
+    assert out_img.coordmap == AT(in_cs, out_cs, np.dot(scaler, exp_aff))
 
 
 def test_load_dim_info():
