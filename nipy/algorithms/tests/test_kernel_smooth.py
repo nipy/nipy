@@ -92,7 +92,7 @@ def test_kernel():
         ssignal[:] *= kernel.norms[kernel.normalization]
         # 3 points * signal.size array
         I = np.indices(ssignal.shape)
-        I.shape = (kernel.coordmap.ndims[0], np.product(shape))
+        I.shape = (kernel.coordmap.ndims[0], np.prod(shape))
         # location of maximum in smoothed array
         i, j, k = I[:, np.argmax(ssignal[:].flat)]
         # same place as we put it before smoothing?

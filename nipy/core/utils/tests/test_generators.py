@@ -69,7 +69,7 @@ def test_parcel():
     parcelmap[2,3,2] = 2
     parcelmap[0,1,0] = 2
     parcelseq = (0, 1, 2, 3)
-    expected = [np.product(DATA3.shape) - 6, 3, 3, 0]
+    expected = [np.prod(DATA3.shape) - 6, 3, 3, 0]
     iterator = gen.data_generator(DATA3,
                                   gen.parcels(parcelmap, labels=parcelseq))
     for i, pair in enumerate(iterator):
@@ -122,7 +122,7 @@ def test_parcel_write():
     parcelmap[2,3,2] = 2
     parcelmap[0,1,0] = 2
     parcelseq = (0, 1, 2, 3)
-    expected = [np.product(DATA3.shape) - 6, 3, 3, 0]
+    expected = [np.prod(DATA3.shape) - 6, 3, 3, 0]
     iterator = gen.parcels(parcelmap, labels=parcelseq)
     for i, s in enumerate(iterator):
         value = np.arange(expected[i])
@@ -152,7 +152,7 @@ def test_parcel_copy():
     parcelmap[2,3,2] = 2
     parcelmap[0,1,0] = 2
     parcelseq = (0, 1, 2, 3)
-    expected = [np.product(DATA3.shape) - 6, 3, 3, 0]
+    expected = [np.prod(DATA3.shape) - 6, 3, 3, 0]
     tmp = DATA3.copy()
     gen_parcels = gen.parcels(parcelmap, labels=parcelseq)
     new_iterator = gen.data_generator(tmp, gen_parcels)

@@ -28,7 +28,7 @@ class test_Iterators(TestCase):
         parcelmap[0,1,0] = 2
         parcelseq = (0, 1, 2, 3)
 
-        expected = [np.product(self.img.shape[1:]) - 6, 3, 3, 0]
+        expected = [np.prod(self.img.shape[1:]) - 6, 3, 3, 0]
 
         iterator = parcel_iterator(self.img, parcelmap, parcelseq)
         for i, slice_ in enumerate(iterator):
@@ -47,7 +47,7 @@ class test_Iterators(TestCase):
         parcelmap[2,3,2] = 2
         parcelmap[0,1,0] = 2
         parcelseq = (0, 1, 2, 3)
-        expected = [np.product(self.img.shape[1:]) - 6, 3, 3, 0]
+        expected = [np.prod(self.img.shape[1:]) - 6, 3, 3, 0]
 
         iterator = parcel_iterator(self.img, parcelmap, parcelseq, mode='w')
         for i, slice_ in enumerate(iterator):
@@ -80,7 +80,7 @@ class test_Iterators(TestCase):
         parcelmap[2,3,2] = 2
         parcelmap[0,1,0] = 2
         parcelseq = (0, 1, 2, 3)
-        expected = [np.product(self.img.shape[1:]) - 6, 3, 3, 0]
+        expected = [np.prod(self.img.shape[1:]) - 6, 3, 3, 0]
         iterator = parcel_iterator(self.img, parcelmap, parcelseq)
         tmp = FmriImageList(self.img[:] * 1., self.img.coordmap)
 

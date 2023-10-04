@@ -299,7 +299,7 @@ def getparams(expression):
     if expression.shape == ():
         expression = expression.reshape((1,))
     if expression.ndim > 1:
-        expression = expression.reshape((np.product(expression.shape),))
+        expression = expression.reshape((np.prod(expression.shape),))
     for term in expression:
         atoms = atoms.union(sympy.sympify(term).atoms())
     params = []
@@ -327,7 +327,7 @@ def getterms(expression):
     if expression.shape == ():
         expression = expression.reshape((1,))
     if expression.ndim > 1:
-        expression = expression.reshape((np.product(expression.shape),))
+        expression = expression.reshape((np.prod(expression.shape),))
     for e in expression:
         atoms = atoms.union(e.atoms())
     terms = []

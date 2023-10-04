@@ -595,7 +595,7 @@ def ar_bias_correct(results, order, invM=None):
     cov[0] = sum_sq
     for i in range(1, order + 1):
         cov[i] = np.sum(resid[i:] * resid[0:- i], axis=0)
-    # cov is shape (order + 1, V) where V = np.product(in_shape[1:])
+    # cov is shape (order + 1, V) where V = np.prod(in_shape[1:])
     cov = np.dot(invM, cov)
     output = cov[1:] * pos_recipr(cov[0])
     return np.squeeze(output.reshape((order,) + in_shape[1:]))

@@ -111,7 +111,7 @@ class ArrayCoordMap:
             self.coordmap.function_domain.coord_dtype)
         tmp_shape = indices.shape
         # reshape indices to be a sequence of coordinates
-        indices.shape = (self.coordmap.ndims[0], np.product(self.shape))
+        indices.shape = (self.coordmap.ndims[0], np.prod(self.shape))
         # evaluate using coordinate map mapping
         _range = self.coordmap(indices.T)
         if transpose:

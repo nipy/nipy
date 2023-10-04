@@ -320,7 +320,7 @@ def decompose3d(shape, dim=4):
                     yield [index+ii for ii in l]
 
     if dim == 1:
-        for i in range(np.product(shape)):
+        for i in range(np.prod(shape)):
             yield i
 
 
@@ -371,7 +371,7 @@ def decompose2d(shape, dim=3):
                     yield [index+ii for ii in l]
 
     if dim == 1:
-        for i in range(np.product(shape)):
+        for i in range(np.prod(shape)):
             yield i
 
 

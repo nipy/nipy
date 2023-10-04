@@ -127,7 +127,7 @@ def estimate_varatio(Y, sd, df=None, niter=10):
         df = np.ones(nsubject)
     df.shape = (1, nsubject)
     _Sshape = S.shape
-    S.shape = (S.shape[0], np.product(S.shape[1:]))
+    S.shape = (S.shape[0], np.prod(S.shape[1:]))
 
     value = {}
     value['fixed'] = (np.dot(df, S) / df.sum()).reshape(_Sshape[1:])
