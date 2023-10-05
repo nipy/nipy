@@ -54,21 +54,19 @@ use one of these three methods, in order of convenience:
    is freed when the file is closed.  This is the preferred method for
    temporary files in tests.
 
-#. `nibabel.tmpdirs.InTemporaryDirectory` context manager.
+#. `in_tmp_path` Pytest fixture.
 
    This is a convenient way of putting you into a temporary directory so you can
    save anything you like into the current directory, and feel fine about it
    after.  Like this::
 
-       from ..tmpdirs import InTemporaryDirectory
-
-       with InTemporaryDirectory():
+       def test_func(in_tmp_path):
            f = open('myfile', 'wt')
            f.write('Anything at all')
            f.close()
 
    One thing to be careful of is that you may need to delete objects holding
-   onto the file before you exit the ``with`` statement, otherwise Windows may
+   onto the file before you exit the enclosing function, otherwise Windows may
    refuse to delete the file.
 
 #. `tempfile.mkstemp <http://docs.python.org/library/tempfile.html>`_

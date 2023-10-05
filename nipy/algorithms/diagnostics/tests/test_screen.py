@@ -9,7 +9,6 @@ from warnings import catch_warnings, simplefilter
 
 import numpy as np
 import pytest
-from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (
     assert_almost_equal,
     assert_array_equal,
@@ -140,26 +139,25 @@ def test_screen_slice_axis():
 
 
 @needs_mpl_agg
-def test_write_screen_res():
+def test_write_screen_res(in_tmp_path):
     img = ni.load_image(funcfile)
-    with InTemporaryDirectory():
-        res = screen(img)
-        os.mkdir('myresults')
-        write_screen_res(res, 'myresults', 'myana')
-        pca_img = ni.load_image(pjoin('myresults', 'pca_myana.nii'))
-        assert pca_img.shape == img.shape[:-1] + (10,)
-        # Make sure we get the same output image even from rolled image
-        # Do fancy roll to put time axis first, and slice axis last. This does
-        # a stress test on the axis ordering, but also makes sure that we are
-        # getting the number of components from the right place.  If we were
-        # getting the number of components from the length of the last axis,
-        # instead of the length of the 't' axis in the returned pca image, this
-        # would be wrong (=21) which would also be more than the number of
-        # basis vectors (19) so raise an error
-        rimg = img.reordered_axes([3, 2, 0, 1])
-        os.mkdir('rmyresults')
-        rres = screen(rimg)
-        write_screen_res(rres, 'rmyresults', 'myana')
-        rpca_img = ni.load_image(pjoin('rmyresults', 'pca_myana.nii'))
-        assert rpca_img.shape == img.shape[:-1] + (10,)
-        del pca_img, rpca_img
+    res = screen(img)
+    os.mkdir('myresults')
+    write_screen_res(res, 'myresults', 'myana')
+    pca_img = ni.load_image(pjoin('myresults', 'pca_myana.nii'))
+    assert pca_img.shape == img.shape[:-1] + (10,)
+    # Make sure we get the same output image even from rolled image
+    # Do fancy roll to put time axis first, and slice axis last. This does
+    # a stress test on the axis ordering, but also makes sure that we are
+    # getting the number of components from the right place.  If we were
+    # getting the number of components from the length of the last axis,
+    # instead of the length of the 't' axis in the returned pca image, this
+    # would be wrong (=21) which would also be more than the number of
+    # basis vectors (19) so raise an error
+    rimg = img.reordered_axes([3, 2, 0, 1])
+    os.mkdir('rmyresults')
+    rres = screen(rimg)
+    write_screen_res(rres, 'rmyresults', 'myana')
+    rpca_img = ni.load_image(pjoin('rmyresults', 'pca_myana.nii'))
+    assert rpca_img.shape == img.shape[:-1] + (10,)
+    del pca_img, rpca_img

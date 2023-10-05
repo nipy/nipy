@@ -7,7 +7,6 @@ Test the glm utilities.
 import numpy as np
 import pytest
 from nibabel import Nifti1Image, load, save
-from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,
@@ -48,19 +47,18 @@ def generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
     return mask, fmri_data, design_matrices
 
 
-def test_high_level_glm_with_paths():
+def test_high_level_glm_with_paths(in_tmp_path):
     shapes, rk = ((5, 6, 4, 20), (5, 6, 4, 19)), 3
-    with InTemporaryDirectory():
-        mask_file, fmri_files, design_files = write_fake_fmri_data(shapes, rk)
-        multi_session_model = FMRILinearModel(fmri_files, design_files,
-                                              mask_file)
-        multi_session_model.fit()
-        z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
-        assert_array_equal(get_affine(z_image), get_affine(load(mask_file)))
-        assert z_image.get_fdata().std() < 3.
-        # Delete objects attached to files to avoid WindowsError when deleting
-        # temporary directory
-        del z_image, fmri_files, multi_session_model
+    mask_file, fmri_files, design_files = write_fake_fmri_data(shapes, rk)
+    multi_session_model = FMRILinearModel(fmri_files, design_files,
+                                            mask_file)
+    multi_session_model.fit()
+    z_image, = multi_session_model.contrast([np.eye(rk)[1]] * 2)
+    assert_array_equal(get_affine(z_image), get_affine(load(mask_file)))
+    assert z_image.get_fdata().std() < 3.
+    # Delete objects attached to files to avoid WindowsError when deleting
+    # temporary directory
+    del z_image, fmri_files, multi_session_model
 
 
 def test_high_level_glm_with_data():
@@ -300,26 +298,25 @@ def test_scaling():
     assert Y.std() > 1
 
 
-def test_fmri_inputs():
+def test_fmri_inputs(in_tmp_path):
     # Test processing of FMRI inputs
     func_img = load(funcfile)
     T = func_img.shape[-1]
     des = np.ones((T, 1))
     des_fname = 'design.npz'
-    with InTemporaryDirectory():
-        np.savez(des_fname, des)
-        for fi in func_img, funcfile:
-            for d in des, des_fname:
-                fmodel = FMRILinearModel(fi, d, mask='compute')
-                fmodel = FMRILinearModel([fi], d, mask=None)
-                fmodel = FMRILinearModel(fi, [d], mask=None)
-                fmodel = FMRILinearModel([fi], [d], mask=None)
-                fmodel = FMRILinearModel([fi, fi], [d, d], mask=None)
-                fmodel = FMRILinearModel((fi, fi), (d, d), mask=None)
-                pytest.raises(ValueError, FMRILinearModel, [fi, fi], d,
-                              mask=None)
-                pytest.raises(ValueError, FMRILinearModel, fi, [d, d],
-                              mask=None)
+    np.savez(des_fname, des)
+    for fi in func_img, funcfile:
+        for d in des, des_fname:
+            fmodel = FMRILinearModel(fi, d, mask='compute')
+            fmodel = FMRILinearModel([fi], d, mask=None)
+            fmodel = FMRILinearModel(fi, [d], mask=None)
+            fmodel = FMRILinearModel([fi], [d], mask=None)
+            fmodel = FMRILinearModel([fi, fi], [d, d], mask=None)
+            fmodel = FMRILinearModel((fi, fi), (d, d), mask=None)
+            pytest.raises(ValueError, FMRILinearModel, [fi, fi], d,
+                          mask=None)
+            pytest.raises(ValueError, FMRILinearModel, fi, [d, d],
+                          mask=None)
 
 
 @if_example_data

@@ -5,7 +5,6 @@ import gc
 
 import numpy as np
 import pytest
-from nibabel.tmpdirs import InTemporaryDirectory
 
 from nipy.core.api import AffineTransform as AfT
 from nipy.core.api import Image, parcels
@@ -17,20 +16,19 @@ from nipy.testing import funcfile
 @pytest.mark.filterwarnings("ignore:"
                             "Default `strict` currently False:"
                             "FutureWarning")
-def test_write():
+def test_write(in_tmp_path):
     fname = 'myfile.nii'
     img = load_image(funcfile)
-    with InTemporaryDirectory():
-        save_image(img, fname)
-        test = FmriImageList.from_image(load_image(fname))
-        assert test[0].affine.shape == (4,4)
-        assert img[0].affine.shape == (5,4)
-        # Check the affine...
-        A = np.identity(4)
-        A[:3,:3] = img[:,:,:,0].affine[:3,:3]
-        A[:3,-1] = img[:,:,:,0].affine[:3,-1]
-        assert np.allclose(test[0].affine, A)
-        del test
+    save_image(img, fname)
+    test = FmriImageList.from_image(load_image(fname))
+    assert test[0].affine.shape == (4,4)
+    assert img[0].affine.shape == (5,4)
+    # Check the affine...
+    A = np.identity(4)
+    A[:3,:3] = img[:,:,:,0].affine[:3,:3]
+    A[:3,-1] = img[:,:,:,0].affine[:3,-1]
+    assert np.allclose(test[0].affine, A)
+    del test
 
 
 def test_iter():
