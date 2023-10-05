@@ -18,7 +18,6 @@ from ...api import FmriImageList
 from .. import model
 from ..model import ModelOutputImage, estimateAR
 
-
 FUNC_IMG = load_image(funcfile)
 FUNC_LIST = FmriImageList.from_image(FUNC_IMG, volume_start_times=2.)
 
