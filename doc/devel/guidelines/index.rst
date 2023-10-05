@@ -18,6 +18,7 @@
    commit_codes
    testing
    debugging
+   build_debug
    optimization
    open_source_devel
    make_release
