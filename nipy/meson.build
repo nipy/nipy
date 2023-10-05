@@ -24,8 +24,6 @@ cython_c_args += [use_math_defines, numpy_nodepr_api]
 pure_subdirs = [
   'cli',
   'core',
-  'externals',
-  'fixes',
   'interfaces',
   'io',
   'modalities',
