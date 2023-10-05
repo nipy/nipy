@@ -1,7 +1,8 @@
 python_sources = [
   '__init__.py',
   'info.py',
-  'pkg_info.py'
+  'pkg_info.py',
+  'conftest.py',
 ]
 
 py.install_sources(
