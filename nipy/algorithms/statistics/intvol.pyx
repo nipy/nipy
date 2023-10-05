@@ -455,8 +455,7 @@ def EC3d(mask):
                         l0 = l0 - m
 
     # fpmask has the same sum as mask, but with predictable dtype
-    l0 += fpmask.sum()
-    return l0
+    return l0 + fpmask.sum()
 
 
 def Lips3d(coords, mask):

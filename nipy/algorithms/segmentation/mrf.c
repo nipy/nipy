@@ -85,12 +85,12 @@ static void _ngb_integrate(double* res,
 {
   npy_intp xn, yn, zn, pos, ngb_idx, k, kk;
   const int* buf_ngb;
-  const double* ppm_data = (double*)ppm->data;
+  const double* ppm_data = (double*)PyArray_DATA(ppm);
   double *buf, *buf_ppm, *q, *buf_U;
-  npy_intp K = ppm->dimensions[3];
-  npy_intp u2 = ppm->dimensions[2]*K;
-  npy_intp u1 = ppm->dimensions[1]*u2;
-  npy_intp posmax = ppm->dimensions[0]*u1 - K;
+  npy_intp K = PyArray_DIMS(ppm)[3];
+  npy_intp u2 = PyArray_DIMS(ppm)[2]*K;
+  npy_intp u1 = PyArray_DIMS(ppm)[1]*u2;
+  npy_intp posmax = PyArray_DIMS(ppm)[0]*u1 - K;
 
   /*  Re-initialize output array */
   memset((void*)res, 0, K*sizeof(double));
@@ -131,11 +131,11 @@ void ve_step(PyArrayObject* ppm,
   double psum, tmp;
   PyArrayIterObject* iter;
   int axis = 1;
-  npy_intp K = ppm->dimensions[3];
-  npy_intp u2 = ppm->dimensions[2]*K;
-  npy_intp u1 = ppm->dimensions[1]*u2;
-  const double* ref_data = (double*)ref->data;
-  const double* U_data = (double*)U->data;
+  npy_intp K = PyArray_DIMS(ppm)[3];
+  npy_intp u2 = PyArray_DIMS(ppm)[2]*K;
+  npy_intp u1 = PyArray_DIMS(ppm)[1]*u2;
+  const double* ref_data = (double*)PyArray_DATA(ref);
+  const double* U_data = (double*)PyArray_DATA(U);
   npy_intp* xyz;
   int* ngb;
 
@@ -143,7 +143,7 @@ void ve_step(PyArrayObject* ppm,
   ngb = _select_neighborhood_system(ngb_size);
 
   /* Pointer to the data array */
-  ppm_data = (double*)ppm->data;
+  ppm_data = (double*)PyArray_DATA(ppm);
 
   /* Allocate auxiliary vectors */
   p = (double*)calloc(K, sizeof(double));
@@ -211,9 +211,9 @@ PyArrayObject* make_edges(const PyArrayObject* idx,
   PyArrayIterObject* iter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)idx);
   int* buf_ngb;
   npy_intp xi, yi, zi, xj, yj, zj;
-  npy_intp u2 = idx->dimensions[2];
-  npy_intp u1 = idx->dimensions[1]*u2;
-  npy_intp u0 = idx->dimensions[0]*u1;
+  npy_intp u2 = PyArray_DIMS(idx)[2];
+  npy_intp u1 = PyArray_DIMS(idx)[1]*u2;
+  npy_intp u0 = PyArray_DIMS(idx)[0]*u1;
   npy_intp mask_size = 0, n_edges = 0;
   npy_intp idx_i;
   npy_intp *buf_idx;
@@ -261,7 +261,7 @@ PyArrayObject* make_edges(const PyArrayObject* idx,
 	/* Store edge if neighbor is within the mask */
 	if ((pos < 0) || (pos >= u0))
 	  continue;
-	buf_idx = (npy_intp*)idx->data + pos;
+	buf_idx = (npy_intp*)PyArray_DATA(idx) + pos;
 	if (*buf_idx < 0)
 	  continue;
 	buf_edges[0] = idx_i;
@@ -283,7 +283,7 @@ PyArrayObject* make_edges(const PyArrayObject* idx,
   edges = (PyArrayObject*) PyArray_SimpleNewFromData(2, dim, NPY_INTP, (void*)edges_data);
 
   /* Transfer ownership to python (to avoid memory leaks!) */
-  edges->flags = (edges->flags) | NPY_OWNDATA;
+  PyArray_ENABLEFLAGS(edges, NPY_ARRAY_OWNDATA);
 
   /* Free memory */
   Py_XDECREF(iter);
@@ -311,18 +311,18 @@ double interaction_energy(PyArrayObject* ppm,
   PyArrayIterObject* iter;
   int axis = 1;
   double* ppm_data;
-  npy_intp K = ppm->dimensions[3];
-  npy_intp u2 = ppm->dimensions[2]*K;
-  npy_intp u1 = ppm->dimensions[1]*u2;
+  npy_intp K = PyArray_DIMS(ppm)[3];
+  npy_intp u2 = PyArray_DIMS(ppm)[2]*K;
+  npy_intp u1 = PyArray_DIMS(ppm)[1]*u2;
   npy_intp* xyz;
-  const double* U_data = (double*)U->data;
+  const double* U_data = (double*)PyArray_DATA(U);
   int* ngb;
 
   /* Neighborhood system */
   ngb = _select_neighborhood_system(ngb_size);
 
   /* Pointer to ppm array */
-  ppm_data = (double*)ppm->data;
+  ppm_data = (double*)PyArray_DATA(ppm);
 
   /* Allocate auxiliary vector */
   p = (double*)calloc(K, sizeof(double));
