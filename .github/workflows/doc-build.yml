@@ -38,3 +38,8 @@ jobs:
         run: |
           cd doc
           make html
+      - name: Run documentation doctests
+        run: |
+          cd doc
+          make clean
+          make doctest
