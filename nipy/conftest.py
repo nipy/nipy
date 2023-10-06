@@ -1,7 +1,7 @@
 # Control testing
 import os
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
 import numpy
 import pytest
