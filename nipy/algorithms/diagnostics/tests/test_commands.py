@@ -108,6 +108,9 @@ def check_axes(axes, img_shape, time_axis, slice_axis):
                        [0, img_shape[slice_axis]-1])
 
 
+@pytest.mark.filterwarnings("ignore:"
+                            "Default `strict` currently False:"
+                            "FutureWarning")
 @needs_mpl_agg
 def test_tsdiffana(in_tmp_path):
     # Test tsdiffana command
@@ -206,6 +209,9 @@ def check_diag_results(results, img_shape,
     assert vars['slice_mean_diff2'].shape == (T-1, S)
 
 
+@pytest.mark.filterwarnings("ignore:"
+                            "Default `strict` currently False:"
+                            "FutureWarning")
 @needs_mpl_agg
 def test_diagnose(in_tmp_path):
     args = Args()
