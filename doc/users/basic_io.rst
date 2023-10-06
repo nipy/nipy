@@ -80,4 +80,11 @@ AffineTransform(
 
 See :ref:`coordinate_map` for more detail.
 
+.. testcleanup::
+
+    # Delete the file we wrote out further up the page.
+    import os
+
+    os.unlink('newmyfile.nii')
+
 .. include:: ../links_names.txt
