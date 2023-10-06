@@ -61,7 +61,7 @@ def test_high_level_glm_with_paths(in_tmp_path):
     del z_image, fmri_files, multi_session_model
 
 
-def test_high_level_glm_with_data():
+def test_high_level_glm_with_data(in_tmp_path):
     shapes, rk = ((7, 6, 5, 20), (7, 6, 5, 19)), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
 
@@ -92,7 +92,7 @@ def test_high_level_glm_with_data():
     assert z_image.get_fdata().std() < 3.
 
 
-def test_high_level_glm_contrasts():
+def test_high_level_glm_contrasts(in_tmp_path):
     shapes, rk = ((5, 6, 7, 20), (5, 6, 7, 19)), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
     multi_session_model = FMRILinearModel(fmri_data, design_matrices, mask=None)
