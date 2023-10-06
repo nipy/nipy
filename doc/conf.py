@@ -16,6 +16,7 @@ import sys
 from importlib import import_module
 
 import sphinx
+import sphinx.ext.doctest
 
 # Doc generation depends on being able to import project
 project = 'nipy'

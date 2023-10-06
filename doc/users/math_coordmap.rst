@@ -393,4 +393,4 @@ functions called *product, compose, linearize* and it has methods
 *reordered_input, reordered_output*.
 
 For more detail on the ideas behind the coordmap design, see
-:ref:`coordmp-discussion`
+:ref:`coordmap-discussion`

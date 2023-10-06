@@ -22,7 +22,7 @@ Nn = N.subs(ba, 1)
 Nn = Nn.subs(bb, -2)
 
 # Use Numpy heaviside for lambdify, with y=1 for x=0.
-modules = [{'Heaviside': lambda x: np.heaviside(x, 1)}, 'numpy']
+modules = [{'Heaviside': lambda x, y: np.heaviside(x, 1)}, 'numpy']
 neuronal_func = lambdify(t, Nn, modules=modules)
 
 tt = np.linspace(-1, 21, 1201)
