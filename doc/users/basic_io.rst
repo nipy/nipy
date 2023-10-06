@@ -34,7 +34,7 @@ Access Data into an Array
 
 This allows the user to access data as a numpy array.
 
->>> mydata = myimg.get_data()
+>>> mydata = myimg.get_fdata()
 >>> mydata.shape
 (33, 41, 25)
 >>> mydata.ndim
