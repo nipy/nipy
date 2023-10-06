@@ -245,8 +245,8 @@ def matrix_generator(img):
     (i, rp) where rp is a 2d array with rp.shape = (r.shape[0], prod(r.shape[1:]))
     """
     for i, r in img:
-        r.shape = (r.shape[0], np.prod(r.shape[1:]))
-        yield i, r
+        rp = np.reshape(r, (r.shape[0], np.prod(r.shape[1:])))
+        yield i, rp
 
 
 def shape_generator(img, shape):

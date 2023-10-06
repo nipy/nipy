@@ -11,7 +11,6 @@ import os.path as osp
 from unittest import skipIf
 
 import numpy as np
-from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from ..design_matrix import (
@@ -437,7 +436,7 @@ def test_fir_block():
     assert (X[idx + 3, 7] == 1).all()
 
 
-def test_csv_io():
+def test_csv_io(in_tmp_path):
     # test the csv io on design matrices
     tr = 1.0
     frametimes = np.linspace(0, 127 * tr, 128)
@@ -445,9 +444,8 @@ def test_csv_io():
     DM = make_dmtx(frametimes, paradigm, hrf_model='Canonical',
                    drift_model='polynomial', drift_order=3)
     path = 'dmtx.csv'
-    with InTemporaryDirectory():
-        DM.write_csv(path)
-        DM2 = dmtx_from_csv(path)
+    DM.write_csv(path)
+    DM2 = dmtx_from_csv(path)
     assert_almost_equal(DM.matrix, DM2.matrix)
     assert DM.names == DM2.names
 

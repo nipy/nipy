@@ -37,40 +37,23 @@ distclean: clean
 	-rm -r .tox
 	-git clean -fxd
 
-dev: cythonize
-	$(PYTHON) setup.py build_ext --inplace
-
 install:
-	$(PYTHON) setup.py install
+	$(PYTHON) -m pip install .
 
-cythonize:
-	$(PYTHON) tools/nicythize
-
-bdist_rpm:
-	$(PYTHON) setup.py bdist_rpm \
-	  --doc-files "doc" \
-	  --packager "nipy authors <https://mail.python.org/mailman/listinfo/neuroimaging>"
-	  --vendor "nipy authors <https://mail.python.org/mailman/listinfo/neuroimaging>"
-
-# build MacOS installer -- depends on patched bdist_mpkg for Leopard
-bdist_mpkg:
-	$(PYTHON) tools/mpkg_wrapper.py setup.py install
+editable:
+	$(PYTHON) -m pip install --no-build-isolation --editable .
 
 # Print out info for possible install methods
 check-version-info:
 	bash tools/show_version_info.sh
 
 source-release: distclean
-	$(PYTHON) setup.py sdist
+	$(PYTHON) -m build . --sdist
 
 tox-fresh:
 	# tox tests with fresh-installed virtualenvs.  Needs network.  And
 	# pytox, obviously.
 	tox -c tox.ini
-
-recythonize:
-	# Recythonize all pyx files
-	find . -name "*.pyx" -exec cython -I libcstat/wrapper -I lib/fff_python_wrapper {} \;
 
 # Website stuff
 $(WWW_DIR):

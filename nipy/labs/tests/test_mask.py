@@ -7,7 +7,6 @@ Test the mask-extracting utilities.
 
 import nibabel as nib
 import numpy as np
-from nibabel.tmpdirs import InTemporaryDirectory
 
 from nipy.testing import (
     anatfile,
@@ -65,78 +64,76 @@ def test_mask():
     assert mask5.sum() > mask4.sum()
 
 
-def test_mask_files():
-    with InTemporaryDirectory():
-        # Make a 4D file from the anatomical example
-        img = nib.load(anatfile)
-        arr = img.get_fdata()
-        a2 = np.zeros(arr.shape + (2, ))
-        a2[:, :, :, 0] = arr
-        a2[:, :, :, 1] = arr
-        img = nib.Nifti1Image(a2, np.eye(4))
-        a_fname = 'fourd_anat.nii'
-        nib.save(img, a_fname)
-        # check 4D mask
-        msk1, mean1 = nnm.compute_mask_files(a_fname, return_mean=True)
-        # and mask from identical list of 3D files
-        msk2, mean2 = nnm.compute_mask_files([anatfile, anatfile],
-                                             return_mean=True)
-        assert_array_equal(msk1, msk2)
-        assert_array_equal(mean1, mean2)
+def test_mask_files(in_tmp_path):
+    # Make a 4D file from the anatomical example
+    img = nib.load(anatfile)
+    arr = img.get_fdata()
+    a2 = np.zeros(arr.shape + (2, ))
+    a2[:, :, :, 0] = arr
+    a2[:, :, :, 1] = arr
+    img = nib.Nifti1Image(a2, np.eye(4))
+    a_fname = 'fourd_anat.nii'
+    nib.save(img, a_fname)
+    # check 4D mask
+    msk1, mean1 = nnm.compute_mask_files(a_fname, return_mean=True)
+    # and mask from identical list of 3D files
+    msk2, mean2 = nnm.compute_mask_files([anatfile, anatfile],
+                                            return_mean=True)
+    assert_array_equal(msk1, msk2)
+    assert_array_equal(mean1, mean2)
 
 
-def test_series_from_mask():
+def test_series_from_mask(in_tmp_path):
     """ Test the smoothing of the timeseries extraction
     """
     # A delta in 3D
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
     mask = np.ones((40, 40, 40), dtype=np.bool_)
-    with InTemporaryDirectory():
-        for affine in (np.eye(4), np.diag((1, 1, -1, 1)),
-                        np.diag((.5, 1, .5, 1))):
-            img = nib.Nifti1Image(data, affine)
-            nib.save(img, 'testing.nii')
-            series, header = series_from_mask('testing.nii', mask, smooth=9)
-            series = np.reshape(series[:, 0], (40, 40, 40))
-            vmax = series.max()
-            # We are expecting a full-width at half maximum of
-            # 9mm/voxel_size:
-            above_half_max = series > .5*vmax
-            for axis in (0, 1, 2):
-                proj = np.any(np.any(np.rollaxis(above_half_max,
-                                axis=axis), axis=-1), axis=-1)
-                assert proj.sum() == 9/np.abs(affine[axis, axis])
-
-        # Check that NaNs in the data do not propagate
-        data[10, 10, 10] = np.NaN
+    for affine in (np.eye(4), np.diag((1, 1, -1, 1)),
+                    np.diag((.5, 1, .5, 1))):
         img = nib.Nifti1Image(data, affine)
         nib.save(img, 'testing.nii')
         series, header = series_from_mask('testing.nii', mask, smooth=9)
-        assert np.all(np.isfinite(series))
+        series = np.reshape(series[:, 0], (40, 40, 40))
+        vmax = series.max()
+        # We are expecting a full-width at half maximum of
+        # 9mm/voxel_size:
+        above_half_max = series > .5*vmax
+        for axis in (0, 1, 2):
+            proj = np.any(np.any(np.rollaxis(above_half_max,
+                            axis=axis), axis=-1), axis=-1)
+            assert proj.sum() == 9/np.abs(affine[axis, axis])
 
-def test_compute_mask_sessions():
+    # Check that NaNs in the data do not propagate
+    data[10, 10, 10] = np.NaN
+    img = nib.Nifti1Image(data, affine)
+    nib.save(img, 'testing.nii')
+    series, header = series_from_mask('testing.nii', mask, smooth=9)
+    assert np.all(np.isfinite(series))
+
+
+def test_compute_mask_sessions(in_tmp_path):
     """Test that the mask computes well on multiple sessions
     """
-    with InTemporaryDirectory():
-        # Make a 4D file from the anatomical example
-        img = nib.load(anatfile)
-        arr = img.get_fdata()
-        a2 = np.zeros(arr.shape + (2, ))
-        a2[:, :, :, 0] = arr
-        a2[:, :, :, 1] = arr
-        img = nib.Nifti1Image(a2, np.eye(4))
-        a_fname = 'fourd_anat.nii'
-        nib.save(img, a_fname)
-        a3 = a2.copy()
-        a3[:10, :10, :10] = 0
-        img2 = nib.Nifti1Image(a3, np.eye(4))
-        # check 4D mask
-        msk1 = nnm.compute_mask_sessions([img2, img2])
-        msk2 = nnm.compute_mask_sessions([img2, a_fname])
-        assert_array_equal(msk1, msk2)
-        msk3 = nnm.compute_mask_sessions([img2, a_fname], threshold=.9)
-        msk4 = nnm.compute_mask_sessions([img2, a_fname], threshold=0)
-        msk5 = nnm.compute_mask_sessions([a_fname, a_fname])
-        assert_array_equal(msk1, msk3)
-        assert_array_equal(msk4, msk5)
+    # Make a 4D file from the anatomical example
+    img = nib.load(anatfile)
+    arr = img.get_fdata()
+    a2 = np.zeros(arr.shape + (2, ))
+    a2[:, :, :, 0] = arr
+    a2[:, :, :, 1] = arr
+    img = nib.Nifti1Image(a2, np.eye(4))
+    a_fname = 'fourd_anat.nii'
+    nib.save(img, a_fname)
+    a3 = a2.copy()
+    a3[:10, :10, :10] = 0
+    img2 = nib.Nifti1Image(a3, np.eye(4))
+    # check 4D mask
+    msk1 = nnm.compute_mask_sessions([img2, img2])
+    msk2 = nnm.compute_mask_sessions([img2, a_fname])
+    assert_array_equal(msk1, msk2)
+    msk3 = nnm.compute_mask_sessions([img2, a_fname], threshold=.9)
+    msk4 = nnm.compute_mask_sessions([img2, a_fname], threshold=0)
+    msk5 = nnm.compute_mask_sessions([a_fname, a_fname])
+    assert_array_equal(msk1, msk3)
+    assert_array_equal(msk4, msk5)

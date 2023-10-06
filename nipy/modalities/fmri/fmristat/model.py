@@ -125,11 +125,20 @@ class OLS:
        (``object[0]``) axis being the independent variable of the model;
        object[0] returns an object with attribute ``shape``.
     formula :  :class:`nipy.algorithms.statistics.formula.Formula`
-    outputs :
-    volume_start_times :
+    outputs : list
+        Store for model outputs.
+    volume_start_times: None or float or (N,) ndarray
+        start time of each frame. It can be specified either as an ndarray
+        with ``N=len(images)`` elements or as a single float, the TR. None
+        results in ``np.arange(len(images)).astype(np.float64)``
+
+    Raises
+    ------
+    ValueError
+        If `volume_start_times` not specified, and 4D image passed.
     """
 
-    def __init__(self, fmri_image, formula, outputs=[],
+    def __init__(self, fmri_image, formula, outputs=None,
                  volume_start_times=None):
         self.fmri_image = fmri_image
         try:
@@ -137,11 +146,12 @@ class OLS:
         except AttributeError:
             self.data = fmri_image.get_list_data(axis=0)
         self.formula = formula
-        self.outputs = outputs
+        self.outputs = outputs if outputs else []
         if volume_start_times is None:
-            self.volume_start_times = self.fmri_image.volume_start_times
-        else:
-            self.volume_start_times = volume_start_times
+            volume_start_times = getattr(fmri_image, 'volume_start_times', None)
+        if volume_start_times is None:
+            raise ValueError('Must specify start times for 4D image input')
+        self.volume_start_times = volume_start_times
 
     def execute(self):
         m = model_generator(self.formula, self.data,
@@ -163,7 +173,7 @@ class OLS:
                     x.shape = self.fmri_image[0].shape[1:]
             return i, x
 
-        o = generate_output(self.outputs, r, reshape=reshape)
+        generate_output(self.outputs, r, reshape=reshape)
 
 
 def estimateAR(resid, design, order=1):
@@ -185,7 +195,7 @@ def estimateAR(resid, design, order=1):
     return ar_bias_correct(resid, order, invM)
 
 
-class AR1:
+class AR1(OLS):
     """
     Second pass through fmri_image.
 
@@ -199,19 +209,22 @@ class AR1:
     rho : ``Image``
        image of AR(1) coefficients.  Returning data from
        ``rho.get_fdata()``, and having attribute ``coordmap``
-    outputs :
-    volume_start_times :
+    outputs : list
+        Store for model outputs.
+    volume_start_times: None or float or (N,) ndarray
+        start time of each frame. It can be specified either as an ndarray
+        with ``N=len(images)`` elements or as a single float, the TR. None
+        results in ``np.arange(len(images)).astype(np.float64)``
+
+    Raises
+    ------
+    ValueError
+        If `volume_start_times` not specified, and 4D image passed.
     """
 
-    def __init__(self, fmri_image, formula, rho, outputs=[],
+    def __init__(self, fmri_image, formula, rho, outputs=None,
                  volume_start_times=None):
-        self.fmri_image = fmri_image
-        try:
-            self.data = fmri_image.get_fdata()
-        except AttributeError:
-            self.data = fmri_image.get_list_data(axis=0)
-        self.formula = formula
-        self.outputs = outputs
+        super().__init__(fmri_image, formula, outputs, volume_start_times)
         # Cleanup rho values, truncate them to a scale of 0.01
         g = copy.copy(rho.coordmap)
         rho = rho.get_fdata()
@@ -219,10 +232,6 @@ class AR1:
         r = (np.clip(rho,-1,1) * 100).astype(np.int_) / 100.
         r[m] = np.inf
         self.rho = Image(r, g)
-        if volume_start_times is None:
-            self.volume_start_times = self.fmri_image.volume_start_times
-        else:
-            self.volume_start_times = volume_start_times
 
     def execute(self):
 
@@ -265,7 +274,7 @@ class AR1:
             return i, x
 
         # Put results pulled from results generator r, into outputs
-        o = generate_output(self.outputs, r, reshape=reshape)
+        generate_output(self.outputs, r, reshape=reshape)
 
 
 def output_T(outbase, contrast, fmri_image, effect=True, sd=True, t=True,

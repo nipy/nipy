@@ -10,7 +10,6 @@ from nibabel import Nifti1Header
 from nibabel.filebasedimages import ImageFileError
 from nibabel.spatialimages import HeaderDataError
 from nibabel.tests.test_round_trip import big_bad_ulp
-from nibabel.tmpdirs import InTemporaryDirectory
 
 from nipy.core.api import AffineTransform as AfT
 from nipy.core.api import Image, vox2mni
@@ -55,12 +54,11 @@ def test_maxminmean_values(tpl_img):
 
 
 @if_templates
-def test_nondiag(tpl_img):
+def test_nondiag(tpl_img, in_tmp_path):
     tpl_img.affine[0,1] = 3.0
-    with InTemporaryDirectory():
-        save_image(tpl_img, 'img.nii')
-        img2 = load_image('img.nii')
-        assert_almost_equal(img2.affine, tpl_img.affine)
+    save_image(tpl_img, 'img.nii')
+    img2 = load_image('img.nii')
+    assert_almost_equal(img2.affine, tpl_img.affine)
 
 
 def randimg_in2out(rng, in_dtype, out_dtype, name):
@@ -93,43 +91,42 @@ def randimg_in2out(rng, in_dtype, out_dtype, name):
     return newimg.get_fdata(), data
 
 
-def test_scaling_io_dtype():
+def test_scaling_io_dtype(in_tmp_path):
     # Does data dtype get set?
     # Is scaling correctly applied?
     rng = np.random.RandomState(19660520) # VBD
     ulp1_f32 = np.finfo(np.float32).eps
     types = (np.uint8, np.uint16, np.int16, np.int32, np.float32)
-    with InTemporaryDirectory():
-        for in_type in types:
-            for out_type in types:
-                data, _ = randimg_in2out(rng, in_type, out_type, 'img.nii')
-                img = load_image('img.nii')
-                # Check the output type is as expected
-                hdr = img.metadata['header']
-                assert hdr.get_data_dtype().type == out_type
-                # Check the data is within reasonable bounds. The exact bounds
-                # are a little annoying to calculate - see
-                # nibabel/tests/test_round_trip for inspiration
-                data_back = img.get_fdata().copy() # copy to detach from file
-                del img
-                top = np.abs(data - data_back)
-                nzs = (top !=0) & (data !=0)
-                abs_err = top[nzs]
-                if abs_err.size != 0: # all exact, that's OK.
-                    continue
-                rel_err = abs_err / data[nzs]
-                if np.dtype(out_type).kind in 'iu':
-                    # Read slope from input header
-                    with open('img.nii', 'rb') as fobj:
-                        orig_hdr = hdr.from_fileobj(fobj)
-                    abs_err_thresh = orig_hdr['scl_slope'] / 2.0
-                    rel_err_thresh = ulp1_f32
-                elif np.dtype(out_type).kind == 'f':
-                    abs_err_thresh = big_bad_ulp(data.astype(out_type))[nzs]
-                    rel_err_thresh = ulp1_f32
-                assert np.all(
-                    (abs_err <= abs_err_thresh) |
-                    (rel_err <= rel_err_thresh))
+    for in_type in types:
+        for out_type in types:
+            data, _ = randimg_in2out(rng, in_type, out_type, 'img.nii')
+            img = load_image('img.nii')
+            # Check the output type is as expected
+            hdr = img.metadata['header']
+            assert hdr.get_data_dtype().type == out_type
+            # Check the data is within reasonable bounds. The exact bounds
+            # are a little annoying to calculate - see
+            # nibabel/tests/test_round_trip for inspiration
+            data_back = img.get_fdata().copy() # copy to detach from file
+            del img
+            top = np.abs(data - data_back)
+            nzs = (top !=0) & (data !=0)
+            abs_err = top[nzs]
+            if abs_err.size != 0: # all exact, that's OK.
+                continue
+            rel_err = abs_err / data[nzs]
+            if np.dtype(out_type).kind in 'iu':
+                # Read slope from input header
+                with open('img.nii', 'rb') as fobj:
+                    orig_hdr = hdr.from_fileobj(fobj)
+                abs_err_thresh = orig_hdr['scl_slope'] / 2.0
+                rel_err_thresh = ulp1_f32
+            elif np.dtype(out_type).kind == 'f':
+                abs_err_thresh = big_bad_ulp(data.astype(out_type))[nzs]
+                rel_err_thresh = ulp1_f32
+            assert np.all(
+                (abs_err <= abs_err_thresh) |
+                (rel_err <= rel_err_thresh))
 
 
 def assert_dt_no_end_equal(a, b):
@@ -142,7 +139,7 @@ def assert_dt_no_end_equal(a, b):
     assert a.str == b.str
 
 
-def test_output_dtypes():
+def test_output_dtypes(in_tmp_path):
     shape = (4, 2, 3)
     rng = np.random.RandomState(19441217) # IN-S BD
     data = rng.normal(4, 20, size=shape)
@@ -150,57 +147,56 @@ def test_output_dtypes():
     cmap = vox2mni(aff)
     img = Image(data, cmap)
     fname_root = 'my_file'
-    with InTemporaryDirectory():
-        for ext in 'img', 'nii':
-            out_fname = fname_root + '.' + ext
-            # Default is for data to come from data dtype
-            save_image(img, out_fname)
+    for ext in 'img', 'nii':
+        out_fname = fname_root + '.' + ext
+        # Default is for data to come from data dtype
+        save_image(img, out_fname)
+        img_back = load_image(out_fname)
+        hdr = img_back.metadata['header']
+        assert_dt_no_end_equal(hdr.get_data_dtype(), np.float64)
+        del img_back # lets window re-use the file
+        # All these types are OK for both output formats
+        for out_dt in 'i2', 'i4', np.int16, '<f4', '>f8':
+            # Specified output dtype
+            save_image(img, out_fname, out_dt)
             img_back = load_image(out_fname)
             hdr = img_back.metadata['header']
-            assert_dt_no_end_equal(hdr.get_data_dtype(), np.float64)
-            del img_back # lets window re-use the file
-            # All these types are OK for both output formats
-            for out_dt in 'i2', 'i4', np.int16, '<f4', '>f8':
-                # Specified output dtype
-                save_image(img, out_fname, out_dt)
-                img_back = load_image(out_fname)
-                hdr = img_back.metadata['header']
-                assert_dt_no_end_equal(hdr.get_data_dtype(), out_dt)
-                del img_back # windows file re-use
-                # Output comes from data by default
-                data_typed = data.astype(out_dt)
-                img_again = Image(data_typed, cmap)
-                save_image(img_again, out_fname)
-                img_back = load_image(out_fname)
-                hdr = img_back.metadata['header']
-                assert_dt_no_end_equal(hdr.get_data_dtype(), out_dt)
-                del img_back
-                # Even if header specifies otherwise
-                in_hdr = Nifti1Header()
-                in_hdr.set_data_dtype(np.dtype('c8'))
-                img_more = Image(data_typed, cmap, metadata={'header': in_hdr})
-                save_image(img_more, out_fname)
-                img_back = load_image(out_fname)
-                hdr = img_back.metadata['header']
-                assert_dt_no_end_equal(hdr.get_data_dtype(), out_dt)
-                del img_back
-                # But can come from header if specified
-                save_image(img_more, out_fname, dtype_from='header')
-                img_back = load_image(out_fname)
-                hdr = img_back.metadata['header']
-                assert_dt_no_end_equal(hdr.get_data_dtype(), 'c8')
-                del img_back
-        # u2 only OK for nifti
-        save_image(img, 'my_file.nii', 'u2')
-        img_back = load_image('my_file.nii')
-        hdr = img_back.metadata['header']
-        assert_dt_no_end_equal(hdr.get_data_dtype(), 'u2')
-        # Check analyze can't save u2 datatype
-        pytest.raises(HeaderDataError, save_image, img, 'my_file.img', 'u2')
-        del img_back
+            assert_dt_no_end_equal(hdr.get_data_dtype(), out_dt)
+            del img_back # windows file re-use
+            # Output comes from data by default
+            data_typed = data.astype(out_dt)
+            img_again = Image(data_typed, cmap)
+            save_image(img_again, out_fname)
+            img_back = load_image(out_fname)
+            hdr = img_back.metadata['header']
+            assert_dt_no_end_equal(hdr.get_data_dtype(), out_dt)
+            del img_back
+            # Even if header specifies otherwise
+            in_hdr = Nifti1Header()
+            in_hdr.set_data_dtype(np.dtype('c8'))
+            img_more = Image(data_typed, cmap, metadata={'header': in_hdr})
+            save_image(img_more, out_fname)
+            img_back = load_image(out_fname)
+            hdr = img_back.metadata['header']
+            assert_dt_no_end_equal(hdr.get_data_dtype(), out_dt)
+            del img_back
+            # But can come from header if specified
+            save_image(img_more, out_fname, dtype_from='header')
+            img_back = load_image(out_fname)
+            hdr = img_back.metadata['header']
+            assert_dt_no_end_equal(hdr.get_data_dtype(), 'c8')
+            del img_back
+    # u2 only OK for nifti
+    save_image(img, 'my_file.nii', 'u2')
+    img_back = load_image('my_file.nii')
+    hdr = img_back.metadata['header']
+    assert_dt_no_end_equal(hdr.get_data_dtype(), 'u2')
+    # Check analyze can't save u2 datatype
+    pytest.raises(HeaderDataError, save_image, img, 'my_file.img', 'u2')
+    del img_back
 
 
-def test_header_roundtrip():
+def test_header_roundtrip(in_tmp_path):
     img = load_image(anatfile)
     hdr = img.metadata['header']
     # Update some header values and make sure they're saved
@@ -208,9 +204,8 @@ def test_header_roundtrip():
     hdr['intent_p1'] = 2.0
     hdr['descrip'] = 'descrip for TestImage:test_header_roundtrip'
     hdr['slice_end'] = 12
-    with InTemporaryDirectory():
-        save_image(img, 'img.nii.gz')
-        newimg = load_image('img.nii.gz')
+    save_image(img, 'img.nii.gz')
+    newimg = load_image('img.nii.gz')
     newhdr = newimg.metadata['header']
     assert_array_almost_equal(newhdr['slice_duration'],
                               hdr['slice_duration'])
@@ -219,13 +214,12 @@ def test_header_roundtrip():
     assert newhdr['slice_end'] == hdr['slice_end']
 
 
-def test_file_roundtrip():
+def test_file_roundtrip(in_tmp_path):
     img = load_image(anatfile)
     data = img.get_fdata()
-    with InTemporaryDirectory():
-        save_image(img, 'img.nii.gz')
-        img2 = load_image('img.nii.gz')
-        data2 = img2.get_fdata()
+    save_image(img, 'img.nii.gz')
+    img2 = load_image('img.nii.gz')
+    data2 = img2.get_fdata()
     # verify data
     assert_almost_equal(data2, data)
     assert_almost_equal(data2.mean(), data.mean())
@@ -236,15 +230,21 @@ def test_file_roundtrip():
     assert img2.ndim == img.ndim
     # verify affine
     assert_almost_equal(img2.affine, img.affine)
+    # Test we can use Path objects
+    out_path = 'path_img.nii'
+    save_image(img, out_path)
+    img2 = load_image(out_path)
+    data2 = img2.get_fdata()
+    # verify data
+    assert_almost_equal(data2, data)
 
 
-def test_roundtrip_from_array():
+def test_roundtrip_from_array(in_tmp_path):
     data = np.random.rand(10,20,30)
     img = Image(data, AfT('kji', 'xyz', np.eye(4)))
-    with InTemporaryDirectory():
-        save_image(img, 'img.nii.gz')
-        img2 = load_image('img.nii.gz')
-        data2 = img2.get_fdata()
+    save_image(img, 'img.nii.gz')
+    img2 = load_image('img.nii.gz')
+    data2 = img2.get_fdata()
     # verify data
     assert_almost_equal(data2, data)
     assert_almost_equal(data2.mean(), data.mean())

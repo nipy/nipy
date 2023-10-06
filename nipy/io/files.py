@@ -48,7 +48,7 @@ def load(filename):
     >>> img.shape
     (33, 41, 25)
     """
-    if filename.endswith('.mnc'):
+    if str(filename).endswith('.mnc'):
         raise ValueError("Sorry, we can't get the MINC axis names right yet")
     img = nib.load(filename)
     # Deal with older nibabel
@@ -177,6 +177,7 @@ def _type_from_filename(filename):
     >>> _type_from_filename('test.mnc')
     'minc'
     '''
+    filename = str(filename)
     if filename.endswith('.gz'):
         filename = filename[:-3]
     elif filename.endswith('.bz2'):

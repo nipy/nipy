@@ -13,7 +13,6 @@ from unittest import skipIf
 import numpy as np
 import pytest
 from nibabel.optpkg import optional_package
-from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import assert_almost_equal
 
 from nipy import load_image, save_image
@@ -34,67 +33,63 @@ run_command = runner.run_command
 
 @needs_mpl
 @script_test
-def test_nipy_diagnose():
+def test_nipy_diagnose(in_tmp_path):
     # Test nipy diagnose script
     fimg = load_image(funcfile)
     ncomps = 12
-    with InTemporaryDirectory() as tmpdir:
-        cmd = ['nipy_diagnose', funcfile,
-               f'--ncomponents={ncomps}',
-               '--out-path=' + tmpdir]
-        run_command(cmd)
-        for out_fname in ('components_functional.png',
-                          'pcnt_var_functional.png',
-                          'tsdiff_functional.png',
-                          'vectors_components_functional.npz'):
-            assert isfile(out_fname)
-        for out_img in ('max_functional.nii.gz',
-                        'mean_functional.nii.gz',
-                        'min_functional.nii.gz',
-                        'std_functional.nii.gz'):
-            img = load_image(out_img)
-            assert img.shape == fimg.shape[:-1]
-            del img
-        pca_img = load_image('pca_functional.nii.gz')
-        assert pca_img.shape == fimg.shape[:-1] + (ncomps,)
-        vecs_comps = np.load('vectors_components_functional.npz')
-        vec_diff = vecs_comps['slice_mean_diff2'].copy()# just in case
-        assert vec_diff.shape == (fimg.shape[-1]-1, fimg.shape[2])
-        del pca_img, vecs_comps
-    with InTemporaryDirectory() as tmpdir:
-        # Check we can pass in slice and time flags
-        s0_img = rollimg(fimg, 'k')
-        save_image(s0_img, 'slice0.nii')
-        cmd = ['nipy_diagnose', 'slice0.nii',
-               f'--ncomponents={ncomps}',
-               '--out-path=' + tmpdir,
-               '--time-axis=t',
-               '--slice-axis=0']
-        run_command(cmd)
-        pca_img = load_image('pca_slice0.nii')
-        assert pca_img.shape == s0_img.shape[:-1] + (ncomps,)
-        vecs_comps = np.load('vectors_components_slice0.npz')
-        assert_almost_equal(vecs_comps['slice_mean_diff2'], vec_diff)
-        del pca_img, vecs_comps
+    cmd = ['nipy_diagnose', funcfile,
+            f'--ncomponents={ncomps}',
+            '--out-path=' + str(in_tmp_path)]
+    run_command(cmd)
+    for out_fname in ('components_functional.png',
+                        'pcnt_var_functional.png',
+                        'tsdiff_functional.png',
+                        'vectors_components_functional.npz'):
+        assert isfile(out_fname)
+    for out_img in ('max_functional.nii.gz',
+                    'mean_functional.nii.gz',
+                    'min_functional.nii.gz',
+                    'std_functional.nii.gz'):
+        img = load_image(out_img)
+        assert img.shape == fimg.shape[:-1]
+        del img
+    pca_img = load_image('pca_functional.nii.gz')
+    assert pca_img.shape == fimg.shape[:-1] + (ncomps,)
+    vecs_comps = np.load('vectors_components_functional.npz')
+    vec_diff = vecs_comps['slice_mean_diff2'].copy()# just in case
+    assert vec_diff.shape == (fimg.shape[-1]-1, fimg.shape[2])
+    # Check we can pass in slice and time flags
+    s0_img = rollimg(fimg, 'k')
+    save_image(s0_img, 'slice0.nii')
+    cmd = ['nipy_diagnose', 'slice0.nii',
+            f'--ncomponents={ncomps}',
+            '--out-path=' + str(in_tmp_path),
+            '--time-axis=t',
+            '--slice-axis=0']
+    run_command(cmd)
+    pca_img = load_image('pca_slice0.nii')
+    assert pca_img.shape == s0_img.shape[:-1] + (ncomps,)
+    vecs_comps = np.load('vectors_components_slice0.npz')
+    assert_almost_equal(vecs_comps['slice_mean_diff2'], vec_diff)
+    del pca_img, vecs_comps
 
 
 @needs_mpl
 @script_test
-def test_nipy_tsdiffana():
+def test_nipy_tsdiffana(in_tmp_path):
     # Test nipy_tsdiffana script
     out_png = 'ts_out.png'
     # Quotes in case of space in arguments
-    with InTemporaryDirectory():
-        for i, extras in enumerate(([],
-                                    ['--time-axis=0'],
-                                    ['--slice-axis=0'],
-                                    ['--slice-axis=0', '--time-axis=1']
-                                   )):
-            out_png = f'ts_out{i}.png'
-            cmd = (['nipy_tsdiffana', funcfile] + extras +
-                   ['--out-file=' + out_png])
-            run_command(cmd)
-            assert isfile(out_png)
+    for i, extras in enumerate(([],
+                                ['--time-axis=0'],
+                                ['--slice-axis=0'],
+                                ['--slice-axis=0', '--time-axis=1']
+                                )):
+        out_png = f'ts_out{i}.png'
+        cmd = (['nipy_tsdiffana', funcfile] + extras +
+                ['--out-file=' + out_png])
+        run_command(cmd)
+        assert isfile(out_png)
     # Out-file and write-results incompatible
     cmd = (['nipy_tsdiffana', funcfile, '--out-file=' + out_png,
             '--write-results'])
@@ -103,47 +98,44 @@ def test_nipy_tsdiffana():
                   cmd)
     # Can save images
     cmd_root = ['nipy_tsdiffana', funcfile]
-    with InTemporaryDirectory():
-        os.mkdir('myresults')
-        run_command(cmd_root + ['--out-path=myresults', '--write-results'])
-        assert isfile(pjoin('myresults', 'tsdiff_functional.png'))
-        assert isfile(pjoin('myresults', 'tsdiff_functional.npz'))
-        assert isfile(pjoin('myresults', 'dv2_max_functional.nii.gz'))
-        assert isfile(pjoin('myresults', 'dv2_mean_functional.nii.gz'))
-        run_command(cmd_root + ['--out-path=myresults', '--write-results',
-                                '--out-fname-label=vr2'])
-        assert isfile(pjoin('myresults', 'tsdiff_vr2.png'))
-        assert isfile(pjoin('myresults', 'tsdiff_vr2.npz'))
-        assert isfile(pjoin('myresults', 'dv2_max_vr2.nii.gz'))
-        assert isfile(pjoin('myresults', 'dv2_mean_vr2.nii.gz'))
+    os.mkdir('myresults')
+    run_command(cmd_root + ['--out-path=myresults', '--write-results'])
+    assert isfile(pjoin('myresults', 'tsdiff_functional.png'))
+    assert isfile(pjoin('myresults', 'tsdiff_functional.npz'))
+    assert isfile(pjoin('myresults', 'dv2_max_functional.nii.gz'))
+    assert isfile(pjoin('myresults', 'dv2_mean_functional.nii.gz'))
+    run_command(cmd_root + ['--out-path=myresults', '--write-results',
+                            '--out-fname-label=vr2'])
+    assert isfile(pjoin('myresults', 'tsdiff_vr2.png'))
+    assert isfile(pjoin('myresults', 'tsdiff_vr2.npz'))
+    assert isfile(pjoin('myresults', 'dv2_max_vr2.nii.gz'))
+    assert isfile(pjoin('myresults', 'dv2_mean_vr2.nii.gz'))
 
 
 @script_test
-def test_nipy_3_4d():
+def test_nipy_3_4d(in_tmp_path):
     # Test nipy_3dto4d and nipy_4dto3d
     fimg = load_image(funcfile)
     N = fimg.shape[-1]
     out_4d = 'func4d.nii'
-    with InTemporaryDirectory() as tmpdir:
-        cmd = ['nipy_4dto3d', funcfile,  '--out-path=' + tmpdir]
-        run_command(cmd)
-        imgs_3d = ['functional_%04d.nii' % i for i in range(N)]
-        for iname in imgs_3d:
-            assert isfile(iname)
-        cmd = ['nipy_3dto4d'] + imgs_3d  + ['--out-4d=' + out_4d]
-        run_command(cmd)
-        fimg_back = load_image(out_4d)
-        assert_almost_equal(fimg.get_fdata(), fimg_back.get_fdata())
-        del fimg_back
+    cmd = ['nipy_4dto3d', funcfile,  '--out-path=' + str(in_tmp_path)]
+    run_command(cmd)
+    imgs_3d = ['functional_%04d.nii' % i for i in range(N)]
+    for iname in imgs_3d:
+        assert isfile(iname)
+    cmd = ['nipy_3dto4d'] + imgs_3d  + ['--out-4d=' + out_4d]
+    run_command(cmd)
+    fimg_back = load_image(out_4d)
+    assert_almost_equal(fimg.get_fdata(), fimg_back.get_fdata())
+    del fimg_back
 
 
 @script_test
-def test_nipy_4d_realign():
+def test_nipy_4d_realign(in_tmp_path):
     # Test nipy_4d_realign script
-    with InTemporaryDirectory():
-        # Set matplotib agg backend
-        with open("matplotlibrc", "w") as fobj:
-            fobj.write("backend : agg")
-        cmd = ['nipy_4d_realign', '2.0', funcfile,
-               '--slice_dim',  '2',  '--slice_dir', '-1', '--save_path', '.']
-        run_command(cmd)
+    # Set matplotib agg backend
+    with open("matplotlibrc", "w") as fobj:
+        fobj.write("backend : agg")
+    cmd = ['nipy_4d_realign', '2.0', funcfile,
+           '--slice_dim',  '2',  '--slice_dir', '-1', '--save_path', '.']
+    run_command(cmd)

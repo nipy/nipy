@@ -1,4 +1,8 @@
 # Control testing
+import os
+import tempfile
+from pathlib import Path
+
 import numpy
 import pytest
 
@@ -19,3 +23,12 @@ def mpl_imports():
         pass
     else:
         mpl.use('agg')
+
+
+@pytest.fixture
+def in_tmp_path():
+    with tempfile.TemporaryDirectory() as newpath:
+        old_cwd = os.getcwd()
+        os.chdir(newpath)
+        yield Path(newpath)
+        os.chdir(old_cwd)
