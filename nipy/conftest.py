@@ -1,5 +1,6 @@
 # Control testing
 import os
+from pathlib import Path
 import tempfile
 
 import numpy
@@ -29,5 +30,5 @@ def in_tmp_path():
     with tempfile.TemporaryDirectory() as newpath:
         old_cwd = os.getcwd()
         os.chdir(newpath)
-        yield newpath
+        yield Path(newpath)
         os.chdir(old_cwd)
