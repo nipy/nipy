@@ -73,19 +73,23 @@ int joint_histogram(PyArrayObject* JH,
 		    const PyArrayObject* Tvox,
 		    long interp)
 {
-  const signed short* J=PyArray_DATA(imJ_padded);
-  size_t dimJX=PyArray_DIMS(imJ_padded)[0]-2;
-  size_t dimJY=PyArray_DIMS(imJ_padded)[1]-2;
-  size_t dimJZ=PyArray_DIMS(imJ_padded)[2]-2;
+  /* Since PyArray_DATA() and PyArray_DIMS() are simple accessors, it is OK to
+   * cast away const as long as we treat the results as const.
+   */
+  const signed short* J=PyArray_DATA((PyArrayObject*) imJ_padded);
+  const npy_intp* dimJ = PyArray_DIMS((PyArrayObject*) imJ_padded);
+  size_t dimJX=dimJ[0]-2;
+  size_t dimJY=dimJ[1]-2;
+  size_t dimJZ=dimJ[2]-2;
   signed short Jnn[8];
   double W[8];
   signed short *bufI, *bufJnn;
   double *bufW;
   signed short i, j;
   size_t off;
-  size_t u2 = PyArray_DIMS(imJ_padded)[2];
+  size_t u2 = dimJ[2];
   size_t u3 = u2+1;
-  size_t u4 = PyArray_DIMS(imJ_padded)[1]*u2;
+  size_t u4 = dimJ[1]*u2;
   size_t u5 = u4+1;
   size_t u6 = u4+u2;
   size_t u7 = u6+1;
@@ -94,7 +98,7 @@ int joint_histogram(PyArrayObject* JH,
   int nn, nx, ny, nz;
   double *H = PyArray_DATA(JH);
   double Tx, Ty, Tz;
-  double *tvox = PyArray_DATA(Tvox);
+  const double *tvox = PyArray_DATA((PyArrayObject*) Tvox);
   void (*interpolate)(unsigned int, double*, unsigned int, const signed short*, const double*, int, void*);
   void* interp_params = NULL;
   prng_state rng;
@@ -348,9 +352,14 @@ int L1_moments(double* n_, double* median_, double* dev_,
   }
 
   /* Initialize */
-  h = PyArray_DATA(H);
-  size = PyArray_DIM(H, 0);
-  offset = PyArray_STRIDE(H, 0)/sizeof(double);
+
+  /* Since PyArray_DATA(), PyArray_DIMS(), and PyArray_STRIDE() are simple
+   * accessors, it is OK to cast away const as long as we treat the results as
+   * const (for those accessors returning pointer types).
+   */
+  h = PyArray_DATA((PyArrayObject*) H);
+  size = PyArray_DIM((PyArrayObject*) H, 0);
+  offset = PyArray_STRIDE((PyArrayObject*) H, 0)/sizeof(double);
 
   n = median = dev = 0;
   cpdf = 0;
