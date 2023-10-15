@@ -486,7 +486,7 @@ class OrthoSlicer(BaseSlicer):
     def find_cut_coords(data=None, affine=None, threshold=None,
                         cut_coords=None):
         if cut_coords is None:
-            if data is None or data is False:
+            if data is None:
                 cut_coords = (0, 0, 0)
             else:
                 x_map, y_map, z_map = find_cut_coords(data,
@@ -611,7 +611,7 @@ class BaseStackedSlicer(BaseSlicer):
     def find_cut_coords(cls, data=None, affine=None, threshold=None,
                         cut_coords=None):
         if cut_coords is None:
-            if data is None or data is False:
+            if data is None:
                 bounds = ((-40, 40), (-30, 30), (-30, 75))
             else:
                 if hasattr(data, 'mask'):

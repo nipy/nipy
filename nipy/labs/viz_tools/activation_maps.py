@@ -241,7 +241,7 @@ def _plot_anat(slicer, anat, anat_affine, title=None,
     # XXX: Check that we should indeed plot an anat: we have one, and the
     # cut_coords are in its range
 
-    if anat is not False:
+    if anat is None or anat:
         if canonical_anat:
             # We special-case the 'canonical anat', as we don't need
             # to do a few transforms to it.

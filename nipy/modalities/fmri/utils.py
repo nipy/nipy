@@ -187,7 +187,8 @@ def interp(times, values, fill=0, name=None, **kw):
     True
     """
     if fill is not None:
-        if kw.get('bounds_error') is True:
+        be = kw.get('bounds_error')
+        if be is not None and be:
             raise ValueError('fill conflicts with bounds error')
         fv = kw.get('fill_value')
         if not (fv is None or fv is fill or fv == fill): # allow for fill=np.nan

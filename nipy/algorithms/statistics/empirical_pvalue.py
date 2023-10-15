@@ -481,7 +481,7 @@ def three_classes_GMM_fit(x, test=None, alpha=0.01, prior_strength=100,
         weights = BayesianGMM.weights / (BayesianGMM.weights.sum())
         bfp = (lw / weights) * BayesianGMM.slikelihood(test)
 
-    if verbose and mpaxes is not False:
+    if verbose and (mpaxes is None or mpaxes):
         BayesianGMM.show_components(x, gd, lj, mpaxes)
 
     bfp = (bfp.T / bfp.sum(1)).T
@@ -533,7 +533,7 @@ def gamma_gaussian_fit(x, test=None, verbose=0, mpaxes=False,
     Ggg.init_fdr(x)
     Ggg.estimate(x, niter=100, delta=1.e-8, bias=bias, verbose=0,
                  gaussian_mix=gaussian_mix)
-    if mpaxes is not False:
+    if mpaxes is None or mpaxes:
         # hyper-verbose mode
         Ggg.show(x, mpaxes=mpaxes)
         Ggg.parameters()

@@ -355,7 +355,7 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
     else:
         module = None
 
-    if not anat is False:
+    if anat is None or anat:
         plot_anat_3d(anat=anat, anat_affine=anat_affine, scale=1.05,
                      outline_color=(.9, .9, .9),
                      gyri_opacity=.2)

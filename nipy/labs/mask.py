@@ -474,7 +474,7 @@ def series_from_mask(filenames, mask, dtype=np.float32,
                 # SPM tends to put NaNs in the data outside the brain
                 data[np.logical_not(np.isfinite(data))] = 0
             data = data.astype(dtype)
-            if smooth is not False:
+            if smooth is None or smoooth:
                 affine = get_affine(data_file)[:3, :3]
                 vox_size = np.sqrt(np.sum(affine ** 2, axis=0))
                 smooth_sigma = smooth / vox_size
