@@ -161,7 +161,7 @@ class CoordinateSystem:
         -------
         tf: bool
         """
-        return (self.dtype == other.dtype) and (self.name == other.name)
+        return self.dtype == other.dtype and self.name == other.name
 
     def similar_to(self, other):
         """Similarity is defined by self.dtype, ignoring name

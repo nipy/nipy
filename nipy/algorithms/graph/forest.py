@@ -274,7 +274,7 @@ class Forest(WeightedGraph):
         -----
         By convention infinite distances are given the distance np.inf
         """
-        if not hasattr(seed, '__iter__') and (seed is not None):
+        if not hasattr(seed, '__iter__') and seed is not None:
             seed = [seed]
 
         if self.E > 0:
@@ -352,7 +352,7 @@ class Forest(WeightedGraph):
             while com_ancestor not in dca:
                 ca = self.parents[ca]
                 dca = self.get_descendants(ca)
-                if (ca == self.parents[ca]) and (com_ancestor not in dca):
+                if ca == self.parents[ca] and com_ancestor not in dca:
                     ca = -1
                     break
             com_ancestor = ca

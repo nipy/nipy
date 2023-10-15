@@ -192,7 +192,7 @@ def _sample_condition(exp_condition, frametimes, oversampling=16,
 
     # Handle the case where duration is 0 by offsetting at t + 1
     for i, to in enumerate(t_offset):
-        if to < (tmax - 1) and to == t_onset[i]:
+        if to < tmax - 1 and to == t_onset[i]:
             t_offset[i] += 1
 
     regressor[t_offset] -= values

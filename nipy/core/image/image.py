@@ -407,7 +407,7 @@ class Image:
                 and self.shape == other.shape
                 and np.all(self.get_fdata() == other.get_fdata())
                 and np.all(self.affine == other.affine)
-                and (self.axes.coord_names == other.axes.coord_names))
+                and self.axes.coord_names == other.axes.coord_names)
 
     def __ne__(self, other):
         return not self.__eq__(other)

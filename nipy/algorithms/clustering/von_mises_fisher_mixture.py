@@ -222,7 +222,7 @@ class VonMisesMixture:
             else:
                 self.estimate_means(x, z)
             assert not(np.isnan(self.means).any())
-            if (i > miniter) and (ll < pll + 1.e-6):
+            if i > miniter and ll < pll + 1.e-6:
                 break
             pll = ll
         return ll
@@ -248,7 +248,7 @@ class VonMisesMixture:
         ax = p3.Axes3D(fig)
         colors = (['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w'] * \
                       (1 + (1 + self.k) // 8))[:self.k + 1]
-        if (self.null_class) and (z == 0).any():
+        if self.null_class and (z == 0).any():
             ax.plot3D(x[z == 0, 0], x[z == 0, 1], x[z == 0, 2], '.',
                       color=colors[0])
         for k in range(self.k):

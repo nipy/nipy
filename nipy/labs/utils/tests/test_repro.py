@@ -80,8 +80,8 @@ def test_repro1():
     """
     dataset = make_dataset()
     kap, clt, pks = apply_repro_analysis(dataset)
-    assert ((kap.mean() > 0.3) and (kap.mean() < 0.9))
-    assert (pks.mean() > 0.4)
+    assert kap.mean() > 0.3 and kap.mean() < 0.9
+    assert pks.mean() > 0.4
 
 def test_repro2():
     """

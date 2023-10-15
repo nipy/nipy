@@ -118,8 +118,8 @@ class Graph:
         * edges has a correct size
         * edges take values in [1..V]
         """
-        if (not isinstance(edges, None.__class__) and (edges.size != 0)):
-            if ((np.shape(edges)[0] != self.E) or (np.shape(edges)[1] != 2)):
+        if not isinstance(edges, None.__class__) and edges.size != 0:
+            if np.shape(edges)[0] != self.E or np.shape(edges)[1] != 2:
                 raise ValueError('Incompatible size of the edge matrix')
             if edges.max() + 1 > self.V:
                 raise ValueError('Incorrect edge specification')

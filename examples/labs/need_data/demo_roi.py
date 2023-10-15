@@ -30,7 +30,7 @@ from nipy.labs.spatial_models.discrete_domain import grid_domain_from_image
 # paths
 input_image = path.join(DATA_DIR, 'spmT_0029.nii.gz')
 mask_image = path.join(DATA_DIR, 'mask.nii.gz')
-if (not path.exists(input_image)) or (not path.exists(mask_image)):
+if not path.exists(input_image) or not path.exists(mask_image):
     get_second_level_dataset()
 
 # write directory

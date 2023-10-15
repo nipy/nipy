@@ -311,7 +311,7 @@ class VolumeImg(VolumeGrid):
             --------
             self.xyz_ordered
         """
-        if (axis1 > 2) or (axis2 > 2):
+        if axis1 > 2 or axis2 > 2:
             raise ValueError('Can swap axis only on spatial axis. '
                              'Use np.swapaxes of the data array.')
         reordered_data = np.swapaxes(self.get_fdata(), axis1, axis2)
@@ -361,9 +361,8 @@ class VolumeImg(VolumeGrid):
 
 
     def __eq__(self, other):
-        return (    isinstance(other, self.__class__)
+        return (isinstance(other, self.__class__)
                 and np.all(self.get_fdata() == other.get_fdata())
                 and np.all(self.affine == other.affine)
-                and (self.world_space == other.world_space)
-                and (self.interpolation == other.interpolation)
-               )
+                and self.world_space == other.world_space
+                and self.interpolation == other.interpolation)

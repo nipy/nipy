@@ -441,13 +441,10 @@ class CoordinateMap:
     def __eq__(self, other):
         return ((isinstance(other, self.__class__) or
                  isinstance(self, other.__class__))
-                and (self.function == other.function)
-                and (self.function_domain ==
-                     other.function_domain)
-                and (self.function_range ==
-                     other.function_range)
-                and (self.inverse_function ==
-                     other.inverse_function))
+                and self.function == other.function
+                and self.function_domain == other.function_domain
+                and self.function_range == other.function_range
+                and self.inverse_function == other.inverse_function)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -459,10 +456,10 @@ class CoordinateMap:
         data dtype, but ignoring the coordinate system name.
         """
         return (isinstance(other, self.__class__)
-                and (self.function == other.function)
-                and (self.function_domain.similar_to(other.function_domain))
-                and (self.function_range.similar_to(other.function_range))
-                and (self.inverse_function == other.inverse_function))
+                and self.function == other.function
+                and self.function_domain.similar_to(other.function_domain)
+                and self.function_range.similar_to(other.function_range)
+                and self.inverse_function == other.inverse_function)
 
 
 class AffineTransform:
@@ -1026,8 +1023,8 @@ class AffineTransform:
         data dtype, but ignoring the coordinate system name.
         """
         return (isinstance(other, self.__class__)
-                and (self.function_domain.similar_to(other.function_domain))
-                and (self.function_range.similar_to(other.function_range))
+                and self.function_domain.similar_to(other.function_domain)
+                and self.function_range.similar_to(other.function_range)
                 and np.allclose(self.affine, other.affine))
 
 ####################################################################################

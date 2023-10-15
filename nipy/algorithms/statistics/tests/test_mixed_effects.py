@@ -36,7 +36,7 @@ def test_mfx():
                    return_var=False)
     assert t1.shape == (n_tests,)
     assert t1.mean() < 5 / np.sqrt(n_tests)
-    assert (t1.var() < 2) and (t1.var() > .5)
+    assert t1.var() < 2 and t1.var() > .5
     t2, = mfx_stat(Y, V1, X * np.random.rand(3), 1)
     assert_almost_equal(t1, t2)
     f, = mfx_stat(Y, V1, X, 1, return_t=False, return_f=True)

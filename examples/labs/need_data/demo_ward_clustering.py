@@ -21,7 +21,7 @@ from nipy.algorithms.graph.field import Field
 # paths
 input_image = path.join(DATA_DIR, 'spmT_0029.nii.gz')
 mask_image = path.join(DATA_DIR, 'mask.nii.gz')
-if (not path.exists(mask_image)) or (not path.exists(input_image)):
+if not path.exists(mask_image) or not path.exists(input_image):
     get_second_level_dataset()
 
 # write directory

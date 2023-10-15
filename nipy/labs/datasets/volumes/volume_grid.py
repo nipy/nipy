@@ -227,7 +227,7 @@ class VolumeGrid(VolumeData):
         y = np.atleast_1d(y)
         z = np.atleast_1d(z)
         shape = list(x.shape)
-        if not ((x.shape == y.shape) and (x.shape == z.shape)):
+        if not (x.shape == y.shape and x.shape == z.shape):
             raise ValueError('x, y and z shapes should be equal')
         x = x.ravel()
         y = y.ravel()

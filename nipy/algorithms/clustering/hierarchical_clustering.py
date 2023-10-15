@@ -670,7 +670,7 @@ def ward_quick(G, feature, verbose=False):
 
         for e in range(n - nbcc - q):
             i, j = K.edges[ape[idx[e]], 0], K.edges[ape[idx[e]], 1]
-            if (aux[i] == 1) or (aux[j] == 1):
+            if aux[i] == 1 or aux[j] == 1:
                 break
             aux[i] = 1
             aux[j] = 1

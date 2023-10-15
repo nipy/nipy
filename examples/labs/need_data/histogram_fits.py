@@ -35,7 +35,7 @@ theta = float(st.t.isf(0.01, 100))
 # paths
 mask_image = os.path.join(DATA_DIR, 'mask.nii.gz')
 input_image = os.path.join(DATA_DIR, 'spmT_0029.nii.gz')
-if (not os.path.exists(mask_image)) or (not os.path.exists(input_image)):
+if not os.path.exists(mask_image) or not os.path.exists(input_image):
     get_second_level_dataset()
 
 # Read the mask

@@ -480,7 +480,7 @@ class HierarchicalROI(SubDomains):
         is_leaf_aux = [np.where(self.parents == k)[0] for k in range(self.k)]
         # select nodes that has no child (different from themselves)
         is_leaf = np.asarray(
-            [(len(child) == 0) or (len(child) == 1 and child[0] == i)
+            [len(child) == 0 or (len(child) == 1 and child[0] == i)
              for i, child in enumerate(is_leaf_aux)])
         # finaly return ids
         return self.get_id()[is_leaf]

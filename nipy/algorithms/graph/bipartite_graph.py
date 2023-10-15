@@ -176,12 +176,12 @@ class BipartiteGraph:
         """
         V = int(V)
         W = int(W)
-        if (V < 1) or (W < 1):
+        if V < 1 or W < 1:
             raise ValueError('cannot create graph with no vertex')
         self.V = V
         self.W = W
         self.E = 0
-        if (edges is None) and (weights is None):
+        if edges is None and weights is None:
             self.edges = np.array([], np.int_)
             self.weights = np.array([])
         else:

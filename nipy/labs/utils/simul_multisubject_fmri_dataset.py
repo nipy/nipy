@@ -287,8 +287,7 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
     if dmtx is not None:
         n_scans = dmtx.shape[0]
 
-    if (out_image_file is not None) and isinstance(out_image_file,
-                                                   str):
+    if out_image_file is not None and isinstance(out_image_file, str):
         out_image_file = [out_image_file]
 
     shape_4d = shape + (n_scans,)

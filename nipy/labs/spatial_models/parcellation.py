@@ -180,8 +180,7 @@ class MultiSubjectParcellation:
         """
         if len(data.shape) < 2:
             raise ValueError("Data array should at least have dimension 2")
-        if (data.shape[0] != self.nb_parcel) or \
-                (data.shape[1] != self.nb_subj):
+        if data.shape[0] != self.nb_parcel or data.shape[1] != self.nb_subj:
             raise ValueError('incorrect feature size')
         else:
             self.features.update({fid: data})

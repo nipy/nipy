@@ -113,7 +113,7 @@ def parcel_input(mask_images, learning_images, ths=.5, fdim=None):
                                  for b in learning_images[s]]).T)
 
     # Possibly reduce the dimension of the functional data
-    if (len(feature[0].shape) == 1) or (fdim is None):
+    if len(feature[0].shape) == 1 or fdim is None:
         return domain, feature
     if fdim < feature[0].shape[1]:
         import numpy.linalg as nl
