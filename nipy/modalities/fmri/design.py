@@ -408,7 +408,7 @@ def stack_designs(*pairs):
 
     Parameters
     ----------
-    \*pairs : sequence
+    \\*pairs : sequence
         Elements of either (np.ndarray, dict) or (np.ndarray,) or np.ndarray
 
     Returns

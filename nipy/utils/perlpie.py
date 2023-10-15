@@ -36,16 +36,16 @@ Replace all occurences of foo with bar::
 
 Replace numpy.testing with nipy's testing framework::
 
-    perlpie 'from\s+numpy\.testing.*' 'from nipy.testing import *'
+    perlpie 'from\\s+numpy\\.testing.*' 'from nipy.testing import *'
 
 Replace all @slow decorators in my code with @dec.super_slow.  Here we
 have to escape the @ symbol which has special meaning in perl::
 
-    perlpie '\@slow' '\@dec.super_slow'
+    perlpie '\\@slow' '\\@dec.super_slow'
 
 Remove all occurences of importing make_doctest_suite::
 
-    perlpie 'from\snipy\.utils\.testutils.*make_doctest_suite'
+    perlpie 'from\\snipy\\.utils\\.testutils.*make_doctest_suite'
 
 """
 
@@ -78,8 +78,8 @@ def perl_dash_pie(oldstr, newstr, dry_run=None):
 
     # To replace all occurences of 'import numpy as N' with 'import numpy as np'
     from nipy.utils import perlpie
-    perlpie.perl_dash_pie('import\s+numpy\s+as\s+N', 'import numpy as np')
-    grind | xargs perl -pi -e 's/import\s+numpy\s+as\s+N/import numpy as np/g'
+    perlpie.perl_dash_pie('import\\s+numpy\\s+as\\s+N', 'import numpy as np')
+    grind | xargs perl -pi -e 's/import\\s+numpy\\s+as\\s+N/import numpy as np/g'
 
     """
 

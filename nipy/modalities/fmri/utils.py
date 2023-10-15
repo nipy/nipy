@@ -167,7 +167,7 @@ def interp(times, values, fill=0, name=None, **kw):
         error outside bounds
     name : None or str, optional
         Name of symbolic expression to use. If None, a default is used.
-    \*\*kw : keyword args, optional
+    \\*\\*kw : keyword args, optional
         passed to ``interp1d``
 
     Returns
@@ -229,7 +229,7 @@ def linear_interp(times, values, fill=0, name=None, **kw):
         error outside bounds
     name : None or str, optional
         Name of symbolic expression to use. If None, a default is used.
-    \*\*kw : keyword args, optional
+    \\*\\*kw : keyword args, optional
         passed to ``interp1d``
 
     Returns
@@ -466,7 +466,7 @@ class TimeConvolver:
         name : None or str, optional
             Name of the convolved function in the resulting expression.
             Defaults to one created by ``utils.interp``.
-        \*\*kwargs : keyword args, optional
+        \\*\\*kwargs : keyword args, optional
             Any other arguments to pass to the ``interp1d`` function in creating
             the numerical function for `fg`.
 
@@ -508,7 +508,7 @@ def convolve_functions(f, g, f_interval, g_interval, dt,
     name : None or str, optional
        Name of the convolved function in the resulting expression.
        Defaults to one created by ``utils.interp``.
-    \*\*kwargs : keyword args, optional
+    \\*\\*kwargs : keyword args, optional
        Any other arguments to pass to the ``interp1d`` function in creating the
        numerical function for `fg`.
 
