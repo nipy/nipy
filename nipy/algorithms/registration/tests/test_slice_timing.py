@@ -26,7 +26,7 @@ def check_stc(true_signal, corrected_signal, ref_slice=0,
         rel_diff = np.abs((arr0 / arr1) - 1)
         abs_fails = abs_diff > atol
         rel_fails = rel_diff > rtol
-        fails = abs_fails & rel_fails
+        fails = np.logical_and(abs_fails, rel_fails)
         abs_only = abs_diff[fails]
         rel_only = rel_diff[fails]
         assert np.allclose(arr0, arr1, rtol=rtol, atol=atol)

@@ -39,7 +39,7 @@ def co_labelling(z, kmax=None, kmin=None):
         kmin = z.min() - 1
 
     for  k in np.unique(z):
-        if (k < kmax) & (k > kmin):
+        if (k < kmax) and (k > kmin):
             i = np.array(np.nonzero(z == k))
             row = np.repeat(i, i.size)
             col = np.ravel(np.tile(i, i.size))

@@ -43,7 +43,7 @@ def test_fdr_pos():
     q = fdr(x)
     assert (q[:10] < .05).all()
     pc = fdr_threshold(x)
-    assert (pc > .0025) & (pc < .1)
+    assert (pc > .0025) and (pc < .1)
 
 def test_fdr_neg():
     # test without some significant values

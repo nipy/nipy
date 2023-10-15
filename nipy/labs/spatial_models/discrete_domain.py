@@ -553,7 +553,7 @@ class DiscreteDomain:
         if data.shape[0] != self.size:
             raise ValueError('Wrong data size')
 
-        if (fid in self.features) & (override == False):
+        if (fid in self.features) and (override == False):
             return
 
         self.features.update({fid: data})
@@ -706,7 +706,7 @@ class NDGridDomain(StructuredDomain):
         self.affine = affine
 
         # ijk
-        if (np.size(ijk) == ijk.shape[0]) & (np.size(ijk) > 0):
+        if (np.size(ijk) == ijk.shape[0]) and (np.size(ijk) > 0):
             ijk = np.reshape(ijk, (ijk.size, 1))
             if (ijk.max(0) + 1 > shape).any():
                 raise ValueError('Provided indices do not fit within shape')

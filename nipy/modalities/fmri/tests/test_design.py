@@ -119,10 +119,10 @@ def test_event_design():
                                 })
         # Event spec with two factors, both with two levels
         spec_2dd = spec_maker((fac_1, fac_2), ('smt', 'smte'))
-        exp_x_0 = tc_maker((fac_1 == 0) & (fac_2 == 0))
-        exp_x_1 = tc_maker((fac_1 == 0) & (fac_2 == 1))
-        exp_x_2 = tc_maker((fac_1 == 1) & (fac_2 == 0))
-        exp_x_3 = tc_maker((fac_1 == 1) & (fac_2 == 1))
+        exp_x_0 = tc_maker(np.logical_and(fac_1 == 0, fac_2 == 0))
+        exp_x_1 = tc_maker(np.logical_and(fac_1 == 0, fac_2 == 1))
+        exp_x_2 = tc_maker(np.logical_and(fac_1 == 1, fac_2 == 0))
+        exp_x_3 = tc_maker(np.logical_and(fac_1 == 1, fac_2 == 1))
         X_2dd, contrasts_2dd = d_maker(spec_2dd, t)
         assert_almost_equal(X_2dd, np.c_[exp_x_0, exp_x_1, exp_x_2, exp_x_3])
         exp_cons = {'constant_0': [1, 1, 1, 1],

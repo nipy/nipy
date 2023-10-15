@@ -181,7 +181,7 @@ class BipartiteGraph:
         self.V = V
         self.W = W
         self.E = 0
-        if (edges is None) & (weights is None):
+        if (edges is None) and (weights is None):
             self.edges = np.array([], np.int_)
             self.weights = np.array([])
         else:

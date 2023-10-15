@@ -56,14 +56,14 @@ def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001, verbose=0,
             print(" cannot find more clusters than items")
         nbclusters = nbitems
 
-    if (ninit < 1) & verbose:
+    if (ninit < 1) and verbose:
         print("making at least one iteration")
         ninit = np.maximum(int(ninit), 1)
 
     if Labels is not None:
         if np.size(Labels) == nbitems:
             Labels = Labels.astype(np.int_)
-            OK = (Labels.min() > -1) & (Labels.max() < nbclusters + 1)
+            OK = (Labels.min() > -1) and (Labels.max() < nbclusters + 1)
             if OK:
                 maxiter = int(maxiter)
                 if maxiter > 0:

@@ -110,7 +110,7 @@ def test_scaling_io_dtype(in_tmp_path):
             data_back = img.get_fdata().copy() # copy to detach from file
             del img
             top = np.abs(data - data_back)
-            nzs = (top !=0) & (data !=0)
+            nzs = np.logical_and(top != 0, data != 0)
             abs_err = top[nzs]
             if abs_err.size != 0: # all exact, that's OK.
                 continue
