@@ -146,7 +146,7 @@ class contrast:
         self.variance = None
         self.dof = None
         if dim > 1:
-            if type is 't':
+            if type == 't':
                 type = 'F'
         self.type = type
         self._stat = None
