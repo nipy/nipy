@@ -85,7 +85,7 @@ static void _ngb_integrate(double* res,
 {
   npy_intp xn, yn, zn, pos, ngb_idx, k, kk;
   const int* buf_ngb;
-  const double* ppm_data = (double*)PyArray_DATA(ppm);
+  const double* ppm_data = PyArray_DATA(ppm);
   double *buf, *buf_ppm, *q, *buf_U;
   npy_intp K = PyArray_DIMS(ppm)[3];
   npy_intp u2 = PyArray_DIMS(ppm)[2]*K;
@@ -134,8 +134,8 @@ void ve_step(PyArrayObject* ppm,
   npy_intp K = PyArray_DIMS(ppm)[3];
   npy_intp u2 = PyArray_DIMS(ppm)[2]*K;
   npy_intp u1 = PyArray_DIMS(ppm)[1]*u2;
-  const double* ref_data = (double*)PyArray_DATA(ref);
-  const double* U_data = (double*)PyArray_DATA(U);
+  const double* ref_data = PyArray_DATA(ref);
+  const double* U_data = PyArray_DATA(U);
   npy_intp* xyz;
   int* ngb;
 
@@ -143,7 +143,7 @@ void ve_step(PyArrayObject* ppm,
   ngb = _select_neighborhood_system(ngb_size);
 
   /* Pointer to the data array */
-  ppm_data = (double*)PyArray_DATA(ppm);
+  ppm_data = PyArray_DATA(ppm);
 
   /* Allocate auxiliary vectors */
   p = (double*)calloc(K, sizeof(double));
@@ -261,7 +261,7 @@ PyArrayObject* make_edges(const PyArrayObject* idx,
 	/* Store edge if neighbor is within the mask */
 	if ((pos < 0) || (pos >= u0))
 	  continue;
-	buf_idx = (npy_intp*)PyArray_DATA(idx) + pos;
+	buf_idx = PyArray_DATA(idx) + pos;
 	if (*buf_idx < 0)
 	  continue;
 	buf_edges[0] = idx_i;
@@ -315,14 +315,14 @@ double interaction_energy(PyArrayObject* ppm,
   npy_intp u2 = PyArray_DIMS(ppm)[2]*K;
   npy_intp u1 = PyArray_DIMS(ppm)[1]*u2;
   npy_intp* xyz;
-  const double* U_data = (double*)PyArray_DATA(U);
+  const double* U_data = PyArray_DATA(U);
   int* ngb;
 
   /* Neighborhood system */
   ngb = _select_neighborhood_system(ngb_size);
 
   /* Pointer to ppm array */
-  ppm_data = (double*)PyArray_DATA(ppm);
+  ppm_data = PyArray_DATA(ppm);
 
   /* Allocate auxiliary vector */
   p = (double*)calloc(K, sizeof(double));

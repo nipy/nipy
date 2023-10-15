@@ -73,7 +73,7 @@ int joint_histogram(PyArrayObject* JH,
 		    const PyArrayObject* Tvox,
 		    long interp)
 {
-  const signed short* J=(signed short*)PyArray_DATA(imJ_padded);
+  const signed short* J=PyArray_DATA(imJ_padded);
   size_t dimJX=PyArray_DIMS(imJ_padded)[0]-2;
   size_t dimJY=PyArray_DIMS(imJ_padded)[1]-2;
   size_t dimJZ=PyArray_DIMS(imJ_padded)[2]-2;
@@ -92,9 +92,9 @@ int joint_histogram(PyArrayObject* JH,
   double wx, wy, wz, wxwy, wxwz, wywz;
   double W0, W2, W3, W4;
   int nn, nx, ny, nz;
-  double *H = (double*)PyArray_DATA(JH);
+  double *H = PyArray_DATA(JH);
   double Tx, Ty, Tz;
-  double *tvox = (double*)PyArray_DATA(Tvox);
+  double *tvox = PyArray_DATA(Tvox);
   void (*interpolate)(unsigned int, double*, unsigned int, const signed short*, const double*, int, void*);
   void* interp_params = NULL;
   prng_state rng;
@@ -348,7 +348,7 @@ int L1_moments(double* n_, double* median_, double* dev_,
   }
 
   /* Initialize */
-  h = (const double*)PyArray_DATA(H);
+  h = PyArray_DATA(H);
   size = PyArray_DIM(H, 0);
   offset = PyArray_STRIDE(H, 0)/sizeof(double);
 
