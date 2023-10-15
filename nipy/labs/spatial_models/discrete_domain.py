@@ -553,7 +553,7 @@ class DiscreteDomain:
         if data.shape[0] != self.size:
             raise ValueError('Wrong data size')
 
-        if (fid in self.features) and (override == False):
+        if (fid in self.features) and not override:
             return
 
         self.features.update({fid: data})

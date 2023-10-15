@@ -479,7 +479,7 @@ def yule_walker(X, order=1, method="unbiased", df=None, inv=False):
     R = spl.toeplitz(r[: - 1])
     rho = spl.solve(R, r[1:])
     sigmasq = r[0] - (r[1:] * rho).sum()
-    if inv == True:
+    if inv:
         return rho, np.sqrt(sigmasq), spl.inv(R)
     return rho, np.sqrt(sigmasq)
 

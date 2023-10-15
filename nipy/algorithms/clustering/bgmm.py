@@ -482,7 +482,7 @@ class BGMM(GMM):
             np.reshape(inv(px[0]), elshape), self.k, 0)
 
         # check that everything is OK
-        if nocheck == True:
+        if nocheck:
             self.check()
 
     def initialize(self, x):

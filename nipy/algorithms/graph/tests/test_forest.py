@@ -50,7 +50,7 @@ def test_root():
     """ test the isroot() method
     """
     root = simple_forest().isroot()
-    assert root[4] == True
+    assert root[4]
     assert root.sum() == 1
 
 def test_merge_simple_branches():
@@ -97,11 +97,11 @@ def test_leaves():
     """ test the leaves_of_a_subtree() method
     """
     f =  simple_forest()
-    assert f.leaves_of_a_subtree([0, 1]) == True
-    assert f.leaves_of_a_subtree([0, 3]) == False
-    assert f.leaves_of_a_subtree([1, 3]) == False
-    assert f.leaves_of_a_subtree([0, 1, 3]) == True
-    assert f.leaves_of_a_subtree([1]) == True
+    assert f.leaves_of_a_subtree([0, 1])
+    assert not f.leaves_of_a_subtree([0, 3])
+    assert not f.leaves_of_a_subtree([1, 3])
+    assert f.leaves_of_a_subtree([0, 1, 3])
+    assert f.leaves_of_a_subtree([1])
 
 def test_depth():
     """ Test the tree_depth() method

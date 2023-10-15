@@ -278,7 +278,7 @@ class Field(WeightedGraph):
             sf.dilation(1)
             non_max = sf.field.ravel() > dilated_field_old
             ldepth[non_max] = np.minimum(k, ldepth[non_max])
-            if (non_max == False).all():
+            if not non_max.any():
                 ldepth[sf.field.ravel() == initial_field] = np.maximum(k, 1)
                 break
 

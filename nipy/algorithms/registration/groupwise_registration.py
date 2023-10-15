@@ -1153,7 +1153,7 @@ class FmriRealign4d(Realign4d):
                 tr = 1.0
             # if no slice order provided, assume synchronous slices
             if slice_order is None:
-                if not time_interp == False:
+                if time_interp is None or time_interp:
                     raise ValueError('Slice order is requested '
                                      'with time interpolation switched on')
                 slice_times = 0.0

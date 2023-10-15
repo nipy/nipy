@@ -104,7 +104,7 @@ def make_bsa_image(
         default_idx = landmarks.k + 2
         prevalence = landmarks.roi_prevalence()
 
-    if write_dir == False:
+    if write_dir is not None and not write_dir:
         return landmarks, hrois
 
     # Write the results as images

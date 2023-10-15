@@ -673,7 +673,7 @@ x
         It is mandatory that the graph weights are non-negative
         """
         import heapq
-        if hasattr(seed, '__iter__') == False:
+        if not hasattr(seed, '__iter__'):
             seed = [seed]
         try:
             if (self.weights < 0).any():
@@ -888,7 +888,7 @@ x
         labels: array of shape (self.V) the labelling of the vertices
         """
         import heapq
-        if hasattr(seed, '__iter__') == False:
+        if not hasattr(seed, '__iter__'):
             seed = [seed]
         try:
             if (self.weights < 0).any():

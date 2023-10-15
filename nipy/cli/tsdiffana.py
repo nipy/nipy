@@ -81,10 +81,10 @@ def main():
                         help='Image axis for slice')
     # parse the command line
     args = parser.parse_args()
-    if args.out_file is not None and args.write_results == True:
+    if args.out_file is not None and args.write_results:
         raise RuntimeError("OUT_FILE option not compatible with WRITE_RESULTS"
                            " option")
-    show = args.out_file is None and args.write_results == False
+    show = args.out_file is None and not args.write_results
     if not show:
         import matplotlib
         matplotlib.use('Agg')

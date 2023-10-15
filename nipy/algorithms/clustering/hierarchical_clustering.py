@@ -133,7 +133,7 @@ class WeightedForest(Forest):
         ax, the axis handle
         """
         import matplotlib.pyplot as plt
-        if self.check_compatible_height() == False:
+        if self.check_compatible_height():
             raise ValueError('cannot plot myself in my current state')
 
         n = np.sum(self.isleaf())
@@ -210,8 +210,9 @@ class WeightedForest(Forest):
         """
         import matplotlib.pyplot as plt
         plt.figure()
-        sh = np.sort(self.height[self.isleaf() == False])
-        n = np.sum(self.isleaf() == False)
+        is_not_leaf = np.logical_not(self.isleaf())
+        sh = np.sort(self.height[is_not_leaf])
+        n = np.count_nonzero(is_not_leaf)
         plt.bar(np.arange(n), sh)
 
     def list_of_subtrees(self):
@@ -412,7 +413,7 @@ def average_link_graph_segment(G, stop=0, qmax=1, verbose=False):
         u = u1
 
     cost = - t.get_height()
-    cost = cost[t.isleaf() == False]
+    cost = cost[np.logical_not(t.isleaf())]
 
     return u, cost
 
@@ -809,7 +810,7 @@ def ward_quick_segment(G, feature, stop=-1, qmax=1, verbose=False):
         u = u1
 
     cost = t.get_height()
-    cost = cost[t.isleaf() == False]
+    cost = cost[np.logical_not(t.isleaf())]
     return u, cost
 
 
@@ -876,7 +877,7 @@ def ward_segment(G, feature, stop=-1, qmax=1, verbose=False):
         u = u1
 
     cost = t.get_height()
-    cost = cost[t.isleaf() == False]
+    cost = cost[np.logical_not(t.isleaf())]
     return u, cost
 
 

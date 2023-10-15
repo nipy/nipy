@@ -274,7 +274,7 @@ class Forest(WeightedGraph):
         -----
         By convention infinite distances are given the distance np.inf
         """
-        if (hasattr(seed, '__iter__') == False) and (seed is not None):
+        if not hasattr(seed, '__iter__') and (seed is not None):
             seed = [seed]
 
         if self.E > 0:
@@ -362,7 +362,7 @@ class Forest(WeightedGraph):
             st = self.get_descendants(com_ancestor)
             valid = [i in ids for i in st if leaves[i]]
             bresult = (np.sum(valid) == np.size(valid))
-            if custom == False:
+            if not custom:
                 return bresult
 
             # now, custom =True
@@ -380,7 +380,7 @@ class Forest(WeightedGraph):
             return bresult
 
         # now, common ancestor is -1
-        if custom == False:
+        if not custom:
             st = np.squeeze(np.nonzero(leaves))
             valid = [i in ids for i in st]
             bresult = (np.sum(valid) == np.size(valid))
@@ -418,11 +418,11 @@ class Forest(WeightedGraph):
         if np.size(prop) != self.V:
             raise ValueError("incoherent size for prop")
 
-        prop[self.isleaf() == False] = True
+        prop[np.logical_not(self.isleaf())] = True
 
         for j in range(self.tree_depth()):
             for i in range(self.V):
-                if prop[i] == False:
+                if not prop[i]:
                     prop[self.parents[i]] = False
 
         return prop
