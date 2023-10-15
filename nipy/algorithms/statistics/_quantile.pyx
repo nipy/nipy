@@ -48,7 +48,8 @@ def _quantile(X, double ratio, int interp=False, int axis=0):
     Y : array
       Array of quantiles
     """
-    cdef double *x, *y
+    cdef double *x
+    cdef double *y
     cdef long int size, stride
     cdef np.flatiter itX, itY
 
