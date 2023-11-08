@@ -71,7 +71,7 @@ class GeneralLinearModel:
     Most of what it does in the fit() and contrast() methods
     fit() performs the standard two-step ('ols' then 'ar1') GLM fitting
     contrast() returns a contrast instance, yileding statistics and p-values.
-    The link between fit() and constrast is done vis the two class members:
+    The link between fit() and contrast is done vis the two class members:
 
     glm_results : dictionary of nipy.algorithms.statistics.models.
                  regression.RegressionResults instances,
@@ -121,7 +121,7 @@ class GeneralLinearModel:
                (ols_result.resid ** 2).sum(0))
         ar1 = (ar1 * steps).astype(np.int_) * 1. / steps
 
-        # Fit the AR model acccording to current AR(1) estimates
+        # Fit the AR model according to current AR(1) estimates
         if model == 'ar1':
             self.results_ = {}
             self.labels_ = ar1
@@ -244,7 +244,7 @@ class Contrast:
 
     The current implementation is meant to be simple,
     and could be enhanced in the future on the computational side
-    (high-dimensional F constrasts may lead to memory breakage).
+    (high-dimensional F contrasts may lead to memory breakage).
 
     Notes
     -----
@@ -325,7 +325,7 @@ class Contrast:
                 np.maximum(vdiag, self.tiny))
             stat = stat.min(0)
 
-        # Unknwon stat
+        # Unknown stat
         else:
             raise ValueError('Unknown statistic type')
         self.stat_ = stat
@@ -385,7 +385,7 @@ class Contrast:
         This should be used only on indepndent contrasts"""
         if self.contrast_type != other.contrast_type:
             raise ValueError(
-                'The two contrasts do not have consistant type dimensions')
+                'The two contrasts do not have consistent type dimensions')
         if self.dim != other.dim:
             raise ValueError(
                 'The two contrasts do not have compatible dimensions')

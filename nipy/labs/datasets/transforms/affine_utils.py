@@ -45,7 +45,7 @@ def apply_affine(x, y, z, affine):
 def to_matrix_vector(transform):
     """Split a transform into it's matrix and vector components.
 
-    The tranformation must be represented in homogeneous coordinates
+    The transformation must be represented in homogeneous coordinates
     and is split into it's rotation matrix and translation vector
     components.
 

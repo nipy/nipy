@@ -152,7 +152,7 @@ def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
     x: array of shape (npoints, dim=2),
         sample points
     my_gmm: GMM instance,
-            whose density has to be ploted
+            whose density has to be plotted
     z: array of shape (npoints), optional
        that gives a labelling of the points in x
        by default, it is not taken into account
@@ -354,7 +354,7 @@ class GMM:
         """Initializes self according to a certain dataset x:
         1. sets the regularizing hyper-parameters
         2. initializes z using a k-means algorithm, then
-        3. upate the parameters
+        3. update the parameters
 
         Parameters
         ----------

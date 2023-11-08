@@ -182,7 +182,7 @@ class GGM:
         self.mixt = mixt
 
     def parameters(self):
-        """ print the paramteres of self
+        """ print the parameters of self
         """
         print("Gaussian: mean: ", self.mean, "variance: ", self.var)
         print("Gamma: shape: ", self.shape, "scale: ", self.scale)
@@ -378,14 +378,14 @@ class GGGM:
         print("Negative Gamma: shape: ", self.shape_n,
               "scale: ", self.scale_n)
         print("Gaussian: mean: ", self.mean, "variance: ", self.var)
-        print("Poitive Gamma: shape: ", self.shape_p, "scale: ", self.scale_p)
+        print("Positive Gamma: shape: ", self.shape_p, "scale: ", self.scale_p)
         mixt = self.mixt
         print("Mixture neg. gamma: ", mixt[0], "Gaussian: ", mixt[1],
               "pos. gamma: ", mixt[2])
 
     def init(self, x, mixt=None):
         """
-        initialization of the differnt parameters
+        initialization of the different parameters
 
         Parameters
         ----------
@@ -429,7 +429,7 @@ class GGGM:
 
     def init_fdr(self, x, dof=-1, copy=True):
         """
-        Initilization of the class based on a fdr heuristic: the
+        Initialization of the class based on a fdr heuristic: the
         probability to be in the positive component is proportional to
         the 'positive fdr' of the data.  The same holds for the
         negative part.  The point is that the gamma parts should model
@@ -437,11 +437,11 @@ class GGGM:
 
         Parameters
         ----------
-        x: array of shape(nbitem)
+        x: array of shape (nbitem)
             the data under consideration
         dof: integer, optional
-            number of degrees of freedom if x is thought to be a student
-            variate. By default, it is handeled as a normal
+            number of degrees of freedom if x is thought to be a Student
+            variate. By default, it is handled as a normal
         copy: boolean, optional
             If True, copy the data.
         """

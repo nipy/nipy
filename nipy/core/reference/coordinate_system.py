@@ -375,7 +375,7 @@ def product(*coord_systems, **kwargs):
     ----------
     \*coord_systems : sequence of :class:`CoordinateSystem`
     name : str
-        Name of ouptut coordinate system
+        Name of output coordinate system
 
     Returns
     -------

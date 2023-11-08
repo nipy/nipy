@@ -110,10 +110,10 @@ for (position, radius) in zip(positions, radii):
 glm = GeneralLinearModel(X)
 glm.fit(Y.T)
 
-# specifiy the contrast [1 -1 0 ..]
+# specify the contrast [1 -1 0 ..]
 contrast = np.hstack((1, -1, np.zeros(X.shape[1] - 2)))
 
-# compute the constrast image related to it
+# compute the contrast image related to it
 zvals = glm.contrast(contrast).z_score()
 
 ########################################

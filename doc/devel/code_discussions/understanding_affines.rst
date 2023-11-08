@@ -77,7 +77,7 @@ our axes relative to the subject's head:
  * ``y`` has negative values for posterior (back of head) and positive
    values for anterior (front of head)
  * ``z`` has negative values for the inferior (towards the neck) and
-   postive values for superior (towards the highest point of the head,
+   positive values for superior (towards the highest point of the head,
    when standing)
 
 Image index ordering

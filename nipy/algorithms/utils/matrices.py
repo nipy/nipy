@@ -15,7 +15,7 @@ def matrix_rank(M, tol=None):
     This version of matrix rank is very similar to the numpy.linalg version
     except for the use of:
 
-    * scipy.linalg.svd istead of numpy.linalg.svd.
+    * scipy.linalg.svd instead of numpy.linalg.svd.
     * the MATLAB algorithm for default tolerance calculation
 
     ``matrix_rank`` appeared in numpy.linalg in December 2009, first available

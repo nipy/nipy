@@ -220,7 +220,7 @@ class Forest(WeightedGraph):
 
         Parameters
         ----------
-        valid: array of shape (self.V): idicator of the selected nodes
+        valid: array of shape (self.V): indicator of the selected nodes
 
         Returns
         -------
@@ -428,7 +428,7 @@ class Forest(WeightedGraph):
         return prop
 
     def propagate_upward(self, label):
-        """ Propagation of a certain labelling from leves to roots
+        """ Propagation of a certain labelling from leaves to roots
         Assuming that label is a certain positive integer field
         this propagates these labels to the parents whenever
         the children nodes have coherent properties

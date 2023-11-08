@@ -2,7 +2,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 __doc__ = """
-This scipt generates a noisy activation image image and performs a watershed
+This script generates a noisy activation image image and performs a watershed
 segmentation in it.
 
 Needs matplotlib

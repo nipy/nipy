@@ -15,7 +15,7 @@ registration/
 		register a set of images
 		sum of square differences
 		not using joint histogram
-	affine.py (discribes a general 3d affine transformation and its parametrization)
+	affine.py (describes a general 3d affine transformation and its parametrization)
 	 class affine
 		  params=s(-1)xv12 s: pre_cond
 		  radius for the preconditioner is in translation coordinates

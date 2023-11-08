@@ -17,7 +17,7 @@ class SubDomains:
     This is a class to represent multiple ROI objects, where the
     reference to a given domain is explicit.
 
-    A mutliple ROI object is a set of ROI defined on a given domain,
+    A multiple ROI object is a set of ROI defined on a given domain,
     each having its own 'region-level' characteristics (ROI features).
 
     Every voxel of the domain can have its own characteristics yet,
@@ -102,7 +102,7 @@ class SubDomains:
 
         Notes
         -----
-        This method must be called everytime the MROI structure is modified.
+        This method must be called every time the MROI structure is modified.
         """
         lmap = np.unique(self.label[self.label > - 1])
         for i, k in enumerate(lmap):

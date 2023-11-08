@@ -94,7 +94,7 @@ def _build_formula_contrasts(spec, fields, order):
 
     Parameters
     ----------
-    spec : stuctured array
+    spec : structured array
         Structured array containing at least fields listed in `fields`.
     fields : sequence of str
         Sequence of field names containing names of factors.

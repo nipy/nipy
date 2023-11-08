@@ -51,8 +51,8 @@ def co_labelling(z, kmax=None, kmin=None):
 class IMM(BGMM):
     """
     The class implements Infinite Gaussian Mixture model
-    or Dirichlet Proces Mixture Model.
-    This simply a generalization of Bayesian Gaussian Mixture Models
+    or Dirichlet Process Mixture model.
+    This is simply a generalization of Bayesian Gaussian Mixture Models
     with an unknown number of classes.
     """
 
@@ -389,12 +389,12 @@ class IMM(BGMM):
         ----------
         x: array of shape (n_samples, self.dim),
            the data used in the estimation process
-        plike: array os shape (n_samples), optional,x
-               the desnity of each point under the prior
+        plike: array of shape (n_samples), optional,
+               the density of each point under the prior
 
         Returns
         -------
-        like, array of shape(nbitem,self.k)
+        like, array of shape (nbitem, self.k)
         component-wise likelihood
         """
         if plike is None:

@@ -76,7 +76,7 @@ def parcel_input(mask_images, learning_images, ths=.5, fdim=None):
     fdim: int, optional
           if nb_feature (the dimension of the data) used in subsequent analyses
           if greater than fdim,
-          a PCA is perfomed to reduce the information in the data
+          a PCA is performed to reduce the information in the data
           Byd efault, no reduction is performed
 
     Returns
@@ -246,7 +246,7 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
     ----------
     domain/mask_image
     betas: list of paths to activation images from the subject
-    nbparcel, int : number fo desired parcels
+    nbparcel, int : number of desired parcels
     nn=6: number of nearest neighbors  to define the image topology
           (6, 18 or 26)
     method='ward': clustering method used, to be chosen among

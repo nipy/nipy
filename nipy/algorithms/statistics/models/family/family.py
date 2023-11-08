@@ -71,7 +71,7 @@ class Family:
            scale -- optional scale in denominator of deviance
 
         OUTPUTS: dev
-           dev   -- DEV, as described aboce
+           dev   -- DEV, as described above
 
         """
 

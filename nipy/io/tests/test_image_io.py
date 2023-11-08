@@ -154,7 +154,7 @@ def test_output_dtypes(in_tmp_path):
         img_back = load_image(out_fname)
         hdr = img_back.metadata['header']
         assert_dt_no_end_equal(hdr.get_data_dtype(), np.float64)
-        del img_back # lets window re-use the file
+        del img_back # lets window reuse the file
         # All these types are OK for both output formats
         for out_dt in 'i2', 'i4', np.int16, '<f4', '>f8':
             # Specified output dtype
@@ -162,7 +162,7 @@ def test_output_dtypes(in_tmp_path):
             img_back = load_image(out_fname)
             hdr = img_back.metadata['header']
             assert_dt_no_end_equal(hdr.get_data_dtype(), out_dt)
-            del img_back # windows file re-use
+            del img_back # windows file reuse
             # Output comes from data by default
             data_typed = data.astype(out_dt)
             img_again = Image(data_typed, cmap)

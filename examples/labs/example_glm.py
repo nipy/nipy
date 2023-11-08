@@ -96,7 +96,7 @@ contrast = np.zeros(X.shape[1])
 contrast[0] = 1
 contrast[1] = - 1
 
-# compute the constrast image related to it
+# compute the contrast image related to it
 zvals = glm.contrast(contrast).z_score()
 contrast_image = Nifti1Image(np.reshape(zvals, shape), affine)
 

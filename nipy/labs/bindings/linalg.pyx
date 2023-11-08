@@ -174,7 +174,7 @@ def vector_add(X, Y):
 
 def vector_sub(X, Y):
     """
-    Substract two vectors: x - y
+    Subtract two vectors: x - y
     z = vector_sub(x, y)
     """
     cdef fff_vector *x, *y, *z

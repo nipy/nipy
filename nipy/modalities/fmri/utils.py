@@ -2,7 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """ This module defines some convenience functions of time.
 
-interp : an expresion for a interpolated function of time
+interp : an expression for a interpolated function of time
 
 linear_interp : an expression for a linearly interpolated function of
    time

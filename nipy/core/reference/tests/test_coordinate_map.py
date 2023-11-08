@@ -482,7 +482,7 @@ def test_reordered_range():
     # default reverse order
     recm = cm.reordered_range()
     assert recm.function_range.coord_names == ('z', 'y', 'x')
-    # reorder with indicies
+    # reorder with indices
     recm = cm.reordered_range([2,0,1])
     assert recm.function_range.coord_names == ('z', 'x', 'y')
 

@@ -49,7 +49,7 @@ reordering of images that needed known axis ordering.
     kij_to_RAS([k,i,j])
     another_kij_to_RAS = ijk_to_RAS.reordered_domain('kij')
     another_kij_to_RAS([k,i,j])
-    # rather than finding the permuation matrix your self
+    # rather than finding the permutation matrix your self
     another_kij_to_RAS = ijk_to_RAS.reordered_domain('kij')
     another_kij_to_RAS([k,i,j])
 
@@ -204,7 +204,7 @@ left and right were flipped when viewed with a command like::
 Without specifying the direction of x,y,z we just don't know.
 
     You can of course create a new coordinate system describing, for instance
-    the scanner space, where the first coordinnate is not x, and the second
+    the scanner space, where the first coordinate is not x, and the second
     not y, ... but I am not sure what this means: x, y, and z, as well as
     left or right, are just names. The only important information between two
     coordinate systems is the transform linking them.
@@ -404,7 +404,7 @@ separates the notion of world axes ('x','y','z') and voxel indices
 ('i','j','k'). There is at least one use case, slice timing, a key step in the
 fMRI pipeline, where we need to know which spatial axis is slice. One solution
 would be to just add an attribute to AffineImage called "slice_axis" but then,
-as Gael says, the possibilites for axis names are infinite, what if we want an
+as Gael says, the possibilities for axis names are infinite, what if we want an
 attribute for "group_axis"? AffineTransform provides an easy way to specify an
 axis as "slice":
 

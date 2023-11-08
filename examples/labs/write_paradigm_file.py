@@ -26,7 +26,7 @@ time = np.array([
     291000, 293400, 296700]).astype('f')/1000
 
 # corresponding onset types
-# Because it's cutpasted from Matlab(tm), i substract 1 at the end ;-)
+# Because it's cutpasted from Matlab(tm), i subtract 1 at the end ;-)
 
 # onset types
 trial_type = np.array([

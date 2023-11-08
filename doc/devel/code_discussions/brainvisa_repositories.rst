@@ -127,7 +127,7 @@ a few comments:
 
 ::
 
-   # Get an acces to one repository
+   # Get an access to one repository
    repository = openRepository( repositoryURL )
    # Create a request for selection of all the FMRI in the repository
    request = ‘SELECT * FROM FMRI’
@@ -151,7 +151,7 @@ a few comments:
    associated to an FMRI image.
 #. The method getLocalFiles can do nothing more than return a file
    name if the data item correspond to a local file in NIFTI
-   format. But the same code can be used to acces a DICOM image
+   format. But the same code can be used to access a DICOM image
    located in a distant ftp server. In this case, getLocalFiles will
    manage the transfer of the DICOM file, then the conversion to the
    required NIFTI format and return name of temporary file(s).

@@ -18,7 +18,7 @@ def strides_from(shape, dtype, order='C'):
     Returns
     -------
     strides : tuple
-        seqence length ``len(shape)`` giving strides for continuous array with
+        sequence length ``len(shape)`` giving strides for continuous array with
         given `shape`, `dtype` and `order`
 
     Examples

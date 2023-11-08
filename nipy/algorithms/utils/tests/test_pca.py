@@ -114,7 +114,7 @@ def test_input_effects(data):
 
 
 def test_diagonality(data):
-    # basis_projections are diagonal, whether standarized or not
+    # basis_projections are diagonal, whether standardized or not
     p = pca(data['fmridata'], -1) # standardized
     assert diagonal_covariance(p['basis_projections'], -1)
     pns = pca(data['fmridata'], -1, standardize=False) # not

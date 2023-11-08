@@ -257,7 +257,7 @@ class AR1(OLS):
               i) 'slices through the z-axis'
               ii) 'parcels of approximately constant AR1 coefficient'
             """
-            if len(x.shape) == 2: # 2D imput matrix
+            if len(x.shape) == 2: # 2D input matrix
                 if type(i) is int: # integer indexing
                     # reshape to ND (where N is probably 4)
                     x.shape = (x.shape[0],) + self.fmri_image[0].shape[1:]

@@ -47,7 +47,7 @@ We started NIPY because we want to be able to:
 * support an open collaborative development environment.  To do this,
   we will have to make our code very easy to understand, modify and
   extend.  If make our code available, but we are the only people who
-  write or extend it, in practice, that is closed sofware.
+  write or extend it, in practice, that is closed software.
 * make the tools that allow developers to pick up basic building
   blocks for common tasks such as registration and statistics, and
   build new tools on top.

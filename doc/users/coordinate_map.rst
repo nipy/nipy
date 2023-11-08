@@ -27,7 +27,7 @@ Get the coordinate map for the image:
 >>> anat_img = nipy.load_image(anatfile)
 >>> coordmap = anat_img.coordmap
 
-For more on Coordinate Systems and thier properties
+For more on Coordinate Systems and their properties
 :mod:`nipy.core.reference.coordinate_system`
 
 You can inspect a coordinate map::

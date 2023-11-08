@@ -39,7 +39,7 @@ called *CoordinateMap*.  Mathematically, let's define a *mapping* as a tuple
 hence, implicitly, its range.  However, we will see that when it comes time to
 implement the notion of *mapping*, the tuple we do use to construct
 *CoordinateMap* is almost, but not quite :math:`(D,R,f)` and, in the tuple we
-use, :math:`D` and :math:`R` are not reduntant.
+use, :math:`D` and :math:`R` are not redundant.
 
 Since these mappings are going to be used and called with modules like
 :mod:`numpy`, we should restrict our definition a little bit. We assume the
@@ -367,7 +367,7 @@ Going from this mathematical description to code is fairly straightforward.
    :math:`(D, R, f)` has some redundancy because the function :math:`f` must
    know its domain, and, implicitly its range.  In :mod:`numpy`, it is
    impractical to really pass :math:`f` to the constructor because :math:`f`
-   would expect something of *dtype* :math:`D` and should return someting of
+   would expect something of *dtype* :math:`D` and should return something of
    *dtype* :math:`R`. Therefore, *mapping* is actually a callable that
    represents the function :math:`\tilde{f} = I_R \circ f \circ I_D^{-1}`. Of
    course, the function :math:`f` can be recovered as :math:`f` = I_R^{-1} \circ

@@ -22,7 +22,7 @@ def test_array_coord_map():
     # array coord map recreates the affine when you slice an image.  In
     # general, if you take an integer slice in some dimension, the
     # corresponding column of the affine will go, leaving a row for the
-    # lost dimension, with all zeros, execpt for the translation in the
+    # lost dimension, with all zeros, except for the translation in the
     # now-removed dimension, encoding the position of that particular
     # slice
     xz = 1.1; yz = 2.3; zz = 3.5

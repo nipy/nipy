@@ -152,8 +152,8 @@ Compiling fftw
 * Copy `.libs/libfftw3.a` to BUILDS/lib
 * Copy fftw_XX/api/fftw3.h to BUILDS/include
 
-Compling numpy/scipy
-^^^^^^^^^^^^^^^^^^^^
+Compiling numpy/scipy
+^^^^^^^^^^^^^^^^^^^^^
 
 .. note::
 

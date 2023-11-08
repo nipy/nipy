@@ -361,7 +361,7 @@ def rewrite_spec(subj, run, root = "/home/jtaylo/FIAC-HBM2009"):
 def compare_results(subj, run, other_root, mask_fname):
     """ Find and compare calculated results images from a previous run
 
-    This scipt checks that another directory containing results of this same
+    This script checks that another directory containing results of this same
     analysis are similar in the sense of numpy ``allclose`` within a brain mask.
 
     Parameters

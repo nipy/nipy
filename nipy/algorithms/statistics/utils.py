@@ -432,7 +432,7 @@ def check_cast_bin8(arr):
     Raises
     ------
     ValueError
-        When the array is not binary.  Speficically, raise if, for any element
+        When the array is not binary.  Specifically, raise if, for any element
         ``e``, ``e != (e != 0)``.
     """
     if np.any(arr != (arr !=0)):

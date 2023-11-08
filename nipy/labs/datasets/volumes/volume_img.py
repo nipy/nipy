@@ -36,8 +36,8 @@ class VolumeImg(VolumeGrid):
         world_space : string
             Name of the world space the data is embedded in. For
             instance `mni152`.
-        metadata : dictionnary
-            Optional, user-defined, dictionnary used to carry around
+        metadata : dictionary
+            Optional, user-defined, dictionary used to carry around
             extra information about the data as it goes through
             transformations. The consistency of this information may not
             be maintained as the data is modified.
@@ -82,8 +82,8 @@ class VolumeImg(VolumeGrid):
                 affine transformation to the reference world space
             world_space : string
                 name of the reference world space.
-            metadata : dictionnary
-                dictionnary of user-specified information to store with
+            metadata : dictionary
+                dictionary of user-specified information to store with
                 the image.
         """
         if interpolation not in ('continuous', 'nearest'):

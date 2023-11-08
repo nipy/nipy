@@ -94,7 +94,7 @@ def test_gmm_bf(kmax=4, seed=1):
     Parameters
     ----------
     kmax : range of values that are tested
-    seed=False:  int, optionnal
+    seed=False:  int, optional
         If seed is not False, the random number generator is initialized
         at a certain value
 

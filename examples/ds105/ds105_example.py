@@ -169,7 +169,7 @@ def run_model(subj, run):
     # F-statistics for 'speaker', 'sentence', 'speaker:sentence' based on the
     # two coefficients, one for each HRF in delay.spectral
 
-    # We reproduce the same constrasts as in the data base
+    # We reproduce the same contrasts as in the data base
     # outputting an F using both HRFs, as well as the
     # t using only the first HRF
 

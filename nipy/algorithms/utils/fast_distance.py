@@ -21,7 +21,7 @@ def euclidean_distance(X, Y=None):
 
     Returns
     -------
-    ED, array fo shape(n1, n2) with all the pairwise distance
+    ED, array of shape(n1, n2) with all the pairwise distance
     """
     if Y is None:
         Y = X

@@ -85,7 +85,7 @@ def two_level_glm(y, vy, X, niter=10):
         zfit = np.dot(X, b)
         s2 = np.sum((z - zfit) ** 2 + vz, 0) / dof
 
-    # Ouput arrays
+    # Output arrays
     B = np.reshape(b, [nreg] + list(y.shape[1:]))
     S2 = np.reshape(s2, list(y.shape[1:]))
 

@@ -26,8 +26,8 @@ class VolumeField:
 
         world_space: string
             World space the data is embedded in. For instance `mni152`.
-        metadata: dictionnary
-            Optional, user-defined, dictionnary used to carry around
+        metadata: dictionary
+            Optional, user-defined, dictionary used to carry around
             extra information about the data as it goes through
             transformations. The consistency of this information is not
             maintained as the data is modified.
@@ -133,12 +133,12 @@ class VolumeField:
             Parameters
             ----------
             x : number or ndarray
-                x positions in world space, in other words milimeters
+                x positions in world space, in other words millimeters
             y : number or ndarray
-                y positions in world space, in other words milimeters.
+                y positions in world space, in other words millimeters.
                 The shape of y should match the shape of x
             z : number or ndarray
-                z positions in world space, in other words milimeters.
+                z positions in world space, in other words millimeters.
                 The shape of z should match the shape of x
             interpolation : None, 'continuous' or 'nearest', optional
                 Interpolation type used when calculating values in

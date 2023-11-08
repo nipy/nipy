@@ -219,7 +219,7 @@ def two_sample_ftest(Y, V1, group, n_iter=5, verbose=False):
     Y: array of shape (n_samples, n_tests)
        the data
     V1: array of shape (n_samples, n_tests)
-        first-level variance assocated with the data
+        first-level variance associated with the data
     group: array of shape (n_samples)
        a vector of indicators yielding the samples membership
     n_iter: int, optional,
@@ -253,7 +253,7 @@ def two_sample_ttest(Y, V1, group, n_iter=5, verbose=False):
     Y: array of shape (n_samples, n_tests)
        the data
     V1: array of shape (n_samples, n_tests)
-        first-level variance assocated with the data
+        first-level variance associated with the data
     group: array of shape (n_samples)
        a vector of indicators yielding the samples membership
     n_iter: int, optional,
@@ -330,7 +330,7 @@ def mfx_stat(Y, V1, X, column, n_iter=5, return_t=True,
     Y: array of shape (n_samples, n_tests)
        the data
     V1: array of shape (n_samples, n_tests)
-        first-level variance assocated with the data
+        first-level variance associated with the data
     X: array of shape(n_samples, n_regressors)
        the design matrix of the model
     column: int,

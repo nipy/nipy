@@ -377,7 +377,7 @@ def EC3d(mask):
         # 'flattened' mask (1d array)
         np.ndarray[np.uint8_t, ndim=1] fpmask
         # d3 and d4 are lists of triangles and tetrahedra
-        # associated to particular voxels in the cuve
+        # associated to particular voxels in the cube
         np.ndarray[np.intp_t, ndim=2] d2
         np.ndarray[np.intp_t, ndim=2] d3
         np.ndarray[np.intp_t, ndim=2] d4
@@ -940,7 +940,7 @@ def EC2d(mask):
         # 'flattened' mask (1d array)
         np.ndarray[np.uint8_t, ndim=1] fpmask
         # d2 and d3 are lists of triangles and tetrahedra
-        # associated to particular voxels in the cuve
+        # associated to particular voxels in the cube
         np.ndarray[np.intp_t, ndim=2] d2
         np.ndarray[np.intp_t, ndim=2] d3
         # scalars

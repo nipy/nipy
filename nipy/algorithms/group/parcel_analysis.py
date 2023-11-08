@@ -182,7 +182,7 @@ class ParcelAnalysis:
         msk_img: nipy-like image, optional
           Binary mask to restrict analysis. By default, analysis is
           carried out on all parcels with nonzero value.
-        vcon_imgs: sequece of nipy-like images, optional
+        vcon_imgs: sequence of nipy-like images, optional
           First-level variance estimates corresponding to
           `con_imgs`. This is useful if the input images are
           "noisy". By default, first-level variances are assumed to be
@@ -491,7 +491,7 @@ def parcel_analysis(con_imgs, parcel_img,
     msk_img: nipy-like image, optional
       Binary mask to restrict analysis. By default, analysis is
       carried out on all parcels with nonzero value.
-    vcon_imgs: sequece of nipy-like images, optional
+    vcon_imgs: sequence of nipy-like images, optional
       First-level variance estimates corresponding to `con_imgs`. This
       is useful if the input images are "noisy". By default,
       first-level variances are assumed to be zero.

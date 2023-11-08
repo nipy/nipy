@@ -28,7 +28,7 @@ off_screen_engine = None
 def affine_img_src(data, affine, scale=1, name='AffineImage',
                 reverse_x=False):
     """ Make a Mayavi source defined by a 3D array and an affine, for
-        wich the voxel of the 3D array are mapped by the affine.
+        which the voxel of the 3D array are mapped by the affine.
 
         Parameters
         -----------
@@ -277,7 +277,7 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
             The affine matrix going from the anatomical image voxel space to
             MNI space. This parameter is not used when the default
             anatomical is used, but it is compulsory when using an
-            explicite anatomical image.
+            explicit anatomical image.
         threshold : float, optional
             The lower threshold of the positive activation. This
             parameter is used to threshold the activation map.
@@ -379,7 +379,7 @@ def plot_map_3d(map, affine, cut_coords=None, anat=None, anat_affine=None,
 
 def demo_plot_map_3d():
     map = np.zeros((182, 218, 182))
-    # Color a asymetric rectangle around Broca area:
+    # Color a asymmetric rectangle around Broca area:
     x, y, z = -52, 10, 22
     x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
     map[x_map-5:x_map+5, y_map-3:y_map+3, z_map-10:z_map+10] = 1

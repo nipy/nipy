@@ -16,13 +16,13 @@ def kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=0.0001, verbose=0,
        data array
     nbclusters (int), the number of desired clusters
     Labels = None array of shape (n) prior Labels.
-           if None or inadequate a random initilization is performed.
+           if None or inadequate a random initialization is performed.
     maxiter=300 (int), the maximum number of iterations  before convergence
     delta: float, optional,
            the relative increment in the results
            before declaring convergence.
-    verbose: verbosity mode, optionall
-    ninit: int, optional, number of random initalizations
+    verbose: verbosity mode, optional
+    ninit: int, optional, number of random initializations
 
     Returns
     -------
@@ -171,7 +171,7 @@ def _kmeans(X, nbclusters=2, Labels=None, maxiter=300, delta=1.e-4,
        data array
     nbclusters (int), the number of desired clusters
     Labels: array of shape (n) prior Labels, optional
-            if None or inadequate a random initilization is performed.
+            if None or inadequate a random initialization is performed.
     maxiter: int, optional
              the maximum number of iterations  before convergence
     delta: float, optional
