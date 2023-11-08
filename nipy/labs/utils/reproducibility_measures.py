@@ -665,7 +665,7 @@ def group_reproducibility_metrics(
 
     from ..mask import intersect_masks
 
-    if ((len(variance_images) == 0) & (method != 'crfx')):
+    if len(variance_images) == 0 and method != 'crfx':
         raise ValueError('Variance images are necessary')
 
     nsubj = len(contrast_images)
