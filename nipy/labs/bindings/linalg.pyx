@@ -105,7 +105,8 @@ def vector_set(X, size_t i, double a):
     Set i-th element.
     vector_set(x, i, a)
     """
-    cdef fff_vector *x, *y
+    cdef fff_vector *x
+    cdef fff_vector *y
     x = fff_vector_fromPyArray(X)
     y = fff_vector_new(x.size)
     fff_vector_memcpy(y, x)
@@ -119,7 +120,8 @@ def vector_set_all(X, double a):
     Set to a constant value.
     vector_set_all(x, a)
     """
-    cdef fff_vector *x, *y
+    cdef fff_vector *x
+    cdef fff_vector *y
     x = fff_vector_fromPyArray(X)
     y = fff_vector_new(x.size)
     fff_vector_memcpy(y, x)
@@ -133,7 +135,8 @@ def vector_scale(X, double a):
     Multiply by a constant value.
     y = vector_scale(x, a)
     """
-    cdef fff_vector *x, *y
+    cdef fff_vector *x
+    cdef fff_vector *y
     x = fff_vector_fromPyArray(X)
     y = fff_vector_new(x.size)
     fff_vector_memcpy(y, x)
@@ -147,7 +150,8 @@ def vector_add_constant(X, double a):
     Add a constant value.
     y = vector_add_constant(x, a)
     """
-    cdef fff_vector *x, *y
+    cdef fff_vector *x
+    cdef fff_vector *y
     x = fff_vector_fromPyArray(X)
     y = fff_vector_new(x.size)
     fff_vector_memcpy(y, x)
@@ -161,7 +165,9 @@ def vector_add(X, Y):
     Add two vectors.
     z = vector_add(x, y)
     """
-    cdef fff_vector *x, *y, *z
+    cdef fff_vector *x
+    cdef fff_vector *y
+    cdef fff_vector *z
     x = fff_vector_fromPyArray(X)
     y = fff_vector_fromPyArray(Y)
     z = fff_vector_new(x.size)
@@ -177,7 +183,9 @@ def vector_sub(X, Y):
     Subtract two vectors: x - y
     z = vector_sub(x, y)
     """
-    cdef fff_vector *x, *y, *z
+    cdef fff_vector *x
+    cdef fff_vector *y
+    cdef fff_vector *z
     x = fff_vector_fromPyArray(X)
     y = fff_vector_fromPyArray(Y)
     z = fff_vector_new(x.size)
@@ -193,7 +201,9 @@ def vector_mul(X, Y):
     Element-wise multiplication.
     z = vector_mul(x, y)
     """
-    cdef fff_vector *x, *y, *z
+    cdef fff_vector *x
+    cdef fff_vector *y
+    cdef fff_vector *z
     x = fff_vector_fromPyArray(X)
     y = fff_vector_fromPyArray(Y)
     z = fff_vector_new(x.size)
@@ -209,7 +219,9 @@ def vector_div(X, Y):
     Element-wise division.
     z = vector_div(x, y)
     """
-    cdef fff_vector *x, *y, *z
+    cdef fff_vector *x
+    cdef fff_vector *y
+    cdef fff_vector *z
     x = fff_vector_fromPyArray(X)
     y = fff_vector_fromPyArray(Y)
     z = fff_vector_new(x.size)
@@ -300,7 +312,8 @@ def matrix_transpose(A):
     Transpose a matrix.
     B = matrix_transpose(A)
     """
-    cdef fff_matrix *a, *b
+    cdef fff_matrix *a
+    cdef fff_matrix *b
     a = fff_matrix_fromPyArray(A)
     b = fff_matrix_new(a.size2, a.size1)
     fff_matrix_transpose(b, a)
@@ -312,7 +325,9 @@ def matrix_add(A, B):
     """
     C = matrix_add(A, B)
     """
-    cdef fff_matrix *a, *b, *c
+    cdef fff_matrix *a
+    cdef fff_matrix *b
+    cdef fff_matrix *c
     a = fff_matrix_fromPyArray(A)
     b = fff_matrix_fromPyArray(B)
     c = fff_matrix_new(a.size1, a.size2)
@@ -368,13 +383,16 @@ def blas_dasum(X):
     return fff_blas_dasum(x)
 
 def blas_ddot(X, Y):
-    cdef fff_vector *x, *y
+    cdef fff_vector *x
+    cdef fff_vector *y
     x = fff_vector_fromPyArray(X)
     y = fff_vector_fromPyArray(Y)
     return fff_blas_ddot(x, y)
 
 def blas_daxpy(double alpha, X, Y):
-    cdef fff_vector *x, *y, *z
+    cdef fff_vector *x
+    cdef fff_vector *y
+    cdef fff_vector *z
     x = fff_vector_fromPyArray(X)
     y = fff_vector_fromPyArray(Y)
     z = fff_vector_new(y.size)
@@ -384,7 +402,8 @@ def blas_daxpy(double alpha, X, Y):
     return Z
 
 def blas_dscal(double alpha, X):
-    cdef fff_vector *x, *y
+    cdef fff_vector *x
+    cdef fff_vector *y
     x = fff_vector_fromPyArray(X)
     y = fff_vector_new(x.size)
     fff_vector_memcpy(y, x)
@@ -403,7 +422,10 @@ def blas_dgemm(int TransA, int TransB, double alpha, A, B, double beta, C):
     beta C where op(A) = A, A^T, A^H for TransA = CblasNoTrans,
     CblasTrans, CblasConjTrans and similarly for the parameter TransB.
     """
-    cdef fff_matrix *a, *b, *c, *d
+    cdef fff_matrix *a
+    cdef fff_matrix *b
+    cdef fff_matrix *c
+    cdef fff_matrix *d
     a = fff_matrix_fromPyArray(A)
     b = fff_matrix_fromPyArray(B)
     c = fff_matrix_fromPyArray(C)
@@ -428,7 +450,10 @@ def blas_dsymm(int Side, int Uplo, double alpha, A, B, beta, C):
     when Uplo is CblasLower then the lower triangle and diagonal of A
     are used.
     """
-    cdef fff_matrix *a, *b, *c, *d
+    cdef fff_matrix *a
+    cdef fff_matrix *b
+    cdef fff_matrix *c
+    cdef fff_matrix *d
     a = fff_matrix_fromPyArray(A)
     b = fff_matrix_fromPyArray(B)
     c = fff_matrix_fromPyArray(C)
@@ -455,7 +480,9 @@ def blas_dtrmm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B):
     diagonal elements of the matrix A are taken as unity and are not
     referenced.
     """
-    cdef fff_matrix *a, *b, *c
+    cdef fff_matrix *a
+    cdef fff_matrix *b
+    cdef fff_matrix *c
     a = fff_matrix_fromPyArray(A)
     b = fff_matrix_fromPyArray(B)
     c = fff_matrix_new(a.size1, a.size2)
@@ -482,7 +509,9 @@ def blas_dtrsm(int Side, int Uplo, int TransA, int Diag, double alpha, A, B):
     CblasUnit then the diagonal elements of the matrix A are taken as
     unity and are not referenced.
     """
-    cdef fff_matrix *a, *b, *c
+    cdef fff_matrix *a
+    cdef fff_matrix *b
+    cdef fff_matrix *c
     a = fff_matrix_fromPyArray(A)
     b = fff_matrix_fromPyArray(B)
     c = fff_matrix_new(a.size1, a.size2)
@@ -507,7 +536,9 @@ def blas_dsyrk(int Uplo, int Trans, double alpha, A, double beta, C):
     when Uplo is CblasLower then the lower triangle and diagonal of C
     are used.
     """
-    cdef fff_matrix *a, *c, *d
+    cdef fff_matrix *a
+    cdef fff_matrix *c
+    cdef fff_matrix *d
     a = fff_matrix_fromPyArray(A)
     c = fff_matrix_fromPyArray(C)
     d = fff_matrix_new(a.size1, a.size2)
@@ -529,7 +560,10 @@ def blas_dsyr2k(int Uplo, int Trans, double alpha, A, B, double beta, C):
     and when Uplo is CblasLower then the lower triangle and diagonal of C
     are used.
     """
-    cdef fff_matrix *a, *b, *c, *d
+    cdef fff_matrix *a
+    cdef fff_matrix *b
+    cdef fff_matrix *c
+    cdef fff_matrix *d
     a = fff_matrix_fromPyArray(A)
     b = fff_matrix_fromPyArray(B)
     c = fff_matrix_fromPyArray(C)
