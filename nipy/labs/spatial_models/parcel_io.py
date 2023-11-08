@@ -218,7 +218,7 @@ def parcellation_based_analysis(Pa, test_images, test_id='one_sample',
                      for ti in test_images]).T
     test_data = Pa.make_feature('', np.array(test))
 
-    if test_id is not 'one_sample':
+    if test_id != 'one_sample':
         return test_data
 
     # 2. perform one-sample test
@@ -285,7 +285,7 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
     # 1.1 the domain
     domain = grid_domain_from_image(mask_image, nn)
 
-    if method is not 'kmeans':
+    if method != 'kmeans':
         # 1.2 get the main cc of the graph
         # to remove the small connected components
         pass
@@ -305,7 +305,7 @@ def fixed_parcellation(mask_image, betas, nbparcel, nn=6, method='ward',
 
     #step 2: parcellate the data ---------------------------
 
-    if method is not 'kmeans':
+    if method != 'kmeans':
         g = field_from_coo_matrix_and_data(domain.topology, feature)
 
     if method == 'kmeans':
