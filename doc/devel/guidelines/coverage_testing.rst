@@ -11,7 +11,7 @@ certain conditions which are never tested.
 
 This is an excellent task for pytest_ - the automated test runner we are
 using.  Pytest can run the `python coverage tester`_.  First make sure
-you have the coverage test pluging installed on your system::
+you have the coverage test plugin installed on your system::
 
     pip install pytest-cov
 

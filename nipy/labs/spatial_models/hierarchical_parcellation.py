@@ -90,12 +90,12 @@ def _exclusion_map_dep(i, ref, target, targeti):
     i (int): index of the structure under consideration
     ref: Field that represent the topological structure of parcels
          and their standard position
-    target: array of shape (ref.V,3): current posistion of the parcels
+    target: array of shape (ref.V,3): current position of the parcels
     targeti array of shape (n,3): possible new positions for the ith item
 
     Returns
     -------
-    emap: aray of shape (n): a potential that yields the fitness
+    emap: array of shape (n): a potential that yields the fitness
           of the proposed positions given the current configuration
     rmin (double): ancillary parameter
     """
@@ -114,7 +114,7 @@ def _exclusion_map_dep(i, ref, target, targeti):
 
 
 def _exclusion_map(i, ref, target, targeti):
-    """Ancillary function to determin admissible values of some position
+    """Ancillary function to determine admissible values of some position
     within some predefined values
 
     Parameters
@@ -122,12 +122,12 @@ def _exclusion_map(i, ref, target, targeti):
     i (int): index of the structure under consideration
     ref: Field that represent the topological structure of parcels
          and their standard position
-    target= array of shape (ref.V,3): current posistion of the parcels
+    target= array of shape (ref.V,3): current position of the parcels
     targeti array of shape (n,3): possible new positions for the ith item
 
     Returns
     -------
-    emap: aray of shape (n): a potential that yields the fitness
+    emap: array of shape (n): a potential that yields the fitness
           of the proposed positions given the current configuration
     rmin (double): ancillary parameter
     """
@@ -228,7 +228,7 @@ def _optim_hparcel(feature, domain, graphs, nb_parcel, lamb=1., dmax=10.,
     graphs: graph that represents the topology of the parcellation
     anat_coord: array of shape (nvox,3) space defining set of coordinates
     nb_parcel: int
-               the number of desrired parcels
+               the number of desired parcels
     lamb=1.0: parameter to weight position
               and feature impact on the algorithm
     dmax = 10: locality parameter (in the space of anat_coord)
@@ -444,7 +444,7 @@ def perm_prfx(domain, graphs, features, nb_parcel, ldata, initial_mask=None,
     caveat: assumes that the functional dimension is 1
     """
     from ..utils.reproducibility_measures import ttest
-    # permutations for the assesment of the results
+    # permutations for the assessment of the results
     prfx0 = []
     adim = domain.coord.shape[1]
     nb_subj = len(ldata)

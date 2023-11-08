@@ -2,7 +2,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Example of a script that perfoms histogram analysis of an activation image.
+Example of a script that performs histogram analysis of an activation image.
 This is based on a real fMRI image.
 
 Simply modify the input image path to make it work on your preferred image.

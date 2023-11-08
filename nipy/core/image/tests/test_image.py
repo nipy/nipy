@@ -405,7 +405,7 @@ def test_rollimg():
     im_r = Image(data[:,:,:,0], AT('ijk', 'xyzt', aff_r))
     assert (rollimg(im_r, 'k').coordmap ==
                  AT('kij', 'xyzt', aff_r[:, (2, 0, 1, 3)]))
-    # Unless you're tring to get at the dropped input dimension of course
+    # Unless you're trying to get at the dropped input dimension of course
     pytest.raises(AxisError, rollimg, im_r, 't')
     # Another check for integers, input names, output names, reversing
     for i, o, n in zip('ijkl', 'xyzt', range(4)):

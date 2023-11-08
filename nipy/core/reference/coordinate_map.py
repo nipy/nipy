@@ -360,7 +360,7 @@ class CoordinateMap:
         """ Return mapping evaluated at x
 
         Also, check x and the return value of self.function for
-        compatiblity with function_domain and function_range coordinate
+        compatibility with function_domain and function_range coordinate
         systems respectively.
 
         Parameters
@@ -526,7 +526,7 @@ class AffineTransform:
         function_range : :class:`CoordinateSystem`
            output coordinates
         affine : array-like
-           affine homogenous coordinate matrix
+           affine homogeneous coordinate matrix
 
         Notes
         -----
@@ -668,7 +668,7 @@ class AffineTransform:
         innames : sequence of str or str
            The names of the axes of the domain.  If str, then names
            given by ``list(innames)``
-        outnames : seqence of str or str
+        outnames : sequence of str or str
            The names of the axes of the range. If str, then names
            given by ``list(outnames)``
         params : AffineTransform, array or (array, array)
@@ -710,7 +710,7 @@ class AffineTransform:
         innames : sequence of str or str
            The names of the axes of the domain.  If str, then names
            given by ``list(innames)``
-        outnames : seqence of str or str
+        outnames : sequence of str or str
            The names of the axes of the range. If str, then names
            given by ``list(outnames)``
         start : sequence of float
@@ -1240,7 +1240,7 @@ def shifted_domain_origin(mapping, difference_vector, new_origin):
 
     >>> difference = np.random.standard_normal(5)
 
-    The same affine transforation with a different origin for its domain
+    The same affine transformation with a different origin for its domain
 
     >>> shifted_affine_transform = shifted_domain_origin(affine_transform, difference, 'neworigin')
     >>> shifted_affine_transform.function_domain
@@ -2180,7 +2180,7 @@ class CoordMapMaker:
         Parameters
         ----------
         affine : (M, N) array-like
-            Array expressing the affine tranformation
+            Array expressing the affine transformation
         append_zooms : scalar or sequence length E
             If scalar, converted to sequence length E==1. Append E entries to
             the diagonal of `affine` (see examples)

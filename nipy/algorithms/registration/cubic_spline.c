@@ -625,7 +625,7 @@ static inline void _apply_affine_transform(double* Tx, double* Ty, double* Tz,
 /*
    Convert an input grid coordinate x into another grid coordinate
    within [0, ddim], possibly using a reflection. This function
-   implicitely assumes that -ddim < x < 2*ddim
+   implicitly assumes that -ddim < x < 2*ddim
  */
 static inline int _mirrored_position(int x, unsigned int ddim)
 {

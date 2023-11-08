@@ -17,7 +17,7 @@ general, there might be some other parameters (i.e. sympy.Symbol
 instances) that are not Terms.
 
 The design matrix is made up of columns that are the derivatives of mean
-with respect to everything that is not a Term, evaluted at a recarray
+with respect to everything that is not a Term, evaluated at a recarray
 that has field names given by [str(t) for t in self.terms].
 
 For those familiar with R's formula syntax, if we wanted a design matrix
@@ -88,7 +88,7 @@ With the Formula, it looks like this:
 >>> f.mean
 _b0*x1 + _b1*x3 + _b2*x1*x3 + _b3
 
-The I is the "intercept" term, I have explicity not used R's default of
+The I is the "intercept" term, I have explicitly not used R's default of
 adding it to everything.
 
 >>> f.design(r)  #doctest: +FIX +FLOAT_CMP
@@ -857,7 +857,7 @@ class Formula:
                 a = a.view(np.dtype([('intercept', np.float64)]))
             return a
         elif not self._dtypes['term']:
-            raise ValueError("none of the expresssions are self.terms "
+            raise ValueError("none of the expressions in self.terms "
                              "are Term instances; shape of resulting "
                              "undefined")
         # The term_recarray is essentially the same as preterm_recarray,

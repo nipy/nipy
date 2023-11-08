@@ -37,7 +37,7 @@ Often it is not possible to run the code directly from ipython using
 the ``run`` command.  For example, the code may be called from some
 other system such as sphinx_.  In that case you can embed.  At the
 point that you want ipython to open with the context available for
-instrospection, add::
+introspection, add::
 
    from IPython.Shell import IPShellEmbed
    ipshell = IPShellEmbed()

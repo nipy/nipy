@@ -73,7 +73,7 @@ def make_fiac_contrasts(p):
 
 # compute fixed effects of the two runs and compute related images
 n_regressors = np.load(design_files[0])['X'].shape[1]
-# note: implictly assume the same shape for all sessions !
+# note: implicitly assume the same shape for all sessions !
 contrasts = make_fiac_contrasts(n_regressors)
 
 # write directory

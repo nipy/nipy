@@ -55,7 +55,7 @@ class Segmentation:
 
         self.nchannels = nchannels
 
-        # Make default mask (required by MRF regularization). This wil
+        # Make default mask (required by MRF regularization). This will
         # be passed to the _ve_step C-routine, which assumes a
         # contiguous int array and raise an error otherwise. Voxels on
         # the image borders are further rejected to avoid segmentation

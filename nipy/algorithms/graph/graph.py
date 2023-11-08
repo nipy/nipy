@@ -411,7 +411,7 @@ def eps_nn(X, eps=1.):
 
 
 def lil_cc(lil):
-    """ Returns the connected comonents of a graph represented as a
+    """ Returns the connected components of a graph represented as a
     list of lists
 
     Parameters
@@ -584,7 +584,7 @@ class WeightedGraph(Graph):
         edges : (E, 2) array, type int
             edges of the graph
         weights : (E, 2) array, type=int
-            weights/lenghts of the edges
+            weights/lengths of the edges
         """
         Graph.__init__(self, V, edges=edges)
 
@@ -645,7 +645,7 @@ class WeightedGraph(Graph):
 
     def cut_redundancies(self):
         """ Returns a graph with redundant edges removed:
-        ecah edge (ab) is present ony once in the edge matrix:
+        ecah edge (ab) is present only once in the edge matrix:
         the correspondng weights are added.
 
         Returns
@@ -698,7 +698,7 @@ x
                 break
             dwin, win = node
             active[win] = False
-            # the folllowing loop might be vectorized
+            # the following loop might be vectorized
             l = neighb[idx[win]: idx[win + 1]]
             newdist = dwin + weight[idx[win]: idx[win + 1]]
             who = newdist < dist[l]
@@ -713,7 +713,7 @@ x
         Returns
         -------
         idx: array of of shape(self.V + 1):
-             the positions where to find the neighors of each node
+             the positions where to find the neighbors of each node
              within neighb and weights
         neighb: array of shape(self.E), concatenated list of neighbors
         weights: array of shape(self.E), concatenated list of weights
@@ -807,7 +807,7 @@ x
     def set_euclidian(self, X):
         """
         Compute the weights of the graph as the distances between the
-        corresponding rows of X, which represents an embdedding of self
+        corresponding rows of X, which represents an embedding of self
 
         Parameters
         ----------
@@ -826,7 +826,7 @@ x
         """
         Compute the weights  of the graph as a gaussian function
         of the distance  between the corresponding rows of X,
-        which represents an embdedding of self
+        which represents an embedding of self
 
         Parameters
         ----------
@@ -915,7 +915,7 @@ x
                 break
             dwin, win = node
             active[win] = False
-            # the folllowing loop might be vectorized
+            # the following loop might be vectorized
             for i in range(idx[win], idx[win + 1]):
                 l, newdist = neighb[i], dwin + weight[i]
                 if  newdist < dist[l]:
@@ -985,7 +985,7 @@ x
 
     def subgraph(self, valid):
         """ Creates a subgraph with the vertices for which valid>0
-        and with the correponding set of edges
+        and with the corresponding set of edges
 
         Parameters
         ----------

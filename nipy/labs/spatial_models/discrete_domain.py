@@ -71,7 +71,7 @@ def smatrix_from_nd_array(mask, nn=0):
     mask : nd array,
            input array, interpreted as a mask
     nn: int, optional
-        nd neighboring system, unsused at the moment
+        nd neighboring system, unused at the moment
 
     Returns
     -------
@@ -201,13 +201,13 @@ def domain_from_binary_array(mask, affine=None, nn=0):
     Parameters
     ----------
     mask: np.array instance
-          a supposedly boolean array that repesents the domain
+          a supposedly boolean array that represents the domain
     affine: np.array, optional
             affine transform that maps the array coordinates
             to some embedding space
             by default, this is np.eye(dim+1, dim+1)
     nn: neighboring system considered
-        unsued at the moment
+        unused at the moment
 
     """
     dim = len(mask.shape)
@@ -226,7 +226,7 @@ def domain_from_image(mim, nn=18):
     Parameters
     ----------
     mim: NiftiIImage instance, or string path toward such an image
-         supposedly a mask (where is used to crate the DD)
+         supposedly a mask (where is used to create the DD)
     nn: int, optional
         neighboring system considered from the image
         can be 6, 18 or 26
@@ -249,13 +249,13 @@ def grid_domain_from_binary_array(mask, affine=None, nn=0):
     Parameters
     ----------
     mask: np.array instance
-          a supposedly boolean array that repesents the domain
+          a supposedly boolean array that represents the domain
     affine: np.array, optional
             affine transform that maps the array coordinates
             to some embedding space
             by default, this is np.eye(dim+1, dim+1)
     nn: neighboring system considered
-        unsued at the moment
+        unused at the moment
 
     """
     dim = len(mask.shape)
@@ -276,7 +276,7 @@ def grid_domain_from_image(mim, nn=18):
     Parameters
     ----------
     mim: NiftiIImage instance, or string path toward such an image
-         supposedly a mask (where is used to crate the DD)
+         supposedly a mask (where is used to create the DD)
     nn: int, optional
         neighboring system considered from the image
         can be 6, 18 or 26
@@ -773,7 +773,7 @@ class NDGridDomain(StructuredDomain):
 
         Returns
         -------
-        the correponding set of values
+        the corresponding set of values
 
         """
         if isinstance(path, str):

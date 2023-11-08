@@ -99,7 +99,7 @@ things from Windows powershell.
 The more general way
 ====================
 
-The commands for the sytem install above assume you are installing into the
+The commands for the system install above assume you are installing into the
 default system directories.  If you want to install into a custom directory,
 then (in python, or ipython, or a text editor) look at the help for
 ``nibabel.data.get_data_path()`` . There are instructions there for pointing

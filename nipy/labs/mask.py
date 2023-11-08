@@ -253,7 +253,7 @@ def compute_mask_sessions(session_images, m=0.2, M=0.9, cc=1, threshold=0.5,
                           exclude_zeros=False, return_mean=False, opening=2):
     """ Compute a common mask for several sessions of fMRI data.
 
-        Uses the mask-finding algorithmes to extract masks for each
+        Uses the mask-finding algorithms to extract masks for each
         session, and then keep only the main connected component of the
         a given fraction of the intersection of all the masks.
 
@@ -280,7 +280,7 @@ def compute_mask_sessions(session_images, m=0.2, M=0.9, cc=1, threshold=0.5,
         threshold. This option is useful if the images have been
         resliced with a large padding of zeros.
     return_mean: boolean, optional
-        if return_mean is True, the mean image accross subjects is
+        if return_mean is True, the mean image across subjects is
         returned.
     opening: int, optional,
              size of  the morphological opening
@@ -435,7 +435,7 @@ def series_from_mask(filenames, mask, dtype=np.float32,
     Notes
     -----
     When using smoothing, ensure_finite should be True: as elsewhere non
-    finite values will spread accross the image.
+    finite values will spread across the image.
     """
     assert len(filenames) != 0, (
         'filenames should be a file name or a list of file names, '

@@ -110,7 +110,7 @@ class LandmarkRegions:
 
     def map_label(self, coord=None, pval=1., sigma=1.):
         """Sample the set of landmark regions
-        on the proposed coordiante set cs, assuming a Gaussian shape
+        on the proposed coordinate set cs, assuming a Gaussian shape
 
         Parameters
         ----------

@@ -34,7 +34,7 @@ interp_methods = {'pv': 0, 'tri': 1, 'rand': -1}
 
 class HistogramRegistration:
     """
-    A class to reprensent a generic intensity-based image registration
+    A class to represent a generic intensity-based image registration
     algorithm.
     """
     def __init__(self, from_img, to_img,
@@ -87,7 +87,7 @@ class HistogramRegistration:
             to_bins = from_bins
 
         # Clamping of the `from` image. The number of bins may be
-        # overriden if unnecessarily large.
+        # overridden if unnecessarily large.
         data, from_bins_adjusted = clamp(from_img.get_fdata(), from_bins,
                                          mask=from_mask)
         if similarity != 'slr':
@@ -351,7 +351,7 @@ class HistogramRegistration:
 
         # Cost function to minimize
         def cost(tc):
-            # This is where the similarity function is calculcated
+            # This is where the similarity function is calculated
             Tv.param = tc
             return -self._eval(Tv)
 

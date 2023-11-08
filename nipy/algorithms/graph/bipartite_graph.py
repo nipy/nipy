@@ -14,7 +14,7 @@ import numpy as np
 
 
 def check_feature_matrices(X, Y):
-    """ checks wether the dismension of X and Y are consistent
+    """ checks whether the dimensions of X and Y are consistent
 
     Parameters
     ----------
@@ -172,7 +172,7 @@ class BipartiteGraph:
         edges=None: array of shape (self.E, 2)
                     the edge array of the graph
         weights=None: array of shape (self.E)
-                      the asociated weights array
+                      the associated weights array
         """
         V = int(V)
         W = int(W)

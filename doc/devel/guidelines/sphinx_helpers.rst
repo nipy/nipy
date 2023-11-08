@@ -88,7 +88,7 @@ the above reference will appear as :ref:`sphinx_helpers`.  As the
 documentation grows there are many references to keep track of.
 
 For documents, please use a *reference label* that matches the file
-name.  For sections, please try and make the *refence label* something
+name.  For sections, please try and make the *reference label* something
 meaningful and try to keep abbreviations limited.  Along these lines,
 we are using *underscores* for multiple-word *reference labels*
 instead of hyphens.
@@ -133,7 +133,7 @@ Links to classes, modules and functions
 
 You can also reference classes, modules, functions, etc that are
 documented using the sphinx `autodoc
-<http://sphinx.pocoo.org/ext/autodoc.html>`_ facilites.  For example,
+<http://sphinx.pocoo.org/ext/autodoc.html>`_ facilities.  For example,
 see the module :mod:`matplotlib.backend_bases` documentation, or the
 class :class:`~matplotlib.backend_bases.LocationEvent`, or the method
 :meth:`~matplotlib.backend_bases.FigureCanvasBase.mpl_connect`.

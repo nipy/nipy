@@ -110,7 +110,7 @@ with ipython, which was released under the :term:`LGPL` and then
 re-released under a BSD license to ease integration with matplotlib,
 scipy and enthought code.   The LGPL is more permissive than the GPL,
 allowing you to link with it non-virally, but many companies are still
-loath to use it out of legal concerns, and you cannot reuse LGPL code
+loathe to use it out of legal concerns, and you cannot reuse LGPL code
 in a proprietary product.
 
 So I encourage you to release your code under a BSD compatible

@@ -77,7 +77,7 @@ If the best matching axis is reversed compared to input axis::
 
 and so on.
 
-Creating transformations / co-ordinate maps
+Creating transformations / coordinate maps
 -------------------------------------------
 
 I have an array *pixelarray* that represents voxels in an image and have a
@@ -220,13 +220,13 @@ same for *img2*.  For example, I might choose to display this image
 resampled so each voxel is a 1mm cube.
 
 Now I have these transformations:  ST(*img1*-V2W), and
-ST(*img2*-V2W) (where ST is *scanner tranform* as above, and *V2W* is
+ST(*img2*-V2W) (where ST is *scanner transform* as above, and *V2W* is
 voxel to world).
 
 I have now done a coregistration between *img1* and *img2*
 (somehow) - giving me, in addition to *img1* and *img2*, a
 transformation that registers *img1* and *img2*. Let's call this
-tranformation V2V(*img1*, *img2*), where V2V is voxel-to-voxel.
+transformation V2V(*img1*, *img2*), where V2V is voxel-to-voxel.
 
 In actuality *img2* can be an array of images, such as series of fMRI
 images and I want to align all the *img2* series to *img1* and then

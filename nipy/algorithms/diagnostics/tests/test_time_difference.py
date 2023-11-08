@@ -49,7 +49,7 @@ def test_time_slice_diffs():
     results = tsd.time_slice_diffs(ts)
     for key in expected:
         assert_array_almost_equal(results[key], expected[key])
-    # tranposes, reset axes, get the same result
+    # transposes, reset axes, get the same result
     results = tsd.time_slice_diffs(ts.T, 0, 1)
     results['diff2_mean_vol'] = results['diff2_mean_vol'].T
     results['slice_diff2_max_vol'] = results['slice_diff2_max_vol'].T

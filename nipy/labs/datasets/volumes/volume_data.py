@@ -31,8 +31,8 @@ class VolumeData(VolumeField):
 
         world_space: string
             World space the data is embedded in. For instance `mni152`.
-        metadata: dictionnary
-            Optional, user-defined, dictionnary used to carry around
+        metadata: dictionary
+            Optional, user-defined, dictionary used to carry around
             extra information about the data as it goes through
             transformations. The class consistency of this information is
             not maintained as the data is modified.

@@ -13,7 +13,7 @@ high ideals of :ref:`nipy-mission`.
 *The NIPY team*
 
 .. We need the following toctree directive to include the documentation
-.. in the document heirarchy - see http://sphinx.pocoo.org/concepts.html
+.. in the document hierarchy - see http://sphinx.pocoo.org/concepts.html
 .. toctree::
     :hidden:
 

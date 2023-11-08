@@ -23,8 +23,8 @@ from .edge_detect import _edge_map
 ################################################################################
 # Bugware to have transparency work OK with MPL < .99.1
 if mpl.__version__ < '0.99.1':
-    # We wrap the lut as a callable and replace its evalution to put
-    # alpha to zero where the mask is true. This is what is done in
+    # We wrap the lut as a callable and replace its evaluation to put
+    # alpha to zero where the mask is true. This is what is done if
     # MPL >= .99.1
     from matplotlib import colors
     class CMapProxy(colors.Colormap):
@@ -71,7 +71,7 @@ class CutAxes:
             direction: {'x', 'y', 'z'}
                 The directions of the cut
             coord: float
-                The coordinnate along the direction of the cut
+                The coordinate along the direction of the cut
         """
         self.ax = ax
         self.direction = direction
@@ -205,7 +205,7 @@ class BaseSlicer:
                 The axes that will be subdivided in 3.
             black_bg: boolean, optional
                 If True, the background of the figure will be put to
-                black. If you whish to save figures with a black background,
+                black. If you wish to save figures with a black background,
                 you will need to pass "facecolor='k', edgecolor='k'" to
                 pyplot's savefig.
 
@@ -471,7 +471,7 @@ class OrthoSlicer(BaseSlicer):
         Attributes
         ----------
 
-        axes: dictionnary of axes
+        axes: dictionary of axes
             The 3 axes used to plot each view.
         frame_axes: axes
             The axes framing the whole set of views.
@@ -522,7 +522,7 @@ class OrthoSlicer(BaseSlicer):
             bounds = cut_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
-                # succesful. As it happens asyncroniously (during a
+                # successful. As it happens asyncroniously (during a
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
@@ -547,7 +547,7 @@ class OrthoSlicer(BaseSlicer):
             ----------
             cut_coords: 3-tuple of floats, optional
                 The position of the cross to draw. If none is passed, the
-                ortho_slicer's cut coordinnates are used.
+                ortho_slicer's cut coordinates are used.
             kwargs:
                 Extra keyword arguments are passed to axhline
         """
@@ -596,7 +596,7 @@ class BaseStackedSlicer(BaseSlicer):
         Attributes
         ----------
 
-        axes: dictionnary of axes
+        axes: dictionary of axes
             The axes used to plot each view.
         frame_axes: axes
             The axes framing the whole set of views.
@@ -660,7 +660,7 @@ class BaseStackedSlicer(BaseSlicer):
             bounds = cut_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
-                # succesful. As it happens asyncroniously (during a
+                # successful. As it happens asyncroniously (during a
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
@@ -687,7 +687,7 @@ class BaseStackedSlicer(BaseSlicer):
             ----------
             cut_coords: 3-tuple of floats, optional
                 The position of the cross to draw. If none is passed, the
-                ortho_slicer's cut coordinnates are used.
+                ortho_slicer's cut coordinates are used.
             kwargs:
                 Extra keyword arguments are passed to axhline
         """

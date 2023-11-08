@@ -217,8 +217,8 @@ class WeightedForest(Forest):
     def list_of_subtrees(self):
         """
         returns the list of all non-trivial subtrees in the graph
-        Caveat: theis function assumes that the vertices are sorted in a
-        way such that parent[i]>i forall i
+        Caveat: this function assumes that the vertices are sorted in a
+        way such that parent[i]>i for all i
         Only the leaves are listeed, not the subtrees themselves
         """
         lst = []
@@ -317,7 +317,7 @@ def average_link_graph(G):
     negated affinity values, in roder to respect the traditional
     ordering of cluster potentials. individual points have the
     potential (-np.inf).
-    This problem is handled transparently inthe associated segment functionp.
+    This problem is handled transparently in the associated segment function.
     """
     warn('Function average_link_graph deprecated, will be removed',
          FutureWarning,
@@ -451,7 +451,7 @@ def _inertia(i, j, Features):
 def _initial_inertia(K, Features, seeds=None):
     """ Compute the variance associated with each
     edge-related pair of vertices
-    Thre sult is written in K;weights
+    The result is written in K;weights
     if seeds if provided (seeds!=None)
     this is done only for vertices adjacent to the seeds
     """

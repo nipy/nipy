@@ -2,9 +2,9 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 This module implements the Field class, which simply a WeightedGraph
-(see the graph.py) module, plus an arrray that yields (possibly
+(see the graph.py) module, plus an array that yields (possibly
 multi-dimnesional) features associated with graph vertices. This
-allows some kinds of computations (all thoses relating to mathematical
+allows some kinds of computations (all those relating to mathematical
 morphology, diffusion etc.)
 
 Certain functions are provided to Instantiate Fields easily, given a
@@ -82,7 +82,7 @@ class Field(WeightedGraph):
         ----------
         V (int > 0) the number of vertices of the graph
         edges=None: the edge array of the graph
-        weights=None: the asociated weights array
+        weights=None: the associated weights array
         field=None: the field data itself
         """
         V = int(V)
@@ -204,7 +204,7 @@ class Field(WeightedGraph):
         return hneighb
 
     def erosion(self, nbiter=1):
-        """Morphological openeing of the field
+        """Morphological opening of the field
 
         Parameters
         ----------

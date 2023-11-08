@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-An implementation of some of the NIFTI conventions as desribed in:
+An implementation of some of the NIFTI conventions as described in:
 
 http://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1.h
 
@@ -76,7 +76,7 @@ NIFTI input / output mapping
 ----------------------------
 
 NIFTI stores the relationship between the first 3 (spatial) voxel axes and the
-RAS+ coordinates in an *XYZ affine*.  This is a homogenous coordinate affine,
+RAS+ coordinates in an *XYZ affine*.  This is a homogeneous coordinate affine,
 hence 4 by 4 for 3 (spatial) dimensions.
 
 NIFTI also stores "pixel dimensions" in a ``pixdim`` field. This can give you

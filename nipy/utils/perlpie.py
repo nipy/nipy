@@ -30,7 +30,7 @@ command line options.
 
 Examples
 --------
-Replace all occurences of foo with bar::
+Replace all occurrences of foo with bar::
 
     perlpie foo bar
 
@@ -43,7 +43,7 @@ have to escape the @ symbol which has special meaning in perl::
 
     perlpie '\@slow' '\@dec.super_slow'
 
-Remove all occurences of importing make_doctest_suite::
+Remove all occurrences of importing make_doctest_suite::
 
     perlpie 'from\snipy\.utils\.testutils.*make_doctest_suite'
 
@@ -76,7 +76,7 @@ def perl_dash_pie(oldstr, newstr, dry_run=None):
     Examples
     --------
 
-    # To replace all occurences of 'import numpy as N' with 'import numpy as np'
+    # To replace all occurrences of 'import numpy as N' with 'import numpy as np'
     from nipy.utils import perlpie
     perlpie.perl_dash_pie('import\s+numpy\s+as\s+N', 'import numpy as np')
     grind | xargs perl -pi -e 's/import\s+numpy\s+as\s+N/import numpy as np/g'

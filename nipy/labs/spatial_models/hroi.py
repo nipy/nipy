@@ -482,18 +482,18 @@ class HierarchicalROI(SubDomains):
         is_leaf = np.asarray(
             [(len(child) == 0) or (len(child) == 1 and child[0] == i)
              for i, child in enumerate(is_leaf_aux)])
-        # finaly return ids
+        # finally return ids
         return self.get_id()[is_leaf]
 
     def reduce_to_leaves(self):
         """Create a  new set of rois which are only the leaves of self.
 
         Modification of the structure is done in place. One way therefore
-        want to work on a copy a of a given HROI oject.
+        want to work on a copy a of a given HROI object.
 
         """
         if self.k == 0:
-            # handle the empy HROI case
+            # handle the empty HROI case
             return HierarchicalROI(
                 self.domain, -np.ones(self.domain.size), np.array([]))
         leaves_id = self.get_leaves_id()

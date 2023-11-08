@@ -160,7 +160,7 @@ def test_em_gmm_diag():
 
 
 def test_em_gmm_multi():
-    # Playing with various initilizations on the same data
+    # Playing with various initializations on the same data
 
     # generate some data
     dim = 2

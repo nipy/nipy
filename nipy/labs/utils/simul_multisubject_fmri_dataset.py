@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-This module conatins a function to produce a dataset which simulates
+This module contains a function to produce a dataset which simulates
 a collection of 2D images This dataset is saved as a 3D image
 (each slice being a subject) and a 3D array
 
@@ -53,37 +53,37 @@ def surrogate_2d_dataset(n_subj=10, shape=(30, 30), sk=1.0,
 
     Parameters
     -----------
-    n_subj: integer, optionnal
+    n_subj: integer, optional
         The number of subjects, ie the number of different maps
         generated.
     shape=(30,30): tuple of integers,
          the shape of each image
-    sk: float, optionnal
+    sk: float, optional
         Amount of spatial noise smoothness.
-    noise_level: float, optionnal
+    noise_level: float, optional
         Amplitude of the spatial noise.
         amplitude=noise_level)
-    pos: 2D ndarray of integers, optionnal
+    pos: 2D ndarray of integers, optional
         x, y positions of the various simulated activations.
-    ampli: 1D ndarray of floats, optionnal
+    ampli: 1D ndarray of floats, optional
         Respective amplitude of each activation
-    spatial_jitter: float, optionnal
+    spatial_jitter: float, optional
         Random spatial jitter added to the position of each activation,
         in pixel.
-    signal_jitter: float, optionnal
+    signal_jitter: float, optional
         Random amplitude fluctuation for each activation, added to the
         amplitude specified by `ampli`
-    width: float or ndarray, optionnal
+    width: float or ndarray, optional
         Width of the activations
     width_jitter: float
         Relative width jitter of the blobs
-    out_text_file: string or None, optionnal
+    out_text_file: string or None, optional
         If not None, the resulting array is saved as a text file with the
         given file name
-    out_image_file: string or None, optionnal
+    out_image_file: string or None, optional
         If not None, the resulting is saved as a nifti file with the
         given file name.
-    seed=False:  int, optionnal
+    seed=False:  int, optional
         If seed is not False, the random number generator is initialized
         at a certain value
 
@@ -142,37 +142,37 @@ def surrogate_3d_dataset(n_subj=1, shape=(20, 20, 20), mask=None,
 
     Parameters
     -----------
-    n_subj: integer, optionnal
+    n_subj: integer, optional
         The number of subjects, ie the number of different maps
         generated.
     shape=(20,20,20): tuple of 3 integers,
          the shape of each image
     mask=None: Nifti1Image instance,
         referential- and mask- defining image (overrides shape)
-    sk: float, optionnal
+    sk: float, optional
         Amount of spatial noise smoothness.
-    noise_level: float, optionnal
+    noise_level: float, optional
         Amplitude of the spatial noise.
         amplitude=noise_level)
-    pos: 2D ndarray of integers, optionnal
+    pos: 2D ndarray of integers, optional
         x, y positions of the various simulated activations.
-    ampli: 1D ndarray of floats, optionnal
+    ampli: 1D ndarray of floats, optional
         Respective amplitude of each activation
-    spatial_jitter: float, optionnal
+    spatial_jitter: float, optional
         Random spatial jitter added to the position of each activation,
         in pixel.
-    signal_jitter: float, optionnal
+    signal_jitter: float, optional
         Random amplitude fluctuation for each activation, added to the
         amplitude specified by ampli
-    width: float or ndarray, optionnal
+    width: float or ndarray, optional
         Width of the activations
-    out_text_file: string or None, optionnal
+    out_text_file: string or None, optional
         If not None, the resulting array is saved as a text file with the
         given file name
-    out_image_file: string or None, optionnal
+    out_image_file: string or None, optional
         If not None, the resulting is saved as a nifti file with the
         given file name.
-    seed=False:  int, optionnal
+    seed=False:  int, optional
         If seed is not False, the random number generator is initialized
         at a certain value
 
@@ -246,22 +246,22 @@ def surrogate_4d_dataset(shape=(20, 20, 20), mask=None, n_scans=1, n_sess=1,
         referential- and mask- defining image (overrides shape)
     n_scans: int, optional,
         number of scans to be simlulated
-        overrided by the design matrix
+        overridden by the design matrix
     n_sess: int, optional,
         the number of simulated sessions
     dmtx: array of shape(n_scans, n_rows),
         the design matrix
-    sk: float, optionnal
+    sk: float, optional
         Amount of spatial noise smoothness.
-    noise_level: float, optionnal
+    noise_level: float, optional
         Amplitude of the spatial noise.
         amplitude=noise_level)
     signal_level: float, optional,
         Amplitude of the signal
-    out_image_file: string or list of strings or None, optionnal
+    out_image_file: string or list of strings or None, optional
         If not None, the resulting is saved as (set of) nifti file(s) with the
         given file path(s)
-    seed=False:  int, optionnal
+    seed=False:  int, optional
         If seed is not False, the random number generator is initialized
         at a certain value
 

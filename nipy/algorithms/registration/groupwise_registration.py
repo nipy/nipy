@@ -767,7 +767,7 @@ class Realign4d:
         self._runs = []
         # Note that, the affine of each run may be different. This is
         # the case, for instance, if the subject exits the scanner
-        # inbetween sessions.
+        # in between sessions.
         for im in images:
             xyz_img = as_xyz_image(im)
             self._runs.append(Image4d(xyz_img.get_fdata,

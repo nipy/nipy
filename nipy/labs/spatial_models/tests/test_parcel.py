@@ -109,7 +109,7 @@ def test_parcel_feature_multi_subj():
     msp.make_feature('data', np.random.randn(np.prod(shape), nb_subj, dim))
     assert msp.get_feature('data').shape == (nb_parcel, nb_subj, dim)
 
-    # msp.features['data'] has been overriden
+    # msp.features['data'] has been overridden
     assert list(msp.features.keys()) == ['data']
 
 

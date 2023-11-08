@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Conversion mechansims for IO and interaction between volumetric datasets
+Conversion mechanisms for IO and interaction between volumetric datasets
 and other type of neuroimaging data.
 """
 import os

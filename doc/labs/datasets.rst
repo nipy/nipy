@@ -25,7 +25,7 @@ space.
     A volume-image (class: :class:`VolumeImg`) is a volumetric datastructure
     given by data points lying on a regular grid: this structure is a
     generalization of an image in 3D. The voxels, vertices of the grid, are
-    mapped to coordinnates by an affine transformation. As a result, the grid
+    mapped to coordinates by an affine transformation. As a result, the grid
     is regular and evenly-spaced, but may not be orthogonal, and the spacing
     may differ in the 3 directions.
 

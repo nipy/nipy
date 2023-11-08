@@ -74,7 +74,7 @@ def spectral_decomposition(hrf2decompose,
     basis = []
     for i in range(ncomp):
         b = Interp1dNumeric(time, U[:, i], bounds_error=False, fill_value=0.)
-        # normalize components witn integral of abs of first component
+        # normalize components with integral of abs of first component
         if i == 0:
             d = np.fabs((b(time) * dt).sum())
         b.y /= d

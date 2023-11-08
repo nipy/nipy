@@ -64,7 +64,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             The affine matrix going from the anatomical image voxel space to
             MNI space. This parameter is not used when the default
             anatomical is used, but it is compulsory when using an
-            explicite anatomical image.
+            explicit anatomical image.
         slicer: {'ortho', 'x', 'y', 'z'}
             Choose the direction of the cuts. With 'ortho' three cuts are
             performed in orthogonal directions
@@ -76,7 +76,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             of the axes used to display the plot. If None, the complete
             figure is used.
         title : string, optional
-            The title dispayed on the figure.
+            The title displayed on the figure.
         threshold : a number, None, or 'auto'
             If None is given, the maps are not thresholded.
             If a number is given, it is used to threshold the maps:
@@ -102,7 +102,7 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
             distance and focalpoint, see the docstring of mlab.view.
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
-            you whish to save figures with a black background, you
+            you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pyplot's
             savefig.
         imshow_kwargs: extra keyword arguments, optional
@@ -300,7 +300,7 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
             The affine matrix going from the anatomical image voxel space to
             MNI space. This parameter is not used when the default
             anatomical is used, but it is compulsory when using an
-            explicite anatomical image.
+            explicit anatomical image.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
@@ -310,7 +310,7 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
             If slicer is 'ortho', this should be a 3-tuple: (x, y, z)
             For slicer == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
-            If None is given, the cuts is calculated automaticaly.
+            If None is given, the cuts is calculated automatically.
         slicer: {'ortho', 'x', 'y', 'z'}
             Choose the direction of the cuts. With 'ortho' three cuts are
             performed in orthogonal directions
@@ -322,7 +322,7 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
             of the axes used to display the plot. If None, the complete
             figure is used.
         title : string, optional
-            The title dispayed on the figure.
+            The title displayed on the figure.
         annotate: boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
@@ -331,7 +331,7 @@ def plot_anat(anat=None, anat_affine=None, cut_coords=None, slicer='ortho',
             indicate the cut plosition.
         black_bg: boolean, optional
             If True, the background of the image is set to be black. If
-            you whish to save figures with a black background, you
+            you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pyplot's
             savefig.
         dim: float, optional
@@ -364,7 +364,7 @@ def demo_plot_map(do3d=False, **kwargs):
     """ Demo activation map plotting.
     """
     map = np.zeros((182, 218, 182))
-    # Color a asymetric rectangle around Broca area:
+    # Color a asymmetric rectangle around Broca area:
     x, y, z = -52, 10, 22
     mapped = coord_transform(x, y, z, mni_sform_inv)
     x_map, y_map, z_map = (int(v) for v in mapped)

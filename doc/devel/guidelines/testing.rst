@@ -173,7 +173,7 @@ To test a class method::
     pytest nipy/algorithms/clustering/tests/test_clustering.py::TestClustering.testkmeans1
 
 Verbose mode (*-v* option) will print out the function names as they
-are executed.  Standard output is normally supressed by Pytest, to see
+are executed.  Standard output is normally suppressed by Pytest, to see
 any print statements you must include the *-s* option.  In order to
 get a "full verbose" output, call Pytest like this::
 

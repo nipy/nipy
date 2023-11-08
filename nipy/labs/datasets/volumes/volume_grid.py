@@ -42,8 +42,8 @@ class VolumeGrid(VolumeData):
         world_space: string
             World space the data is embedded in. For instance `mni152`.
 
-        metadata: dictionnary
-            Optional, user-defined, dictionnary used to carry around
+        metadata: dictionary
+            Optional, user-defined, dictionary used to carry around
             extra information about the data as it goes through
             transformations. The consistency of this information is not
             maintained as the data is modified.
@@ -61,7 +61,7 @@ class VolumeGrid(VolumeData):
 
         If the transform associated with the image has no inverse
         mapping, data corresponding to a given world space position cannot
-        be calulated. If it has no forward mapping, it is impossible to
+        be calculated. If it has no forward mapping, it is impossible to
         resample another dataset on the same support.
     """
     #---------------------------------------------------------------------------
@@ -80,8 +80,8 @@ class VolumeGrid(VolumeData):
                 first dimensions being spatial.
             transform: nipy transform object
                 The transformation from voxel to world.
-            metadata : dictionnary, optional
-                Dictionnary of user-specified information to store with
+            metadata : dictionary, optional
+                Dictionary of user-specified information to store with
                 the image.
             interpolation : 'continuous' or 'nearest', optional
                 Interpolation type used when calculating values in
@@ -197,12 +197,12 @@ class VolumeGrid(VolumeData):
             Parameters
             ----------
             x : number or ndarray
-                x positions in world space, in other words milimeters
+                x positions in world space, in other words millimeters
             y : number or ndarray
-                y positions in world space, in other words milimeters.
+                y positions in world space, in other words millimeters.
                 The shape of y should match the shape of x
             z : number or ndarray
-                z positions in world space, in other words milimeters.
+                z positions in world space, in other words millimeters.
                 The shape of z should match the shape of x
             interpolation : None, 'continuous' or 'nearest', optional
                 Interpolation type used when calculating values in

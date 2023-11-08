@@ -109,7 +109,7 @@ def test_il_slicing_dicing():
     pytest.raises(ValueError, ImageList.get_list_data, ilist, -5)
 
     # make sure that axis is put in the right place in the result array
-    # image of ilist have dimension (17,21,3), lenght(ilist) = 20.
+    # image of ilist have dimension (17,21,3), length(ilist) = 20.
     data = ilist.get_list_data(axis=0)
     assert data.shape == (20, 17, 21, 3)
 

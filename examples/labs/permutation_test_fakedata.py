@@ -88,7 +88,7 @@ for results in cluster_results:
     print("Cluster detection threshold:", round(results["thresh"], 2))
     if results["diam"] is not None:
         print("minimum cluster diameter", results["diam"])
-    print("Cluster level FWER controled at", level)
+    print("Cluster level FWER controlled at", level)
     for j in J:
             X, Y, Z = results["peak_XYZ"][:, j]
             strXYZ = str(X).zfill(2) + " " + str(Y).zfill(2) + " " + \

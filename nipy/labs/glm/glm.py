@@ -84,7 +84,7 @@ class glm:
              constants=self._constants)
 
     def contrast(self, c, type='t', tiny=DEF_TINY, dofmax=DEF_DOFMAX):
-        """ Specify and estimate a constrast
+        """ Specify and estimate a contrast
 
         c must be a numpy.ndarray (or anything that numpy.asarray
         can cast to a ndarray).
@@ -192,7 +192,7 @@ class contrast:
                 np.maximum(vdiag, self._tiny))
             t = t.min(0)
 
-        # Unknwon stat
+        # Unknown stat
         else:
             raise ValueError('Unknown statistic type')
         self._stat = t

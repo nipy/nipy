@@ -4,7 +4,7 @@
  Nipy roadmap
 ==============
 
-We plan to release a protoype of NIPY_ by the Summer of 2009.  This
+We plan to release a prototype of NIPY_ by the Summer of 2009.  This
 will include a full FMRI analysis, 2D visualization, and integration
 with other packages for spatial processing (SPM_ and FSL_).  We will
 continue to improve our documentation and tutorials with the aim of

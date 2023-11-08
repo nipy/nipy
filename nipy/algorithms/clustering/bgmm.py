@@ -5,7 +5,7 @@ Bayesian Gaussian Mixture Model Classes:
 contains the basic fields and methods of Bayesian GMMs
 the high level functions are/should be binded in C
 
-The base class BGMM relies on an implementation that perfoms Gibbs sampling
+The base class BGMM relies on an implementation that performs Gibbs sampling
 
 A derived class VBGMM uses Variational Bayes inference instead
 
@@ -349,7 +349,7 @@ class BGMM(GMM):
     """
     This class implements Bayesian GMMs
 
-    this class contains the follwing fields
+    this class contains the following fields
     k: int,
        the number of components in the mixture
     dim: int,
@@ -357,7 +357,7 @@ class BGMM(GMM):
     means: array of shape (k, dim)
            all the means of the components
     precisions: array of shape (k, dim, dim)
-                the precisions of the componenets
+                the precisions of the components
     weights: array of shape (k):
              weights of the mixture
     shrinkage: array of shape (k):
@@ -487,7 +487,7 @@ class BGMM(GMM):
 
     def initialize(self, x):
         """
-        initialize z using a k-means algorithm, then upate the parameters
+        initialize z using a k-means algorithm, then update the parameters
 
         Parameters
         ----------
@@ -1034,7 +1034,7 @@ class VBGMM(BGMM):
 
     def initialize(self, x):
         """
-        initialize z using a k-means algorithm, then upate the parameters
+        initialize z using a k-means algorithm, then update the parameters
 
         Parameters
         ----------

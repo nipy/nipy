@@ -9,7 +9,7 @@ from scipy.optimize import approx_fprime, brent
 def _linesearch_brent(func, p, xi, tol=1e-3):
     """Line-search algorithm using Brent's method.
 
-    Find the minimium of the function ``func(x0+ alpha*direc)``.
+    Find the minimum of the function ``func(x0+ alpha*direc)``.
     """
     def myfunc(alpha):
         return func(p + alpha * xi)

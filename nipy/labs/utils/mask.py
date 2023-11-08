@@ -9,5 +9,5 @@ warnings.warn(DeprecationWarning(
     "is depreciated. Please update your code to import from "
     "'nipy.labs.mask'."))
 
-# Absolute import, as 'import *' doesnot work with relative imports
+# Absolute import, as 'import *' does not work with relative imports
 from nipy.labs.mask import *

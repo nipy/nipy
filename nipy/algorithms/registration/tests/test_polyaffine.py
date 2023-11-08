@@ -24,7 +24,7 @@ affines = [raf for i in range(NCENTERS)]
 sigma = 1.0
 xyz = np.random.rand(NPTS, 3)
 
-# test 1: crach test create polyaffine transform
+# test 1: crash test create polyaffine transform
 T = PolyAffine(centers, affines, sigma)
 
 # test 2: crash test apply method

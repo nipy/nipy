@@ -44,7 +44,7 @@ def protocol(recarr, design_type, *hrfs):
        handled.  For 'block', the first event of each block is put in
        this group. For the 'event', only the first event is put in this
        group. The 'begin' events are convolved with hrf.glover.
-    hrfs: symoblic HRFs
+    hrfs: symbolic HRFs
        Each event type ('SSt_SSp','SSt_DSp','DSt_SSp','DSt_DSp') is
        convolved with each of these HRFs in order.
 
@@ -122,7 +122,7 @@ def altprotocol(d, design_type, *hrfs):
 
         The 'begin' events are convolved with hrf.glover.
 
-    hrfs: symoblic HRFs
+    hrfs: symbolic HRFs
         Each event type ('SSt_SSp','SSt_DSp','DSt_SSp','DSt_DSp')
         is convolved with each of these HRFs in order.
 

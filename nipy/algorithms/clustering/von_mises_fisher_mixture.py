@@ -1,6 +1,6 @@
 """
 Implementation of Von-Mises-Fisher Mixture models,
-i.e. the equaivalent of mixture of Gaussian on the sphere.
+i.e. the equivalent of mixture of Gaussian on the sphere.
 
 Author: Bertrand Thirion, 2010-2011
 """
@@ -55,7 +55,7 @@ class VonMisesMixture:
 
         Parameters
         ----------
-        x: array fo shape(n,3)
+        x: array of shape(n,3)
            should be on the unit sphere
 
         Returns
@@ -79,7 +79,7 @@ class VonMisesMixture:
 
         Parameters
         ----------
-        x: array fo shape(n,3)
+        x: array of shape(n,3)
            should be on the unit sphere
 
         Returns
@@ -109,7 +109,7 @@ class VonMisesMixture:
 
         Parameters
         ----------
-        x: array fo shape(n,3)
+        x: array of shape(n,3)
            should be on the unit sphere
 
         Returns
@@ -123,7 +123,7 @@ class VonMisesMixture:
 
         Parameters
         ----------
-        x: array fo shape(n,3)
+        x: array of shape(n,3)
            should be on the unit sphere
 
         Returns
@@ -138,7 +138,7 @@ class VonMisesMixture:
 
         Parameters
         ----------
-        x: array fo shape(n,3)
+        x: array of shape(n,3)
            should be on the unit sphere
 
         Returns
@@ -165,7 +165,7 @@ class VonMisesMixture:
 
         Parameters
         ----------
-        x: array fo shape(n,3)
+        x: array of shape(n,3)
            should be on the unit sphere
         z: array of shape(self.k)
         """
@@ -280,7 +280,7 @@ def estimate_robust_vmm(k, precision, null_class, x, ninit=10, bias=None,
     precision: float, priori precision parameter
     null class: bool, optional,
                 should a null class be included or not
-    x: array fo shape(n,3)
+    x: array of shape(n,3)
        input data, should be on the unit sphere
     ninit: int, optional,
            number of iterations
@@ -309,7 +309,7 @@ def select_vmm(krange, precision, null_class, x, ninit=10, bias=None,
             number of classes to consider
     precision:
     null class:
-    x: array fo shape(n,3)
+    x: array of shape(n,3)
        should be on the unit sphere
     ninit: int, optional,
            number of iterations
@@ -345,7 +345,7 @@ def select_vmm_cv(krange, precision, x, null_class, cv_index,
             number of classes to consider
     precision: float,
                precision parameter of the von-mises densities
-    x: array fo shape(n, 3)
+    x: array of shape(n, 3)
        should be on the unit sphere
     null class: bool, whether a null class should be included or not
     cv_index: set of indices for cross validation

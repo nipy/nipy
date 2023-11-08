@@ -60,7 +60,7 @@ than in a relational database by storing everything in a single
 denormalized table.  This data structure tends to be more efficient
 than the equivalent normalized relational database format in the cases
 where a single data field is much larger than the others (as is the
-case with the data array in brain imaging data).  That said, adherance
+case with the data array in brain imaging data).  That said, adherence
 to standards allows us to leverage existing code which may be tuned to
 a degree that would be beyond the scope of this project (for example,
 fast Xpath query libraries, as made available via lxml in Python).

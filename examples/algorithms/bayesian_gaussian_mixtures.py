@@ -5,7 +5,7 @@ __doc__ = """
 Example of a demo that fits a Bayesian Gaussian Mixture Model (GMM)
 to a dataset.
 
-Variational bayes and Gibbs estimation are sucessively run on the same
+Variational bayes and Gibbs estimation are successively run on the same
 dataset.
 
 Requires matplotlib

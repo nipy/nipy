@@ -658,7 +658,7 @@ def rollaxis(img, axis, inverse=False):
                          img.reference.coord_names):
         raise ValueError('axis must be an axis number,'
                          'an axis name or a reference name')
-    # Find out which index axis corresonds to
+    # Find out which index axis corresponds to
     in_index = out_index = -1
     if type(axis) == str:
         try:

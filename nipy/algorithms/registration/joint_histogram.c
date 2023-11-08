@@ -149,7 +149,7 @@ int joint_histogram(PyArrayObject* JH,
   /* Re-initialize joint histogram */
   memset((void*)H, 0, clampI*clampJ*sizeof(double));
 
-  /* Looop over source voxels */
+  /* Loop over source voxels */
   while(iterI->index < iterI->size) {
 
     /* Source voxel intensity */
@@ -162,7 +162,7 @@ int joint_histogram(PyArrayObject* JH,
     Tz = *tvox; tvox++;
 
     /* Test whether the current voxel is below the intensity
-       threshold, or the transformed point is completly outside
+       threshold, or the transformed point is completely outside
        the reference grid */
     if ((i>=0) &&
 	(Tx>-1) && (Tx<dimJX) &&
@@ -173,7 +173,7 @@ int joint_histogram(PyArrayObject* JH,
 	 Nearest neighbor (floor coordinates in the padded
 	 image, hence +1).
 
-	 Notice that using the floor function doubles excetution time.
+	 Notice that using the floor function doubles execution time.
 
 	 FIXME: see if we can replace this with assembler instructions.
       */
@@ -220,7 +220,7 @@ int joint_histogram(PyArrayObject* JH,
       W2 = wxwz-W0;
       APPEND_NEIGHBOR(off+u2, W2);
 
-      /*** Neightbor 3: (0,1,1) */
+      /*** Neighbor 3: (0,1,1) */
       W3 = wx-wxwy-W2;
       APPEND_NEIGHBOR(off+u3, W3);
 

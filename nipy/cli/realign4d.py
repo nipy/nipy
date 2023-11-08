@@ -22,7 +22,7 @@ parser.add_argument('input', type=str, metavar='File',
                 help="""Path to a nifti file, or to a folder containing nifti files. If a path to a folder is provided, the order of motion correction will be np.sort(list_of_files). The outputs will be '*_mc.par' (containing 3 translation and three rotation parameters) and '*_mc.nii.gz' containing the motion corrected data (unless 'apply' is set to False)""")
 
 parser.add_argument('--slice_order', type=str, metavar='String',
-                    help="""The order of slice aquisition {'ascending', 'descending' (default), or the name of a function from `nipy.algorithms.slicetiming.timefuncs`}""", default='descending')
+                    help="""The order of slice acquisition {'ascending', 'descending' (default), or the name of a function from `nipy.algorithms.slicetiming.timefuncs`}""", default='descending')
 
 parser.add_argument('--slice_dim', type=int, metavar='Int', help="""Integer
 denoting the axis in `images` that is the slice axis.  In a 4D image, this will

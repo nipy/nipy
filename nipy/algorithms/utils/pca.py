@@ -169,7 +169,7 @@ def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
     UX = UX[:,:rank].T
     # calculate covariance matrix in full-rank column space.  The returned
     # array is roughly: YX = dot(UX, data); C = dot(YX, YX.T), perhaps where the
-    # data has been standarized, perhaps summed over slices
+    # data has been standardized, perhaps summed over slices
     C_full_rank  = _get_covariance(data, UX, rmse_scales_func, mask)
     # find the eigenvalues D and eigenvectors Vs of the covariance
     # matrix
@@ -334,7 +334,7 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
     if None in (in_ax, out_ax):
         raise AxisError(f'Cannot identify matching input output axes with "{axis}"')
     if not orth_axes(in_ax, out_ax, img.coordmap.affine):
-        raise AxisError('Input and output axes found from "%s" not othogonal '
+        raise AxisError('Input and output axes found from "%s" not orthogonal '
                         'to rest of affine' % axis)
     # Roll the chosen axis to input position zero
     work_img = rollimg(img, axis)
