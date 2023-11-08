@@ -438,7 +438,7 @@ def map_reproducibility(data, vardata, domain, ngroups, method='crfx',
             # randomly swap the sign of x
             x *= (2 * (np.random.rand(len(samples[i])) > 0.5) - 1)
 
-        if method is not 'crfx':
+        if method != 'crfx':
             vx = vardata[:, samples[i]]
         csize = kwargs['csize']
         threshold = kwargs['threshold']
@@ -506,9 +506,9 @@ def peak_reproducibility(data, vardata, domain, ngroups, sigma, method='crfx',
             # apply a random sign swap to x
             x *= (2 * (np.random.rand(len(samples[i])) > 0.5) - 1)
 
-        if method is not 'crfx':
+        if method != 'crfx':
             vx = vardata[:, samples[i]]
-        if method is not 'bsa':
+        if method != 'bsa':
             threshold = kwargs['threshold']
 
             if method == 'crfx':
@@ -594,9 +594,9 @@ def cluster_reproducibility(data, vardata, domain, ngroups, sigma,
             # apply a random sign swap to x
             x *= (2 * (np.random.rand(len(samples[i])) > 0.5) - 1)
 
-        if method is not 'crfx':
+        if method != 'crfx':
             vx = vardata[:, samples[i]]
-        if method is not 'bsa':
+        if method != 'bsa':
             csize = kwargs['csize']
             threshold = kwargs['threshold']
             if method == 'crfx':
@@ -665,7 +665,7 @@ def group_reproducibility_metrics(
 
     from ..mask import intersect_masks
 
-    if ((len(variance_images) == 0) & (method is not 'crfx')):
+    if ((len(variance_images) == 0) & (method != 'crfx')):
         raise ValueError('Variance images are necessary')
 
     nsubj = len(contrast_images)
