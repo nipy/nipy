@@ -38,7 +38,6 @@ if m_dep.found()
 endif
 
 cython = find_program('cython')
-copier = find_program(['cp', 'skimage/_build_utils/copyfiles.py'])
 
 # https://mesonbuild.com/Python-module.html
 py = import('python').find_installation(pure: false)
