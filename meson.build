@@ -74,7 +74,7 @@ if is_windows
   endif
 endif
 
-# When cross-compiling skimage, the compiler needs access to NumPy
+# When cross-compiling, the compiler needs access to NumPy
 # headers for the host platform (where the package will actually run). These
 # headers may be incompatible with any corresponding headers that might be
 # installed on the build system (where the compilation is performed). To make
