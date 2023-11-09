@@ -1,10 +1,11 @@
+""" Nipy
+
+Nipy is a library for neuroimaging analysis.
+"""
 
 import os
 
-from .info import LONG_DESCRIPTION as __doc__
-from .info import STATUS as __status__
-from .info import URL as __url__
-from .info import __version__
+__version__ = "0.5.1.dev1"
 
 
 def _test_local_install():
@@ -32,10 +33,3 @@ get_info = lambda : _get_pkg_info(os.path.dirname(__file__))
 
 # Cleanup namespace
 del _test_local_install
-# If this file is exec after being imported, the following lines will
-# fail
-try:
-    del version
-    del Tester
-except:
-    pass

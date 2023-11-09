@@ -1,4 +1,4 @@
-# See nipy/info.py for requirement definitions
+# See pyproject.toml for requirement definitions
 numpy>=1.22
 scipy>=1.8
 sympy>=1.9
