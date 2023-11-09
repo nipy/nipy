@@ -142,7 +142,7 @@ def fourier_basis(freq):
 
 
 def interp(times, values, fill=0, name=None, **kw):
-    """ Generic interpolation function of t given `times` and `values`
+    r""" Generic interpolation function of t given `times` and `values`
 
     Imterpolator such that:
 
@@ -167,7 +167,7 @@ def interp(times, values, fill=0, name=None, **kw):
         error outside bounds
     name : None or str, optional
         Name of symbolic expression to use. If None, a default is used.
-    \\*\\*kw : keyword args, optional
+    \*\*kw : keyword args, optional
         passed to ``interp1d``
 
     Returns
@@ -206,7 +206,7 @@ interp.counter = 0
 
 
 def linear_interp(times, values, fill=0, name=None, **kw):
-    """ Linear interpolation function of t given `times` and `values`
+    r""" Linear interpolation function of t given `times` and `values`
 
     Imterpolator such that:
 
@@ -229,7 +229,7 @@ def linear_interp(times, values, fill=0, name=None, **kw):
         error outside bounds
     name : None or str, optional
         Name of symbolic expression to use. If None, a default is used.
-    \\*\\*kw : keyword args, optional
+    \*\*kw : keyword args, optional
         passed to ``interp1d``
 
     Returns
@@ -455,7 +455,7 @@ class TimeConvolver:
         self._vals = _eval_for(expr, self.support, self.delta)
 
     def convolve(self, g, g_interval, name=None, **kwargs):
-        """ Convolve sympy expression `g` with this kernel
+        r""" Convolve sympy expression `g` with this kernel
 
         Parameters
         ----------
@@ -466,7 +466,7 @@ class TimeConvolver:
         name : None or str, optional
             Name of the convolved function in the resulting expression.
             Defaults to one created by ``utils.interp``.
-        \\*\\*kwargs : keyword args, optional
+        \*\*kwargs : keyword args, optional
             Any other arguments to pass to the ``interp1d`` function in creating
             the numerical function for `fg`.
 
@@ -488,7 +488,7 @@ class TimeConvolver:
 
 def convolve_functions(f, g, f_interval, g_interval, dt,
                        fill=0, name=None, **kwargs):
-    """ Expression containing numerical convolution of `fn1` with `fn2`
+    r""" Expression containing numerical convolution of `fn1` with `fn2`
 
     Parameters
     ----------
@@ -508,7 +508,7 @@ def convolve_functions(f, g, f_interval, g_interval, dt,
     name : None or str, optional
        Name of the convolved function in the resulting expression.
        Defaults to one created by ``utils.interp``.
-    \\*\\*kwargs : keyword args, optional
+    \*\*kwargs : keyword args, optional
        Any other arguments to pass to the ``interp1d`` function in creating the
        numerical function for `fg`.
 

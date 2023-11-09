@@ -2301,22 +2301,22 @@ class CoordMapMaker:
                                   inv_xform)
 
     def __call__(self, *args, **kwargs):
-        """ Create affine or non-affine coordinate map
+        r""" Create affine or non-affine coordinate map
 
         Parameters
         ----------
-        \\*args :
+        \*args :
             Arguments to ``make_affine`` or ``make_cmap`` methods. We check the
             first argument to see if it is a scalar or an affine, and pass the
-            \\*args, \\*\\*kwargs to ``make_cmap`` or ``make_affine``
+            \*args, \*\*kwargs to ``make_cmap`` or ``make_affine``
             respectively
-        \\*\\*kwargs:
+        \*\*kwargs:
             See above
 
         Returns
         -------
         cmap : ``CoordinateMap`` or ``AffineTransform``
-            Affine if the first \\*arg was an affine array, otherwise a
+            Affine if the first \*arg was an affine array, otherwise a
             Coordinate Map.
         """
         arg0 = np.asarray(args[0])

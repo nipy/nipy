@@ -202,7 +202,7 @@ T = Term('t')
 
 
 def terms(names, **kwargs):
-    ''' Return list of terms with names given by `names`
+    r''' Return list of terms with names given by `names`
 
     This is just a convenience in defining a set of terms, and is the
     equivalent of ``sympy.symbols`` for defining symbols in sympy.
@@ -215,7 +215,7 @@ def terms(names, **kwargs):
     names : str or sequence of str
        If a single str, can specify multiple ``Term``s with string
        containing space or ',' as separator.
-    \\**kwargs : keyword arguments
+    \**kwargs : keyword arguments
        keyword arguments as for ``sympy.symbols``
 
     Returns

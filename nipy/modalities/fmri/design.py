@@ -402,13 +402,13 @@ def stack_contrasts(contrasts, name, keys):
 
 
 def stack_designs(*pairs):
-    """ Stack a sequence of design / contrast dictionary pairs
+    r""" Stack a sequence of design / contrast dictionary pairs
 
     Uses multiple calls to :func:`stack2designs`
 
     Parameters
     ----------
-    \\*pairs : sequence
+    \*pairs : sequence
         Elements of either (np.ndarray, dict) or (np.ndarray,) or np.ndarray
 
     Returns
