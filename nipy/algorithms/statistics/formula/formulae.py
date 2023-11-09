@@ -215,7 +215,7 @@ def terms(names, **kwargs):
     names : str or sequence of str
        If a single str, can specify multiple ``Term``s with string
        containing space or ',' as separator.
-    \**kwargs : keyword arguments
+    \*\*kwargs : keyword arguments
        keyword arguments as for ``sympy.symbols``
 
     Returns
