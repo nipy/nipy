@@ -25,7 +25,7 @@ email = 'neuroimaging@python.org'
 
 [project.urls]
 homepage = 'https://nipy.org/nipy'
-documentation = 'https://scikit-image.org/docs/stable'
+documentation = 'http://nipy.org/nipy/documentation.html'
 source = 'https://github.com/nipy/nipy'
 download = 'https://pypi.org/project/nipy/#files'
 tracker = 'https://github.com/nipy/nipy/issues'
