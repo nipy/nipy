@@ -76,8 +76,10 @@ requires = [
   "ninja",
   "setuptools",
   "cython>=3",
-  # Newer than NEP29-minimum: compile against oldest numpy available
-  "numpy>=1.22; python_version > '3.8'",
+  # From Numpy 1.25, Numpy is always backwards compatible for any given Python
+  # version.  See:
+  # https://numpy.org/doc/stable/release/1.25.0-notes.html#compiling-against-the-numpy-c-api-is-now-backwards-compatible-by-default
+  "numpy>=1.25; python_version > '3.8'",
   # NEP29-minimum as of Sep 21, 2023
   "numpy==1.22; python_version >= '3.7' and python_version < '3.9'",
 ]
