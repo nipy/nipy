@@ -31,23 +31,6 @@ Download = 'https://pypi.org/project/nipy/#files'
 Tracker = 'https://github.com/nipy/nipy/issues'
 
 [project.optional-dependencies]
-build = [
-    'meson-python>=0.13',
-    'wheel',
-    'setuptools>=67',
-    'ninja',
-    'Cython>=3',
-    'numpy>=1.22',
-    'spin==0.3',
-    'build',
-]
-default = [
-    'numpy>=1.22',
-    'scipy>=1.8',
-    'nibabel>=3.2',
-    'sympy>=1.9',
-    'transforms3d'
-]
 developer = [
     'pre-commit',
     'rtoml',
