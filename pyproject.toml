@@ -73,6 +73,7 @@ test = [
 build-backend = "mesonpy"
 requires = [
   "meson-python>=0.13",
+  "ninja",
   "setuptools",
   "cython>=3",
   # From Numpy 1.25, Numpy is always backwards compatible for any given Python
