@@ -24,11 +24,11 @@ name = 'nipy developers'
 email = 'neuroimaging@python.org'
 
 [project.urls]
-homepage = 'https://nipy.org/nipy'
-documentation = 'http://nipy.org/nipy/documentation.html'
-source = 'https://github.com/nipy/nipy'
-download = 'https://pypi.org/project/nipy/#files'
-tracker = 'https://github.com/nipy/nipy/issues'
+Homepage = 'https://nipy.org/nipy'
+Documentation = 'http://nipy.org/nipy/documentation.html'
+Source = 'https://github.com/nipy/nipy'
+Download = 'https://pypi.org/project/nipy/#files'
+Tracker = 'https://github.com/nipy/nipy/issues'
 
 [project.optional-dependencies]
 build = [
