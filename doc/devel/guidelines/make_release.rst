@@ -6,29 +6,6 @@ A guide to making a nipy release
 
 A guide for developers who are doing a nipy release
 
-.. _release-tools:
-
-Release tools
-=============
-
-Run::
-
-    make check-version-info
-
-This installs the code from a git archive, from the repository, and for
-in-place use, and runs the ``get_info()`` function to confirm that
-installation is working and information parameters are set correctly.  Look for the output at the end, which should look something like::
-
-    ########
-    Versions
-    ########
-
-    nipy - zip: 0.5.0
-    nipy - install: 0.5.0
-    nipy - editable: 0.5.0
-
-where the `0.5.0` should be the version in `nipy/info.py`.
-
 .. _release-checklist:
 
 Release checklist
@@ -56,20 +33,16 @@ Release checklist
 
 * Check the copyright years in ``doc/conf.py`` and ``LICENSE``
 
-* Refresh the ``README.rst`` text from the ``LONG_DESCRIPTION`` in ``info.py``
-  by running ``make refresh-readme``.
-
-  Check the output of::
+* Check the output of::
 
     rst2html.py README.rst > ~/tmp/readme.html
 
   because this will be the output used by PyPI_
 
-* Check the dependencies listed in ``nipy/info.py`` (e.g.
-  ``NUMPY_MIN_VERSION``) and in ``requirements.txt`` and in
-  ``doc/users/installation.rst``.  They should at least match. Do they still
-  hold?  Make sure ``.travis.yml`` is testing these minimum dependencies
-  specifically.
+* Check the dependencies listed in ``pyproject.toml`` and in
+  ``requirements.txt`` and in ``doc/users/installation.rst``.  They should at
+  least match. Do they still hold?  Make sure ``.travis.yml`` is testing these
+  minimum dependencies specifically.
 
 *   Check the examples in python 2 and python 3, by
     running something like::
@@ -131,17 +104,15 @@ Doing the release
 
 * The release should now be ready.
 
-* Edit :file:`nipy/info.py` to set ``_version_extra`` to ``''``; commit.
+* Edit :file:`nipy/__init__.py` to set ``version`` to e.g. ``0.5.2``; commit.
   Then::
 
     make source-release
 
 * For the wheel build / upload, follow the `wheel builder README`_
-  instructions again.  Edit the ``.travis.yml`` and ``appveyor.yml`` files (if
-  present) to give the release tag to build.  Check the build has passed on
-  the Travis-CI interface at https://travis-ci.org/MacPython/nipy-wheels.  Now
-  follow the instructions in the page above to download the built wheels to a
-  local machine and upload to PyPI.
+  instructions again.  Push.  Check the build has passed on the Github
+  interface.  Now follow the instructions in the page above to download the
+  built wheels to a local machine and upload to PyPI.
 
 * Once everything looks good, you are ready to upload the source release to
   PyPI.  See `setuptools intro`_.  Make sure you have a file ``\$HOME/.pypirc``,
@@ -174,23 +145,12 @@ Doing the release
     further substantial development (often called 'trunk') and another for
     maintenance releases.
 
-    *   Branch to maintenance::
-
-            git co -b maint/0.5.x
-
-        Set ``_version_extra`` back to ``.dev1`` and bump ``_version_micro`` by
-        1. Thus the maintenance series will have version numbers like - say
-        - '0.5.1.dev1' until the next maintenance release - say '0.5.1'.
-        Commit. Don't forget to push upstream with something like::
-
-            git push upstream maint/0.2.x --set-upstream
-
     *   Start next development series::
 
             git co main-master
 
-        then restore ``.dev`` to ``_version_extra``, and bump
-        ``_version_minor`` by 1. Thus the development series ('trunk') will
+        then restore ``.dev`` to ``__version__``, and bump
+        the minor version by 1. Thus the development series ('trunk') will
         have a version number here of '0.3.0.dev' and the next full release
         will be '0.3.0'.
 

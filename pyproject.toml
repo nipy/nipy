@@ -1,19 +1,71 @@
+[project]
+name = "nipy"
+dynamic = ['version']
+license = {file = "LICENSE"}
+description  = 'A python package for analysis of neuroimaging data'
+readme = 'README.rst'
+classifiers = ["Development Status :: 3 - Alpha",
+               "Environment :: Console",
+               "Intended Audience :: Science/Research",
+               "License :: OSI Approved :: BSD License",
+               "Operating System :: OS Independent",
+               "Programming Language :: Python",
+               "Topic :: Scientific/Engineering"]
+dependencies = [
+    'numpy>=1.22',
+    'scipy>=1.8',
+    'nibabel>=3.2',
+    'sympy>=1.9',
+    'transforms3d'
+]
+
+[[project.maintainers]]
+name = 'nipy developers'
+email = 'neuroimaging@python.org'
+
+[project.urls]
+Homepage = 'https://nipy.org/nipy'
+Documentation = 'http://nipy.org/nipy/documentation.html'
+Source = 'https://github.com/nipy/nipy'
+Download = 'https://pypi.org/project/nipy/#files'
+Tracker = 'https://github.com/nipy/nipy/issues'
+
+[project.optional-dependencies]
+developer = [
+    'pre-commit',
+    'rtoml',
+]
+docs = [
+    'sphinx>=7.0',
+    'numpydoc>=1.6.0',
+    'matplotlib',
+    'texext',
+    'ipython'
+]
+optional = [
+    'matplotlib>=3',
+]
+test = [
+    'matplotlib>=3',
+    'pytest>=7.2',
+    'pytest-cov>=4.0',
+    'pytest-doctestplus'
+]
+
 [build-system]
 build-backend = "mesonpy"
 requires = [
   "meson-python>=0.13",
+  "ninja",
   "setuptools",
   "cython>=3",
-  # Newer than NEP29-minimum: compile against oldest numpy available
+  # From Numpy 1.25, Numpy is always backwards compatible for any given Python
+  # version.  See:
+  # https://numpy.org/doc/stable/release/1.25.0-notes.html#compiling-against-the-numpy-c-api-is-now-backwards-compatible-by-default
   "numpy>=1.25; python_version > '3.8'",
   # NEP29-minimum as of Sep 21, 2023
   "numpy==1.22; python_version >= '3.7' and python_version < '3.9'",
 ]
-
-[project]
-name = "nipy"
-version = "0.5.1.dev1"
-license = {file = "LICENSE"}
 
 [project.scripts]
 nipy_3dto4d = 'nipy.cli.img3dto4d:main'
