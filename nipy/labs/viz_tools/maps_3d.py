@@ -117,16 +117,12 @@ def m2screenshot(mayavi_fig=None, mpl_axes=None, autocrop=True):
     if mpl_axes is not None:
         plt.axes(mpl_axes)
 
-    fd, filename = tempfile.mkstemp('.png')
-    mlab.savefig(filename, figure=mayavi_fig)
-    image3d = plt.imread(filename)
+    image3d = mlab.screenshot()
     if autocrop:
         bg_color = mayavi_fig.scene.background
         image3d = autocrop_img(image3d, bg_color)
     plt.imshow(image3d)
     plt.axis('off')
-    os.close(fd)
-    os.unlink(filename)
     # XXX: Should switch back to previous MPL axes: we have a side effect
     # here.
 
