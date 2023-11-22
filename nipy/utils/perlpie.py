@@ -1,6 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""Perform a global search and replace on the current directory *recursively*.
+r"""Perform a global search and replace on the current directory *recursively*.
 
 This a small python wrapper around the `perl -p -i -e` functionality.
 I **strongly recommend** running `perlpie` on files under source
@@ -71,14 +71,14 @@ def check_deps():
 
 
 def perl_dash_pie(oldstr, newstr, dry_run=None):
-    """Use perl to replace the oldstr with the newstr.
+    r"""Use perl to replace the oldstr with the newstr.
 
     Examples
     --------
 
     # To replace all occurrences of 'import numpy as N' with 'import numpy as np'
     from nipy.utils import perlpie
-    perlpie.perl_dash_pie('import\s+numpy\s+as\s+N', 'import numpy as np')
+    perlpie.perl_dash_pie(r'import\s+numpy\s+as\s+N', 'import numpy as np')
     grind | xargs perl -pi -e 's/import\s+numpy\s+as\s+N/import numpy as np/g'
 
     """

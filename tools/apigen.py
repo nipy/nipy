@@ -68,9 +68,9 @@ class ApiDocWriter:
             ['\.setup$', '\._']
         '''
         if package_skip_patterns is None:
-            package_skip_patterns = ['\\.tests$']
+            package_skip_patterns = [r'\.tests$']
         if module_skip_patterns is None:
-            module_skip_patterns = ['\\.setup$', '\\._']
+            module_skip_patterns = [r'\.setup$', r'\._']
         self.package_name = package_name
         self.rst_extension = rst_extension
         self.package_skip_patterns = package_skip_patterns
@@ -272,7 +272,7 @@ class ApiDocWriter:
         return ad
 
     def _survives_exclude(self, matchstr, match_type):
-        ''' Returns True if *matchstr* does not match patterns
+        r''' Returns True if *matchstr* does not match patterns
 
         ``self.package_name`` removed from front of string if present
 
@@ -281,14 +281,14 @@ class ApiDocWriter:
         >>> dw = ApiDocWriter('sphinx')
         >>> dw._survives_exclude('sphinx.okpkg', 'package')
         True
-        >>> dw.package_skip_patterns.append('^\\.badpkg$')
+        >>> dw.package_skip_patterns.append(r'^\.badpkg$')
         >>> dw._survives_exclude('sphinx.badpkg', 'package')
         False
         >>> dw._survives_exclude('sphinx.badpkg', 'module')
         True
         >>> dw._survives_exclude('sphinx.badmod', 'module')
         True
-        >>> dw.module_skip_patterns.append('^\\.badmod$')
+        >>> dw.module_skip_patterns.append(r'^\.badmod$')
         >>> dw._survives_exclude('sphinx.badmod', 'module')
         False
         '''

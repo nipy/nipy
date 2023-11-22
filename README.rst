@@ -4,9 +4,6 @@
 .. image:: https://codecov.io/gh/nipy/nipy/branch/main/graph/badge.svg
    :target: https://app.codecov.io/gh/nipy/nipy/branch/main
 
-.. Following contents should be from LONG_DESCRIPTION in nipy/info.py
-
-
 ====
 NIPY
 ====
