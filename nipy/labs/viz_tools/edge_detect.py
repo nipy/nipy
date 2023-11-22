@@ -30,7 +30,7 @@ def _fast_abs_percentile(map, percentile=80):
         return quantile(map, .01*percentile)
     map.sort()
     nb = map.size
-    return map[.01*percentile*nb]
+    return map[int(.01*percentile*nb)]
 
 
 def _orientation_kernel(t):
