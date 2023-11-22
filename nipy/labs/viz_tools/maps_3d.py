@@ -117,7 +117,13 @@ def m2screenshot(mayavi_fig=None, mpl_axes=None, autocrop=True):
     if mpl_axes is not None:
         plt.axes(mpl_axes)
 
-    image3d = mlab.screenshot()
+    # XXX: This is a hack to force Mayavi to render.
+    # It should not be needed if a GUI loop is running,
+    # but just to be safe...
+    # https://github.com/enthought/mayavi/issues/702
+    mayavi_fig.scene._lift()
+
+    image3d = mlab.screenshot(figure=mayavi_fig)
     if autocrop:
         bg_color = mayavi_fig.scene.background
         image3d = autocrop_img(image3d, bg_color)
