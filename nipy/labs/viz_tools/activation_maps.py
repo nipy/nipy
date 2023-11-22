@@ -173,14 +173,14 @@ def plot_map(map, affine, cut_coords=None, anat=None, anat_affine=None,
         if do3d == 'interactive':
             offscreen = False
 
-        cmap = kwargs.get('cmap', plt.cm.cmap_d[plt.rcParams['image.cmap']])
+        cmap = imshow_kwargs.get('cmap', plt.get_cmap(plt.rcParams['image.cmap']))
         # Computing vmin and vmax is costly in time, and is needed
         # later, so we compute them now, and store them for future
         # use
-        vmin = kwargs.get('vmin', map.min())
-        kwargs['vmin'] = vmin
-        vmax = kwargs.get('vmax', map.max())
-        kwargs['vmax'] = vmax
+        vmin = imshow_kwargs.get('vmin', map.min())
+        imshow_kwargs['vmin'] = vmin
+        vmax = imshow_kwargs.get('vmax', map.max())
+        imshow_kwargs['vmax'] = vmax
         try:
             from mayavi import mlab
         except ImportError:
