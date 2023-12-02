@@ -128,7 +128,10 @@ class CutAxes:
         else:
             raise ValueError(f'Invalid value for direction {self.direction}')
         ax = self.ax
-        getattr(ax, type)(cut, extent=(xmin, xmax, zmin, zmax), **kwargs)
+        if self.direction == 'x':
+            getattr(ax, type)(cut, extent=(xmin, xmax, zmin, zmax), **kwargs)
+        else:
+            getattr(ax, type)(cut, extent=(xmax, xmin, zmin, zmax), **kwargs)
 
         self._object_bounds.append((xmin_, xmax_, zmin_, zmax_))
         ax.axis(self.get_object_bounds())
@@ -152,7 +155,7 @@ class CutAxes:
         if self.direction == 'x':
             return
         ax = self.ax
-        ax.text(.1, .95, 'L',
+        ax.text(.1, .95, 'R',
                 transform=ax.transAxes,
                 horizontalalignment='left',
                 verticalalignment='top',
@@ -161,7 +164,7 @@ class CutAxes:
                             'ec': bg_color, 'fc': bg_color, 'alpha': 1},
                 **kwargs)
 
-        ax.text(.9, .95, 'R',
+        ax.text(.9, .95, 'L',
                 transform=ax.transAxes,
                 horizontalalignment='right',
                 verticalalignment='top',
