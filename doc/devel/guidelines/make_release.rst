@@ -18,12 +18,14 @@ Release checklist
 * Review and update the release notes.  Review and update the :file:`Changelog`
   file.  Get a partial list of contributors with something like::
 
-      git log 0.2.0.. | grep '^Author' | cut -d' ' -f 2- | sort | uniq
+      PREV_RELEASE=0.5.0
+      git log $PREV_RELEASE.. | grep '^Author' | cut -d' ' -f 2- | sort | uniq
 
-  where ``0.2.0`` was the last release tag name.
+  where ``0.5.0`` was the last release tag name.
 
-  Then manually go over ``git shortlog 0.2.0..`` to make sure the release
-  notes are as complete as possible and that every contributor was recognized.
+  Then manually go over ``git shortlog $PREV_RELEASE..`` to make sure the
+  release notes are as complete as possible and that every contributor was
+  recognized.
 
 * Use the opportunity to update the ``.mailmap`` file if there are any
   duplicate authors listed from ``git shortlog -ns``.
