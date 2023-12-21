@@ -6,9 +6,9 @@ from . import __version__
 
 # Versions and locations of optional data packages
 NIPY_DATA_URL= 'http://nipy.org/data-packages/'
-DATA_PKGS = {'nipy-data': {'min version':'0.2',
+DATA_PKGS = {'nipy-data': {'min version':'0.3',
                            'relpath':'nipy/data'},
-             'nipy-templates': {'min version':'0.2',
+             'nipy-templates': {'min version':'0.3',
                                 'relpath':'nipy/templates'}
             }
 NIPY_INSTALL_HINT = \
