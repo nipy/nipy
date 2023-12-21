@@ -42,7 +42,7 @@ def display_landmarks_2d(landmarks, hrois, stats):
     fig_input.text(.5,.9, "Input activation maps", ha='center')
     vmin, vmax = stats.min(), stats.max()
     for subject in range(n_subjects):
-        plt.subplot(n_subjects / 5, 5, subject + 1)
+        plt.subplot(n_subjects // 5, 5, subject + 1)
         plt.imshow(stats[subject], interpolation='nearest',
                    vmin=vmin, vmax=vmax)
         plt.axis('off')
@@ -51,7 +51,7 @@ def display_landmarks_2d(landmarks, hrois, stats):
     fig_output = plt.figure(figsize=(8, 3.5))
     fig_output.text(.5, .9, "Individual landmark regions", ha="center")
     for subject in range(n_subjects):
-        plt.subplot(n_subjects / 5, 5, subject + 1)
+        plt.subplot(n_subjects // 5, 5, subject + 1)
         lw = - np.ones(shape)
         if hrois[subject].k > 0:
             nls = hrois[subject].get_roi_feature('label')

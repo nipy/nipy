@@ -113,7 +113,7 @@ plt.xlabel('threshold')
 
 plt.figure()
 for q, threshold in enumerate(thresholds):
-    plt.subplot(3, len(thresholds) / 3 + 1, q + 1)
+    plt.subplot(3, len(thresholds) // 3 + 1, q + 1)
     rmap = map_reproducibility(func, var, domain, ngroups, method, verbose,
                                threshold=threshold, csize=csize)
     rmap = np.reshape(rmap, shape)
