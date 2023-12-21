@@ -262,7 +262,7 @@ def onesample_test(data_images, vardata_images, mask_images, stat_id,
 
     # Compute z-map image
     zmap = np.zeros(data_images[0].shape).squeeze()
-    zmap[list(xyz)] = ptest.zscore()
+    zmap[tuple(xyz)] = ptest.zscore()
     zimg = Image(zmap, get_affine(data_images[0]))
 
     # Compute mask image
@@ -311,7 +311,7 @@ def twosample_test(data_images, vardata_images, mask_images, labels, stat_id,
 
     # Compute z-map image
     zmap = np.zeros(data_images[0].shape).squeeze()
-    zmap[list(xyz)] = ptest.zscore()
+    zmap[tuple(xyz)] = ptest.zscore()
     zimg = Image(zmap, get_affine(data_images[0]))
 
     # Compute mask image
@@ -358,7 +358,7 @@ def linear_model_fit(data_images, mask_images, design_matrix, vector):
 
     # Compute z-map image
     zmap = np.zeros(data_images[0].shape).squeeze()
-    zmap[list(xyz)] = c.zscore()
+    zmap[tuple(xyz)] = c.zscore()
     zimg = Image(zmap, get_affine(data_images[0]))
 
     return zimg

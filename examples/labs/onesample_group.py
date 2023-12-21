@@ -28,12 +28,13 @@ def remake_images():
     data_images = []
     vardata_images = []
     mask_images = []
+    indices = tuple(xyz)
     for i in range(data.shape[0]):
-        aux[list(xyz)] = data[i]
+        aux[indices] = data[i]
         data_images.append(Image(aux.copy(), np.eye(4)))
-        aux[list(xyz)] = vardata[i]
+        aux[indices] = vardata[i]
         vardata_images.append(Image(aux.copy(), np.eye(4)))
-        aux[list(xyz)] = 1
+        aux[indices] = 1
         mask_images.append(aux)
 
     return data_images, vardata_images, mask_images
