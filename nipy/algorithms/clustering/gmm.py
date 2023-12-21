@@ -207,10 +207,10 @@ def plot2D(x, my_gmm, z=None, with_dots=True, log_scale=False, mpaxes=None,
     Pdens = np.reshape(L, (gdx, -1))
     extent = [xm, xs, ym, ys]
     if log_scale:
-        plt.imshow(np.log(Pdens.T), alpha=2.0, origin='lower',
+        plt.imshow(np.log(Pdens.T), origin='lower',
                   extent=extent)
     else:
-        plt.imshow(Pdens.T, alpha=2.0, origin='lower', extent=extent)
+        plt.imshow(Pdens.T, origin='lower', extent=extent)
 
     if with_dots:
         if z is None:
