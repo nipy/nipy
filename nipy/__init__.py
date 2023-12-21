@@ -5,7 +5,11 @@ Nipy is a library for neuroimaging analysis.
 
 import os
 
-__version__ = "0.5.1.dev1"
+# When updating here, also update meson.build file.
+# Form for development.
+# __version__ = "0.5.1.dev1"
+# Form for release.
+__version__ = "0.6.0"
 
 
 def _test_local_install():
