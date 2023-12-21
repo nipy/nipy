@@ -31,6 +31,30 @@ Abbreviated authors are:
 * YH - Yarik Halchenko
 * JBP - Jean-Baptiste Poline
 * JT - Jonathan Taylor
+* BB - Ben Beasley
+* CM - Chris Markiewicz
+* JM - Jarrod Millman
+* SvdW - Stéfan van der Walt
+
+* 0.6.0 (Thursday 21 December 2023)
+
+  Bugfix, refactoring and compatibility release.
+
+  Much thankless maintenance duty particularly by CM.  Oh wait - not thankless
+  - thank you!
+
+  * Huge cleanup of old dependencies for installation and build (BB).
+  * Allow for Nibabel deprecations and removals, particularly ``get_data``
+    (BB).
+  * Build refactor to ``pyproject.toml`` (CM)
+  * Various cleanups in spelling and script mechanics (Dimitri Papadopoulos).
+  * Move to pytest / pytest-doctestplus for testing (JM, MB).
+  * Various improvements to development process and CI (JM, MB, SvdW).
+  * Port build process from Numpy distutils to Meson (SvdW).
+  * Drop Python 2 support.
+  * Various bugfixes for modern Numpy (BB, MB).
+  * Drop Cython C files and depend on Cython for build (MB).
+  * Fixes to temporary files in Mayavi calls (fazledyn-or, CM).
 
 * 0.5.0 (Saturday 27 March 2021)
 
