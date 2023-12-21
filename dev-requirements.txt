@@ -6,3 +6,5 @@ pytest-cov>=4.0
 matplotlib
 coverage
 pre-commit
+build
+twine
