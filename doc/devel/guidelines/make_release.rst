@@ -46,15 +46,24 @@ Release checklist
   least match. Do they still hold?  Make sure ``.github/workflows`` is testing
   these minimum dependencies specifically.
 
-*   Check the examples by running something like::
+*   Check the examples.  First download the example data
+    by running something like::
 
+        # Install data packages.
+        pip install https://nipy.org/data-packages/nipy-templates-0.3.tar.gz
+        pip install https://nipy.org/data-packages/nipy-data-0.3.tar.gz
+
+    Then run the tests on the examples with::
+
+        # Move out of the source directory.
         cd ..
+        # Make log file directory.
+        mkdir ~/tmp/eg_logs
         ./nipy/tools/run_log_examples.py nipy/examples --log-path=~/tmp/eg_logs
 
-    in a virtualenv.  Review the output in (e.g.)
-    ``~/tmp/eg_logs``. The output file ``summary.txt`` will have the pass file
-    printout that the ``run_log_examples.py`` script puts onto stdout while
-    running.
+    in a virtualenv.  Review the output in (e.g.) ``~/tmp/eg_logs``. The
+    output file ``summary.txt`` will have the pass file printout that the
+    ``run_log_examples.py`` script puts onto stdout while running.
 
 * Check the documentation doctests pass::
 
