@@ -2,7 +2,7 @@ project(
   'nipy',
   'c',
   # Update also in __init__.py
-  version: '0.6.0',
+  version: '0.6.1.dev1',
   license: 'BSD-3',
   meson_version: '>= 1.1.1',
   default_options: [
