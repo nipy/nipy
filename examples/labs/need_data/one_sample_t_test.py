@@ -54,7 +54,7 @@ if not path.exists(write_dir):
 
 # Compute a population-level mask as the intersection of individual masks
 grp_mask = Nifti1Image(intersect_masks(mask_images).astype(np.int8),
-                       load(mask_images[0]).get_affine())
+                       load(mask_images[0]).affine)
 
 # concatenate the individual images
 first_level_image = concat_images(betas)
@@ -76,7 +76,7 @@ save(z_map, path.join(write_dir, 'one_sample_z_map.nii'))
 # look at the result
 vmax = max(- z_map.get_fdata().min(), z_map.get_fdata().max())
 vmin = - vmax
-plot_map(z_map.get_fdata(), z_map.get_affine(),
+plot_map(z_map.get_fdata(), z_map.affine,
          cmap=cm.cold_hot,
          vmin=vmin,
          vmax=vmax,

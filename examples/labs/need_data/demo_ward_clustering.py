@@ -43,5 +43,5 @@ u, _ = image_field.ward(100)
 label_image = path.join(write_dir, 'label.nii')
 wdata = mask - 1
 wdata[mask] = u
-save(Nifti1Image(wdata, load(mask_image).get_affine()), label_image)
+save(Nifti1Image(wdata, load(mask_image).affine), label_image)
 print(f"Label image written in {label_image}")

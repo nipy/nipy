@@ -21,7 +21,7 @@ The script to extract the data was::
                         'AtlasGrey.mnc')
     atlas_img = nib.load(atlas_fname)
     # Data is in fact uint8, but with trivial float scaling
-    data = atlas_img.get_data().astype(np.uint8)
+    data = np.array(atlas_img.dataobj).astype(np.uint8)
     bg_data = np.zeros_like(data)
     for code in (14, 16, 39, 53): # LR striatum, LR caudate
         in_mask = data == code

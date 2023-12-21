@@ -142,7 +142,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     vmax = max(- z_map.get_fdata().min(), z_map.get_fdata().max())
     if index > 0:
         plt.clf()
-    plot_map(z_map.get_fdata(), z_map.get_affine(),
+    plot_map(z_map.get_fdata(), z_map.affine,
              cmap=cm.cold_hot,
              vmin=- vmax,
              vmax=vmax,

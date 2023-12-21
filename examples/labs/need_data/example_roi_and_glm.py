@@ -48,7 +48,7 @@ if not path.exists(mask_path):
     get_second_level_dataset()
 
 mask = load(mask_path)
-mask_array, affine = mask.get_fdata() > 0, mask.get_affine()
+mask_array, affine = mask.get_fdata() > 0, mask.affine
 
 # timing
 n_scans = 128

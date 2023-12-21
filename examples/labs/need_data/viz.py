@@ -30,7 +30,7 @@ data_dir = get_second_level_dataset()
 # First example, with a anatomical template
 img = load(os.path.join(data_dir, 'spmT_0029.nii.gz'))
 data = img.get_fdata()
-affine = img.get_affine()
+affine = img.affine
 
 viz.plot_map(data, affine, cut_coords=(-52, 10, 22),
                         threshold=2.0, cmap=viz.cm.cold_hot)
@@ -41,7 +41,7 @@ try:
     anat_img = load(example_data.get_filename('neurospin', 'sulcal2000',
                                               'nobias_anubis.nii.gz'))
     anat = anat_img.get_fdata()
-    anat_affine = anat_img.get_affine()
+    anat_affine = anat_img.affine
 except OSError as e:
     # File does not exist: the data package is not installed
     print(e)

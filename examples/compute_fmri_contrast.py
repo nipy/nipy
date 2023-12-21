@@ -77,9 +77,9 @@ z_map, = multi_session_model.contrast(con)
 # Show Z-map image
 mean_map = multi_session_model.means[0]
 plot_map(z_map.get_fdata(),
-         z_map.get_affine(),
+         z_map.affine,
          anat=mean_map.get_fdata(),
-         anat_affine=mean_map.get_affine(),
+         anat_affine=mean_map.affine,
          cmap=cm.cold_hot,
          threshold=2.5,
          black_bg=True)

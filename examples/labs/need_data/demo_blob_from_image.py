@@ -38,7 +38,7 @@ smin = 5 # size threshold on blobs
 # prepare the data
 nim = load(input_image)
 mask_image = Nifti1Image((nim.get_fdata() ** 2 > 0).astype('u8'),
-                         nim.get_affine())
+                         nim.affine)
 domain = grid_domain_from_image(mask_image)
 data = nim.get_fdata()
 values = data[data != 0]
