@@ -96,8 +96,11 @@ Doing the release
 
 * The release should now be ready.
 
-* Edit :file:`nipy/__init__.py` to set ``version`` to e.g. ``0.6.0``; commit.
-  Then::
+* Edit :file:`nipy/__init__.py` to set ``__version__`` to e.g. ``0.6.0``.
+
+  Edit :file:`meson.build` to set ``version`` to match.
+
+  Commit, then::
 
     make source-release
 
