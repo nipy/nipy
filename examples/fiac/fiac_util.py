@@ -16,11 +16,10 @@ Requires matplotlib
 # Stdlib
 import csv
 import os
+from io import StringIO  # Python 3
 from os import listdir, makedirs
 from os.path import abspath, exists, isdir, splitext
 from os.path import join as pjoin
-
-from io import StringIO  # Python 3
 
 # Third party
 import numpy as np
@@ -28,6 +27,7 @@ import pandas as pd
 
 # From NIPY
 from nipy.io.api import load_image
+
 
 def csv2rec(fname):
     return pd.read_csv(fname).to_records()

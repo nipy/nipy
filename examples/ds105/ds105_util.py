@@ -26,6 +26,7 @@ import pandas as pd
 # From NIPY
 from nipy.io.api import load_image
 
+
 def csv2rec(fname):
     return pd.read_csv(fname).to_records()
 
