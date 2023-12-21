@@ -21,10 +21,13 @@ from os.path import join as pjoin
 
 # Third party
 import numpy as np
-from matplotlib.mlab import csv2rec
+import pandas as pd
 
 # From NIPY
 from nipy.io.api import load_image
+
+def csv2rec(fname):
+    return pd.read_csv(fname).to_records()
 
 #-----------------------------------------------------------------------------
 # Globals
@@ -68,7 +71,7 @@ def subj_des_con_dirs(design, contrast, subjects=range(1,7)):
     """
     rootdir = DATADIR
     con_dirs = []
-    for s in range(nsub):
+    for s in subjects:
         f = pjoin(rootdir, "sub%03d" % s, "model", design, "fixed", contrast)
         if isdir(f):
             con_dirs.append(f)
