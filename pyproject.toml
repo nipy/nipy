@@ -2,6 +2,7 @@
 name = "nipy"
 dynamic = ['version']
 license = {file = "LICENSE"}
+python-requires = ">=3.8"
 description  = 'A python package for analysis of neuroimaging data'
 readme = 'README.rst'
 classifiers = ["Development Status :: 3 - Alpha",
@@ -9,7 +10,11 @@ classifiers = ["Development Status :: 3 - Alpha",
                "Intended Audience :: Science/Research",
                "License :: OSI Approved :: BSD License",
                "Operating System :: OS Independent",
-               "Programming Language :: Python",
+               "Programming Language :: Python :: 3.8",
+               "Programming Language :: Python :: 3.9",
+               "Programming Language :: Python :: 3.10",
+               "Programming Language :: Python :: 3.11",
+               "Programming Language :: Python :: 3.12",
                "Topic :: Scientific/Engineering"]
 dependencies = [
     'numpy>=1.22',
@@ -63,8 +68,8 @@ requires = [
   # version.  See:
   # https://numpy.org/doc/stable/release/1.25.0-notes.html#compiling-against-the-numpy-c-api-is-now-backwards-compatible-by-default
   "numpy>=1.25; python_version > '3.8'",
-  # NEP29-minimum as of Sep 21, 2023
-  "numpy==1.22; python_version >= '3.7' and python_version < '3.9'",
+  # SPEC0-minimum as of Dec 23, 2023
+  "numpy==1.22; python_version <= '3.8'",
 ]
 
 [project.scripts]
@@ -76,7 +81,7 @@ nipy_diagnose = 'nipy.cli.diagnose:main'
 
 [tool.ruff]
 line-length = 88
-target-version = 'py39'
+target-version = 'py38'
 select = [
     'I',
     'UP',
