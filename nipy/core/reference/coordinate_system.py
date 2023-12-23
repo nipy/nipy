@@ -184,7 +184,7 @@ class CoordinateSystem:
         -------
         s : string
         """
-        return ("CoordinateSystem(coord_names={}, name='{}', coord_dtype={})".format(self.coord_names, self.name, self.coord_dtype))
+        return (f"CoordinateSystem(coord_names={self.coord_names}, name='{self.name}', coord_dtype={self.coord_dtype})")
 
 
     def _checked_values(self, arr):
@@ -276,12 +276,11 @@ class CoordinateSystem:
         '''
         arr = np.atleast_2d(arr)
         if arr.shape[-1] != self.ndim:
-            raise CoordinateSystemError('Array shape[-1] (%s) must match '
-                                        'CoordinateSystem ndim (%d).\n  %s'
-                                        % (arr.shape[-1], self.ndim, str(self)))
+            raise CoordinateSystemError(f'Array shape[-1] ({arr.shape[-1]}) must match '
+                                        f'CoordinateSystem ndim ({self.ndim}).\n  {self}')
         if not np.can_cast(arr.dtype, self.coord_dtype):
-            raise CoordinateSystemError('Cannot cast array dtype {} to '
-                                        'CoordinateSystem coord_dtype {}.\n  {}'.format(arr.dtype, self.coord_dtype, str(self)))
+            raise CoordinateSystemError(f'Cannot cast array dtype {arr.dtype} to '
+                                        f'CoordinateSystem coord_dtype {self.coord_dtype}.\n  {self}')
         return arr.reshape((-1, self.ndim))
 
 

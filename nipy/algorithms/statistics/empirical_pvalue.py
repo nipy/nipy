@@ -262,10 +262,10 @@ class NormalEmpiricalNull:
             self.plot(efp, alpha)
 
         if efp[-1] > alpha:
-            print("the maximal value is {:f} , the corresponding FDR is {:f} ".format(self.x[ - 1], efp[ - 1]))
+            print(f"the maximal value is {self.x[-1]:f} , the corresponding FDR is {efp[-1]:f} ")
             return np.inf
-        j = np.argmin(efp[:: - 1] < alpha) + 1
-        return 0.5 * (self.x[ - j] + self.x[ - j + 1])
+        j = np.argmin(efp[::-1] < alpha) + 1
+        return 0.5 * (self.x[-j] + self.x[-j + 1])
 
     def uncorrected_threshold(self, alpha=0.001, verbose=0):
         """Compute the threshold corresponding to a specificity alpha for x
