@@ -81,6 +81,8 @@ nipy_diagnose = 'nipy.cli.diagnose:main'
 
 [tool.ruff]
 line-length = 88
+
+[tool.ruff.lint]
 select = [
     'I',
     'UP',
