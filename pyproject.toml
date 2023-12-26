@@ -2,7 +2,7 @@
 name = "nipy"
 dynamic = ['version']
 license = {file = "LICENSE"}
-python-requires = ">=3.8"
+requires-python = ">=3.8"
 description  = 'A python package for analysis of neuroimaging data'
 readme = 'README.rst'
 classifiers = ["Development Status :: 3 - Alpha",
@@ -81,7 +81,6 @@ nipy_diagnose = 'nipy.cli.diagnose:main'
 
 [tool.ruff]
 line-length = 88
-target-version = 'py38'
 select = [
     'I',
     'UP',
