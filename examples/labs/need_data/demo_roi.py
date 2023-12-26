@@ -109,6 +109,6 @@ wim5 = roi.to_image()
 roi_path_5 = path.join(write_dir, "roi_some_blobs.nii")
 save(wim5, roi_path_5)
 
-print("Wrote ROI mask images in {}, \n {} \n {} \n and {}".format(roi_path_2, roi_path_3, roi_path_4, roi_path_5))
+print(f"Wrote ROI mask images in {roi_path_2}, \n {roi_path_3} \n {roi_path_4} \n and {roi_path_5}")
 
 plt.show()

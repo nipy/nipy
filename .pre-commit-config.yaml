@@ -20,8 +20,8 @@ repos:
         files: \.(md|rst|toml|yml|yaml)
         args: [--prose-wrap=preserve]
 
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 6fcbf19c7cf351a8dc3517a0fed3ebfa05610de2 # frozen: v0.0.290
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: 7bcc70ca475b87e0fdee2511300c74b25babe0b3 # frozen: v0.1.9
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
