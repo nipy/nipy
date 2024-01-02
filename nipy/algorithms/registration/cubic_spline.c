@@ -224,11 +224,14 @@ void cubic_spline_transform(PyArrayObject* res, const PyArrayObject* src)
 
 double cubic_spline_sample1d (double x, const PyArrayObject* Coef, int mode)
 {
-
-  unsigned int ddim = PyArray_DIM(Coef, 0) - 1;
-  unsigned int offset = PyArray_STRIDE(Coef, 0)/sizeof(double);
-  double *coef = PyArray_DATA(Coef);
-  double *buf;
+  /* Since PyArray_DATA(), PyArray_DIMS(), and PyArray_STRIDE() are simple
+   * accessors, it is OK to cast away const as long as we treat any returned
+   * pointers as const.
+   */
+  unsigned int ddim = PyArray_DIM((PyArrayObject*) Coef, 0) - 1;
+  unsigned int offset = PyArray_STRIDE((PyArrayObject*) Coef, 0)/sizeof(double);
+  const double *coef = PyArray_DATA((PyArrayObject*) Coef);
+  const double *buf;
   int nx, px, xx;
   double s;
   double bspx[4];
@@ -273,13 +276,16 @@ double cubic_spline_sample1d (double x, const PyArrayObject* Coef, int mode)
 double cubic_spline_sample2d (double x, double y, const PyArrayObject* Coef,
 			      int mode_x, int mode_y)
 {
-
-  unsigned int ddimX = PyArray_DIM(Coef, 0) - 1;
-  unsigned int ddimY = PyArray_DIM(Coef, 1) - 1;
-  unsigned int offX = PyArray_STRIDE(Coef, 0)/sizeof(double);
-  unsigned int offY = PyArray_STRIDE(Coef, 1)/sizeof(double);
-  double *coef = PyArray_DATA(Coef);
-  double *buf;
+  /* Since PyArray_DATA(), PyArray_DIMS(), and PyArray_STRIDE() are simple
+   * accessors, it is OK to cast away const as long as we treat any returned
+   * pointers as const.
+   */
+  unsigned int ddimX = PyArray_DIM((PyArrayObject*) Coef, 0) - 1;
+  unsigned int ddimY = PyArray_DIM((PyArrayObject*) Coef, 1) - 1;
+  unsigned int offX = PyArray_STRIDE((PyArrayObject*) Coef, 0)/sizeof(double);
+  unsigned int offY = PyArray_STRIDE((PyArrayObject*) Coef, 1)/sizeof(double);
+  const double *coef = PyArray_DATA((PyArrayObject*) Coef);
+  const double *buf;
   int nx, ny, px, py, xx, yy;
   double s, aux;
   double bspx[4], bspy[4];
@@ -345,14 +351,18 @@ double cubic_spline_sample2d (double x, double y, const PyArrayObject* Coef,
 double cubic_spline_sample3d (double x, double y, double z, const PyArrayObject* Coef,
 			      int mode_x, int mode_y, int mode_z)
 {
-  unsigned int ddimX = PyArray_DIM(Coef, 0) - 1;
-  unsigned int ddimY = PyArray_DIM(Coef, 1) - 1;
-  unsigned int ddimZ = PyArray_DIM(Coef, 2) - 1;
-  unsigned int offX = PyArray_STRIDE(Coef, 0)/sizeof(double);
-  unsigned int offY = PyArray_STRIDE(Coef, 1)/sizeof(double);
-  unsigned int offZ = PyArray_STRIDE(Coef, 2)/sizeof(double);
-  double *coef = PyArray_DATA(Coef);
-  double *buf;
+  /* Since PyArray_DATA(), PyArray_DIMS(), and PyArray_STRIDE() are simple
+   * accessors, it is OK to cast away const as long as we treat any returned
+   * pointers as const.
+   */
+  unsigned int ddimX = PyArray_DIM((PyArrayObject*) Coef, 0) - 1;
+  unsigned int ddimY = PyArray_DIM((PyArrayObject*) Coef, 1) - 1;
+  unsigned int ddimZ = PyArray_DIM((PyArrayObject*) Coef, 2) - 1;
+  unsigned int offX = PyArray_STRIDE((PyArrayObject*) Coef, 0)/sizeof(double);
+  unsigned int offY = PyArray_STRIDE((PyArrayObject*) Coef, 1)/sizeof(double);
+  unsigned int offZ = PyArray_STRIDE((PyArrayObject*) Coef, 2)/sizeof(double);
+  const double *coef = PyArray_DATA((PyArrayObject*) Coef);
+  const double *buf;
   int nx, ny, nz, px, py, pz;
   int xx, yy, zz;
   double s, aux, aux2;
@@ -438,16 +448,20 @@ double cubic_spline_sample3d (double x, double y, double z, const PyArrayObject*
 double cubic_spline_sample4d (double x, double y, double z, double t, const PyArrayObject* Coef,
 			      int mode_x, int mode_y, int mode_z, int mode_t)
 {
-  unsigned int ddimX = PyArray_DIM(Coef, 0) - 1;
-  unsigned int ddimY = PyArray_DIM(Coef, 1) - 1;
-  unsigned int ddimZ = PyArray_DIM(Coef, 2) - 1;
-  unsigned int ddimT = PyArray_DIM(Coef, 3) - 1;
-  unsigned int offX = PyArray_STRIDE(Coef, 0)/sizeof(double);
-  unsigned int offY = PyArray_STRIDE(Coef, 1)/sizeof(double);
-  unsigned int offZ = PyArray_STRIDE(Coef, 2)/sizeof(double);
-  unsigned int offT = PyArray_STRIDE(Coef, 3)/sizeof(double);
-  double *coef = PyArray_DATA(Coef);
-  double *buf;
+  /* Since PyArray_DATA(), PyArray_DIMS(), and PyArray_STRIDE() are simple
+   * accessors, it is OK to cast away const as long as we treat any returned
+   * pointers as const.
+   */
+  unsigned int ddimX = PyArray_DIM((PyArrayObject*) Coef, 0) - 1;
+  unsigned int ddimY = PyArray_DIM((PyArrayObject*) Coef, 1) - 1;
+  unsigned int ddimZ = PyArray_DIM((PyArrayObject*) Coef, 2) - 1;
+  unsigned int ddimT = PyArray_DIM((PyArrayObject*) Coef, 3) - 1;
+  unsigned int offX = PyArray_STRIDE((PyArrayObject*) Coef, 0)/sizeof(double);
+  unsigned int offY = PyArray_STRIDE((PyArrayObject*) Coef, 1)/sizeof(double);
+  unsigned int offZ = PyArray_STRIDE((PyArrayObject*) Coef, 2)/sizeof(double);
+  unsigned int offT = PyArray_STRIDE((PyArrayObject*) Coef, 3)/sizeof(double);
+  const double *coef = PyArray_DATA((PyArrayObject*) Coef);
+  const double *buf;
   int nx, ny, nz, nt, px, py, pz, pt;
   int xx, yy, zz, tt;
   double s, aux, aux2, aux3;

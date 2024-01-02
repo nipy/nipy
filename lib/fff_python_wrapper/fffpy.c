@@ -203,7 +203,7 @@ fff_matrix* fff_matrix_fromPyArray(const PyArrayObject* x)
     y->size1 = (size_t) PyArray_DIM(x,0);
     y->size2 = (size_t) PyArray_DIM(x,1);
     y->tda = y->size2;
-    y->data = (double*) PyArray_DATA(x);
+    y->data = PyArray_DATA(x);
     y->owner = 0;
   }
   /* Otherwise, output a owner (contiguous) matrix with copied
@@ -427,7 +427,7 @@ fff_array* fff_array_fromPyArray(const PyArrayObject* x)
   /* Create array (not owner) */
   y = (fff_array*)malloc(sizeof(fff_array));
   *y = fff_array_view(datatype,
-		      (void*) PyArray_DATA(x),
+		      PyArray_DATA(x),
 		      dimX, dimY, dimZ, dimT,
 		      offX, offY, offZ, offT);
 
