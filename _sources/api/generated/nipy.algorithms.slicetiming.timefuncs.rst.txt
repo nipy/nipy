@@ -1,0 +1,38 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+algorithms.slicetiming.timefuncs
+================================
+
+Module: :mod:`algorithms.slicetiming.timefuncs`
+-----------------------------------------------
+.. automodule:: nipy.algorithms.slicetiming.timefuncs
+
+.. currentmodule:: nipy.algorithms.slicetiming.timefuncs
+
+Functions
+---------
+
+
+.. autofunction:: nipy.algorithms.slicetiming.timefuncs.st_01234
+
+
+.. autofunction:: nipy.algorithms.slicetiming.timefuncs.st_02413
+
+
+.. autofunction:: nipy.algorithms.slicetiming.timefuncs.st_03142
+
+
+.. autofunction:: nipy.algorithms.slicetiming.timefuncs.st_13024
+
+
+.. autofunction:: nipy.algorithms.slicetiming.timefuncs.st_41302
+
+
+.. autofunction:: nipy.algorithms.slicetiming.timefuncs.st_42031
+
+
+.. autofunction:: nipy.algorithms.slicetiming.timefuncs.st_43210
+
+
+.. autofunction:: nipy.algorithms.slicetiming.timefuncs.st_odd0_even1
+

@@ -1,0 +1,58 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+algorithms.statistics.mixed_effects_stat
+========================================
+
+Module: :mod:`algorithms.statistics.mixed_effects_stat`
+-------------------------------------------------------
+Inheritance diagram for ``nipy.algorithms.statistics.mixed_effects_stat``:
+
+.. inheritance-diagram:: nipy.algorithms.statistics.mixed_effects_stat 
+   :parts: 3
+
+.. automodule:: nipy.algorithms.statistics.mixed_effects_stat
+
+.. currentmodule:: nipy.algorithms.statistics.mixed_effects_stat
+
+Class
+-----
+
+:class:`MixedEffectsModel`
+--------------------------
+
+
+.. autoclass:: MixedEffectsModel
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: nipy.algorithms.statistics.mixed_effects_stat.check_arrays
+
+
+.. autofunction:: nipy.algorithms.statistics.mixed_effects_stat.generate_data
+
+
+.. autofunction:: nipy.algorithms.statistics.mixed_effects_stat.mfx_stat
+
+
+.. autofunction:: nipy.algorithms.statistics.mixed_effects_stat.one_sample_ftest
+
+
+.. autofunction:: nipy.algorithms.statistics.mixed_effects_stat.one_sample_ttest
+
+
+.. autofunction:: nipy.algorithms.statistics.mixed_effects_stat.t_stat
+
+
+.. autofunction:: nipy.algorithms.statistics.mixed_effects_stat.two_sample_ftest
+
+
+.. autofunction:: nipy.algorithms.statistics.mixed_effects_stat.two_sample_ttest
+

@@ -1,0 +1,5 @@
+<map id="inheritance24aa149a64" name="inheritance24aa149a64">
+<area shape="rect" id="node1" href="#nipy.modalities.fmri.utils.Interp1dNumeric" target="_top" title="Wrapper for interp1 to raise TypeError for object array input" alt="" coords="256,56,427,83"/>
+<area shape="rect" id="node2" title="Interpolate a 1&#45;D function." alt="" coords="5,56,208,83"/>
+<area shape="rect" id="node3" href="#nipy.modalities.fmri.utils.TimeConvolver" target="_top" title="Make a convolution kernel from a symbolic function of t" alt="" coords="25,5,188,32"/>
+</map>

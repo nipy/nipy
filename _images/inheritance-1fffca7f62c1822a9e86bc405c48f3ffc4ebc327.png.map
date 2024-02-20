@@ -1,0 +1,11 @@
+<map id="inheritance7534ba070d" name="inheritance7534ba070d">
+<area shape="rect" id="node1" href="nipy.algorithms.statistics.models.model.html#nipy.algorithms.statistics.models.model.LikelihoodModel" target="_top" title="models.model.LikelihoodModel" alt="" coords="238,80,387,100"/>
+<area shape="rect" id="node6" href="#nipy.algorithms.statistics.models.regression.OLSModel" target="_top" title="A simple ordinary least squares model." alt="" coords="439,80,582,100"/>
+<area shape="rect" id="node2" href="nipy.algorithms.statistics.models.model.html#nipy.algorithms.statistics.models.model.Model" target="_top" title="A (predictive) statistical model." alt="" coords="42,80,148,100"/>
+<area shape="rect" id="node3" href="nipy.algorithms.statistics.models.model.html#nipy.algorithms.statistics.models.model.LikelihoodModelResults" target="_top" title="Class to contain results from likelihood models" alt="" coords="4,42,186,62"/>
+<area shape="rect" id="node8" href="#nipy.algorithms.statistics.models.regression.RegressionResults" target="_top" title="This class summarizes the fit of a linear regression model." alt="" coords="222,42,403,62"/>
+<area shape="rect" id="node4" href="#nipy.algorithms.statistics.models.regression.AREstimator" target="_top" title="A class to estimate AR(p) coefficients from residuals" alt="" coords="18,4,172,24"/>
+<area shape="rect" id="node5" href="#nipy.algorithms.statistics.models.regression.ARModel" target="_top" title="A regression model with an AR(p) covariance structure." alt="" coords="622,42,760,62"/>
+<area shape="rect" id="node7" href="#nipy.algorithms.statistics.models.regression.GLSModel" target="_top" title="Generalized least squares model with a general covariance structure" alt="" coords="619,80,763,100"/>
+<area shape="rect" id="node9" href="#nipy.algorithms.statistics.models.regression.WLSModel" target="_top" title="A regression model with diagonal but non&#45;identity covariance structure." alt="" coords="618,117,764,137"/>
+</map>

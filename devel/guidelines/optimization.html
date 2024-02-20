@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Open Source Development" href="open_source_devel.html" />
+    <link rel="prev" title="Debugging the build" href="build_debug.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="open_source_devel.html" title="Open Source Development"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="build_debug.html" title="Debugging the build"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">Development Guidelines</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="optimization">
+<span id="id1"></span><h1>Optimization<a class="headerlink" href="#optimization" title="Link to this heading">¶</a></h1>
+<p>In the early stages of NIPY development, we are focusing on
+functionality and usability.  In regards to optimization, we benefit
+<strong>significantly</strong> from the optimized routines in <a class="reference external" href="http://www.scipy.org">scipy</a> and <a class="reference external" href="http://numpy.scipy.org">numpy</a>.
+As NIPY progresses it is likely we will spend more energy on
+optimizing critical functions.  In our <a class="reference external" href="https://cirl.berkeley.edu/view/Py4Science/WebHome">py4science group at UC
+Berkeley</a> we’ve
+had several meetings on the various optimization options including
+ctypes, weave and blitz, and cython.  It’s clear there are many good
+options, including standard C-extensions.  However, optimized code
+tends to be less readable and more difficult to debug and maintain.
+When we do optimize our code we will first profile the code to
+determine the offending sections, then optimize those sections. Until
+that need arises, we will follow the great advice from these fellow
+programmers:</p>
+<dl class="simple">
+<dt>Kent Beck:</dt><dd><p>“First make it work.  Then make it right.  Then make it fast.”</p>
+</dd>
+</dl>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Optimization_(computer_science)#When_to_optimize">Donald Knuth on optimization</a>:</p>
+<blockquote>
+<div><p>“We should forget about small efficiencies, say about 97% of the
+time: premature optimization is the root of all evil.”</p>
+</div></blockquote>
+<p>Tim Hochberg, from the Numpy list:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">0.</span> <span class="n">Think</span> <span class="n">about</span> <span class="n">your</span> <span class="n">algorithm</span><span class="o">.</span>
+<span class="mf">1.</span> <span class="n">Vectorize</span> <span class="n">your</span> <span class="n">inner</span> <span class="n">loop</span><span class="o">.</span>
+<span class="mf">2.</span> <span class="n">Eliminate</span> <span class="n">temporaries</span>
+<span class="mf">3.</span> <span class="n">Ask</span> <span class="k">for</span> <span class="n">help</span>
+<span class="mf">4.</span> <span class="n">Recode</span> <span class="ow">in</span> <span class="n">C</span><span class="o">.</span>
+<span class="mf">5.</span> <span class="n">Accept</span> <span class="n">that</span> <span class="n">your</span> <span class="n">code</span> <span class="n">will</span> <span class="n">never</span> <span class="n">be</span> <span class="n">fast</span><span class="o">.</span>
+
+<span class="n">Step</span> <span class="n">zero</span> <span class="n">should</span> <span class="n">probably</span> <span class="n">be</span> <span class="n">repeated</span> <span class="n">after</span> <span class="n">every</span> <span class="n">other</span> <span class="n">step</span> <span class="p">;)</span>
+</pre></div>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="build_debug.html"
+                          title="previous chapter">Debugging the build</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="open_source_devel.html"
+                          title="next chapter">Open Source Development</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/devel/guidelines/optimization.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="open_source_devel.html" title="Open Source Development"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="build_debug.html" title="Debugging the build"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" >Development Guidelines</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

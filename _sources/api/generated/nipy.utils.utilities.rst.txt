@@ -1,0 +1,23 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils.utilities
+===============
+
+Module: :mod:`utils.utilities`
+------------------------------
+.. automodule:: nipy.utils.utilities
+
+.. currentmodule:: nipy.utils.utilities
+
+Functions
+---------
+
+
+.. autofunction:: nipy.utils.utilities.is_iterable
+
+
+.. autofunction:: nipy.utils.utilities.is_numlike
+
+
+.. autofunction:: nipy.utils.utilities.seq_prod
+

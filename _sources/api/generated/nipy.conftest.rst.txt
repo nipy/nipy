@@ -1,0 +1,23 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+conftest
+========
+
+Module: :mod:`conftest`
+-----------------------
+.. automodule:: nipy.conftest
+
+.. currentmodule:: nipy.conftest
+
+Functions
+---------
+
+
+.. autofunction:: nipy.conftest.add_np
+
+
+.. autofunction:: nipy.conftest.in_tmp_path
+
+
+.. autofunction:: nipy.conftest.mpl_imports
+

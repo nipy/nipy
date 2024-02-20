@@ -1,0 +1,15 @@
+<map id="inheritance17b0564be0" name="inheritance17b0564be0">
+<area shape="rect" id="node1" title="A one&#45;dimensional polynomial class." alt="" coords="45,187,136,211"/>
+<area shape="rect" id="node6" href="#nipy.algorithms.statistics.rft.ECquasi" target="_top" title="Polynomials with premultiplier" alt="" coords="219,187,349,211"/>
+<area shape="rect" id="node2" href="#nipy.algorithms.statistics.rft.ChiBarSquared" target="_top" title="statistics.rft.ChiBarSquared" alt="" coords="599,5,763,29"/>
+<area shape="rect" id="node3" href="#nipy.algorithms.statistics.rft.ChiSquared" target="_top" title="EC densities for a Chi&#45;Squared(n) random field." alt="" coords="401,5,547,29"/>
+<area shape="rect" id="node4" href="#nipy.algorithms.statistics.rft.ECcone" target="_top" title="EC approximation to supremum distribution of var==1 Gaussian process" alt="" coords="220,141,347,165"/>
+<area shape="rect" id="node7" href="#nipy.algorithms.statistics.rft.FStat" target="_top" title="EC densities for a F random field." alt="" coords="417,50,531,74"/>
+<area shape="rect" id="node8" href="#nipy.algorithms.statistics.rft.Hotelling" target="_top" title="Hotelling&#39;s T^2" alt="" coords="409,96,539,120"/>
+<area shape="rect" id="node9" href="#nipy.algorithms.statistics.rft.MultilinearForm" target="_top" title="Maximize a multivariate Gaussian form" alt="" coords="392,141,556,165"/>
+<area shape="rect" id="node10" href="#nipy.algorithms.statistics.rft.OneSidedF" target="_top" title="EC densities for one&#45;sided F statistic" alt="" coords="402,187,546,211"/>
+<area shape="rect" id="node11" href="#nipy.algorithms.statistics.rft.Roy" target="_top" title="Roy&#39;s maximum root" alt="" coords="421,232,527,256"/>
+<area shape="rect" id="node12" href="#nipy.algorithms.statistics.rft.TStat" target="_top" title="EC densities for a t random field." alt="" coords="417,278,531,302"/>
+<area shape="rect" id="node5" href="#nipy.algorithms.statistics.rft.IntrinsicVolumes" target="_top" title="Compute intrinsic volumes of products of sets" alt="" coords="5,141,176,165"/>
+<area shape="rect" id="node13" href="#nipy.algorithms.statistics.rft.fnsum" target="_top" title="statistics.rft.fnsum" alt="" coords="32,96,149,120"/>
+</map>

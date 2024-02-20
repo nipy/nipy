@@ -1,0 +1,4 @@
+<map id="inheritance1541aafb4c" name="inheritance1541aafb4c">
+<area shape="rect" id="node1" href="#nipy.core.image.image.Image" target="_top" title="The `Image` class provides the core object type used in nipy." alt="" coords="20,56,155,83"/>
+<area shape="rect" id="node2" href="#nipy.core.image.image.SliceMaker" target="_top" title="This class just creates slice objects for image resampling" alt="" coords="5,5,170,32"/>
+</map>

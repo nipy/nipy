@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="labs.viz_tools.maps_3d" href="nipy.labs.viz_tools.maps_3d.html" />
+    <link rel="prev" title="labs.viz_tools.cm" href="nipy.labs.viz_tools.cm.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.viz_tools.maps_3d.html" title="labs.viz_tools.maps_3d"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.viz_tools.cm.html" title="labs.viz_tools.cm"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="labs-viz-tools-coord-tools">
+<h1>labs.viz_tools.coord_tools<a class="headerlink" href="#labs-viz-tools-coord-tools" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.labs.viz_tools.coord_tools">
+<span id="module-labs-viz-tools-coord-tools"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.viz_tools.coord_tools</span></code><a class="headerlink" href="#module-nipy.labs.viz_tools.coord_tools" title="Link to this heading">¶</a></h2>
+<p>Misc tools to find activations and cut on maps</p>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.viz_tools.coord_tools.coord_transform">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.viz_tools.coord_tools.</span></span><span class="sig-name descname"><span class="pre">coord_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.viz_tools.coord_tools.coord_transform" title="Link to this definition">¶</a></dt>
+<dd><p>Convert x, y, z coordinates from one image space to another space.</p>
+<p>Warning: x, y and z have Talairach ordering, not 3D numpy image ordering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">number or ndarray</span></dt><dd><p>The x coordinates in the input space</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">number or ndarray</span></dt><dd><p>The y coordinates in the input space</p>
+</dd>
+<dt><strong>z</strong><span class="classifier">number or ndarray</span></dt><dd><p>The z coordinates in the input space</p>
+</dd>
+<dt><strong>affine</strong><span class="classifier">2D 4x4 ndarray</span></dt><dd><p>affine that maps from input to output space.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">number or ndarray</span></dt><dd><p>The x coordinates in the output space</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">number or ndarray</span></dt><dd><p>The y coordinates in the output space</p>
+</dd>
+<dt><strong>z</strong><span class="classifier">number or ndarray</span></dt><dd><p>The z coordinates in the output space</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.viz_tools.coord_tools.find_cut_coords">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.viz_tools.coord_tools.</span></span><span class="sig-name descname"><span class="pre">find_cut_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.viz_tools.coord_tools.find_cut_coords" title="Link to this definition">¶</a></dt>
+<dd><p>Find the center of the largest activation connect component.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>map</strong><span class="classifier">3D ndarray</span></dt><dd><p>The activation map, as a 3D image.</p>
+</dd>
+<dt><strong>mask</strong><span class="classifier">3D ndarray, boolean, optional</span></dt><dd><p>An optional brain mask.</p>
+</dd>
+<dt><strong>activation_threshold</strong><span class="classifier">float, optional</span></dt><dd><p>The lower threshold to the positive activation. If None, the
+activation threshold is computed using find_activation.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>x: float</dt><dd><p>the x coordinate in voxels.</p>
+</dd>
+<dt>y: float</dt><dd><p>the y coordinate in voxels.</p>
+</dd>
+<dt>z: float</dt><dd><p>the z coordinate in voxels.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.viz_tools.coord_tools.find_maxsep_cut_coords">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.viz_tools.coord_tools.</span></span><span class="sig-name descname"><span class="pre">find_maxsep_cut_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map3d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slicer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'z'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cuts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.viz_tools.coord_tools.find_maxsep_cut_coords" title="Link to this definition">¶</a></dt>
+<dd><p>Heuristic finds <cite>n_cuts</cite> with max separation along a given axis</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>map3d</strong><span class="classifier">3D array</span></dt><dd><p>the data under consideration</p>
+</dd>
+<dt><strong>affine</strong><span class="classifier">array shape (4, 4)</span></dt><dd><p>Affine mapping between array coordinates of <cite>map3d</cite> and real-world
+coordinates.</p>
+</dd>
+<dt><strong>slicer</strong><span class="classifier">string, optional</span></dt><dd><p>sectional slicer; possible values are “x”, “y”, or “z”</p>
+</dd>
+<dt><strong>n_cuts</strong><span class="classifier">None or int &gt;= 1, optional</span></dt><dd><p>Number of cuts in the plot; if None, then a default value of 5 is
+forced.</p>
+</dd>
+<dt><strong>threshold</strong><span class="classifier">None or float, optional</span></dt><dd><p>Thresholding to be applied to the map.  Values less than <cite>threshold</cite>
+set to 0.  If None, no thresholding applied.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>cuts</strong><span class="classifier">1D array of length <cite>n_cuts</cite></span></dt><dd><p>the computed cuts</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError:</dt><dd><p>If <cite>slicer</cite> not in ‘xyz’</p>
+</dd>
+<dt>ValueError</dt><dd><p>If <cite>ncuts</cite> &lt; 1</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.viz_tools.coord_tools.get_mask_bounds">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.viz_tools.coord_tools.</span></span><span class="sig-name descname"><span class="pre">get_mask_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.viz_tools.coord_tools.get_mask_bounds" title="Link to this definition">¶</a></dt>
+<dd><p>Return the world-space bounds occupied by a mask given an affine.</p>
+<p class="rubric">Notes</p>
+<p>The mask should have only one connect component.</p>
+<p>The affine should be diagonal or diagonal-permuted.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">labs.viz_tools.coord_tools</a><ul>
+<li><a class="reference internal" href="#module-nipy.labs.viz_tools.coord_tools">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.viz_tools.coord_tools</span></code></a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.labs.viz_tools.coord_tools.coord_transform"><code class="docutils literal notranslate"><span class="pre">coord_transform()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.viz_tools.coord_tools.find_cut_coords"><code class="docutils literal notranslate"><span class="pre">find_cut_coords()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.viz_tools.coord_tools.find_maxsep_cut_coords"><code class="docutils literal notranslate"><span class="pre">find_maxsep_cut_coords()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.viz_tools.coord_tools.get_mask_bounds"><code class="docutils literal notranslate"><span class="pre">get_mask_bounds()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.labs.viz_tools.cm.html"
+                          title="previous chapter">labs.viz_tools.cm</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.labs.viz_tools.maps_3d.html"
+                          title="next chapter">labs.viz_tools.maps_3d</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.labs.viz_tools.coord_tools.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.viz_tools.maps_3d.html" title="labs.viz_tools.maps_3d"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.viz_tools.cm.html" title="labs.viz_tools.cm"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

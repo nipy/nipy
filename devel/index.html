@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Development quickstart" href="development_quickstart.html" />
+    <link rel="prev" title="nipy.labs.datasets.volumes.volume_field.VolumeField.resampled_to_img" href="../labs/generated/nipy.labs.datasets.volumes.volume_field.VolumeField.resampled_to_img.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../index.html">
+  <img src="../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="development_quickstart.html" title="Development quickstart"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../labs/generated/nipy.labs.datasets.volumes.volume_field.VolumeField.resampled_to_img.html" title="nipy.labs.datasets.volumes.volume_field.VolumeField.resampled_to_img"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" accesskey="U">NIPY documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="developer-guide">
+<span id="developers-guide-index"></span><h1>Developer Guide<a class="headerlink" href="#developer-guide" title="Link to this heading">¶</a></h1>
+<dl class="field-list simple">
+<dt class="field-odd">Release<span class="colon">:</span></dt>
+<dd class="field-odd"><p>0.6.1.dev1</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>February 20, 2024</p>
+</dd>
+</dl>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="development_quickstart.html">Development quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="development_quickstart.html#source-code">Source Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development_quickstart.html#checking-out-the-latest-version">Checking out the latest version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development_quickstart.html#getting-data-files">Getting data files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development_quickstart.html#guidelines">Guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development_quickstart.html#submitting-a-patch">Submitting a patch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development_quickstart.html#bug-reports">Bug reports</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install/index.html">Developer installs for different distributions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install/debian.html">Debian / Ubuntu developer install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install/fedora.html">Fedora developer install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install/windows.html">Development install on windows</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guidelines/index.html">Development Guidelines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/howto_document.html">How to write documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/howto_document.html#getting-build-dependencies">Getting build dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/sphinx_helpers.html">Sphinx Cheat Sheet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/gitwash/index.html">Working with <em>nipy</em> source code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/commit_codes.html">Commit message codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/commit_codes.html#pull-request-codes">Pull request codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/testing.html">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/debugging.html">Debugging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/build_debug.html">Debugging the build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/optimization.html">Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/open_source_devel.html">Open Source Development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/make_release.html">A guide to making a nipy release</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guidelines/changelog.html">The ChangeLog</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="planning/index.html">Development Planning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="planning/roadmap.html">Nipy roadmap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="planning/TODO.html">TODO for nipy development</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_discussions/index.html">Code discussions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_discussions/understanding_affines.html">Understanding voxel and real world mappings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_discussions/image_ordering.html">Image index ordering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_discussions/registration_api.html">Registration API Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_discussions/repository_design.html">Repository design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_discussions/brainvisa_repositories.html">Can NIPY get something interesting from BrainVISA databases?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_discussions/repository_api.html">Repository API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_discussions/pipelining_api.html">What would pipelining look like?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_discussions/simple_viewer.html">Simple image viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_discussions/simple_viewer.html#other-attempts">Other attempts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_discussions/usecases/index.html">Defining use cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_discussions/refactoring/index.html">Defining use cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_discussions/comparisons/index.html">Software Design</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tools/index.html">Developer Tools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tools/tricked_out_emacs.html">Tricked out emacs for python coding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tools/virtualenv-tutor.html">Setting up virtualenv</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../documentation.html">Documentation</a></li>
+    <li><a href="#">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../labs/generated/nipy.labs.datasets.volumes.volume_field.VolumeField.resampled_to_img.html"
+                          title="previous chapter">nipy.labs.datasets.volumes.volume_field.VolumeField.resampled_to_img</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="development_quickstart.html"
+                          title="next chapter">Development quickstart</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/devel/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="development_quickstart.html" title="Development quickstart"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../labs/generated/nipy.labs.datasets.volumes.volume_field.VolumeField.resampled_to_img.html" title="nipy.labs.datasets.volumes.volume_field.VolumeField.resampled_to_img"
+             >previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

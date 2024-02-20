@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="modalities.fmri.fmristat.invert" href="nipy.modalities.fmri.fmristat.invert.html" />
+    <link rel="prev" title="modalities.fmri.fmri" href="nipy.modalities.fmri.fmri.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmristat.invert.html" title="modalities.fmri.fmristat.invert"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmri.html" title="modalities.fmri.fmri"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="modalities-fmri-fmristat-hrf">
+<h1>modalities.fmri.fmristat.hrf<a class="headerlink" href="#modalities-fmri-fmristat-hrf" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.modalities.fmri.fmristat.hrf">
+<span id="module-modalities-fmri-fmristat-hrf"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.fmristat.hrf</span></code><a class="headerlink" href="#module-nipy.modalities.fmri.fmristat.hrf" title="Link to this heading">¶</a></h2>
+<p>Computation of the canonical HRF used in fMRIstat, both the 2-term
+spectral approximation and the Taylor series approximation, to a shifted
+version of the canonical Glover HRF.</p>
+<section id="references">
+<h3>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H.,</dt><dd><p>Evans, A.C. (2002). ‘Estimating the delay of the response in fMRI
+data.’ NeuroImage, 16:593-606.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.hrf.spectral_decomposition">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.hrf.</span></span><span class="sig-name descname"><span class="pre">spectral_decomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hrf2decompose</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncomp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.hrf.spectral_decomposition" title="Link to this definition">¶</a></dt>
+<dd><p>PCA decomposition of symbolic HRF shifted over time</p>
+<p>Perform a PCA expansion of a symbolic HRF, time shifted over the
+values in delta, returning the first ncomp components.</p>
+<p>This smooths out the HRF as compared to using a Taylor series
+approximation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>hrf2decompose</strong><span class="classifier">sympy expression</span></dt><dd><p>An expression that can be lambdified as a function of ‘t’. This
+is the HRF to be expanded in PCA</p>
+</dd>
+<dt><strong>time</strong><span class="classifier">None or np.ndarray, optional</span></dt><dd><p>None gives default value of np.linspace(-15,50,3251) chosen to
+match fMRIstat implementation.  This corresponds to a time
+interval of 0.02.  Presumed to be equally spaced.</p>
+</dd>
+<dt><strong>delta</strong><span class="classifier">None or np.ndarray, optional</span></dt><dd><p>None results in default value of np.arange(-4.5, 4.6, 0.1)
+chosen to match fMRIstat implementation.</p>
+</dd>
+<dt><strong>ncomp</strong><span class="classifier">int, optional</span></dt><dd><p>Number of principal components to retain.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>hrf</strong><span class="classifier">[sympy expressions]</span></dt><dd><p>A sequence length <cite>ncomp</cite> of symbolic HRFs that are the
+principal components.</p>
+</dd>
+<dt>approx</dt><dd><p>TODO</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.hrf.taylor_approx">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.hrf.</span></span><span class="sig-name descname"><span class="pre">taylor_approx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hrf2decompose</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.hrf.taylor_approx" title="Link to this definition">¶</a></dt>
+<dd><p>A Taylor series approximation of an HRF shifted by times <cite>delta</cite></p>
+<p>Returns original HRF and gradient of HRF</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>hrf2decompose</strong><span class="classifier">sympy expression</span></dt><dd><p>An expression that can be lambdified as a function of ‘t’. This
+is the HRF to be expanded in PCA</p>
+</dd>
+<dt><strong>time</strong><span class="classifier">None or np.ndarray, optional</span></dt><dd><p>None gives default value of np.linspace(-15,50,3251) chosen to
+match fMRIstat implementation.  This corresponds to a time
+interval of 0.02.  Presumed to be equally spaced.</p>
+</dd>
+<dt><strong>delta</strong><span class="classifier">None or np.ndarray, optional</span></dt><dd><p>None results in default value of np.arange(-4.5, 4.6, 0.1)
+chosen to match fMRIstat implementation.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>hrf</strong><span class="classifier">[sympy expressions]</span></dt><dd><p>Sequence length 2 comprising (<cite>hrf2decompose</cite>, <code class="docutils literal notranslate"><span class="pre">dhrf</span></code>) where
+<code class="docutils literal notranslate"><span class="pre">dhrf</span></code> is the first derivative of <cite>hrf2decompose</cite>.</p>
+</dd>
+<dt>approx</dt><dd><p>TODO</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Liao, C.H., Worsley, K.J., Poline, J-B., Aston, J.A.D., Duncan, G.H.,
+Evans, A.C. (2002). ‘Estimating the delay of the response in fMRI
+data.’ NeuroImage, 16:593-606.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">modalities.fmri.fmristat.hrf</a><ul>
+<li><a class="reference internal" href="#module-nipy.modalities.fmri.fmristat.hrf">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.fmristat.hrf</span></code></a><ul>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.hrf.spectral_decomposition"><code class="docutils literal notranslate"><span class="pre">spectral_decomposition()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.hrf.taylor_approx"><code class="docutils literal notranslate"><span class="pre">taylor_approx()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.fmri.html"
+                          title="previous chapter">modalities.fmri.fmri</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.fmristat.invert.html"
+                          title="next chapter">modalities.fmri.fmristat.invert</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.modalities.fmri.fmristat.hrf.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmristat.invert.html" title="modalities.fmri.fmristat.invert"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmri.html" title="modalities.fmri.fmri"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

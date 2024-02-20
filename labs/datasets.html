@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world" href="generated/nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world.html" />
+    <link rel="prev" title="Generating simulated activation maps" href="simul_activation.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../index.html">
+  <img src="../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world.html" title="nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="simul_activation.html" title="Generating simulated activation maps"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">NeuroSpin tools</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="volumetric-data-structures">
+<h1>Volumetric data structures<a class="headerlink" href="#volumetric-data-structures" title="Link to this heading">¶</a></h1>
+<p>Volumetric data structures expose numerical values embedded in a world
+space. For instance, a volume could expose the T1 intensity, as acquired
+in scanner space, or the BOLD signal in MNI152 template space. The values
+can be multi-dimensional, in the case of a BOLD signal, the fMRI signal
+would correspond to a time series at each position in world space.</p>
+<section id="the-image-structure-volumeimg">
+<h2>The image structure: <a class="reference internal" href="../api/generated/nipy.labs.datasets.volumes.volume_img.html#nipy.labs.datasets.volumes.volume_img.VolumeImg" title="nipy.labs.datasets.volumes.volume_img.VolumeImg"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeImg</span></code></a><a class="headerlink" href="#the-image-structure-volumeimg" title="Link to this heading">¶</a></h2>
+<p>The structure most often used in neuroimaging is the <a class="reference internal" href="../api/generated/nipy.labs.datasets.volumes.volume_img.html#nipy.labs.datasets.volumes.volume_img.VolumeImg" title="nipy.labs.datasets.volumes.volume_img.VolumeImg"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeImg</span></code></a>.
+It corresponds, for instance, to the structure used in the Nifti files.
+This structure stores data as an n-dimensional array, with n being at
+least 3, alongside with the necessary information to map it to world
+space.</p>
+<dl class="field-list">
+<dt class="field-odd">definition<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A volume-image (class: <a class="reference internal" href="../api/generated/nipy.labs.datasets.volumes.volume_img.html#nipy.labs.datasets.volumes.volume_img.VolumeImg" title="nipy.labs.datasets.volumes.volume_img.VolumeImg"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeImg</span></code></a>) is a volumetric datastructure
+given by data points lying on a regular grid: this structure is a
+generalization of an image in 3D. The voxels, vertices of the grid, are
+mapped to coordinates by an affine transformation. As a result, the grid
+is regular and evenly-spaced, but may not be orthogonal, and the spacing
+may differ in the 3 directions.</p>
+<img alt="../_images/volume_img.jpg" src="../_images/volume_img.jpg" />
+</dd>
+</dl>
+<p>The data is exposed in a multi dimensional array, with the 3 first axis
+corresponding to spatial directions. A complete description of this
+object can be found on the page: <a class="reference internal" href="../api/generated/nipy.labs.datasets.volumes.volume_img.html#nipy.labs.datasets.volumes.volume_img.VolumeImg" title="nipy.labs.datasets.volumes.volume_img.VolumeImg"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeImg</span></code></a>.</p>
+</section>
+<section id="useful-methods-on-volume-structures">
+<h2>Useful methods on volume structures<a class="headerlink" href="#useful-methods-on-volume-structures" title="Link to this heading">¶</a></h2>
+<p>Any general volume structures will implement methods for querying the
+values and changing world space (see the <a class="reference internal" href="../api/generated/nipy.labs.datasets.volumes.volume_field.html#nipy.labs.datasets.volumes.volume_field.VolumeField" title="nipy.labs.datasets.volumes.volume_field.VolumeField"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeField</span></code></a>
+documentation for more details):</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world.html#nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world" title="nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VolumeField.values_in_world</span></code></a>(x, y, z[, ...])</p></td>
+<td><p>Return the values of the data at the world-space positions given by x, y, z</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/nipy.labs.datasets.volumes.volume_field.VolumeField.composed_with_transform.html#nipy.labs.datasets.volumes.volume_field.VolumeField.composed_with_transform" title="nipy.labs.datasets.volumes.volume_field.VolumeField.composed_with_transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VolumeField.composed_with_transform</span></code></a>(...)</p></td>
+<td><p>Return a new image embedding the same data in a different word space using the given world to world transform.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Also, as volumes structure may describe the spatial data in various way,
+you can easily to convert to a <code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeImg</span></code>, ie a regular grid, for
+instance to do implement an algorithm on the grid such as spatial
+smoothing:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/nipy.labs.datasets.volumes.volume_field.VolumeField.as_volume_img.html#nipy.labs.datasets.volumes.volume_field.VolumeField.as_volume_img" title="nipy.labs.datasets.volumes.volume_field.VolumeField.as_volume_img"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VolumeField.as_volume_img</span></code></a>([affine, shape, ...])</p></td>
+<td><p>Resample the image to be an image with the data points lying on a regular grid with an affine mapping to the word space (a nipy VolumeImg).</p></td>
+</tr>
+</tbody>
+</table>
+<p>Finally, different structures can embed the data differently in the same
+world space, for instance with different resolution. You can resample one
+structure on another using:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/nipy.labs.datasets.volumes.volume_field.VolumeField.resampled_to_img.html#nipy.labs.datasets.volumes.volume_field.VolumeField.resampled_to_img" title="nipy.labs.datasets.volumes.volume_field.VolumeField.resampled_to_img"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VolumeField.resampled_to_img</span></code></a>(target_image[, ...])</p></td>
+<td><p>Resample the volume to be sampled similarly than the target volumetric structure.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>FIXME:</strong> Examples would be good here, but first we need io and template
+data to be wired with datasets.</p>
+</section>
+<section id="more-general-data-structures">
+<h2>More general data structures<a class="headerlink" href="#more-general-data-structures" title="Link to this heading">¶</a></h2>
+<p>The <a class="reference internal" href="../api/generated/nipy.labs.datasets.volumes.volume_img.html#nipy.labs.datasets.volumes.volume_img.VolumeImg" title="nipy.labs.datasets.volumes.volume_img.VolumeImg"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeImg</span></code></a> is the most commonly found volume structure, and
+the simplest to understand, however, volumetric data can be described in
+more generic terms, and for performance reason it might be interesting to
+use other objects.</p>
+<p>Here, we give a list of the nipy volumetric data structures, from most
+specific, to most general. When you deal with volume structures in your
+algorithms, depending on which volume structure class you are taking as
+an input, you can assume different properties of the data. You can always
+use <a class="reference internal" href="../api/generated/nipy.labs.datasets.volumes.volume_img.html#nipy.labs.datasets.volumes.volume_img.VolumeImg.as_volume_img" title="nipy.labs.datasets.volumes.volume_img.VolumeImg.as_volume_img"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VolumeImg.as_volume_img()</span></code></a> to cast the volume structure in a
+<a class="reference internal" href="../api/generated/nipy.labs.datasets.volumes.volume_img.html#nipy.labs.datasets.volumes.volume_img.VolumeImg" title="nipy.labs.datasets.volumes.volume_img.VolumeImg"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeImg</span></code></a> that is simple to understand and easy to work with,
+but it may not be necessary.</p>
+<section id="implemented-classes">
+<h3>Implemented classes<a class="headerlink" href="#implemented-classes" title="Link to this heading">¶</a></h3>
+<p>Implemented classes (or <cite>concrete</cite> classes) are structures that you can
+readily use directly from nipy.</p>
+<dl>
+<dt><a class="reference internal" href="../api/generated/nipy.labs.datasets.volumes.volume_grid.html#nipy.labs.datasets.volumes.volume_grid.VolumeGrid" title="nipy.labs.datasets.volumes.volume_grid.VolumeGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeGrid</span></code></a></dt><dd><p>In a <a class="reference internal" href="../api/generated/nipy.labs.datasets.volumes.volume_grid.html#nipy.labs.datasets.volumes.volume_grid.VolumeGrid" title="nipy.labs.datasets.volumes.volume_grid.VolumeGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeGrid</span></code></a>, the data points are sampled on a 3D grid, but
+unlike for a <code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeImg</span></code>, grid may not be regular. For instance,
+it can be a grid that has been warped by a non-affine transformation.
+Like with the <code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeImg</span></code>, the data is exposed in a multi
+dimensional array, with the 3 first axis corresponding to spatial
+directions.</p>
+<img alt="../_images/volume_grid.jpg" src="../_images/volume_grid.jpg" />
+</dd>
+</dl>
+</section>
+<section id="abstract-classes">
+<h3>Abstract classes<a class="headerlink" href="#abstract-classes" title="Link to this heading">¶</a></h3>
+<p>Abstract classes cannot be used because they are incompletely
+implemented. They serve as to define the interface: the type of objects
+that you can use, or how you can extend nipy by exposing the same
+set of methods and attributes (the <cite>interface</cite>).</p>
+<dl>
+<dt><a class="reference internal" href="../api/generated/nipy.labs.datasets.volumes.volume_data.html#nipy.labs.datasets.volumes.volume_data.VolumeData" title="nipy.labs.datasets.volumes.volume_data.VolumeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeData</span></code></a></dt><dd><p>In this volumetric structure, the data is sampled for some points in
+the world space. The object knows how to interpolate between these
+points. The underlying values are stored in a multidimensional array-like
+object that can be indexed and sliced.</p>
+<img alt="../_images/volume_data.jpg" src="../_images/volume_data.jpg" />
+<p>This is an abstract base class: it defines an interface, but is not
+fully functional, and can be used only via its children class (such as
+<code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeGrid</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeImg</span></code>).</p>
+</dd>
+</dl>
+<dl>
+<dt><a class="reference internal" href="../api/generated/nipy.labs.datasets.volumes.volume_field.html#nipy.labs.datasets.volumes.volume_field.VolumeField" title="nipy.labs.datasets.volumes.volume_field.VolumeField"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeField</span></code></a></dt><dd><p>This is the most general volumetric structure (base class): all the
+nipy volume expose this interface. This structure does not make any
+assumptions on how the values are internal represented, they may, for
+instance, be represented as a function, rather than as data points, or
+as a data structure that is not an array, such as a graph.</p>
+<img alt="../_images/volume_field.jpg" src="../_images/volume_field.jpg" />
+<p>This is also an abstract base class: it defines the core nipy
+volumetric data structure interface: you can rely on all the methods
+documented for this class in any nipy data structure.</p>
+</dd>
+</dl>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../documentation.html">Documentation</a></li>
+    <li><a href="../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Volumetric data structures</a><ul>
+<li><a class="reference internal" href="#the-image-structure-volumeimg">The image structure: <code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeImg</span></code></a></li>
+<li><a class="reference internal" href="#useful-methods-on-volume-structures">Useful methods on volume structures</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#more-general-data-structures">More general data structures</a><ul>
+<li><a class="reference internal" href="#implemented-classes">Implemented classes</a></li>
+<li><a class="reference internal" href="#abstract-classes">Abstract classes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="simul_activation.html"
+                          title="previous chapter">Generating simulated activation maps</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="generated/nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world.html"
+                          title="next chapter">nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/labs/datasets.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world.html" title="nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="simul_activation.html" title="Generating simulated activation maps"
+             >previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >NeuroSpin tools</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

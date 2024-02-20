@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Volumetric data structures" href="datasets.html" />
+    <link rel="prev" title="nipy.labs.viz_tools.maps_3d.affine_img_src" href="generated/nipy.labs.viz_tools.maps_3d.affine_img_src.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../index.html">
+  <img src="../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="datasets.html" title="Volumetric data structures"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generated/nipy.labs.viz_tools.maps_3d.affine_img_src.html" title="nipy.labs.viz_tools.maps_3d.affine_img_src"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">NeuroSpin tools</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="generating-simulated-activation-maps">
+<h1>Generating simulated activation maps<a class="headerlink" href="#generating-simulated-activation-maps" title="Link to this heading">¶</a></h1>
+<p>The module <a class="reference internal" href="../api/generated/nipy.labs.utils.simul_multisubject_fmri_dataset.html#module-nipy.labs.utils.simul_multisubject_fmri_dataset" title="nipy.labs.utils.simul_multisubject_fmri_dataset"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nipy.labs.utils.simul_multisubject_fmri_dataset</span></code></a>
+contains a various functions to create simulated activation maps in two, three
+and four dimensions.  A 2D example is <a class="reference internal" href="#nipy.labs.utils.simul_multisubject_fmri_dataset.surrogate_2d_dataset" title="nipy.labs.utils.simul_multisubject_fmri_dataset.surrogate_2d_dataset"><code class="xref py py-func docutils literal notranslate"><span class="pre">surrogate_2d_dataset()</span></code></a>.  The
+functions can position various activations and add noise, both as background
+noise and jitter in the activation positions and amplitude.</p>
+<p>These functions can be useful to test methods.</p>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-</span>
+<span class="c1"># vi: set ft=python sts=4 ts=4 sw=4 et:</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pylab</span> <span class="k">as</span> <span class="nn">pl</span>
+
+<span class="kn">from</span> <span class="nn">nipy.labs.utils.simul_multisubject_fmri_dataset</span> <span class="kn">import</span> <span class="n">surrogate_2d_dataset</span>
+
+<span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">14</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">23</span><span class="p">,</span> <span class="mi">18</span><span class="p">]])</span>
+<span class="n">ampli</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+
+<span class="c1"># First generate some noiseless data</span>
+<span class="n">noiseless_data</span> <span class="o">=</span> <span class="n">surrogate_2d_dataset</span><span class="p">(</span><span class="n">n_subj</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">noise_level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">spatial_jitter</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                      <span class="n">signal_jitter</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">ampli</span><span class="o">=</span><span class="n">ampli</span><span class="p">)</span>
+
+<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">noiseless_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Noise-less data&#39;</span><span class="p">)</span>
+
+<span class="c1"># Second, generate some group data, with default noise parameters</span>
+<span class="n">group_data</span> <span class="o">=</span> <span class="n">surrogate_2d_dataset</span><span class="p">(</span><span class="n">n_subj</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">ampli</span><span class="o">=</span><span class="n">ampli</span><span class="p">)</span>
+
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">group_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Subject 1&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Subject 2&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">group_data</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Subject 3&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">group_data</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../_downloads/36c3b8a990bd68cd69ef575e8688f4d4/surrogate_array.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/df1dbe3e62e06743cdc5595d75477056/surrogate_array.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/4772d43f4baa74c13924ef241589c048/surrogate_array.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/db42e51f1f218d2e11ee1ae5b937f1f0/surrogate_array.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/surrogate_array.png" class="plot-directive" src="../_images/surrogate_array.png" />
+</figure>
+</section>
+<section id="function-documentation">
+<h2>Function documentation<a class="headerlink" href="#function-documentation" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.utils.simul_multisubject_fmri_dataset.surrogate_2d_dataset">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.utils.simul_multisubject_fmri_dataset.</span></span><span class="sig-name descname"><span class="pre">surrogate_2d_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_subj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(30,</span> <span class="pre">30)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([[6,</span> <span class="pre">7],</span> <span class="pre">[10,</span> <span class="pre">10],</span> <span class="pre">[15,</span> <span class="pre">10]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ampli</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([3,</span> <span class="pre">4,</span> <span class="pre">4])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_jitter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_jitter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width_jitter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_text_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_image_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.utils.simul_multisubject_fmri_dataset.surrogate_2d_dataset" title="Link to this definition">¶</a></dt>
+<dd><p>Create surrogate (simulated) 2D activation data with spatial noise</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_subj: integer, optional</strong></dt><dd><p>The number of subjects, ie the number of different maps
+generated.</p>
+</dd>
+<dt><strong>shape=(30,30): tuple of integers,</strong></dt><dd><p>the shape of each image</p>
+</dd>
+<dt><strong>sk: float, optional</strong></dt><dd><p>Amount of spatial noise smoothness.</p>
+</dd>
+<dt><strong>noise_level: float, optional</strong></dt><dd><p>Amplitude of the spatial noise.
+amplitude=noise_level)</p>
+</dd>
+<dt><strong>pos: 2D ndarray of integers, optional</strong></dt><dd><p>x, y positions of the various simulated activations.</p>
+</dd>
+<dt><strong>ampli: 1D ndarray of floats, optional</strong></dt><dd><p>Respective amplitude of each activation</p>
+</dd>
+<dt><strong>spatial_jitter: float, optional</strong></dt><dd><p>Random spatial jitter added to the position of each activation,
+in pixel.</p>
+</dd>
+<dt><strong>signal_jitter: float, optional</strong></dt><dd><p>Random amplitude fluctuation for each activation, added to the
+amplitude specified by <cite>ampli</cite></p>
+</dd>
+<dt><strong>width: float or ndarray, optional</strong></dt><dd><p>Width of the activations</p>
+</dd>
+<dt><strong>width_jitter: float</strong></dt><dd><p>Relative width jitter of the blobs</p>
+</dd>
+<dt><strong>out_text_file: string or None, optional</strong></dt><dd><p>If not None, the resulting array is saved as a text file with the
+given file name</p>
+</dd>
+<dt><strong>out_image_file: string or None, optional</strong></dt><dd><p>If not None, the resulting is saved as a nifti file with the
+given file name.</p>
+</dd>
+<dt><strong>seed=False:  int, optional</strong></dt><dd><p>If seed is not False, the random number generator is initialized
+at a certain value</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>dataset: 3D ndarray</dt><dd><p>The surrogate activation map, with dimensions <code class="docutils literal notranslate"><span class="pre">(n_subj,)</span> <span class="pre">+</span> <span class="pre">shape</span></code></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.utils.simul_multisubject_fmri_dataset.surrogate_3d_dataset">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.utils.simul_multisubject_fmri_dataset.</span></span><span class="sig-name descname"><span class="pre">surrogate_3d_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_subj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(20,</span> <span class="pre">20,</span> <span class="pre">20)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ampli</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_jitter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_jitter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_text_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_image_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.utils.simul_multisubject_fmri_dataset.surrogate_3d_dataset" title="Link to this definition">¶</a></dt>
+<dd><p>Create surrogate (simulated) 3D activation data with spatial noise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_subj: integer, optional</strong></dt><dd><p>The number of subjects, ie the number of different maps
+generated.</p>
+</dd>
+<dt><strong>shape=(20,20,20): tuple of 3 integers,</strong></dt><dd><p>the shape of each image</p>
+</dd>
+<dt><strong>mask=None: Nifti1Image instance,</strong></dt><dd><p>referential- and mask- defining image (overrides shape)</p>
+</dd>
+<dt><strong>sk: float, optional</strong></dt><dd><p>Amount of spatial noise smoothness.</p>
+</dd>
+<dt><strong>noise_level: float, optional</strong></dt><dd><p>Amplitude of the spatial noise.
+amplitude=noise_level)</p>
+</dd>
+<dt><strong>pos: 2D ndarray of integers, optional</strong></dt><dd><p>x, y positions of the various simulated activations.</p>
+</dd>
+<dt><strong>ampli: 1D ndarray of floats, optional</strong></dt><dd><p>Respective amplitude of each activation</p>
+</dd>
+<dt><strong>spatial_jitter: float, optional</strong></dt><dd><p>Random spatial jitter added to the position of each activation,
+in pixel.</p>
+</dd>
+<dt><strong>signal_jitter: float, optional</strong></dt><dd><p>Random amplitude fluctuation for each activation, added to the
+amplitude specified by ampli</p>
+</dd>
+<dt><strong>width: float or ndarray, optional</strong></dt><dd><p>Width of the activations</p>
+</dd>
+<dt><strong>out_text_file: string or None, optional</strong></dt><dd><p>If not None, the resulting array is saved as a text file with the
+given file name</p>
+</dd>
+<dt><strong>out_image_file: string or None, optional</strong></dt><dd><p>If not None, the resulting is saved as a nifti file with the
+given file name.</p>
+</dd>
+<dt><strong>seed=False:  int, optional</strong></dt><dd><p>If seed is not False, the random number generator is initialized
+at a certain value</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>dataset: 3D ndarray</dt><dd><p>The surrogate activation map, with dimensions <code class="docutils literal notranslate"><span class="pre">(n_subj,)</span> <span class="pre">+</span> <span class="pre">shape</span></code></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.utils.simul_multisubject_fmri_dataset.surrogate_4d_dataset">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.utils.simul_multisubject_fmri_dataset.</span></span><span class="sig-name descname"><span class="pre">surrogate_4d_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(20,</span> <span class="pre">20,</span> <span class="pre">20)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_scans</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmtx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_image_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.utils.simul_multisubject_fmri_dataset.surrogate_4d_dataset" title="Link to this definition">¶</a></dt>
+<dd><p>Create surrogate (simulated) 3D activation data with spatial noise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>shape = (20, 20, 20): tuple of integers,</strong></dt><dd><p>the shape of each image</p>
+</dd>
+<dt><strong>mask=None: brifti image instance,</strong></dt><dd><p>referential- and mask- defining image (overrides shape)</p>
+</dd>
+<dt><strong>n_scans: int, optional,</strong></dt><dd><p>number of scans to be simlulated
+overridden by the design matrix</p>
+</dd>
+<dt><strong>n_sess: int, optional,</strong></dt><dd><p>the number of simulated sessions</p>
+</dd>
+<dt><strong>dmtx: array of shape(n_scans, n_rows),</strong></dt><dd><p>the design matrix</p>
+</dd>
+<dt><strong>sk: float, optional</strong></dt><dd><p>Amount of spatial noise smoothness.</p>
+</dd>
+<dt><strong>noise_level: float, optional</strong></dt><dd><p>Amplitude of the spatial noise.
+amplitude=noise_level)</p>
+</dd>
+<dt><strong>signal_level: float, optional,</strong></dt><dd><p>Amplitude of the signal</p>
+</dd>
+<dt><strong>out_image_file: string or list of strings or None, optional</strong></dt><dd><p>If not None, the resulting is saved as (set of) nifti file(s) with the
+given file path(s)</p>
+</dd>
+<dt><strong>seed=False:  int, optional</strong></dt><dd><p>If seed is not False, the random number generator is initialized
+at a certain value</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>dataset: a list of n_sess ndarray of shape</dt><dd><p>(shape[0], shape[1], shape[2], n_scans)
+The surrogate activation map</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../documentation.html">Documentation</a></li>
+    <li><a href="../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Generating simulated activation maps</a><ul>
+<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#function-documentation">Function documentation</a><ul>
+<li><a class="reference internal" href="#nipy.labs.utils.simul_multisubject_fmri_dataset.surrogate_2d_dataset"><code class="docutils literal notranslate"><span class="pre">surrogate_2d_dataset()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.utils.simul_multisubject_fmri_dataset.surrogate_3d_dataset"><code class="docutils literal notranslate"><span class="pre">surrogate_3d_dataset()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.utils.simul_multisubject_fmri_dataset.surrogate_4d_dataset"><code class="docutils literal notranslate"><span class="pre">surrogate_4d_dataset()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="generated/nipy.labs.viz_tools.maps_3d.affine_img_src.html"
+                          title="previous chapter">nipy.labs.viz_tools.maps_3d.affine_img_src</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="datasets.html"
+                          title="next chapter">Volumetric data structures</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/labs/simul_activation.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="datasets.html" title="Volumetric data structures"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generated/nipy.labs.viz_tools.maps_3d.affine_img_src.html" title="nipy.labs.viz_tools.maps_3d.affine_img_src"
+             >previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >NeuroSpin tools</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <script src="../../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Resampling use cases" href="resampling.html" />
+    <link rel="prev" title="Transformation use cases" href="transformations.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../../index.html">
+  <img src="../../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="resampling.html" title="Resampling use cases"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="transformations.html" title="Transformation use cases"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../index.html" >Code discussions</a> &#187;</li>
+          <li class="nav-item nav-item-4"><a href="index.html" accesskey="U">Defining use cases</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="image-model-use-cases">
+<span id="image-usecases"></span><h1>Image model use cases<a class="headerlink" href="#image-model-use-cases" title="Link to this heading">¶</a></h1>
+<p>In which we lay out the various things that users and developers may
+want to do to images.  See also <a class="reference internal" href="resampling.html#resampling"><span class="std std-ref">Resampling use cases</span></a></p>
+<section id="taking-a-mean-over-a-4d-image">
+<h2>Taking a mean over a 4D image<a class="headerlink" href="#taking-a-mean-over-a-4d-image" title="Link to this heading">¶</a></h2>
+<p>We could do this much more simply than below, this is just an example of
+reducing over a particular axis:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># take mean of 4D image</span>
+<span class="kn">from</span> <span class="nn">glob</span> <span class="kn">import</span> <span class="n">glob</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">nipy</span> <span class="k">as</span> <span class="nn">ni</span>
+
+<span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;some4d.nii&#39;</span>
+
+<span class="n">img_list</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load_list</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">vol0</span> <span class="o">=</span> <span class="n">img_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">arr</span> <span class="o">=</span> <span class="n">vol0</span><span class="o">.</span><span class="n">array</span><span class="p">[:]</span>
+<span class="k">for</span> <span class="n">vol</span> <span class="ow">in</span> <span class="n">img_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+   <span class="n">arr</span> <span class="o">+=</span> <span class="n">vol</span><span class="o">.</span><span class="n">array</span>
+<span class="n">mean_img</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">vol0</span><span class="o">.</span><span class="n">coordmap</span><span class="p">)</span>
+<span class="n">ni</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">mean_img</span><span class="p">,</span> <span class="s1">&#39;mean_some4d.nii&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="taking-mean-over-series-of-3d-images">
+<h2>Taking mean over series of 3D images<a class="headerlink" href="#taking-mean-over-series-of-3d-images" title="Link to this heading">¶</a></h2>
+<p>Just to show how this works with a list of images:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># take mean of some PCA volumes</span>
+<span class="n">fnames</span> <span class="o">=</span> <span class="n">glob</span><span class="p">(</span><span class="s1">&#39;some3d*.nii&#39;</span><span class="p">)</span>
+<span class="n">vol0</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fnames</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">arr</span> <span class="o">=</span> <span class="n">vol0</span><span class="o">.</span><span class="n">array</span><span class="p">[:]</span>
+<span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+    <span class="n">vol</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="n">arr</span> <span class="o">+=</span> <span class="n">vol</span><span class="o">.</span><span class="n">array</span>
+<span class="n">mean_img</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">vol0</span><span class="o">.</span><span class="n">coordmap</span><span class="p">)</span>
+<span class="n">ni</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">mean_img</span><span class="p">,</span> <span class="s1">&#39;mean_some3ds.nii&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="simple-motion-correction">
+<h2>Simple motion correction<a class="headerlink" href="#simple-motion-correction" title="Link to this heading">¶</a></h2>
+<p>This is an example of how the 4D -&gt; list of 3D interface works:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># motion correction</span>
+<span class="n">img_list</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load_list</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">reggie</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">interfaces</span><span class="o">.</span><span class="n">fsl</span><span class="o">.</span><span class="n">Register</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">vol0</span> <span class="o">=</span> <span class="n">img_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">mocod</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># unresliced</span>
+<span class="n">rmocod</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># resliced</span>
+<span class="k">for</span> <span class="n">vol</span> <span class="ow">in</span> <span class="n">img_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+    <span class="n">rcoord_map</span> <span class="o">=</span> <span class="n">reggie</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">moving</span><span class="o">=</span><span class="n">vol</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="n">vol0</span><span class="p">)</span>
+    <span class="n">cmap</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">rcoord_map</span><span class="p">,</span> <span class="n">vol</span><span class="o">.</span><span class="n">coordmap</span><span class="p">)</span>
+    <span class="n">mocovol</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">vol</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">cmap</span><span class="p">)</span>
+    <span class="c1"># But...</span>
+    <span class="k">try</span><span class="p">:</span>
+       <span class="n">a_vol</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">vol</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">rcoord_map</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">CoordmapError</span><span class="p">,</span> <span class="n">msg</span>
+       <span class="k">assert</span> <span class="n">msg</span> <span class="o">==</span> <span class="s1">&#39;need coordmap with voxel input&#39;</span>
+    <span class="n">mocod</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mocovol</span><span class="p">)</span>
+    <span class="n">rmocovol</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">reslice</span><span class="p">(</span><span class="n">mocovol</span><span class="p">,</span> <span class="n">vol0</span><span class="p">)</span>
+    <span class="n">rmocod</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rmocovol</span><span class="p">)</span>
+<span class="n">rmocod_img</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">list_to_image</span><span class="p">(</span><span class="n">rmocovol</span><span class="p">)</span>
+<span class="n">ni</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">rmocod_img</span><span class="p">,</span> <span class="s1">&#39;rsome4d.nii&#39;</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">mocod_img</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">list_to_image</span><span class="p">(</span><span class="n">mocovol</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">ImageListError</span><span class="p">:</span>
+    <span class="nb">print</span> <span class="s1">&#39;That is what I thought; the transforms were not the same&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="slice-timing">
+<h2>Slice timing<a class="headerlink" href="#slice-timing" title="Link to this heading">¶</a></h2>
+<p>Here putting 3D image into an image list, and back into a 4D image / array:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># slice timing</span>
+<span class="n">img_list</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load_list</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">slicetimer</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">interfaces</span><span class="o">.</span><span class="n">fsl</span><span class="o">.</span><span class="n">SliceTime</span><span class="p">(</span><span class="n">algorithm</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+<span class="n">vol0</span> <span class="o">=</span> <span class="n">img_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">try</span><span class="p">:</span>
+   <span class="n">vol0</span><span class="o">.</span><span class="n">timestamp</span>
+<span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+   <span class="nb">print</span> <span class="s1">&#39;we do not have a timestamp&#39;</span>
+<span class="k">try</span><span class="p">:</span>
+   <span class="n">vol0</span><span class="o">.</span><span class="n">slicetimes</span>
+<span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+   <span class="nb">print</span> <span class="s1">&#39;we do not have slicetimes&#39;</span>
+<span class="k">try</span><span class="p">:</span>
+   <span class="n">st_list</span> <span class="o">=</span> <span class="n">slicetimer</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">SliceTimeError</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="n">msg</span> <span class="o">==</span> <span class="s1">&#39;no timestamp for volume&#39;</span>
+<span class="n">TR</span> <span class="o">=</span> <span class="mf">2.0</span>
+<span class="n">slicetime</span> <span class="o">=</span> <span class="mf">0.15</span>
+<span class="n">sliceaxis</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">nslices</span> <span class="o">=</span> <span class="n">vol0</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">sliceaxis</span><span class="p">]</span>
+<span class="n">slicetimes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">nslices</span><span class="p">)</span> <span class="o">*</span> <span class="n">slicetime</span>
+<span class="n">timestamps</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img_list</span><span class="p">))</span> <span class="o">*</span> <span class="n">TR</span>
+<span class="c1"># Either the images are in a simple list</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">img</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">img_list</span><span class="p">):</span>
+   <span class="n">img</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="n">timestamps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+   <span class="n">img</span><span class="o">.</span><span class="n">slicetimes</span> <span class="o">=</span> <span class="n">slicetimes</span>
+   <span class="n">img</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="s1">&#39;slice&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sliceaxis</span> <span class="c1"># note setting of voxel axis meaning</span>
+<span class="c1"># if the sliceaxes do not match, error when run</span>
+<span class="n">img_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="s1">&#39;slice&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">try</span><span class="p">:</span>
+   <span class="n">st_list</span> <span class="o">=</span> <span class="n">slicetimer</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">SliceTimeError</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="n">msg</span> <span class="o">==</span> <span class="s1">&#39;images do not have the same sliceaxes&#39;</span><span class="p">]</span>
+<span class="c1"># Or - with ImageList object</span>
+<span class="n">img_list</span><span class="o">.</span><span class="n">timestamps</span> <span class="o">=</span> <span class="n">timestamps</span>
+<span class="n">img_list</span><span class="o">.</span><span class="n">slicetimes</span> <span class="o">=</span> <span class="n">slicetimes</span>
+<span class="n">img_list</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="s1">&#39;slice&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sliceaxis</span>
+<span class="c1"># Either way, we run and save</span>
+<span class="n">st_list</span> <span class="o">=</span> <span class="n">slicetimer</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="n">ni</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">ni</span><span class="o">.</span><span class="n">list_to_image</span><span class="p">(</span><span class="n">st_img</span><span class="p">),</span> <span class="s1">&#39;stsome4d.nii&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="creating-an-image-given-data-and-affine">
+<h2>Creating an image given data and affine<a class="headerlink" href="#creating-an-image-given-data-and-affine" title="Link to this heading">¶</a></h2>
+<p>Showing how we would like the image creation API to look:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># making an image from an affine</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">array</span>
+<span class="n">affine</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">scanner_img</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ni</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">voxel2scanner</span><span class="p">(</span><span class="n">affine</span><span class="p">))</span>
+<span class="n">mni_img</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ni</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">voxel2mni</span><span class="p">(</span><span class="n">affine</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="coregistration-normalization">
+<h2>Coregistration / normalization<a class="headerlink" href="#coregistration-normalization" title="Link to this heading">¶</a></h2>
+<p>Demonstrating coordinate maps and non-linear resampling:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># coregistration and normalization</span>
+<span class="n">anat_img</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load_image</span><span class="p">(</span><span class="s1">&#39;anatomical.nii&#39;</span><span class="p">)</span>
+<span class="n">func_img</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load_image</span><span class="p">(</span><span class="s1">&#39;epi4d.nii&#39;</span><span class="p">)</span>
+<span class="n">template</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load_image</span><span class="p">(</span><span class="s1">&#39;mni152T1.nii&#39;</span><span class="p">)</span>
+
+<span class="c1"># coreg</span>
+<span class="n">coreger</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">interfaces</span><span class="o">.</span><span class="n">fsl</span><span class="o">.</span><span class="n">flirt</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">coreg_cmap</span> <span class="o">=</span> <span class="n">coreger</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fixed</span><span class="o">=</span><span class="n">func_img</span><span class="p">,</span> <span class="n">moving</span><span class="o">=</span><span class="n">anat_img</span><span class="p">)</span>
+<span class="n">c_anat_img</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">anat_img</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">coreg_cmap</span><span class="o">.</span><span class="n">compose_with</span><span class="p">(</span><span class="n">anat_img</span><span class="o">.</span><span class="n">cmap</span><span class="p">))</span>
+
+<span class="c1"># calculate normalization parameters</span>
+<span class="n">template_cmap</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">coordmap</span>
+<span class="n">template_dims</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">c_anat_cmap</span> <span class="o">=</span> <span class="n">c_anat_img</span><span class="o">.</span><span class="n">coordmap</span>
+<span class="n">normalizer</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">interfaces</span><span class="o">.</span><span class="n">fsl</span><span class="o">.</span><span class="n">fnirt</span><span class="p">(</span><span class="n">param</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">norm_cmap</span> <span class="o">=</span> <span class="n">normalizer</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">moving</span><span class="o">=</span><span class="n">template</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="n">c_anat_img</span><span class="p">)</span>
+
+<span class="c1"># resample anatomical using calculated coordinate map</span>
+<span class="n">full_cmap</span> <span class="o">=</span> <span class="n">norm_cmap</span><span class="o">.</span><span class="n">composed_with</span><span class="p">(</span><span class="n">template_cmap</span><span class="p">)</span>
+<span class="n">w_anat_data</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">resliced_to_grid</span><span class="p">(</span><span class="n">full_cmap</span><span class="p">,</span> <span class="n">template_dims</span><span class="p">)</span>
+<span class="n">w_anat_img</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">w_anat_data</span><span class="p">,</span> <span class="n">template</span><span class="o">.</span><span class="n">coordmap</span><span class="p">)</span>
+
+<span class="c1"># resample functionals with calculated coordinate map</span>
+<span class="n">w_func_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">ni</span><span class="o">.</span><span class="n">image_list</span><span class="p">(</span><span class="n">func_img</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+  <span class="n">w_img_data</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">resliced_to_grid</span><span class="p">(</span><span class="n">full_cmap</span><span class="p">,</span> <span class="n">template_dims</span><span class="p">)</span>
+  <span class="n">w_func_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ni</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">w_img_data</span><span class="p">,</span> <span class="n">template_cmap</span><span class="p">))</span>
+<span class="n">ni</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">ni</span><span class="o">.</span><span class="n">list_to_image</span><span class="p">(</span><span class="n">w_func_list</span><span class="p">),</span> <span class="s1">&#39;stsome4d.nii&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../../documentation.html">Documentation</a></li>
+    <li><a href="../../index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Image model use cases</a><ul>
+<li><a class="reference internal" href="#taking-a-mean-over-a-4d-image">Taking a mean over a 4D image</a></li>
+<li><a class="reference internal" href="#taking-mean-over-series-of-3d-images">Taking mean over series of 3D images</a></li>
+<li><a class="reference internal" href="#simple-motion-correction">Simple motion correction</a></li>
+<li><a class="reference internal" href="#slice-timing">Slice timing</a></li>
+<li><a class="reference internal" href="#creating-an-image-given-data-and-affine">Creating an image given data and affine</a></li>
+<li><a class="reference internal" href="#coregistration-normalization">Coregistration / normalization</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="transformations.html"
+                          title="previous chapter">Transformation use cases</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="resampling.html"
+                          title="next chapter">Resampling use cases</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/devel/code_discussions/usecases/images.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="resampling.html" title="Resampling use cases"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="transformations.html" title="Transformation use cases"
+             >previous</a> |</li>
+  <li><a href="../../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../index.html" >Code discussions</a> &#187;</li>
+          <li class="nav-item nav-item-4"><a href="index.html" >Defining use cases</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

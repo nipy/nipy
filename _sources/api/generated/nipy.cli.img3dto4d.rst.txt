@@ -1,0 +1,20 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+cli.img3dto4d
+=============
+
+Module: :mod:`cli.img3dto4d`
+----------------------------
+.. automodule:: nipy.cli.img3dto4d
+
+.. currentmodule:: nipy.cli.img3dto4d
+
+Functions
+---------
+
+
+.. autofunction:: nipy.cli.img3dto4d.do_3d_to_4d
+
+
+.. autofunction:: nipy.cli.img3dto4d.main
+

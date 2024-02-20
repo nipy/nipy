@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.registration.chain_transform" href="nipy.algorithms.registration.chain_transform.html" />
+    <link rel="prev" title="algorithms.optimize" href="nipy.algorithms.optimize.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.chain_transform.html" title="algorithms.registration.chain_transform"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.optimize.html" title="algorithms.optimize"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-registration-affine">
+<h1>algorithms.registration.affine<a class="headerlink" href="#algorithms-registration-affine" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-registration-affine">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.registration.affine</span></code><a class="headerlink" href="#module-algorithms-registration-affine" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.registration.affine</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-7521a13d8519c14edc38b198e741a642ce56c106.png" alt="Inheritance diagram of nipy.algorithms.registration.affine" usemap="#inheritancea2fe1494e6" class="inheritance graphviz" /></div>
+<map id="inheritancea2fe1494e6" name="inheritancea2fe1494e6">
+<area shape="rect" id="node1" href="#nipy.algorithms.registration.affine.Affine" target="_top" title="registration.affine.Affine" alt="" coords="224,48,359,71"/>
+<area shape="rect" id="node3" href="#nipy.algorithms.registration.affine.Affine2D" target="_top" title="registration.affine.Affine2D" alt="" coords="402,5,552,28"/>
+<area shape="rect" id="node4" href="#nipy.algorithms.registration.affine.Rigid" target="_top" title="registration.affine.Rigid" alt="" coords="411,48,544,71"/>
+<area shape="rect" id="node6" href="#nipy.algorithms.registration.affine.Similarity" target="_top" title="registration.affine.Similarity" alt="" coords="401,92,554,115"/>
+<area shape="rect" id="node2" href="nipy.algorithms.registration.transform.html#nipy.algorithms.registration.transform.Transform" target="_top" title="A default transformation class" alt="" coords="5,48,183,71"/>
+<area shape="rect" id="node5" href="#nipy.algorithms.registration.affine.Rigid2D" target="_top" title="registration.affine.Rigid2D" alt="" coords="606,48,753,71"/>
+<area shape="rect" id="node7" href="#nipy.algorithms.registration.affine.Similarity2D" target="_top" title="registration.affine.Similarity2D" alt="" coords="595,92,763,115"/>
+</map><span class="target" id="module-nipy.algorithms.registration.affine"></span></section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="affine">
+<h3><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine" title="nipy.algorithms.registration.affine.Affine"><code class="xref py py-class docutils literal notranslate"><span class="pre">Affine</span></code></a><a class="headerlink" href="#affine" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">Affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="nipy.algorithms.registration.transform.html#nipy.algorithms.registration.transform.Transform" title="nipy.algorithms.registration.transform.Transform"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transform</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.apply" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.as_affine">
+<span class="sig-name descname"><span class="pre">as_affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'double'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.as_affine" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.compose">
+<span class="sig-name descname"><span class="pre">compose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.compose" title="Link to this definition">¶</a></dt>
+<dd><p>Compose this transform onto another</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>other</strong><span class="classifier">Transform</span></dt><dd><p>transform that we compose onto</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>composed_transform</strong><span class="classifier">Transform</span></dt><dd><p>a transform implementing the composition of self on <cite>other</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.copy" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.from_matrix44">
+<span class="sig-name descname"><span class="pre">from_matrix44</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aff</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.from_matrix44" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a 4x4 matrix describing an affine transform into a
+12-sized vector of natural affine parameters: translation,
+rotation, log-scale, pre-rotation (to allow for shearing when
+combined with non-unitary scales). In case the transform has a
+negative determinant, set the <cite>_direct</cite> attribute to False.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.inv">
+<span class="sig-name descname"><span class="pre">inv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.inv" title="Link to this definition">¶</a></dt>
+<dd><p>Return the inverse affine transform.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.is_direct">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_direct</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.is_direct" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.param">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">param</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.param" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.param_inds">
+<span class="sig-name descname"><span class="pre">param_inds</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6,</span> <span class="pre">7,</span> <span class="pre">8,</span> <span class="pre">9,</span> <span class="pre">10,</span> <span class="pre">11]</span></em><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.param_inds" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.pre_rotation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pre_rotation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.pre_rotation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.precond">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">precond</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.precond" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.rotation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.rotation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.scaling">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scaling</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.scaling" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine.translation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">translation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine.translation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="affine2d">
+<h3><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D" title="nipy.algorithms.registration.affine.Affine2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">Affine2D</span></code></a><a class="headerlink" href="#affine2d" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">Affine2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.registration.affine.Affine" title="nipy.algorithms.registration.affine.Affine"><code class="xref py py-class docutils literal notranslate"><span class="pre">Affine</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.apply" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.as_affine">
+<span class="sig-name descname"><span class="pre">as_affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'double'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.as_affine" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.compose">
+<span class="sig-name descname"><span class="pre">compose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.compose" title="Link to this definition">¶</a></dt>
+<dd><p>Compose this transform onto another</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>other</strong><span class="classifier">Transform</span></dt><dd><p>transform that we compose onto</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>composed_transform</strong><span class="classifier">Transform</span></dt><dd><p>a transform implementing the composition of self on <cite>other</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.copy" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.from_matrix44">
+<span class="sig-name descname"><span class="pre">from_matrix44</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aff</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.from_matrix44" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a 4x4 matrix describing an affine transform into a
+12-sized vector of natural affine parameters: translation,
+rotation, log-scale, pre-rotation (to allow for shearing when
+combined with non-unitary scales). In case the transform has a
+negative determinant, set the <cite>_direct</cite> attribute to False.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.inv">
+<span class="sig-name descname"><span class="pre">inv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.inv" title="Link to this definition">¶</a></dt>
+<dd><p>Return the inverse affine transform.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.is_direct">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_direct</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.is_direct" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.param">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">param</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.param" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.param_inds">
+<span class="sig-name descname"><span class="pre">param_inds</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">5,</span> <span class="pre">6,</span> <span class="pre">7,</span> <span class="pre">11]</span></em><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.param_inds" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.pre_rotation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pre_rotation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.pre_rotation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.precond">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">precond</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.precond" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.rotation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.rotation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.scaling">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scaling</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.scaling" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Affine2D.translation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">translation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Affine2D.translation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="rigid">
+<h3><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid" title="nipy.algorithms.registration.affine.Rigid"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rigid</span></code></a><a class="headerlink" href="#rigid" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">Rigid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.registration.affine.Affine" title="nipy.algorithms.registration.affine.Affine"><code class="xref py py-class docutils literal notranslate"><span class="pre">Affine</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.apply" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.as_affine">
+<span class="sig-name descname"><span class="pre">as_affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'double'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.as_affine" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.compose">
+<span class="sig-name descname"><span class="pre">compose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.compose" title="Link to this definition">¶</a></dt>
+<dd><p>Compose this transform onto another</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>other</strong><span class="classifier">Transform</span></dt><dd><p>transform that we compose onto</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>composed_transform</strong><span class="classifier">Transform</span></dt><dd><p>a transform implementing the composition of self on <cite>other</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.copy" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.from_matrix44">
+<span class="sig-name descname"><span class="pre">from_matrix44</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aff</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.from_matrix44" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a 4x4 matrix describing a rigid transform into a
+12-sized vector of natural affine parameters: translation,
+rotation, log-scale, pre-rotation (to allow for pre-rotation
+when combined with non-unitary scales). In case the transform
+has a negative determinant, set the <cite>_direct</cite> attribute to
+False.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.inv">
+<span class="sig-name descname"><span class="pre">inv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.inv" title="Link to this definition">¶</a></dt>
+<dd><p>Return the inverse affine transform.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.is_direct">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_direct</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.is_direct" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.param">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">param</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.param" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.param_inds">
+<span class="sig-name descname"><span class="pre">param_inds</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5]</span></em><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.param_inds" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.pre_rotation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pre_rotation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.pre_rotation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.precond">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">precond</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.precond" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.rotation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.rotation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.scaling">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scaling</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.scaling" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid.translation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">translation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid.translation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="rigid2d">
+<h3><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D" title="nipy.algorithms.registration.affine.Rigid2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rigid2D</span></code></a><a class="headerlink" href="#rigid2d" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">Rigid2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid" title="nipy.algorithms.registration.affine.Rigid"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rigid</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.apply" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.as_affine">
+<span class="sig-name descname"><span class="pre">as_affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'double'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.as_affine" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.compose">
+<span class="sig-name descname"><span class="pre">compose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.compose" title="Link to this definition">¶</a></dt>
+<dd><p>Compose this transform onto another</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>other</strong><span class="classifier">Transform</span></dt><dd><p>transform that we compose onto</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>composed_transform</strong><span class="classifier">Transform</span></dt><dd><p>a transform implementing the composition of self on <cite>other</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.copy" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.from_matrix44">
+<span class="sig-name descname"><span class="pre">from_matrix44</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aff</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.from_matrix44" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a 4x4 matrix describing a rigid transform into a
+12-sized vector of natural affine parameters: translation,
+rotation, log-scale, pre-rotation (to allow for pre-rotation
+when combined with non-unitary scales). In case the transform
+has a negative determinant, set the <cite>_direct</cite> attribute to
+False.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.inv">
+<span class="sig-name descname"><span class="pre">inv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.inv" title="Link to this definition">¶</a></dt>
+<dd><p>Return the inverse affine transform.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.is_direct">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_direct</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.is_direct" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.param">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">param</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.param" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.param_inds">
+<span class="sig-name descname"><span class="pre">param_inds</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">5]</span></em><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.param_inds" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.pre_rotation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pre_rotation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.pre_rotation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.precond">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">precond</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.precond" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.rotation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.rotation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.scaling">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scaling</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.scaling" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Rigid2D.translation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">translation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Rigid2D.translation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="similarity">
+<h3><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity" title="nipy.algorithms.registration.affine.Similarity"><code class="xref py py-class docutils literal notranslate"><span class="pre">Similarity</span></code></a><a class="headerlink" href="#similarity" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">Similarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.registration.affine.Affine" title="nipy.algorithms.registration.affine.Affine"><code class="xref py py-class docutils literal notranslate"><span class="pre">Affine</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.apply" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.as_affine">
+<span class="sig-name descname"><span class="pre">as_affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'double'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.as_affine" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.compose">
+<span class="sig-name descname"><span class="pre">compose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.compose" title="Link to this definition">¶</a></dt>
+<dd><p>Compose this transform onto another</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>other</strong><span class="classifier">Transform</span></dt><dd><p>transform that we compose onto</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>composed_transform</strong><span class="classifier">Transform</span></dt><dd><p>a transform implementing the composition of self on <cite>other</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.copy" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.from_matrix44">
+<span class="sig-name descname"><span class="pre">from_matrix44</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aff</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.from_matrix44" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a 4x4 matrix describing a similarity transform into a
+12-sized vector of natural affine parameters: translation,
+rotation, log-scale, pre-rotation (to allow for pre-rotation
+when combined with non-unitary scales). In case the transform
+has a negative determinant, set the <cite>_direct</cite> attribute to
+False.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.inv">
+<span class="sig-name descname"><span class="pre">inv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.inv" title="Link to this definition">¶</a></dt>
+<dd><p>Return the inverse affine transform.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.is_direct">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_direct</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.is_direct" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.param">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">param</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.param" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.param_inds">
+<span class="sig-name descname"><span class="pre">param_inds</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6]</span></em><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.param_inds" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.pre_rotation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pre_rotation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.pre_rotation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.precond">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">precond</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.precond" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.rotation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.rotation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.scaling">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scaling</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.scaling" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity.translation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">translation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity.translation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="similarity2d">
+<h3><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D" title="nipy.algorithms.registration.affine.Similarity2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">Similarity2D</span></code></a><a class="headerlink" href="#similarity2d" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">Similarity2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity" title="nipy.algorithms.registration.affine.Similarity"><code class="xref py py-class docutils literal notranslate"><span class="pre">Similarity</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.apply" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.as_affine">
+<span class="sig-name descname"><span class="pre">as_affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'double'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.as_affine" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.compose">
+<span class="sig-name descname"><span class="pre">compose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.compose" title="Link to this definition">¶</a></dt>
+<dd><p>Compose this transform onto another</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>other</strong><span class="classifier">Transform</span></dt><dd><p>transform that we compose onto</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>composed_transform</strong><span class="classifier">Transform</span></dt><dd><p>a transform implementing the composition of self on <cite>other</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.copy" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.from_matrix44">
+<span class="sig-name descname"><span class="pre">from_matrix44</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aff</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.from_matrix44" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a 4x4 matrix describing a similarity transform into a
+12-sized vector of natural affine parameters: translation,
+rotation, log-scale, pre-rotation (to allow for pre-rotation
+when combined with non-unitary scales). In case the transform
+has a negative determinant, set the <cite>_direct</cite> attribute to
+False.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.inv">
+<span class="sig-name descname"><span class="pre">inv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.inv" title="Link to this definition">¶</a></dt>
+<dd><p>Return the inverse affine transform.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.is_direct">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_direct</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.is_direct" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.param">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">param</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.param" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.param_inds">
+<span class="sig-name descname"><span class="pre">param_inds</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">5,</span> <span class="pre">6]</span></em><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.param_inds" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.pre_rotation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pre_rotation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.pre_rotation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.precond">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">precond</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.precond" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.rotation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.rotation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.scaling">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scaling</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.scaling" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.Similarity2D.translation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">translation</span></span><a class="headerlink" href="#nipy.algorithms.registration.affine.Similarity2D.translation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.inverse_affine">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">inverse_affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">affine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.inverse_affine" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.preconditioner">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">preconditioner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">radius</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.preconditioner" title="Link to this definition">¶</a></dt>
+<dd><p>Computes a scaling vector pc such that, if p=(u,r,s,q) represents
+affine transformation parameters, where u is a translation, r and
+q are rotation vectors, and s is the vector of log-scales, then
+all components of (p/pc) are roughly comparable to the translation
+component.</p>
+<p>To that end, we use a <cite>radius</cite> parameter which represents the
+‘typical size’ of the object being registered. This is used to
+reformat the parameter vector
+(translation+rotation+scaling+pre-rotation) so that each element
+roughly represents a variation in mm.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.rotation_mat2vec">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">rotation_mat2vec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.rotation_mat2vec" title="Link to this definition">¶</a></dt>
+<dd><p>Rotation vector from rotation matrix <cite>R</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>R</strong><span class="classifier">(3,3) array-like</span></dt><dd><p>Rotation matrix</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>vec</strong><span class="classifier">(3,) array</span></dt><dd><p>Rotation vector, where norm of <cite>vec</cite> is the angle <code class="docutils literal notranslate"><span class="pre">theta</span></code>, and the
+axis of rotation is given by <code class="docutils literal notranslate"><span class="pre">vec</span> <span class="pre">/</span> <span class="pre">theta</span></code></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.rotation_vec2mat">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">rotation_vec2mat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.rotation_vec2mat" title="Link to this definition">¶</a></dt>
+<dd><p>The rotation matrix is given by the Rodrigues formula:</p>
+<p>R = Id + sin(theta)*Sn + (1-cos(theta))*Sn^2</p>
+<p>with:</p>
+<blockquote>
+<div><p>0  -nz  ny</p>
+</div></blockquote>
+<dl>
+<dt>Sn =   nz   0 -nx</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-n<var>y</var></span></kbd></dt>
+<dd><p>nx   0</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>where n = r / ||r||</p>
+<p>In case the angle ||r|| is very small, the above formula may lead
+to numerical instabilities. We instead use a Taylor expansion
+around theta=0:</p>
+<p>R = I + sin(theta)/tetha Sr + (1-cos(theta))/teta2 Sr^2</p>
+<p>leading to:</p>
+<p>R = I + (1-theta2/6)*Sr + (1/2-theta2/24)*Sr^2</p>
+<p>To avoid numerical instabilities, an upper threshold is applied to
+the angle. It is chosen to be a multiple of 2*pi, hence the
+resulting rotation is then the identity matrix. This strategy warrants
+that the output matrix is a continuous function of the input vector.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.slices2aff">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">slices2aff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.slices2aff" title="Link to this definition">¶</a></dt>
+<dd><p>Return affine from start, step of sequence <cite>slices</cite> of slice objects</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>slices</strong><span class="classifier">sequence of slice objects</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>aff</strong><span class="classifier">ndarray</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span> <span class="pre">len(slices)</span></code> then affine is shape (N+1, N+1) with diagonal
+given by the <code class="docutils literal notranslate"><span class="pre">step</span></code> attribute of the slice objects (where None
+corresponds to 1), and the <cite>:N</cite> elements in the last column are given by
+the <code class="docutils literal notranslate"><span class="pre">start</span></code> attribute of the slice objects</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">slices2aff</span><span class="p">([</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)])</span>
+<span class="go">array([[ 1.,  0.,  0.],</span>
+<span class="go">       [ 0.,  1.,  0.],</span>
+<span class="go">       [ 0.,  0.,  1.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">slices2aff</span><span class="p">([</span><span class="nb">slice</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">)])</span>
+<span class="go">array([[ 4.,  0.,  0.,  2.],</span>
+<span class="go">       [ 0.,  5.,  0.,  3.],</span>
+<span class="go">       [ 0.,  0.,  6.,  4.],</span>
+<span class="go">       [ 0.,  0.,  0.,  1.]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.subgrid_affine">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">subgrid_affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">affine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.subgrid_affine" title="Link to this definition">¶</a></dt>
+<dd><p>Return dot prodoct of <cite>affine</cite> and affine resulting from <cite>slices</cite></p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>affine</strong><span class="classifier">array-like</span></dt><dd><p>Affine to apply on right of affine resulting from <cite>slices</cite></p>
+</dd>
+<dt><strong>slices</strong><span class="classifier">sequence of slice objects</span></dt><dd><p>Slices generating (N+1, N+1) affine from <code class="docutils literal notranslate"><span class="pre">slices2aff</span></code>, where <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span>
+<span class="pre">len(slices)</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>aff</strong><span class="classifier">ndarray</span></dt><dd><p>result of <code class="docutils literal notranslate"><span class="pre">np.dot(affine,</span> <span class="pre">slice_affine)</span></code> where <code class="docutils literal notranslate"><span class="pre">slice_affine</span></code> is
+affine resulting from <code class="docutils literal notranslate"><span class="pre">slices2aff(slices)</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>ValueError</strong><span class="classifier">if the <code class="docutils literal notranslate"><span class="pre">slice_affine</span></code> contains non-integer values</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.threshold">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">th</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.threshold" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.affine.to_matrix44">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.affine.</span></span><span class="sig-name descname"><span class="pre">to_matrix44</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.affine.to_matrix44" title="Link to this definition">¶</a></dt>
+<dd><p>t is a vector of affine transformation parameters with size at
+least 6.</p>
+<p>size &lt; 6 ==&gt; error
+size == 6 ==&gt; t is interpreted as translation + rotation
+size == 7 ==&gt; t is interpreted as translation + rotation +
+isotropic scaling
+7 &lt; size &lt; 12 ==&gt; error
+size &gt;= 12 ==&gt; t is interpreted as translation + rotation +
+scaling + pre-rotation</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.registration.affine</a><ul>
+<li><a class="reference internal" href="#module-algorithms-registration-affine">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.registration.affine</span></code></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#affine"><code class="xref py py-class docutils literal notranslate"><span class="pre">Affine</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine"><code class="docutils literal notranslate"><span class="pre">Affine</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.__init__"><code class="docutils literal notranslate"><span class="pre">Affine.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.apply"><code class="docutils literal notranslate"><span class="pre">Affine.apply()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.as_affine"><code class="docutils literal notranslate"><span class="pre">Affine.as_affine()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.compose"><code class="docutils literal notranslate"><span class="pre">Affine.compose()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.copy"><code class="docutils literal notranslate"><span class="pre">Affine.copy()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.from_matrix44"><code class="docutils literal notranslate"><span class="pre">Affine.from_matrix44()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.inv"><code class="docutils literal notranslate"><span class="pre">Affine.inv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.is_direct"><code class="docutils literal notranslate"><span class="pre">Affine.is_direct</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.param"><code class="docutils literal notranslate"><span class="pre">Affine.param</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.param_inds"><code class="docutils literal notranslate"><span class="pre">Affine.param_inds</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.pre_rotation"><code class="docutils literal notranslate"><span class="pre">Affine.pre_rotation</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.precond"><code class="docutils literal notranslate"><span class="pre">Affine.precond</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.rotation"><code class="docutils literal notranslate"><span class="pre">Affine.rotation</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.scaling"><code class="docutils literal notranslate"><span class="pre">Affine.scaling</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine.translation"><code class="docutils literal notranslate"><span class="pre">Affine.translation</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#affine2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">Affine2D</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D"><code class="docutils literal notranslate"><span class="pre">Affine2D</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.__init__"><code class="docutils literal notranslate"><span class="pre">Affine2D.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.apply"><code class="docutils literal notranslate"><span class="pre">Affine2D.apply()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.as_affine"><code class="docutils literal notranslate"><span class="pre">Affine2D.as_affine()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.compose"><code class="docutils literal notranslate"><span class="pre">Affine2D.compose()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.copy"><code class="docutils literal notranslate"><span class="pre">Affine2D.copy()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.from_matrix44"><code class="docutils literal notranslate"><span class="pre">Affine2D.from_matrix44()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.inv"><code class="docutils literal notranslate"><span class="pre">Affine2D.inv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.is_direct"><code class="docutils literal notranslate"><span class="pre">Affine2D.is_direct</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.param"><code class="docutils literal notranslate"><span class="pre">Affine2D.param</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.param_inds"><code class="docutils literal notranslate"><span class="pre">Affine2D.param_inds</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.pre_rotation"><code class="docutils literal notranslate"><span class="pre">Affine2D.pre_rotation</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.precond"><code class="docutils literal notranslate"><span class="pre">Affine2D.precond</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.rotation"><code class="docutils literal notranslate"><span class="pre">Affine2D.rotation</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.scaling"><code class="docutils literal notranslate"><span class="pre">Affine2D.scaling</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Affine2D.translation"><code class="docutils literal notranslate"><span class="pre">Affine2D.translation</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rigid"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rigid</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid"><code class="docutils literal notranslate"><span class="pre">Rigid</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.__init__"><code class="docutils literal notranslate"><span class="pre">Rigid.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.apply"><code class="docutils literal notranslate"><span class="pre">Rigid.apply()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.as_affine"><code class="docutils literal notranslate"><span class="pre">Rigid.as_affine()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.compose"><code class="docutils literal notranslate"><span class="pre">Rigid.compose()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.copy"><code class="docutils literal notranslate"><span class="pre">Rigid.copy()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.from_matrix44"><code class="docutils literal notranslate"><span class="pre">Rigid.from_matrix44()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.inv"><code class="docutils literal notranslate"><span class="pre">Rigid.inv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.is_direct"><code class="docutils literal notranslate"><span class="pre">Rigid.is_direct</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.param"><code class="docutils literal notranslate"><span class="pre">Rigid.param</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.param_inds"><code class="docutils literal notranslate"><span class="pre">Rigid.param_inds</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.pre_rotation"><code class="docutils literal notranslate"><span class="pre">Rigid.pre_rotation</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.precond"><code class="docutils literal notranslate"><span class="pre">Rigid.precond</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.rotation"><code class="docutils literal notranslate"><span class="pre">Rigid.rotation</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.scaling"><code class="docutils literal notranslate"><span class="pre">Rigid.scaling</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid.translation"><code class="docutils literal notranslate"><span class="pre">Rigid.translation</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rigid2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rigid2D</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D"><code class="docutils literal notranslate"><span class="pre">Rigid2D</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.__init__"><code class="docutils literal notranslate"><span class="pre">Rigid2D.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.apply"><code class="docutils literal notranslate"><span class="pre">Rigid2D.apply()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.as_affine"><code class="docutils literal notranslate"><span class="pre">Rigid2D.as_affine()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.compose"><code class="docutils literal notranslate"><span class="pre">Rigid2D.compose()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.copy"><code class="docutils literal notranslate"><span class="pre">Rigid2D.copy()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.from_matrix44"><code class="docutils literal notranslate"><span class="pre">Rigid2D.from_matrix44()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.inv"><code class="docutils literal notranslate"><span class="pre">Rigid2D.inv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.is_direct"><code class="docutils literal notranslate"><span class="pre">Rigid2D.is_direct</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.param"><code class="docutils literal notranslate"><span class="pre">Rigid2D.param</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.param_inds"><code class="docutils literal notranslate"><span class="pre">Rigid2D.param_inds</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.pre_rotation"><code class="docutils literal notranslate"><span class="pre">Rigid2D.pre_rotation</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.precond"><code class="docutils literal notranslate"><span class="pre">Rigid2D.precond</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.rotation"><code class="docutils literal notranslate"><span class="pre">Rigid2D.rotation</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.scaling"><code class="docutils literal notranslate"><span class="pre">Rigid2D.scaling</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Rigid2D.translation"><code class="docutils literal notranslate"><span class="pre">Rigid2D.translation</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#similarity"><code class="xref py py-class docutils literal notranslate"><span class="pre">Similarity</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity"><code class="docutils literal notranslate"><span class="pre">Similarity</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.__init__"><code class="docutils literal notranslate"><span class="pre">Similarity.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.apply"><code class="docutils literal notranslate"><span class="pre">Similarity.apply()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.as_affine"><code class="docutils literal notranslate"><span class="pre">Similarity.as_affine()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.compose"><code class="docutils literal notranslate"><span class="pre">Similarity.compose()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.copy"><code class="docutils literal notranslate"><span class="pre">Similarity.copy()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.from_matrix44"><code class="docutils literal notranslate"><span class="pre">Similarity.from_matrix44()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.inv"><code class="docutils literal notranslate"><span class="pre">Similarity.inv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.is_direct"><code class="docutils literal notranslate"><span class="pre">Similarity.is_direct</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.param"><code class="docutils literal notranslate"><span class="pre">Similarity.param</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.param_inds"><code class="docutils literal notranslate"><span class="pre">Similarity.param_inds</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.pre_rotation"><code class="docutils literal notranslate"><span class="pre">Similarity.pre_rotation</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.precond"><code class="docutils literal notranslate"><span class="pre">Similarity.precond</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.rotation"><code class="docutils literal notranslate"><span class="pre">Similarity.rotation</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.scaling"><code class="docutils literal notranslate"><span class="pre">Similarity.scaling</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity.translation"><code class="docutils literal notranslate"><span class="pre">Similarity.translation</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#similarity2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">Similarity2D</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D"><code class="docutils literal notranslate"><span class="pre">Similarity2D</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.__init__"><code class="docutils literal notranslate"><span class="pre">Similarity2D.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.apply"><code class="docutils literal notranslate"><span class="pre">Similarity2D.apply()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.as_affine"><code class="docutils literal notranslate"><span class="pre">Similarity2D.as_affine()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.compose"><code class="docutils literal notranslate"><span class="pre">Similarity2D.compose()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.copy"><code class="docutils literal notranslate"><span class="pre">Similarity2D.copy()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.from_matrix44"><code class="docutils literal notranslate"><span class="pre">Similarity2D.from_matrix44()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.inv"><code class="docutils literal notranslate"><span class="pre">Similarity2D.inv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.is_direct"><code class="docutils literal notranslate"><span class="pre">Similarity2D.is_direct</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.param"><code class="docutils literal notranslate"><span class="pre">Similarity2D.param</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.param_inds"><code class="docutils literal notranslate"><span class="pre">Similarity2D.param_inds</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.pre_rotation"><code class="docutils literal notranslate"><span class="pre">Similarity2D.pre_rotation</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.precond"><code class="docutils literal notranslate"><span class="pre">Similarity2D.precond</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.rotation"><code class="docutils literal notranslate"><span class="pre">Similarity2D.rotation</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.scaling"><code class="docutils literal notranslate"><span class="pre">Similarity2D.scaling</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.Similarity2D.translation"><code class="docutils literal notranslate"><span class="pre">Similarity2D.translation</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.inverse_affine"><code class="docutils literal notranslate"><span class="pre">inverse_affine()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.preconditioner"><code class="docutils literal notranslate"><span class="pre">preconditioner()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.rotation_mat2vec"><code class="docutils literal notranslate"><span class="pre">rotation_mat2vec()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.rotation_vec2mat"><code class="docutils literal notranslate"><span class="pre">rotation_vec2mat()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.slices2aff"><code class="docutils literal notranslate"><span class="pre">slices2aff()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.subgrid_affine"><code class="docutils literal notranslate"><span class="pre">subgrid_affine()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.threshold"><code class="docutils literal notranslate"><span class="pre">threshold()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.affine.to_matrix44"><code class="docutils literal notranslate"><span class="pre">to_matrix44()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.optimize.html"
+                          title="previous chapter">algorithms.optimize</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.registration.chain_transform.html"
+                          title="next chapter">algorithms.registration.chain_transform</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.registration.affine.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.chain_transform.html" title="algorithms.registration.chain_transform"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.optimize.html" title="algorithms.optimize"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

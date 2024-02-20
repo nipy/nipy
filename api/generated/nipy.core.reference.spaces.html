@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="core.utils.generators" href="nipy.core.utils.generators.html" />
+    <link rel="prev" title="core.reference.slices" href="nipy.core.reference.slices.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.utils.generators.html" title="core.utils.generators"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.reference.slices.html" title="core.reference.slices"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="core-reference-spaces">
+<h1>core.reference.spaces<a class="headerlink" href="#core-reference-spaces" title="Link to this heading">¶</a></h1>
+<section id="module-core-reference-spaces">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">core.reference.spaces</span></code><a class="headerlink" href="#module-core-reference-spaces" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.core.reference.spaces</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-4c3eed08db5c177c6158e9d6766cc932dab0c122.png" alt="Inheritance diagram of nipy.core.reference.spaces" usemap="#inheritancecf0d4ec7af" class="inheritance graphviz" /></div>
+<map id="inheritancecf0d4ec7af" name="inheritancecf0d4ec7af">
+<area shape="rect" id="node1" href="#nipy.core.reference.spaces.AffineError" target="_top" title="reference.spaces.AffineError" alt="" coords="260,5,446,32"/>
+<area shape="rect" id="node2" href="#nipy.core.reference.spaces.SpaceError" target="_top" title="reference.spaces.SpaceError" alt="" coords="5,56,196,83"/>
+<area shape="rect" id="node3" href="#nipy.core.reference.spaces.AxesError" target="_top" title="reference.spaces.AxesError" alt="" coords="261,56,445,83"/>
+<area shape="rect" id="node4" href="#nipy.core.reference.spaces.SpaceTypeError" target="_top" title="reference.spaces.SpaceTypeError" alt="" coords="244,107,462,133"/>
+<area shape="rect" id="node5" href="#nipy.core.reference.spaces.XYZSpace" target="_top" title="Class contains logic for spaces with XYZ coordinate systems" alt="" coords="6,5,195,32"/>
+</map><p id="module-nipy.core.reference.spaces">Useful neuroimaging coordinate map makers and utilities</p>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="affineerror">
+<h3><a class="reference internal" href="#nipy.core.reference.spaces.AffineError" title="nipy.core.reference.spaces.AffineError"><code class="xref py py-class docutils literal notranslate"><span class="pre">AffineError</span></code></a><a class="headerlink" href="#affineerror" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.AffineError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.spaces.</span></span><span class="sig-name descname"><span class="pre">AffineError</span></span><a class="headerlink" href="#nipy.core.reference.spaces.AffineError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.core.reference.spaces.SpaceError" title="nipy.core.reference.spaces.SpaceError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpaceError</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.AffineError.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.AffineError.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.AffineError.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#nipy.core.reference.spaces.AffineError.args" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.AffineError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.AffineError.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="axeserror">
+<h3><a class="reference internal" href="#nipy.core.reference.spaces.AxesError" title="nipy.core.reference.spaces.AxesError"><code class="xref py py-class docutils literal notranslate"><span class="pre">AxesError</span></code></a><a class="headerlink" href="#axeserror" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.AxesError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.spaces.</span></span><span class="sig-name descname"><span class="pre">AxesError</span></span><a class="headerlink" href="#nipy.core.reference.spaces.AxesError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.core.reference.spaces.SpaceError" title="nipy.core.reference.spaces.SpaceError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpaceError</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.AxesError.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.AxesError.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.AxesError.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#nipy.core.reference.spaces.AxesError.args" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.AxesError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.AxesError.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="spaceerror">
+<h3><a class="reference internal" href="#nipy.core.reference.spaces.SpaceError" title="nipy.core.reference.spaces.SpaceError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpaceError</span></code></a><a class="headerlink" href="#spaceerror" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.SpaceError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.spaces.</span></span><span class="sig-name descname"><span class="pre">SpaceError</span></span><a class="headerlink" href="#nipy.core.reference.spaces.SpaceError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.SpaceError.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.SpaceError.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.SpaceError.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#nipy.core.reference.spaces.SpaceError.args" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.SpaceError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.SpaceError.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="spacetypeerror">
+<h3><a class="reference internal" href="#nipy.core.reference.spaces.SpaceTypeError" title="nipy.core.reference.spaces.SpaceTypeError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpaceTypeError</span></code></a><a class="headerlink" href="#spacetypeerror" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.SpaceTypeError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.spaces.</span></span><span class="sig-name descname"><span class="pre">SpaceTypeError</span></span><a class="headerlink" href="#nipy.core.reference.spaces.SpaceTypeError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.core.reference.spaces.SpaceError" title="nipy.core.reference.spaces.SpaceError"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpaceError</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.SpaceTypeError.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.SpaceTypeError.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.SpaceTypeError.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#nipy.core.reference.spaces.SpaceTypeError.args" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.SpaceTypeError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.SpaceTypeError.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="xyzspace">
+<h3><a class="reference internal" href="#nipy.core.reference.spaces.XYZSpace" title="nipy.core.reference.spaces.XYZSpace"><code class="xref py py-class docutils literal notranslate"><span class="pre">XYZSpace</span></code></a><a class="headerlink" href="#xyzspace" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.XYZSpace">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.spaces.</span></span><span class="sig-name descname"><span class="pre">XYZSpace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.XYZSpace" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class contains logic for spaces with XYZ coordinate systems</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sp</span> <span class="o">=</span> <span class="n">XYZSpace</span><span class="p">(</span><span class="s1">&#39;hijo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span>
+<span class="go">hijo: [(&#39;x&#39;, &#39;hijo-x=L-&gt;R&#39;), (&#39;y&#39;, &#39;hijo-y=P-&gt;A&#39;), (&#39;z&#39;, &#39;hijo-z=I-&gt;S&#39;)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csm</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">to_coordsys_maker</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span> <span class="o">=</span> <span class="n">csm</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;hijo-x=L-&gt;R&#39;, &#39;hijo-y=P-&gt;A&#39;, &#39;hijo-z=I-&gt;S&#39;), name=&#39;hijo&#39;, coord_dtype=float64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span> <span class="ow">in</span> <span class="n">sp</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.XYZSpace.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.XYZSpace.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.XYZSpace.as_map">
+<span class="sig-name descname"><span class="pre">as_map</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.XYZSpace.as_map" title="Link to this definition">¶</a></dt>
+<dd><p>Return xyz names as dictionary</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sp</span> <span class="o">=</span> <span class="n">XYZSpace</span><span class="p">(</span><span class="s1">&#39;hijo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">as_map</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;x&#39;, &#39;hijo-x=L-&gt;R&#39;), (&#39;y&#39;, &#39;hijo-y=P-&gt;A&#39;), (&#39;z&#39;, &#39;hijo-z=I-&gt;S&#39;)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.XYZSpace.as_tuple">
+<span class="sig-name descname"><span class="pre">as_tuple</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.XYZSpace.as_tuple" title="Link to this definition">¶</a></dt>
+<dd><p>Return xyz names as tuple</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sp</span> <span class="o">=</span> <span class="n">XYZSpace</span><span class="p">(</span><span class="s1">&#39;hijo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sp</span><span class="o">.</span><span class="n">as_tuple</span><span class="p">()</span>
+<span class="go">(&#39;hijo-x=L-&gt;R&#39;, &#39;hijo-y=P-&gt;A&#39;, &#39;hijo-z=I-&gt;S&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.XYZSpace.register_to">
+<span class="sig-name descname"><span class="pre">register_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.XYZSpace.register_to" title="Link to this definition">¶</a></dt>
+<dd><p>Update <cite>mapping</cite> with key=self.x, value=’x’ etc pairs</p>
+<p>The mapping will then have keys that are names we (<code class="docutils literal notranslate"><span class="pre">self</span></code>) identify as
+being x, or y, or z, values are ‘x’ or ‘y’ or ‘z’.</p>
+<p>Note that this is the opposite way round for keys, values, compared to
+the <code class="docutils literal notranslate"><span class="pre">as_map</span></code> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mapping</strong><span class="classifier">mapping</span></dt><dd><p>such as a dict</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sp</span> <span class="o">=</span> <span class="n">XYZSpace</span><span class="p">(</span><span class="s1">&#39;hijo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mapping</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sp</span><span class="o">.</span><span class="n">register_to</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;hijo-x=L-&gt;R&#39;, &#39;x&#39;), (&#39;hijo-y=P-&gt;A&#39;, &#39;y&#39;), (&#39;hijo-z=I-&gt;S&#39;, &#39;z&#39;)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.XYZSpace.to_coordsys_maker">
+<span class="sig-name descname"><span class="pre">to_coordsys_maker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extras</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.XYZSpace.to_coordsys_maker" title="Link to this definition">¶</a></dt>
+<dd><p>Make a coordinate system maker for this space</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>extra</strong><span class="classifier">sequence</span></dt><dd><p>names for any further axes after x, y, z</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>csm</strong><span class="classifier">CoordinateSystemMaker</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sp</span> <span class="o">=</span> <span class="n">XYZSpace</span><span class="p">(</span><span class="s1">&#39;hijo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csm</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">to_coordsys_maker</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csm</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;hijo-x=L-&gt;R&#39;, &#39;hijo-y=P-&gt;A&#39;, &#39;hijo-z=I-&gt;S&#39;), name=&#39;hijo&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.XYZSpace.x">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">x</span></span><a class="headerlink" href="#nipy.core.reference.spaces.XYZSpace.x" title="Link to this definition">¶</a></dt>
+<dd><p>x-space coordinate name</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.XYZSpace.x_suffix">
+<span class="sig-name descname"><span class="pre">x_suffix</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'x=L-&gt;R'</span></em><a class="headerlink" href="#nipy.core.reference.spaces.XYZSpace.x_suffix" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.XYZSpace.y">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">y</span></span><a class="headerlink" href="#nipy.core.reference.spaces.XYZSpace.y" title="Link to this definition">¶</a></dt>
+<dd><p>y-space coordinate name</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.XYZSpace.y_suffix">
+<span class="sig-name descname"><span class="pre">y_suffix</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'y=P-&gt;A'</span></em><a class="headerlink" href="#nipy.core.reference.spaces.XYZSpace.y_suffix" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.XYZSpace.z">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">z</span></span><a class="headerlink" href="#nipy.core.reference.spaces.XYZSpace.z" title="Link to this definition">¶</a></dt>
+<dd><p>z-space coordinate name</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.XYZSpace.z_suffix">
+<span class="sig-name descname"><span class="pre">z_suffix</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'z=I-&gt;S'</span></em><a class="headerlink" href="#nipy.core.reference.spaces.XYZSpace.z_suffix" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.get_world_cs">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.spaces.</span></span><span class="sig-name descname"><span class="pre">get_world_cs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">world_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extras</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tuvw'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spaces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.get_world_cs" title="Link to this definition">¶</a></dt>
+<dd><p>Get world coordinate system from <cite>world_id</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>world_id</strong><span class="classifier">str, XYZSPace, CoordSysMaker or CoordinateSystem</span></dt><dd><p>Object defining a world output system.  If str, then should be a name of
+an XYZSpace in the list <cite>spaces</cite>.</p>
+</dd>
+<dt><strong>ndim</strong><span class="classifier">int, optional</span></dt><dd><p>Number of dimensions in this world.  Default is 3</p>
+</dd>
+<dt><strong>extras</strong><span class="classifier">sequence, optional</span></dt><dd><p>Coordinate (axis) names for axes &gt; 3 that are not named by <cite>world_id</cite></p>
+</dd>
+<dt><strong>spaces</strong><span class="classifier">None or sequence, optional</span></dt><dd><p>List of known (named) spaces to compare a str <cite>world_id</cite> to.  If None,
+use the module level <code class="docutils literal notranslate"><span class="pre">known_spaces</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>world_cs</strong><span class="classifier">CoordinateSystem</span></dt><dd><p>A world coordinate system</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_world_cs</span><span class="p">(</span><span class="s1">&#39;mni&#39;</span><span class="p">)</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;mni-x=L-&gt;R&#39;, &#39;mni-y=P-&gt;A&#39;, &#39;mni-z=I-&gt;S&#39;), name=&#39;mni&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_world_cs</span><span class="p">(</span><span class="n">mni_space</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;mni-x=L-&gt;R&#39;, &#39;mni-y=P-&gt;A&#39;, &#39;mni-z=I-&gt;S&#39;, &#39;t&#39;), name=&#39;mni&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.api</span> <span class="kn">import</span> <span class="n">CoordinateSystem</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_world_cs</span><span class="p">(</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">))</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.is_xyz_affable">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.spaces.</span></span><span class="sig-name descname"><span class="pre">is_xyz_affable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name2xyz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.is_xyz_affable" title="Link to this definition">¶</a></dt>
+<dd><p>Return True if the coordap has an xyz affine</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>coordmap</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">CoordinateMap</span></code> instance</span></dt><dd><p>Coordinate map to test</p>
+</dd>
+<dt><strong>name2xyz</strong><span class="classifier">None or mapping, optional</span></dt><dd><p>Object such that <code class="docutils literal notranslate"><span class="pre">name2xyz[ax_name]</span></code> returns ‘x’, or ‘y’ or ‘z’ or
+raises a KeyError for a str <code class="docutils literal notranslate"><span class="pre">ax_name</span></code>.  None means use module default.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>tf</strong><span class="classifier">bool</span></dt><dd><p>True if <cite>coordmap</cite> has an xyz affine, False otherwise</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cmap</span> <span class="o">=</span> <span class="n">vox2mni</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cmap</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;), name=&#39;voxels&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;mni-x=L-&gt;R&#39;, &#39;mni-y=P-&gt;A&#39;, &#39;mni-z=I-&gt;S&#39;, &#39;t&#39;), name=&#39;mni&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[ 2.,  0.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  3.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  4.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  5.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  0.,  1.]])</span>
+<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_xyz_affable</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">time0_cmap</span> <span class="o">=</span> <span class="n">cmap</span><span class="o">.</span><span class="n">reordered_domain</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">time0_cmap</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;l&#39;, &#39;i&#39;, &#39;j&#39;, &#39;k&#39;), name=&#39;voxels&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;mni-x=L-&gt;R&#39;, &#39;mni-y=P-&gt;A&#39;, &#39;mni-z=I-&gt;S&#39;, &#39;t&#39;), name=&#39;mni&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[ 0.,  2.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  3.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  4.,  0.],</span>
+<span class="go">                 [ 5.,  0.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  0.,  1.]])</span>
+<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_xyz_affable</span><span class="p">(</span><span class="n">time0_cmap</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.is_xyz_space">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.spaces.</span></span><span class="sig-name descname"><span class="pre">is_xyz_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.is_xyz_space" title="Link to this definition">¶</a></dt>
+<dd><p>True if <cite>obj</cite> appears to be an XYZ space definition</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.known_space">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.spaces.</span></span><span class="sig-name descname"><span class="pre">known_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spaces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.known_space" title="Link to this definition">¶</a></dt>
+<dd><p>If <cite>obj</cite> is in a known space, return the space, otherwise return None</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>obj</strong><span class="classifier">object</span></dt><dd><p>Object that can be tested against an XYZSpace with <code class="docutils literal notranslate"><span class="pre">obj</span> <span class="pre">in</span> <span class="pre">sp</span></code></p>
+</dd>
+<dt><strong>spaces</strong><span class="classifier">None or sequence, optional</span></dt><dd><p>spaces to test against.  If None, use the module level <code class="docutils literal notranslate"><span class="pre">known_spaces</span></code>
+list to test against.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>sp</strong><span class="classifier">None or XYZSpace</span></dt><dd><p>If <cite>obj</cite> is not in any of the <cite>known_spaces</cite>, return None.  Otherwise
+return the first matching space in <cite>known_spaces</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.api</span> <span class="kn">import</span> <span class="n">CoordinateSystem</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sp0</span> <span class="o">=</span> <span class="n">XYZSpace</span><span class="p">(</span><span class="s1">&#39;hijo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sp1</span> <span class="o">=</span> <span class="n">XYZSpace</span><span class="p">(</span><span class="s1">&#39;hija&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Make a matching coordinate system</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span> <span class="o">=</span> <span class="n">sp0</span><span class="o">.</span><span class="n">to_coordsys_maker</span><span class="p">()(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Test whether this coordinate system is in either of <code class="docutils literal notranslate"><span class="pre">(sp0,</span> <span class="pre">sp1)</span></code></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">known_space</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="p">(</span><span class="n">sp0</span><span class="p">,</span> <span class="n">sp1</span><span class="p">))</span>
+<span class="go">XYZSpace(&#39;hijo&#39;)</span>
+</pre></div>
+</div>
+<p>So, yes, it’s in <code class="docutils literal notranslate"><span class="pre">sp0</span></code>. How about another generic CoordinateSystem?</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">known_space</span><span class="p">(</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">),</span> <span class="p">(</span><span class="n">sp0</span><span class="p">,</span> <span class="n">sp1</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>So, no, that is not in either of <code class="docutils literal notranslate"><span class="pre">(sp0,</span> <span class="pre">sp1)</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.xyz_affine">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.spaces.</span></span><span class="sig-name descname"><span class="pre">xyz_affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name2xyz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.xyz_affine" title="Link to this definition">¶</a></dt>
+<dd><p>Return (4, 4) affine mapping voxel coordinates to XYZ from <cite>coordmap</cite></p>
+<p>If no (4, 4) affine “makes sense”(TM) for this <cite>coordmap</cite> then raise errors
+listed below.  A (4, 4) affine makes sense if the first three output axes
+are recognizably X, Y, and Z in that order AND they there are corresponding
+input dimensions, AND the corresponding input dimensions are the first three
+input dimension (in any order).  Thus the input axes have to be 3D.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>coordmap</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">CoordinateMap</span></code> instance</span></dt><dd></dd>
+<dt><strong>name2xyz</strong><span class="classifier">None or mapping, optional</span></dt><dd><p>Object such that <code class="docutils literal notranslate"><span class="pre">name2xyz[ax_name]</span></code> returns ‘x’, or ‘y’ or ‘z’ or
+raises a KeyError for a str <code class="docutils literal notranslate"><span class="pre">ax_name</span></code>.  None means use module default.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>xyz_aff</strong><span class="classifier">(4,4) array</span></dt><dd><p>voxel to X, Y, Z affine mapping</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>SpaceTypeError</strong><span class="classifier">if this is not an affine coordinate map</span></dt><dd></dd>
+<dt><strong>AxesError</strong><span class="classifier">if not all of x, y, z recognized in <cite>coordmap</cite> output, or they</span></dt><dd></dd>
+<dt>are in the wrong order, or the x, y, z axes do not correspond to the first</dt><dd></dd>
+<dt>three input axes.</dt><dd></dd>
+<dt><strong>AffineError</strong><span class="classifier">if axes dropped from the affine contribute to x, y, z</span></dt><dd></dd>
+<dt>coordinates.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>We could also try and “make sense” (TM) of a coordmap that had X, Y and Z
+outputs, but not in that order, nor all in the first three axes.  In that
+case we could just permute the affine to get the output order we need.  But,
+that could become confusing if the returned affine has different output
+coordinates than the passed <cite>coordmap</cite>.  And it’s more complicated.  So,
+let’s not do that for now.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cmap</span> <span class="o">=</span> <span class="n">vox2mni</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cmap</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;), name=&#39;voxels&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;mni-x=L-&gt;R&#39;, &#39;mni-y=P-&gt;A&#39;, &#39;mni-z=I-&gt;S&#39;, &#39;t&#39;), name=&#39;mni&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[ 2.,  0.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  3.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  4.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  5.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  0.,  1.]])</span>
+<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xyz_affine</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
+<span class="go">array([[ 2.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  3.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  4.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  1.]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.spaces.xyz_order">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.spaces.</span></span><span class="sig-name descname"><span class="pre">xyz_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordsys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name2xyz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.spaces.xyz_order" title="Link to this definition">¶</a></dt>
+<dd><p>Vector of orders for sorting coordsys axes in xyz first order</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>coordsys</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">CoordinateSystem</span></code> instance</span></dt><dd></dd>
+<dt><strong>name2xyz</strong><span class="classifier">None or mapping, optional</span></dt><dd><p>Object such that <code class="docutils literal notranslate"><span class="pre">name2xyz[ax_name]</span></code> returns ‘x’, or ‘y’ or ‘z’ or
+raises a KeyError for a str <code class="docutils literal notranslate"><span class="pre">ax_name</span></code>.  None means use module default.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>xyz_order</strong><span class="classifier">list</span></dt><dd><p>Ordering of axes to get xyz first ordering.  See the examples.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>AxesError</strong><span class="classifier">if there are not all of x, y and z axes</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.api</span> <span class="kn">import</span> <span class="n">CoordinateSystem</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xyzt_cs</span> <span class="o">=</span> <span class="n">mni_csm</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="c1"># coordsys with t (time) last</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xyzt_cs</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;mni-x=L-&gt;R&#39;, &#39;mni-y=P-&gt;A&#39;, &#39;mni-z=I-&gt;S&#39;, &#39;t&#39;), name=&#39;mni&#39;, coord_dtype=float64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xyz_order</span><span class="p">(</span><span class="n">xyzt_cs</span><span class="p">)</span>
+<span class="go">[0, 1, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tzyx_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="n">xyzt_cs</span><span class="o">.</span><span class="n">coord_names</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;reversed&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tzyx_cs</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;t&#39;, &#39;mni-z=I-&gt;S&#39;, &#39;mni-y=P-&gt;A&#39;, &#39;mni-x=L-&gt;R&#39;), name=&#39;reversed&#39;, coord_dtype=float64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xyz_order</span><span class="p">(</span><span class="n">tzyx_cs</span><span class="p">)</span>
+<span class="go">[3, 2, 1, 0]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">core.reference.spaces</a><ul>
+<li><a class="reference internal" href="#module-core-reference-spaces">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">core.reference.spaces</span></code></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#affineerror"><code class="xref py py-class docutils literal notranslate"><span class="pre">AffineError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.AffineError"><code class="docutils literal notranslate"><span class="pre">AffineError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.AffineError.__init__"><code class="docutils literal notranslate"><span class="pre">AffineError.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.AffineError.args"><code class="docutils literal notranslate"><span class="pre">AffineError.args</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.AffineError.with_traceback"><code class="docutils literal notranslate"><span class="pre">AffineError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#axeserror"><code class="xref py py-class docutils literal notranslate"><span class="pre">AxesError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.AxesError"><code class="docutils literal notranslate"><span class="pre">AxesError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.AxesError.__init__"><code class="docutils literal notranslate"><span class="pre">AxesError.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.AxesError.args"><code class="docutils literal notranslate"><span class="pre">AxesError.args</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.AxesError.with_traceback"><code class="docutils literal notranslate"><span class="pre">AxesError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spaceerror"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpaceError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.SpaceError"><code class="docutils literal notranslate"><span class="pre">SpaceError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.SpaceError.__init__"><code class="docutils literal notranslate"><span class="pre">SpaceError.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.SpaceError.args"><code class="docutils literal notranslate"><span class="pre">SpaceError.args</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.SpaceError.with_traceback"><code class="docutils literal notranslate"><span class="pre">SpaceError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spacetypeerror"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpaceTypeError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.SpaceTypeError"><code class="docutils literal notranslate"><span class="pre">SpaceTypeError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.SpaceTypeError.__init__"><code class="docutils literal notranslate"><span class="pre">SpaceTypeError.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.SpaceTypeError.args"><code class="docutils literal notranslate"><span class="pre">SpaceTypeError.args</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.SpaceTypeError.with_traceback"><code class="docutils literal notranslate"><span class="pre">SpaceTypeError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#xyzspace"><code class="xref py py-class docutils literal notranslate"><span class="pre">XYZSpace</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.XYZSpace"><code class="docutils literal notranslate"><span class="pre">XYZSpace</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.XYZSpace.__init__"><code class="docutils literal notranslate"><span class="pre">XYZSpace.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.XYZSpace.as_map"><code class="docutils literal notranslate"><span class="pre">XYZSpace.as_map()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.XYZSpace.as_tuple"><code class="docutils literal notranslate"><span class="pre">XYZSpace.as_tuple()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.XYZSpace.register_to"><code class="docutils literal notranslate"><span class="pre">XYZSpace.register_to()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.XYZSpace.to_coordsys_maker"><code class="docutils literal notranslate"><span class="pre">XYZSpace.to_coordsys_maker()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.XYZSpace.x"><code class="docutils literal notranslate"><span class="pre">XYZSpace.x</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.XYZSpace.x_suffix"><code class="docutils literal notranslate"><span class="pre">XYZSpace.x_suffix</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.XYZSpace.y"><code class="docutils literal notranslate"><span class="pre">XYZSpace.y</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.XYZSpace.y_suffix"><code class="docutils literal notranslate"><span class="pre">XYZSpace.y_suffix</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.XYZSpace.z"><code class="docutils literal notranslate"><span class="pre">XYZSpace.z</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.XYZSpace.z_suffix"><code class="docutils literal notranslate"><span class="pre">XYZSpace.z_suffix</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.get_world_cs"><code class="docutils literal notranslate"><span class="pre">get_world_cs()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.is_xyz_affable"><code class="docutils literal notranslate"><span class="pre">is_xyz_affable()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.is_xyz_space"><code class="docutils literal notranslate"><span class="pre">is_xyz_space()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.known_space"><code class="docutils literal notranslate"><span class="pre">known_space()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.xyz_affine"><code class="docutils literal notranslate"><span class="pre">xyz_affine()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.spaces.xyz_order"><code class="docutils literal notranslate"><span class="pre">xyz_order()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.core.reference.slices.html"
+                          title="previous chapter">core.reference.slices</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.core.utils.generators.html"
+                          title="next chapter">core.utils.generators</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.core.reference.spaces.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.utils.generators.html" title="core.utils.generators"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.reference.slices.html" title="core.reference.slices"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

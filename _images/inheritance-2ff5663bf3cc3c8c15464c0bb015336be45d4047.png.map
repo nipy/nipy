@@ -1,0 +1,4 @@
+<map id="inheritance86ed0a510d" name="inheritance86ed0a510d">
+<area shape="rect" id="node1" href="#nipy.labs.datasets.transforms.transform.CompositionError" target="_top" title="The Exception raised when composing transforms with non matching" alt="" coords="5,56,253,83"/>
+<area shape="rect" id="node2" href="#nipy.labs.datasets.transforms.transform.Transform" target="_top" title="A transform is a representation of a transformation from one 3D space to" alt="" coords="26,5,232,32"/>
+</map>

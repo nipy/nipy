@@ -1,0 +1,17 @@
+<map id="inheritance6435da5321" name="inheritance6435da5321">
+<area shape="rect" id="node1" title="A parent class for atomic things. An atom is an expression with no subexpressions." alt="" coords="260,85,323,99"/>
+<area shape="rect" id="node5" title="A parent class for object which are both atoms and Exprs." alt="" coords="349,85,429,99"/>
+<area shape="rect" id="node2" title="Base class for all SymPy objects." alt="" coords="145,85,209,99"/>
+<area shape="rect" id="node6" title="Base class for algebraic expressions." alt="" coords="263,58,321,72"/>
+<area shape="rect" id="node9" title="A Boolean object is an object for which logic operations make sense." alt="" coords="350,112,428,127"/>
+<area shape="rect" id="node3" title="The default implementation of printing for SymPy classes." alt="" coords="3,85,94,99"/>
+<area shape="rect" id="node4" title="Mixin class adding evalf capability." alt="" coords="139,58,216,72"/>
+<area shape="rect" id="node8" title="Assumptions:" alt="" coords="454,99,530,113"/>
+<area shape="rect" id="node7" title="Dummy symbols are each unique, even if they have the same name:" alt="" coords="558,85,635,99"/>
+<area shape="rect" id="node10" href="#nipy.algorithms.statistics.formula.formulae.Beta" target="_top" title="A symbol tied to a Term `term`" alt="" coords="674,85,755,99"/>
+<area shape="rect" id="node14" href="#nipy.algorithms.statistics.formula.formulae.Term" target="_top" title="A sympy.Symbol type to represent a term an a regression model" alt="" coords="556,112,638,127"/>
+<area shape="rect" id="node11" href="#nipy.algorithms.statistics.formula.formulae.Factor" target="_top" title="A qualitative variable in a regression model" alt="" coords="134,3,220,17"/>
+<area shape="rect" id="node12" href="#nipy.algorithms.statistics.formula.formulae.Formula" target="_top" title="A Formula is a model for a mean in a regression model." alt="" coords="3,17,94,31"/>
+<area shape="rect" id="node15" href="#nipy.algorithms.statistics.formula.formulae.RandomEffects" target="_top" title="Covariance matrices for common random effects analyses." alt="" coords="120,30,235,45"/>
+<area shape="rect" id="node13" href="#nipy.algorithms.statistics.formula.formulae.FactorTerm" target="_top" title="Boolean Term derived from a Factor." alt="" coords="664,112,765,127"/>
+</map>

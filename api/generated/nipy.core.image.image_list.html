@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="core.image.image_spaces" href="nipy.core.image.image_spaces.html" />
+    <link rel="prev" title="core.image.image" href="nipy.core.image.image.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.image.image_spaces.html" title="core.image.image_spaces"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.image.image.html" title="core.image.image"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="core-image-image-list">
+<h1>core.image.image_list<a class="headerlink" href="#core-image-image-list" title="Link to this heading">¶</a></h1>
+<section id="module-core-image-image-list">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">core.image.image_list</span></code><a class="headerlink" href="#module-core-image-image-list" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.core.image.image_list</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-ed37393ab58a27f17deb26e8aca3d413495f9206.png" alt="Inheritance diagram of nipy.core.image.image_list" usemap="#inheritanceb1388b7804" class="inheritance graphviz" /></div>
+<map id="inheritanceb1388b7804" name="inheritanceb1388b7804">
+<area shape="rect" id="node1" href="#nipy.core.image.image_list.ImageList" target="_top" title="Class to contain ND image as list of (N&#45;1)D images" alt="" coords="5,5,186,32"/>
+</map><span class="target" id="module-nipy.core.image.image_list"></span></section>
+<section id="imagelist">
+<h2><a class="reference internal" href="#nipy.core.image.image_list.ImageList" title="nipy.core.image.image_list.ImageList"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageList</span></code></a><a class="headerlink" href="#imagelist" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.image.image_list.ImageList">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.image.image_list.</span></span><span class="sig-name descname"><span class="pre">ImageList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.image.image_list.ImageList" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to contain ND image as list of (N-1)D images</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.image.image_list.ImageList.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.image.image_list.ImageList.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>An implementation of a list of images.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>images</strong><span class="classifier">iterable</span></dt><dd><p>an iterable object whose items are meant to be images; this is
+checked by asserting that each has a <cite>coordmap</cite> attribute and a
+<code class="docutils literal notranslate"><span class="pre">get_fdata</span></code> method.  Note that Image objects are not iterable by
+default; use the <code class="docutils literal notranslate"><span class="pre">from_image</span></code> classmethod or <code class="docutils literal notranslate"><span class="pre">iter_axis</span></code> function
+to convert images to image lists - see examples below for the latter.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.testing</span> <span class="kn">import</span> <span class="n">funcfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.api</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageList</span><span class="p">,</span> <span class="n">iter_axis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.io.api</span> <span class="kn">import</span> <span class="n">load_image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">funcim</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">funcfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iterable_img</span> <span class="o">=</span> <span class="n">iter_axis</span><span class="p">(</span><span class="n">funcim</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ilist</span> <span class="o">=</span> <span class="n">ImageList</span><span class="p">(</span><span class="n">iterable_img</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sublist</span> <span class="o">=</span> <span class="n">ilist</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Slicing an ImageList returns a new ImageList</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">sublist</span><span class="p">,</span> <span class="n">ImageList</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Indexing an ImageList returns a new Image</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">newimg</span> <span class="o">=</span> <span class="n">ilist</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">newimg</span><span class="p">,</span> <span class="n">Image</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">newimg</span><span class="p">,</span> <span class="n">ImageList</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sublist</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(3, 17, 21, 3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newimg</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(17, 21, 3)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.image.image_list.ImageList.from_image">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.image.image_list.ImageList.from_image" title="Link to this definition">¶</a></dt>
+<dd><p>Create an image list from an <cite>image</cite> by slicing over <cite>axis</cite></p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image</strong><span class="classifier">object</span></dt><dd><p>object with <code class="docutils literal notranslate"><span class="pre">coordmap</span></code> attribute</p>
+</dd>
+<dt><strong>axis</strong><span class="classifier">str or int</span></dt><dd><p>axis of <cite>image</cite> that should become the axis indexed by the image
+list.</p>
+</dd>
+<dt><strong>dropout</strong><span class="classifier">bool, optional</span></dt><dd><p>When taking slices from an image, we will leave an output dimension
+to the coordmap that has no corresponding input dimension.  If
+<cite>dropout</cite> is True, drop this output dimension.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>ilist</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">ImageList</span></code> instance</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.image.image_list.ImageList.get_list_data">
+<span class="sig-name descname"><span class="pre">get_list_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.image.image_list.ImageList.get_list_data" title="Link to this definition">¶</a></dt>
+<dd><p>Return data in ndarray with list dimension at position <cite>axis</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>axis</strong><span class="classifier">int</span></dt><dd><p><cite>axis</cite> specifies which axis of the output will take the role of the
+list dimension. For example, 0 will put the list dimension in the
+first axis of the result.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">ndarray</span></dt><dd><p>data in image list as array, with data across elements of the list
+concetenated at dimension <cite>axis</cite> of the array.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.testing</span> <span class="kn">import</span> <span class="n">funcfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.io.api</span> <span class="kn">import</span> <span class="n">load_image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">funcim</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">funcfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ilist</span> <span class="o">=</span> <span class="n">ImageList</span><span class="o">.</span><span class="n">from_image</span><span class="p">(</span><span class="n">funcim</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;t&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ilist</span><span class="o">.</span><span class="n">get_list_data</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(20, 17, 21, 3)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">core.image.image_list</a><ul>
+<li><a class="reference internal" href="#module-core-image-image-list">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">core.image.image_list</span></code></a></li>
+<li><a class="reference internal" href="#imagelist"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageList</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.image.image_list.ImageList"><code class="docutils literal notranslate"><span class="pre">ImageList</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.image.image_list.ImageList.__init__"><code class="docutils literal notranslate"><span class="pre">ImageList.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.image.image_list.ImageList.from_image"><code class="docutils literal notranslate"><span class="pre">ImageList.from_image()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.image.image_list.ImageList.get_list_data"><code class="docutils literal notranslate"><span class="pre">ImageList.get_list_data()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.core.image.image.html"
+                          title="previous chapter">core.image.image</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.core.image.image_spaces.html"
+                          title="next chapter">core.image.image_spaces</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.core.image.image_list.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.image.image_spaces.html" title="core.image.image_spaces"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.image.image.html" title="core.image.image"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

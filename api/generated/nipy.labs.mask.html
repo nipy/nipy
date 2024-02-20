@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="labs.spatial_models.bayesian_structural_analysis" href="nipy.labs.spatial_models.bayesian_structural_analysis.html" />
+    <link rel="prev" title="labs.group.permutation_test" href="nipy.labs.group.permutation_test.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.bayesian_structural_analysis.html" title="labs.spatial_models.bayesian_structural_analysis"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.group.permutation_test.html" title="labs.group.permutation_test"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="labs-mask">
+<h1>labs.mask<a class="headerlink" href="#labs-mask" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.labs.mask">
+<span id="module-labs-mask"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.mask</span></code><a class="headerlink" href="#module-nipy.labs.mask" title="Link to this heading">¶</a></h2>
+<p>Utilities for extracting masks from EPI images and applying them to time
+series.</p>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.mask.compute_mask">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.mask.</span></span><span class="sig-name descname"><span class="pre">compute_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean_volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_volume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opening</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_zeros</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.mask.compute_mask" title="Link to this definition">¶</a></dt>
+<dd><p>Compute a mask file from fMRI data in 3D or 4D ndarrays.</p>
+<p>Compute and write the mask of an image based on the grey level
+This is based on an heuristic proposed by T.Nichols:
+find the least dense point of the histogram, between fractions
+m and M of the total image histogram.</p>
+<p>In case of failure, it is usually advisable to increase m.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mean_volume</strong><span class="classifier">3D ndarray</span></dt><dd><p>mean EPI image, used to compute the threshold for the mask.</p>
+</dd>
+<dt><strong>reference_volume: 3D ndarray, optional</strong></dt><dd><p>reference volume used to compute the mask. If none is give, the
+mean volume is used.</p>
+</dd>
+<dt><strong>m</strong><span class="classifier">float, optional</span></dt><dd><p>lower fraction of the histogram to be discarded.</p>
+</dd>
+<dt><strong>M: float, optional</strong></dt><dd><p>upper fraction of the histogram to be discarded.</p>
+</dd>
+<dt><strong>cc: boolean, optional</strong></dt><dd><p>if cc is True, only the largest connect component is kept.</p>
+</dd>
+<dt><strong>opening: int, optional</strong></dt><dd><p>if opening is larger than 0, an morphological opening is performed,
+to keep only large structures. This step is useful to remove parts of
+the skull that might have been included.</p>
+</dd>
+<dt><strong>exclude_zeros: boolean, optional</strong></dt><dd><p>Consider zeros as missing values for the computation of the
+threshold. This option is useful if the images have been
+resliced with a large padding of zeros.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>mask</strong><span class="classifier">3D boolean ndarray</span></dt><dd><p>The brain mask</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.mask.compute_mask_files">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.mask.</span></span><span class="sig-name descname"><span class="pre">compute_mask_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_zeros</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opening</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.mask.compute_mask_files" title="Link to this definition">¶</a></dt>
+<dd><p>Compute a mask file from fMRI nifti file(s)</p>
+<p>Compute and write the mask of an image based on the grey level
+This is based on an heuristic proposed by T.Nichols:
+find the least dense point of the histogram, between fractions
+m and M of the total image histogram.</p>
+<p>In case of failure, it is usually advisable to increase m.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>input_filename</strong><span class="classifier">string</span></dt><dd><p>nifti filename (4D) or list of filenames (3D).</p>
+</dd>
+<dt><strong>output_filename</strong><span class="classifier">string or None, optional</span></dt><dd><p>path to save the output nifti image (if not None).</p>
+</dd>
+<dt><strong>return_mean</strong><span class="classifier">boolean, optional</span></dt><dd><p>if True, and output_filename is None, return the mean image also, as
+a 3D array (2nd return argument).</p>
+</dd>
+<dt><strong>m</strong><span class="classifier">float, optional</span></dt><dd><p>lower fraction of the histogram to be discarded.</p>
+</dd>
+<dt><strong>M: float, optional</strong></dt><dd><p>upper fraction of the histogram to be discarded.</p>
+</dd>
+<dt><strong>cc: boolean, optional</strong></dt><dd><p>if cc is True, only the largest connect component is kept.</p>
+</dd>
+<dt><strong>exclude_zeros: boolean, optional</strong></dt><dd><p>Consider zeros as missing values for the computation of the
+threshold. This option is useful if the images have been
+resliced with a large padding of zeros.</p>
+</dd>
+<dt><strong>opening: int, optional</strong></dt><dd><p>Size of the morphological opening performed as post-processing</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>mask</strong><span class="classifier">3D boolean array</span></dt><dd><p>The brain mask</p>
+</dd>
+<dt><strong>mean_image</strong><span class="classifier">3d ndarray, optional</span></dt><dd><p>The main of all the images used to estimate the mask. Only
+provided if <cite>return_mean</cite> is True.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.mask.compute_mask_sessions">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.mask.</span></span><span class="sig-name descname"><span class="pre">compute_mask_sessions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_zeros</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opening</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.mask.compute_mask_sessions" title="Link to this definition">¶</a></dt>
+<dd><p>Compute a common mask for several sessions of fMRI data.</p>
+<blockquote>
+<div><p>Uses the mask-finding algorithms to extract masks for each
+session, and then keep only the main connected component of the
+a given fraction of the intersection of all the masks.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>session_images</strong><span class="classifier">list of (list of strings) or nipy image objects</span></dt><dd><p>A list of images/list of nifti filenames. Each inner list/image
+represents a session.</p>
+</dd>
+<dt><strong>m</strong><span class="classifier">float, optional</span></dt><dd><p>lower fraction of the histogram to be discarded.</p>
+</dd>
+<dt><strong>M: float, optional</strong></dt><dd><p>upper fraction of the histogram to be discarded.</p>
+</dd>
+<dt><strong>cc: boolean, optional</strong></dt><dd><p>if cc is True, only the largest connect component is kept.</p>
+</dd>
+<dt><strong>threshold</strong><span class="classifier">float, optional</span></dt><dd><p>the inter-session threshold: the fraction of the
+total number of session in for which a voxel must be in the
+mask to be kept in the common mask.
+threshold=1 corresponds to keeping the intersection of all
+masks, whereas threshold=0 is the union of all masks.</p>
+</dd>
+<dt><strong>exclude_zeros: boolean, optional</strong></dt><dd><p>Consider zeros as missing values for the computation of the
+threshold. This option is useful if the images have been
+resliced with a large padding of zeros.</p>
+</dd>
+<dt><strong>return_mean: boolean, optional</strong></dt><dd><p>if return_mean is True, the mean image across subjects is
+returned.</p>
+</dd>
+<dt><strong>opening: int, optional,</strong></dt><dd><p>size of  the morphological opening</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>mask</strong><span class="classifier">3D boolean ndarray</span></dt><dd><p>The brain mask</p>
+</dd>
+<dt><strong>mean</strong><span class="classifier">3D float array</span></dt><dd><p>The mean image</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.mask.intersect_masks">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.mask.</span></span><span class="sig-name descname"><span class="pre">intersect_masks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_masks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.mask.intersect_masks" title="Link to this definition">¶</a></dt>
+<dd><p>Given a list of input mask images, generate the output image which
+is the the threshold-level intersection of the inputs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>input_masks: list of strings or ndarrays</strong></dt><dd><p>paths of the input images nsubj set as len(input_mask_files), or
+individual masks.</p>
+</dd>
+<dt><strong>output_filename, string:</strong></dt><dd><p>Path of the output image, if None no file is saved.</p>
+</dd>
+<dt><strong>threshold: float within [0, 1[, optional</strong></dt><dd><p>gives the level of the intersection.
+threshold=1 corresponds to keeping the intersection of all
+masks, whereas threshold=0 is the union of all masks.</p>
+</dd>
+<dt><strong>cc: bool, optional</strong></dt><dd><p>If true, extract the main connected component</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>grp_mask, boolean array of shape the image shape</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.mask.largest_cc">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.mask.</span></span><span class="sig-name descname"><span class="pre">largest_cc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.mask.largest_cc" title="Link to this definition">¶</a></dt>
+<dd><p>Return the largest connected component of a 3D mask array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mask: 3D boolean array</strong></dt><dd><p>3D array indicating a mask.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>mask: 3D boolean array</dt><dd><p>3D array indicating a mask, with only one connected component.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.mask.series_from_mask">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.mask.</span></span><span class="sig-name descname"><span class="pre">series_from_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filenames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float32'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_finite=True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.mask.series_from_mask" title="Link to this definition">¶</a></dt>
+<dd><p>Read the time series from the given sessions filenames, using the mask.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filenames: list of 3D nifti file names, or 4D nifti filename.</strong></dt><dd><p>Files are grouped by session.</p>
+</dd>
+<dt><strong>mask: 3d ndarray</strong></dt><dd><p>3D mask array: true where a voxel should be used.</p>
+</dd>
+<dt><strong>smooth: False or float, optional</strong></dt><dd><p>If smooth is not False, it gives the size, in voxel of the
+spatial smoothing to apply to the signal.</p>
+</dd>
+<dt><strong>ensure_finite: boolean, optional</strong></dt><dd><p>If ensure_finite is True, the non-finite values (NaNs and infs)
+found in the images will be replaced by zeros</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>session_series: ndarray</dt><dd><p>3D array of time course: (session, voxel, time)</p>
+</dd>
+<dt>header: header object</dt><dd><p>The header of the first file.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>When using smoothing, ensure_finite should be True: as elsewhere non
+finite values will spread across the image.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.mask.threshold_connect_components">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.mask.</span></span><span class="sig-name descname"><span class="pre">threshold_connect_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.mask.threshold_connect_components" title="Link to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Given a map with some coefficients set to zero, segment the</dt><dd><p>connect components with number of voxels smaller than the
+threshold and set them to 0.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>map: ndarray,</strong></dt><dd><p>The spatial map to segment</p>
+</dd>
+<dt><strong>threshold: scalar,</strong></dt><dd><p>The minimum number of voxels to keep a cluster.</p>
+</dd>
+<dt><strong>copy: bool, optional</strong></dt><dd><p>If copy is false, the input array is modified inplace</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>map: ndarray,</dt><dd><p>the map with connected components removed</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">labs.mask</a><ul>
+<li><a class="reference internal" href="#module-nipy.labs.mask">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.mask</span></code></a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.labs.mask.compute_mask"><code class="docutils literal notranslate"><span class="pre">compute_mask()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.mask.compute_mask_files"><code class="docutils literal notranslate"><span class="pre">compute_mask_files()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.mask.compute_mask_sessions"><code class="docutils literal notranslate"><span class="pre">compute_mask_sessions()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.mask.intersect_masks"><code class="docutils literal notranslate"><span class="pre">intersect_masks()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.mask.largest_cc"><code class="docutils literal notranslate"><span class="pre">largest_cc()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.mask.series_from_mask"><code class="docutils literal notranslate"><span class="pre">series_from_mask()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.mask.threshold_connect_components"><code class="docutils literal notranslate"><span class="pre">threshold_connect_components()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.labs.group.permutation_test.html"
+                          title="previous chapter">labs.group.permutation_test</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.labs.spatial_models.bayesian_structural_analysis.html"
+                          title="next chapter">labs.spatial_models.bayesian_structural_analysis</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.labs.mask.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.bayesian_structural_analysis.html" title="labs.spatial_models.bayesian_structural_analysis"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.group.permutation_test.html" title="labs.group.permutation_test"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

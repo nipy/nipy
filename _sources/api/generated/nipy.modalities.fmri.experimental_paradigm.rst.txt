@@ -1,0 +1,61 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+modalities.fmri.experimental_paradigm
+=====================================
+
+Module: :mod:`modalities.fmri.experimental_paradigm`
+----------------------------------------------------
+Inheritance diagram for ``nipy.modalities.fmri.experimental_paradigm``:
+
+.. inheritance-diagram:: nipy.modalities.fmri.experimental_paradigm 
+   :parts: 3
+
+.. automodule:: nipy.modalities.fmri.experimental_paradigm
+
+.. currentmodule:: nipy.modalities.fmri.experimental_paradigm
+
+Classes
+-------
+
+:class:`BlockParadigm`
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: BlockParadigm
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`EventRelatedParadigm`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: EventRelatedParadigm
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Paradigm`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Paradigm
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Function
+--------
+
+
+.. autofunction:: nipy.modalities.fmri.experimental_paradigm.load_paradigm_from_csv_file
+

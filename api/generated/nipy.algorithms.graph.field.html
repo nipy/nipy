@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.graph.forest" href="nipy.algorithms.graph.forest.html" />
+    <link rel="prev" title="algorithms.graph.bipartite_graph" href="nipy.algorithms.graph.bipartite_graph.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.graph.forest.html" title="algorithms.graph.forest"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.graph.bipartite_graph.html" title="algorithms.graph.bipartite_graph"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-graph-field">
+<h1>algorithms.graph.field<a class="headerlink" href="#algorithms-graph-field" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-graph-field">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.graph.field</span></code><a class="headerlink" href="#module-algorithms-graph-field" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.graph.field</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-8628935b98dab2a0316a56da43ed81d02660abeb.png" alt="Inheritance diagram of nipy.algorithms.graph.field" usemap="#inheritance3a3b4b9c7e" class="inheritance graphviz" /></div>
+<map id="inheritance3a3b4b9c7e" name="inheritance3a3b4b9c7e">
+<area shape="rect" id="node1" href="#nipy.algorithms.graph.field.Field" target="_top" title="This is the basic field structure," alt="" coords="412,5,525,32"/>
+<area shape="rect" id="node2" href="nipy.algorithms.graph.graph.html#nipy.algorithms.graph.graph.WeightedGraph" target="_top" title="Basic weighted, directed graph class" alt="" coords="182,5,364,32"/>
+<area shape="rect" id="node3" href="nipy.algorithms.graph.graph.html#nipy.algorithms.graph.graph.Graph" target="_top" title="Basic topological (non&#45;weighted) directed Graph class" alt="" coords="5,5,134,32"/>
+</map><p id="module-nipy.algorithms.graph.field">This module implements the Field class, which simply a WeightedGraph
+(see the graph.py) module, plus an array that yields (possibly
+multi-dimnesional) features associated with graph vertices. This
+allows some kinds of computations (all those relating to mathematical
+morphology, diffusion etc.)</p>
+<p>Certain functions are provided to Instantiate Fields easily, given a
+WeightedGraph and feature data.</p>
+<p>Author:Bertrand Thirion, 2006–2011</p>
+</section>
+<section id="class">
+<h2>Class<a class="headerlink" href="#class" title="Link to this heading">¶</a></h2>
+</section>
+<section id="field">
+<h2><a class="reference internal" href="#nipy.algorithms.graph.field.Field" title="nipy.algorithms.graph.field.Field"><code class="xref py py-class docutils literal notranslate"><span class="pre">Field</span></code></a><a class="headerlink" href="#field" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.graph.field.</span></span><span class="sig-name descname"><span class="pre">Field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="nipy.algorithms.graph.graph.html#nipy.algorithms.graph.graph.WeightedGraph" title="nipy.algorithms.graph.graph.WeightedGraph"><code class="xref py py-class docutils literal notranslate"><span class="pre">WeightedGraph</span></code></a></p>
+<dl class="simple">
+<dt>This is the basic field structure,</dt><dd><p>which contains the weighted graph structure
+plus an array of data (the ‘field’)</p>
+</dd>
+<dt>field is an array of size(n, p)</dt><dd><p>where n is the number of vertices of the graph
+and p is the field dimension</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>V (int &gt; 0) the number of vertices of the graph</strong></dt><dd></dd>
+<dt><strong>edges=None: the edge array of the graph</strong></dt><dd></dd>
+<dt><strong>weights=None: the associated weights array</strong></dt><dd></dd>
+<dt><strong>field=None: the field data itself</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.adjacency">
+<span class="sig-name descname"><span class="pre">adjacency</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.adjacency" title="Link to this definition">¶</a></dt>
+<dd><p>returns the adjacency matrix of the graph as a sparse coo matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>adj: scipy.sparse matrix instance,</dt><dd><p>that encodes the adjacency matrix of self</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.anti_symmeterize">
+<span class="sig-name descname"><span class="pre">anti_symmeterize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.anti_symmeterize" title="Link to this definition">¶</a></dt>
+<dd><p>anti-symmeterize self, i.e. produces the graph
+whose adjacency matrix would be the antisymmetric part of
+its current adjacency matrix</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.cc">
+<span class="sig-name descname"><span class="pre">cc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.cc" title="Link to this definition">¶</a></dt>
+<dd><p>Compte the different connected components of the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>label: array of shape(self.V), labelling of the vertices</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.cliques">
+<span class="sig-name descname"><span class="pre">cliques</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.cliques" title="Link to this definition">¶</a></dt>
+<dd><p>Extraction of the graphe cliques
+these are defined using replicator dynamics equations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>cliques: array of shape (self.V), type (<a href="#id1"><span class="problematic" id="id2">np.int_</span></a>)</dt><dd><p>labelling of the vertices according to the clique they belong to</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.closing">
+<span class="sig-name descname"><span class="pre">closing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.closing" title="Link to this definition">¶</a></dt>
+<dd><p>Morphological closing of the field data.
+self.field is changed inplace</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>nbiter=1</strong><span class="classifier">the number of iterations required</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.compact_neighb">
+<span class="sig-name descname"><span class="pre">compact_neighb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.compact_neighb" title="Link to this definition">¶</a></dt>
+<dd><p>returns a compact representation of self</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>idx: array of of shape(self.V + 1):</dt><dd><p>the positions where to find the neighbors of each node
+within neighb and weights</p>
+</dd>
+<dt>neighb: array of shape(self.E), concatenated list of neighbors</dt><dd></dd>
+<dt>weights: array of shape(self.E), concatenated list of weights</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.constrained_voronoi">
+<span class="sig-name descname"><span class="pre">constrained_voronoi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.constrained_voronoi" title="Link to this definition">¶</a></dt>
+<dd><p>Voronoi parcellation of the field starting from the input seed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>seed: int array of shape(p), the input seeds</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>label: The resulting labelling of the data</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>FIXME: deal with graphs with several ccs</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.copy" title="Link to this definition">¶</a></dt>
+<dd><p>copy function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.custom_watershed">
+<span class="sig-name descname"><span class="pre">custom_watershed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">refdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">th</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-inf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.custom_watershed" title="Link to this definition">¶</a></dt>
+<dd><p>customized watershed analysis of the field.
+Note that bassins are found around each maximum
+(and not minimum as conventionally)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>refdim: int, optional</strong></dt><dd></dd>
+<dt><strong>th: float optional, threshold of the field</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>idx: array of shape (nbassins)</dt><dd><p>indices of the vertices that are local maxima</p>
+</dd>
+<dt><strong>label</strong><span class="classifier">array of shape (self.V)</span></dt><dd><p>labelling of the vertices according to their bassin</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.cut_redundancies">
+<span class="sig-name descname"><span class="pre">cut_redundancies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.cut_redundancies" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a graph with redundant edges removed:
+ecah edge (ab) is present only once in the edge matrix:
+the correspondng weights are added.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>the resulting WeightedGraph</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.degrees">
+<span class="sig-name descname"><span class="pre">degrees</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.degrees" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the degree of the graph vertices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>rdegree: (array, type=int, shape=(self.V,)), the right degrees</dt><dd></dd>
+<dt>ldegree: (array, type=int, shape=(self.V,)), the left degrees</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.diffusion">
+<span class="sig-name descname"><span class="pre">diffusion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.diffusion" title="Link to this definition">¶</a></dt>
+<dd><p>diffusion of the field data in the weighted graph structure
+self.field is changed inplace</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>nbiter: int, optional the number of iterations required</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The process is run for all the dimensions of the field</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.dijkstra">
+<span class="sig-name descname"><span class="pre">dijkstra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.dijkstra" title="Link to this definition">¶</a></dt>
+<dd><p>Returns all the [graph] geodesic distances starting from seed
+x</p>
+<blockquote>
+<div><dl class="simple">
+<dt>seed (int, &gt;-1, &lt;self.V) or array of shape(p)</dt><dd><p>edge(s) from which the distances are computed</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>dg: array of shape (self.V),</dt><dd><p>the graph distance dg from ant vertex to the nearest seed</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>It is mandatory that the graph weights are non-negative</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.dilation">
+<span class="sig-name descname"><span class="pre">dilation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fast</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.dilation" title="Link to this definition">¶</a></dt>
+<dd><p>Morphological dilation of the field data, changed in place</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>nbiter: int, optional, the number of iterations required</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>When data dtype is not float64, a slow version of the code is used</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.erosion">
+<span class="sig-name descname"><span class="pre">erosion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.erosion" title="Link to this definition">¶</a></dt>
+<dd><p>Morphological opening of the field</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>nbiter: int, optional, the number of iterations required</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.floyd">
+<span class="sig-name descname"><span class="pre">floyd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.floyd" title="Link to this definition">¶</a></dt>
+<dd><p>Compute all the geodesic distances starting from seeds</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>seed= None: array of shape (nbseed), type np.int_</strong></dt><dd><p>vertex indexes from which the distances are computed
+if seed==None, then every edge is a seed point</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>dg array of shape (nbseed, self.V)</dt><dd><p>the graph distance dg from each seed to any vertex</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>It is mandatory that the graph weights are non-negative. The algorithm
+proceeds by repeating Dijkstra’s algo for each seed. Floyd’s algo is not
+used (O(self.V)^3 complexity…)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.from_3d_grid">
+<span class="sig-name descname"><span class="pre">from_3d_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">18</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.from_3d_grid" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the graph to be the topological neighbours graph
+of the three-dimensional coordinates set xyz,
+in the k-connectivity scheme</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>xyz: array of shape (self.V, 3) and type np.int_,</strong></dt><dd></dd>
+<dt><strong>k = 18: the number of neighbours considered. (6, 18 or 26)</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>E(int): the number of edges of self</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.geodesic_kmeans">
+<span class="sig-name descname"><span class="pre">geodesic_kmeans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seeds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.geodesic_kmeans" title="Link to this definition">¶</a></dt>
+<dd><p>Geodesic k-means algorithm
+i.e. obtention of clusters that are topologically
+connected and minimally variable concerning the information
+of self.field</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>seeds: array of shape(p), optional,</strong></dt><dd><p>initial indices of the seeds within the field
+if seeds==None the labels are used as initialization</p>
+</dd>
+<dt><strong>labels: array of shape(self.V) initial labels, optional,</strong></dt><dd><p>it is expected that labels take their values
+in a certain range (0..lmax)
+if Labels==None, this is not used
+if seeds==None and labels==None,  an ewxception is raised</p>
+</dd>
+<dt><strong>maxiter: int, optional,</strong></dt><dd><p>maximal number of iterations</p>
+</dd>
+<dt><strong>eps: float, optional,</strong></dt><dd><p>increase of inertia at which convergence is declared</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>seeds: array of shape (p), the final seeds</dt><dd></dd>
+<dt><strong>label</strong><span class="classifier">array of shape (self.V), the resulting field label</span></dt><dd></dd>
+<dt>J: float, inertia value</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.get_E">
+<span class="sig-name descname"><span class="pre">get_E</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.get_E" title="Link to this definition">¶</a></dt>
+<dd><p>To get the number of edges in the graph</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.get_V">
+<span class="sig-name descname"><span class="pre">get_V</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.get_V" title="Link to this definition">¶</a></dt>
+<dd><p>To get the number of vertices in the graph</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.get_edges">
+<span class="sig-name descname"><span class="pre">get_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.get_edges" title="Link to this definition">¶</a></dt>
+<dd><p>To get the graph’s edges</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.get_field">
+<span class="sig-name descname"><span class="pre">get_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.get_field" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.get_local_maxima">
+<span class="sig-name descname"><span class="pre">get_local_maxima</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">refdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">th</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-inf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.get_local_maxima" title="Link to this definition">¶</a></dt>
+<dd><p>Look for the local maxima of one dimension (refdim) of self.field</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>refdim (int) the field dimension over which the maxima are looked after</strong></dt><dd></dd>
+<dt><strong>th = float, optional</strong></dt><dd><p>threshold so that only values above th are considered</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>idx: array of shape (nmax)</dt><dd><p>indices of the vertices that are local maxima</p>
+</dd>
+<dt>depth: array of shape (nmax)</dt><dd><p>topological depth of the local maxima :
+depth[idx[i]] = q means that idx[i] is a q-order maximum</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.get_vertices">
+<span class="sig-name descname"><span class="pre">get_vertices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.get_vertices" title="Link to this definition">¶</a></dt>
+<dd><p>To get the graph’s vertices (as id)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.get_weights">
+<span class="sig-name descname"><span class="pre">get_weights</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.get_weights" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.highest_neighbor">
+<span class="sig-name descname"><span class="pre">highest_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">refdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.highest_neighbor" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the neighbor with highest field value along refdim</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>refdim: int, optional,</strong></dt><dd><p>the dimension of the field under consideration</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>hneighb: array of shape(self.V),</dt><dd><p>index of the neighbor with highest value</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.is_connected">
+<span class="sig-name descname"><span class="pre">is_connected</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.is_connected" title="Link to this definition">¶</a></dt>
+<dd><p>States whether self is connected or not</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.kruskal">
+<span class="sig-name descname"><span class="pre">kruskal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.kruskal" title="Link to this definition">¶</a></dt>
+<dd><p>Creates the Minimum Spanning Tree of self using Kruskal’s algo.
+efficient is self is sparse</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>K, WeightedGraph instance: the resulting MST</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If self contains several connected components, will have the same number
+k of connected components</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.left_incidence">
+<span class="sig-name descname"><span class="pre">left_incidence</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.left_incidence" title="Link to this definition">¶</a></dt>
+<dd><p>Return left incidence matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>left_incid: list</dt><dd><p>the left incidence matrix of self as a list of lists: i.e. the
+list[[e.0.0, .., e.0.i(0)], .., [e.V.0, E.V.i(V)]] where e.i.j is
+the set of edge indexes so that e.i.j[0] = i</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.list_of_neighbors">
+<span class="sig-name descname"><span class="pre">list_of_neighbors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.list_of_neighbors" title="Link to this definition">¶</a></dt>
+<dd><p>returns the set of neighbors of self as a list of arrays</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.local_maxima">
+<span class="sig-name descname"><span class="pre">local_maxima</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">refdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">th</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-inf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.local_maxima" title="Link to this definition">¶</a></dt>
+<dd><p>Returns all the local maxima of a field</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>refdim (int) field dimension over which the maxima are looked after</strong></dt><dd></dd>
+<dt><strong>th: float, optional</strong></dt><dd><p>threshold so that only values above th are considered</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>depth: array of shape (nmax)</dt><dd><p>a labelling of the vertices such that
+depth[v] = 0 if v is not a local maximum
+depth[v] = 1 if v is a first order maximum
+…
+depth[v] = q if v is a q-order maximum</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.main_cc">
+<span class="sig-name descname"><span class="pre">main_cc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.main_cc" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the indexes of the vertices within the main cc</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>idx: array of shape (sizeof main cc)</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.normalize">
+<span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.normalize" title="Link to this definition">¶</a></dt>
+<dd><p>Normalize the graph according to the index c
+Normalization means that the sum of the edges values
+that go into or out each vertex must sum to 1</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>c=0 in {0, 1, 2}, optional: index that designates the way</strong></dt><dd><p>according to which D is normalized
+c == 0 =&gt; for each vertex a, sum{edge[e, 0]=a} D[e]=1
+c == 1 =&gt; for each vertex b, sum{edge[e, 1]=b} D[e]=1
+c == 2 =&gt; symmetric (‘l2’) normalization</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Note that when sum_{edge[e, .] == a } D[e] = 0, nothing is performed</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.opening">
+<span class="sig-name descname"><span class="pre">opening</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.opening" title="Link to this definition">¶</a></dt>
+<dd><p>Morphological opening of the field data.
+self.field is changed inplace</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>nbiter: int, optional, the number of iterations required</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.remove_edges">
+<span class="sig-name descname"><span class="pre">remove_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">valid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.remove_edges" title="Link to this definition">¶</a></dt>
+<dd><p>Removes all the edges for which valid==0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>valid</strong><span class="classifier">(self.E,) array</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.remove_trivial_edges">
+<span class="sig-name descname"><span class="pre">remove_trivial_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.remove_trivial_edges" title="Link to this definition">¶</a></dt>
+<dd><p>Removes trivial edges, i.e. edges that are (vv)-like
+self.weights and self.E are corrected accordingly</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>self.E (int): The number of edges</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.right_incidence">
+<span class="sig-name descname"><span class="pre">right_incidence</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.right_incidence" title="Link to this definition">¶</a></dt>
+<dd><p>Return right incidence matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>right_incid: list</dt><dd><p>the right incidence matrix of self as a list of lists: i.e. the
+list[[e.0.0, .., e.0.i(0)], .., [e.V.0, E.V.i(V)]] where e.i.j is
+the set of edge indexes so that e.i.j[1] = i</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.set_edges">
+<span class="sig-name descname"><span class="pre">set_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edges</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.set_edges" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the graph’s edges</p>
+<p>Preconditions:</p>
+<ul class="simple">
+<li><p>edges has a correct size</p></li>
+<li><p>edges take values in [1..V]</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.set_euclidian">
+<span class="sig-name descname"><span class="pre">set_euclidian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.set_euclidian" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the weights of the graph as the distances between the
+corresponding rows of X, which represents an embedding of self</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X array of shape (self.V, edim),</strong></dt><dd><p>the coordinate matrix of the embedding</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.set_field">
+<span class="sig-name descname"><span class="pre">set_field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.set_field" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.set_gaussian">
+<span class="sig-name descname"><span class="pre">set_gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.set_gaussian" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the weights  of the graph as a gaussian function
+of the distance  between the corresponding rows of X,
+which represents an embedding of self</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X array of shape (self.V, dim)</strong></dt><dd><p>the coordinate matrix of the embedding</p>
+</dd>
+<dt><strong>sigma=0, float: the parameter of the gaussian function</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>When sigma == 0, the following value is used: <code class="docutils literal notranslate"><span class="pre">sigma</span> <span class="pre">=</span>
+<span class="pre">sqrt(mean(||X[self.edges[:,</span> <span class="pre">0],</span> <span class="pre">:]-X[self.edges[:,</span> <span class="pre">1],</span> <span class="pre">:]||^2))</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.set_weights">
+<span class="sig-name descname"><span class="pre">set_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.set_weights" title="Link to this definition">¶</a></dt>
+<dd><p>Set edge weights</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>weights: array</strong></dt><dd><p>array shape(self.V): edges weights</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.show">
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.show" title="Link to this definition">¶</a></dt>
+<dd><p>Plots the current graph in 2D</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">None or array of shape (self.V, 2)</span></dt><dd><p>a set of coordinates that can be used to embed the vertices in 2D.
+If X.shape[1]&gt;2, a svd reduces X for display. By default, the graph
+is presented on a circle</p>
+</dd>
+<dt><strong>ax: None or int, optional</strong></dt><dd><p>ax handle</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ax: axis handle</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This should be used only for small graphs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.subfield">
+<span class="sig-name descname"><span class="pre">subfield</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">valid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.subfield" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a subfield of self, with only vertices such that valid &gt; 0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>valid: array of shape (self.V),</strong></dt><dd><p>nonzero for vertices to be retained</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>F: Field instance,</dt><dd><p>the desired subfield of self</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The vertices are renumbered as [1..p] where p = sum(valid&gt;0) when
+sum(valid) == 0 then None is returned</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.subgraph">
+<span class="sig-name descname"><span class="pre">subgraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">valid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.subgraph" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a subgraph with the vertices for which valid&gt;0
+and with the corresponding set of edges</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>valid, array of shape (self.V): nonzero for vertices to be retained</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>G, WeightedGraph instance, the desired subgraph of self</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The vertices are renumbered as [1..p] where p = sum(valid&gt;0) when
+sum(valid==0) then None is returned</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.symmeterize">
+<span class="sig-name descname"><span class="pre">symmeterize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.symmeterize" title="Link to this definition">¶</a></dt>
+<dd><p>Symmeterize self, modify edges and weights so that
+self.adjacency becomes the symmetric part of the current
+self.adjacency.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.threshold_bifurcations">
+<span class="sig-name descname"><span class="pre">threshold_bifurcations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">refdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">th</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-inf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.threshold_bifurcations" title="Link to this definition">¶</a></dt>
+<dd><p>Analysis of the level sets of the field:
+Bifurcations are defined as changes in the topology in the level sets
+when the level (threshold) is varied
+This can been thought of as a kind of Morse analysis</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>th: float, optional,</strong></dt><dd><p>threshold so that only values above th are considered</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>idx: array of shape (nlsets)</dt><dd><p>indices of the vertices that are local maxima</p>
+</dd>
+<dt>height: array of shape (nlsets)</dt><dd><p>the depth of the local maxima
+depth[idx[i]] = q means that idx[i] is a q-order maximum
+Note that this is also the diameter of the basins
+associated with local maxima</p>
+</dd>
+<dt>parents: array of shape (nlsets)</dt><dd><p>the label of the maximum which dominates each local maximum
+i.e. it describes the hierarchy of the local maxima</p>
+</dd>
+<dt>label: array of shape (self.V)</dt><dd><p>a labelling of thevertices according to their bassin</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.to_coo_matrix">
+<span class="sig-name descname"><span class="pre">to_coo_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.to_coo_matrix" title="Link to this definition">¶</a></dt>
+<dd><p>Return adjacency matrix as coo sparse</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>sp: scipy.sparse matrix instance</dt><dd><p>that encodes the adjacency matrix of self</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.voronoi_diagram">
+<span class="sig-name descname"><span class="pre">voronoi_diagram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seeds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.voronoi_diagram" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the graph as the Voronoi diagram (VD)
+that links the seeds.
+The VD is defined using the sample points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>seeds: array of shape (self.V, dim)</strong></dt><dd></dd>
+<dt><strong>samples: array of shape (nsamples, dim)</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>By default, the weights are a Gaussian function of the distance The
+implementation is not optimal</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.voronoi_labelling">
+<span class="sig-name descname"><span class="pre">voronoi_labelling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.voronoi_labelling" title="Link to this definition">¶</a></dt>
+<dd><p>Performs a voronoi labelling of the graph</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>seed: array of shape (nseeds), type (np.int_),</strong></dt><dd><p>vertices from which the cells are built</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>labels: array of shape (self.V) the labelling of the vertices</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.Field.ward">
+<span class="sig-name descname"><span class="pre">ward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbcluster</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.Field.ward" title="Link to this definition">¶</a></dt>
+<dd><p>Ward’s clustering of self</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>nbcluster: int,</strong></dt><dd><p>the number of desired clusters</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>label: array of shape (self.V)</dt><dd><p>the resulting field label</p>
+</dd>
+<dt>J (float): the resulting inertia</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.field_from_coo_matrix_and_data">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.graph.field.</span></span><span class="sig-name descname"><span class="pre">field_from_coo_matrix_and_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.field_from_coo_matrix_and_data" title="Link to this definition">¶</a></dt>
+<dd><p>Instantiates a weighted graph from a (sparse) coo_matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x: (V, V) scipy.sparse.coo_matrix instance,</strong></dt><dd><p>the input matrix</p>
+</dd>
+<dt><strong>data: array of shape (V, dim),</strong></dt><dd><p>the field data</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ifield: resulting Field instance</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.field.field_from_graph_and_data">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.graph.field.</span></span><span class="sig-name descname"><span class="pre">field_from_graph_and_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.field.field_from_graph_and_data" title="Link to this definition">¶</a></dt>
+<dd><p>Instantiate a Fieldfrom a WeightedGraph plus some feature data
+Parameters
+———-
+x: (V, V) scipy.sparse.coo_matrix instance,</p>
+<blockquote>
+<div><p>the input matrix</p>
+</div></blockquote>
+<dl class="simple">
+<dt>data: array of shape (V, dim),</dt><dd><p>the field data</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ifield: resulting field instance</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.graph.field</a><ul>
+<li><a class="reference internal" href="#module-algorithms-graph-field">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.graph.field</span></code></a></li>
+<li><a class="reference internal" href="#class">Class</a></li>
+<li><a class="reference internal" href="#field"><code class="xref py py-class docutils literal notranslate"><span class="pre">Field</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field"><code class="docutils literal notranslate"><span class="pre">Field</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.__init__"><code class="docutils literal notranslate"><span class="pre">Field.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.adjacency"><code class="docutils literal notranslate"><span class="pre">Field.adjacency()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.anti_symmeterize"><code class="docutils literal notranslate"><span class="pre">Field.anti_symmeterize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.cc"><code class="docutils literal notranslate"><span class="pre">Field.cc()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.cliques"><code class="docutils literal notranslate"><span class="pre">Field.cliques()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.closing"><code class="docutils literal notranslate"><span class="pre">Field.closing()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.compact_neighb"><code class="docutils literal notranslate"><span class="pre">Field.compact_neighb()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.constrained_voronoi"><code class="docutils literal notranslate"><span class="pre">Field.constrained_voronoi()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.copy"><code class="docutils literal notranslate"><span class="pre">Field.copy()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.custom_watershed"><code class="docutils literal notranslate"><span class="pre">Field.custom_watershed()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.cut_redundancies"><code class="docutils literal notranslate"><span class="pre">Field.cut_redundancies()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.degrees"><code class="docutils literal notranslate"><span class="pre">Field.degrees()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.diffusion"><code class="docutils literal notranslate"><span class="pre">Field.diffusion()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.dijkstra"><code class="docutils literal notranslate"><span class="pre">Field.dijkstra()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.dilation"><code class="docutils literal notranslate"><span class="pre">Field.dilation()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.erosion"><code class="docutils literal notranslate"><span class="pre">Field.erosion()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.floyd"><code class="docutils literal notranslate"><span class="pre">Field.floyd()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.from_3d_grid"><code class="docutils literal notranslate"><span class="pre">Field.from_3d_grid()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.geodesic_kmeans"><code class="docutils literal notranslate"><span class="pre">Field.geodesic_kmeans()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.get_E"><code class="docutils literal notranslate"><span class="pre">Field.get_E()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.get_V"><code class="docutils literal notranslate"><span class="pre">Field.get_V()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.get_edges"><code class="docutils literal notranslate"><span class="pre">Field.get_edges()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.get_field"><code class="docutils literal notranslate"><span class="pre">Field.get_field()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.get_local_maxima"><code class="docutils literal notranslate"><span class="pre">Field.get_local_maxima()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.get_vertices"><code class="docutils literal notranslate"><span class="pre">Field.get_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.get_weights"><code class="docutils literal notranslate"><span class="pre">Field.get_weights()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.highest_neighbor"><code class="docutils literal notranslate"><span class="pre">Field.highest_neighbor()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.is_connected"><code class="docutils literal notranslate"><span class="pre">Field.is_connected()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.kruskal"><code class="docutils literal notranslate"><span class="pre">Field.kruskal()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.left_incidence"><code class="docutils literal notranslate"><span class="pre">Field.left_incidence()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.list_of_neighbors"><code class="docutils literal notranslate"><span class="pre">Field.list_of_neighbors()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.local_maxima"><code class="docutils literal notranslate"><span class="pre">Field.local_maxima()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.main_cc"><code class="docutils literal notranslate"><span class="pre">Field.main_cc()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.normalize"><code class="docutils literal notranslate"><span class="pre">Field.normalize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.opening"><code class="docutils literal notranslate"><span class="pre">Field.opening()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.remove_edges"><code class="docutils literal notranslate"><span class="pre">Field.remove_edges()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.remove_trivial_edges"><code class="docutils literal notranslate"><span class="pre">Field.remove_trivial_edges()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.right_incidence"><code class="docutils literal notranslate"><span class="pre">Field.right_incidence()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.set_edges"><code class="docutils literal notranslate"><span class="pre">Field.set_edges()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.set_euclidian"><code class="docutils literal notranslate"><span class="pre">Field.set_euclidian()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.set_field"><code class="docutils literal notranslate"><span class="pre">Field.set_field()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.set_gaussian"><code class="docutils literal notranslate"><span class="pre">Field.set_gaussian()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.set_weights"><code class="docutils literal notranslate"><span class="pre">Field.set_weights()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.show"><code class="docutils literal notranslate"><span class="pre">Field.show()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.subfield"><code class="docutils literal notranslate"><span class="pre">Field.subfield()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.subgraph"><code class="docutils literal notranslate"><span class="pre">Field.subgraph()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.symmeterize"><code class="docutils literal notranslate"><span class="pre">Field.symmeterize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.threshold_bifurcations"><code class="docutils literal notranslate"><span class="pre">Field.threshold_bifurcations()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.to_coo_matrix"><code class="docutils literal notranslate"><span class="pre">Field.to_coo_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.voronoi_diagram"><code class="docutils literal notranslate"><span class="pre">Field.voronoi_diagram()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.voronoi_labelling"><code class="docutils literal notranslate"><span class="pre">Field.voronoi_labelling()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.Field.ward"><code class="docutils literal notranslate"><span class="pre">Field.ward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.field_from_coo_matrix_and_data"><code class="docutils literal notranslate"><span class="pre">field_from_coo_matrix_and_data()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.field.field_from_graph_and_data"><code class="docutils literal notranslate"><span class="pre">field_from_graph_and_data()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.graph.bipartite_graph.html"
+                          title="previous chapter">algorithms.graph.bipartite_graph</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.graph.forest.html"
+                          title="next chapter">algorithms.graph.forest</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.graph.field.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.graph.forest.html" title="algorithms.graph.forest"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.graph.bipartite_graph.html" title="algorithms.graph.bipartite_graph"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

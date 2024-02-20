@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css?v=7f9a90b1" />
+    <script src="_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="User Guide" href="users/index.html" />
+    <link rel="prev" title="NIPY" href="index.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="index.html">
+  <img src="_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="users/index.html" title="User Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="NIPY"
+             accesskey="P">previous</a> |</li>
+  <li><a href="index.html">NIPY home</a> |&nbsp;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="nipy-documentation">
+<span id="documentation-main"></span><h1>NIPY documentation<a class="headerlink" href="#nipy-documentation" title="Link to this heading">¶</a></h1>
+<dl class="field-list simple">
+<dt class="field-odd">Release<span class="colon">:</span></dt>
+<dd class="field-odd"><p>0.6.1.dev1</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>February 20, 2024</p>
+</dd>
+</dl>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="users/index.html">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="users/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/installation.html">Download and Install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/scipy_orientation.html">Geography of the Scipy world</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/tutorial.html">Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="labs/index.html">NeuroSpin tools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="labs/mask.html">Mask-extraction utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="labs/enn.html">Empirical null</a></li>
+<li class="toctree-l2"><a class="reference internal" href="labs/viz.html">Plotting of activation maps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="labs/simul_activation.html">Generating simulated activation maps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="labs/datasets.html">Volumetric data structures</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="devel/index.html">Developer Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="devel/development_quickstart.html">Development quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devel/install/index.html">Developer installs for different distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devel/guidelines/index.html">Development Guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devel/planning/index.html">Development Planning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devel/code_discussions/index.html">Code discussions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devel/tools/index.html">Developer Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq/index.html">FAQ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq/why.html">Why …</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq/licensing.html">Licensing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq/documentation_faq.html">Documentation FAQ</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.clustering.bgmm.html">algorithms.clustering.bgmm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.clustering.ggmixture.html">algorithms.clustering.ggmixture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.clustering.gmm.html">algorithms.clustering.gmm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.clustering.hierarchical_clustering.html">algorithms.clustering.hierarchical_clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.clustering.imm.html">algorithms.clustering.imm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.clustering.utils.html">algorithms.clustering.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.clustering.von_mises_fisher_mixture.html">algorithms.clustering.von_mises_fisher_mixture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.diagnostics.commands.html">algorithms.diagnostics.commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.diagnostics.screens.html">algorithms.diagnostics.screens</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.diagnostics.timediff.html">algorithms.diagnostics.timediff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.diagnostics.tsdiffplot.html">algorithms.diagnostics.tsdiffplot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.fwhm.html">algorithms.fwhm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.graph.bipartite_graph.html">algorithms.graph.bipartite_graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.graph.field.html">algorithms.graph.field</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.graph.forest.html">algorithms.graph.forest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.graph.graph.html">algorithms.graph.graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.group.parcel_analysis.html">algorithms.group.parcel_analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.interpolation.html">algorithms.interpolation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.kernel_smooth.html">algorithms.kernel_smooth</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.optimize.html">algorithms.optimize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.registration.affine.html">algorithms.registration.affine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.registration.chain_transform.html">algorithms.registration.chain_transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.registration.groupwise_registration.html">algorithms.registration.groupwise_registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.registration.histogram_registration.html">algorithms.registration.histogram_registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.registration.optimizer.html">algorithms.registration.optimizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.registration.polyaffine.html">algorithms.registration.polyaffine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.registration.resample.html">algorithms.registration.resample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.registration.scripting.html">algorithms.registration.scripting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.registration.similarity_measures.html">algorithms.registration.similarity_measures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.registration.transform.html">algorithms.registration.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.registration.type_check.html">algorithms.registration.type_check</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.resample.html">algorithms.resample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.segmentation.brain_segmentation.html">algorithms.segmentation.brain_segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.segmentation.segmentation.html">algorithms.segmentation.segmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.slicetiming.timefuncs.html">algorithms.slicetiming.timefuncs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.bayesian_mixed_effects.html">algorithms.statistics.bayesian_mixed_effects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.bench.bench_intvol.html">algorithms.statistics.bench.bench_intvol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.empirical_pvalue.html">algorithms.statistics.empirical_pvalue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.formula.formulae.html">algorithms.statistics.formula.formulae</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.mixed_effects_stat.html">algorithms.statistics.mixed_effects_stat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.models.family.family.html">algorithms.statistics.models.family.family</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.models.family.links.html">algorithms.statistics.models.family.links</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.models.family.varfuncs.html">algorithms.statistics.models.family.varfuncs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.models.glm.html">algorithms.statistics.models.glm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.models.model.html">algorithms.statistics.models.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.models.nlsmodel.html">algorithms.statistics.models.nlsmodel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.models.regression.html">algorithms.statistics.models.regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.models.utils.html">algorithms.statistics.models.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.onesample.html">algorithms.statistics.onesample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.rft.html">algorithms.statistics.rft</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.statistics.utils.html">algorithms.statistics.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.utils.fast_distance.html">algorithms.utils.fast_distance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.utils.matrices.html">algorithms.utils.matrices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.algorithms.utils.pca.html">algorithms.utils.pca</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.cli.diagnose.html">cli.diagnose</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.cli.img3dto4d.html">cli.img3dto4d</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.cli.img4dto3d.html">cli.img4dto3d</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.cli.realign4d.html">cli.realign4d</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.cli.tsdiffana.html">cli.tsdiffana</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.conftest.html">conftest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.core.image.image.html">core.image.image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.core.image.image_list.html">core.image.image_list</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.core.image.image_spaces.html">core.image.image_spaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.core.reference.array_coords.html">core.reference.array_coords</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.core.reference.coordinate_map.html">core.reference.coordinate_map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.core.reference.coordinate_system.html">core.reference.coordinate_system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.core.reference.slices.html">core.reference.slices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.core.reference.spaces.html">core.reference.spaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.core.utils.generators.html">core.utils.generators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.interfaces.matlab.html">interfaces.matlab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.interfaces.spm.html">interfaces.spm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.io.files.html">io.files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.io.nibcompat.html">io.nibcompat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.io.nifti_ref.html">io.nifti_ref</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.datasets.converters.html">labs.datasets.converters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.datasets.transforms.affine_transform.html">labs.datasets.transforms.affine_transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.datasets.transforms.affine_utils.html">labs.datasets.transforms.affine_utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.datasets.transforms.transform.html">labs.datasets.transforms.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.datasets.volumes.volume_data.html">labs.datasets.volumes.volume_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.datasets.volumes.volume_field.html">labs.datasets.volumes.volume_field</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.datasets.volumes.volume_grid.html">labs.datasets.volumes.volume_grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.datasets.volumes.volume_img.html">labs.datasets.volumes.volume_img</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.glm.glm.html">labs.glm.glm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.group.permutation_test.html">labs.group.permutation_test</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.mask.html">labs.mask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.spatial_models.bayesian_structural_analysis.html">labs.spatial_models.bayesian_structural_analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.spatial_models.bsa_io.html">labs.spatial_models.bsa_io</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.spatial_models.discrete_domain.html">labs.spatial_models.discrete_domain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.spatial_models.hierarchical_parcellation.html">labs.spatial_models.hierarchical_parcellation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.spatial_models.hroi.html">labs.spatial_models.hroi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.spatial_models.mroi.html">labs.spatial_models.mroi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.spatial_models.parcel_io.html">labs.spatial_models.parcel_io</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.spatial_models.parcellation.html">labs.spatial_models.parcellation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.spatial_models.structural_bfls.html">labs.spatial_models.structural_bfls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.statistical_mapping.html">labs.statistical_mapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.utils.reproducibility_measures.html">labs.utils.reproducibility_measures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.utils.simul_multisubject_fmri_dataset.html">labs.utils.simul_multisubject_fmri_dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.utils.zscore.html">labs.utils.zscore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.viz_tools.activation_maps.html">labs.viz_tools.activation_maps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.viz_tools.anat_cache.html">labs.viz_tools.anat_cache</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.viz_tools.cm.html">labs.viz_tools.cm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.viz_tools.coord_tools.html">labs.viz_tools.coord_tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.viz_tools.maps_3d.html">labs.viz_tools.maps_3d</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.viz_tools.slicers.html">labs.viz_tools.slicers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.viz_tools.test.test_activation_maps.html">labs.viz_tools.test.test_activation_maps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.viz_tools.test.test_cm.html">labs.viz_tools.test.test_cm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.viz_tools.test.test_coord_tools.html">labs.viz_tools.test.test_coord_tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.viz_tools.test.test_edge_detect.html">labs.viz_tools.test.test_edge_detect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.labs.viz_tools.test.test_slicers.html">labs.viz_tools.test.test_slicers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.design.html">modalities.fmri.design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.design_matrix.html">modalities.fmri.design_matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.experimental_paradigm.html">modalities.fmri.experimental_paradigm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.fmri.html">modalities.fmri.fmri</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.fmristat.hrf.html">modalities.fmri.fmristat.hrf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.fmristat.invert.html">modalities.fmri.fmristat.invert</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.fmristat.model.html">modalities.fmri.fmristat.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.fmristat.outputters.html">modalities.fmri.fmristat.outputters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.glm.html">modalities.fmri.glm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.hemodynamic_models.html">modalities.fmri.hemodynamic_models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.hrf.html">modalities.fmri.hrf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.realfuncs.html">modalities.fmri.realfuncs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.spm.correlation.html">modalities.fmri.spm.correlation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.spm.model.html">modalities.fmri.spm.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.spm.reml.html">modalities.fmri.spm.reml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.spm.trace.html">modalities.fmri.spm.trace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.modalities.fmri.utils.html">modalities.fmri.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.pkg_info.html">pkg_info</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.testing.decorators.html">testing.decorators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.utils.html">utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.utils.arrays.html">utils.arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.utils.perlpie.html">utils.perlpie</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/generated/nipy.utils.utilities.html">utils.utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="publications.html">Publications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="publications.html#peer-reviewed-publications">Peer-reviewed Publications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publications.html#posters">Posters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">NIPY License Information</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="license.html#software-license">Software License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="license.html#documentation-license">Documentation License</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="#">Documentation</a></li>
+    <li><a href="devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">NIPY</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="users/index.html"
+                          title="next chapter">User Guide</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/documentation.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="users/index.html" title="User Guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="NIPY"
+             >previous</a> |</li>
+  <li><a href="index.html">NIPY home</a> |&nbsp;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

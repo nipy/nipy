@@ -1,0 +1,6 @@
+﻿nipy.labs.datasets.volumes.volume\_field.VolumeField.composed\_with\_transform
+==============================================================================
+
+.. currentmodule:: nipy.labs.datasets.volumes.volume_field
+
+.. automethod:: VolumeField.composed_with_transform

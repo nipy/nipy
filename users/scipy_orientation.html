@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tutorials" href="tutorial.html" />
+    <link rel="prev" title="Download and Install" href="installation.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../index.html">
+  <img src="../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorials"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Download and Install"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">User Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="geography-of-the-scipy-world">
+<h1>Geography of the Scipy world<a class="headerlink" href="#geography-of-the-scipy-world" title="Link to this heading">¶</a></h1>
+<p>in which we briefly describe the various components you are likely to
+come across when writing scientific python software in general, and NIPY
+code in particular.</p>
+<section id="numpy">
+<h2>Numpy<a class="headerlink" href="#numpy" title="Link to this heading">¶</a></h2>
+<p><a class="reference external" href="http://numpy.scipy.org">NumPy</a> is the basic Python array-manipulation package.  It allows you to
+create, slice and manipulate N-D arrays at near C speed.  It also has
+basic arithmetical and mathematical functions (such as sum, mean, and
+log, exp, sin, cos), matrix multiplication (<code class="docutils literal notranslate"><span class="pre">numpy.dot</span></code>), Fourier
+transforms (<code class="docutils literal notranslate"><span class="pre">numpy.fft</span></code>) and basic linear algebra <code class="docutils literal notranslate"><span class="pre">numpy.linalg</span></code>.</p>
+</section>
+<section id="scipy">
+<h2>SciPy<a class="headerlink" href="#scipy" title="Link to this heading">¶</a></h2>
+<p><a class="reference external" href="http://www.scipy.org">Scipy</a> is a large umbrella project that builds on Numpy (and depends on
+it).  It includes a variety of high level science and engineering
+modules together as a single package.  There are extended modules for
+linear algebra (including wrappers to BLAS and LAPACK), optimization,
+integration, sparse matrices, special functions, FFTs, signal and image
+processing, genetic algorithms, ODE solvers, and others.</p>
+</section>
+<section id="matplotlib">
+<h2>Matplotlib<a class="headerlink" href="#matplotlib" title="Link to this heading">¶</a></h2>
+<p><a class="reference external" href="http://matplotlib.sourceforge.net">Matplotlib</a> is a 2D plotting package that depends on <a class="reference external" href="http://numpy.scipy.org">NumPy</a>.  It has a
+simple matlab-like plotting syntax that makes it relatively easy to
+create good-looking plots, histograms and images with a small amount of
+code.  As well as this simplified Matlab-like syntax, There is also a
+more powerful and flexible object-oriented interface.</p>
+</section>
+<section id="ipython">
+<h2>Ipython<a class="headerlink" href="#ipython" title="Link to this heading">¶</a></h2>
+<p><a class="reference external" href="http://ipython.org">Ipython</a> is an interactive shell for python that has various features of
+the interactive shell of Matlab, Mathematica and R.  It works
+particularly well with <a class="reference external" href="http://matplotlib.sourceforge.net">Matplotlib</a>, but is also an essential tool for
+interactive code development and code exploration.  It contains
+libraries for creainteracting with parallel jobs on clusters or over
+several CPU cores in a fairly transparent way.</p>
+</section>
+<section id="cython">
+<h2>Cython<a class="headerlink" href="#cython" title="Link to this heading">¶</a></h2>
+<p><a class="reference external" href="http://www.cython.org/">Cython</a> is a development language that allows you to write a combination
+of Python and C-like syntax to generate Python extensions.  It is
+especially good for linking C libraries to Python in a readable way.  It
+is also an excellent choice for optimization of Python code, because it
+allows you to drop down to C or C-like code at your bottlenecks without
+losing much of the readability of Python.</p>
+</section>
+<section id="mayavi">
+<h2>Mayavi<a class="headerlink" href="#mayavi" title="Link to this heading">¶</a></h2>
+<p><a class="reference external" href="http://code.enthought.com/projects/mayavi/">Mayavi</a> is a high-level python interface to the <a class="reference external" href="http://www.vtk.org/">VTK</a> plotting
+libraries.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../documentation.html">Documentation</a></li>
+    <li><a href="../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Geography of the Scipy world</a><ul>
+<li><a class="reference internal" href="#numpy">Numpy</a></li>
+<li><a class="reference internal" href="#scipy">SciPy</a></li>
+<li><a class="reference internal" href="#matplotlib">Matplotlib</a></li>
+<li><a class="reference internal" href="#ipython">Ipython</a></li>
+<li><a class="reference internal" href="#cython">Cython</a></li>
+<li><a class="reference internal" href="#mayavi">Mayavi</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="installation.html"
+                          title="previous chapter">Download and Install</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="tutorial.html"
+                          title="next chapter">Tutorials</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/users/scipy_orientation.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorials"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Download and Install"
+             >previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >User Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

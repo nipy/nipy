@@ -1,0 +1,40 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+io.nifti_ref
+============
+
+Module: :mod:`io.nifti_ref`
+---------------------------
+Inheritance diagram for ``nipy.io.nifti_ref``:
+
+.. inheritance-diagram:: nipy.io.nifti_ref 
+   :parts: 3
+
+.. automodule:: nipy.io.nifti_ref
+
+.. currentmodule:: nipy.io.nifti_ref
+
+Class
+-----
+
+:class:`NiftiError`
+-------------------
+
+
+.. autoclass:: NiftiError
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: nipy.io.nifti_ref.nifti2nipy
+
+
+.. autofunction:: nipy.io.nifti_ref.nipy2nifti
+

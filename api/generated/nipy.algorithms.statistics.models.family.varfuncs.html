@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.statistics.models.glm" href="nipy.algorithms.statistics.models.glm.html" />
+    <link rel="prev" title="algorithms.statistics.models.family.links" href="nipy.algorithms.statistics.models.family.links.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.glm.html" title="algorithms.statistics.models.glm"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.family.links.html" title="algorithms.statistics.models.family.links"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-statistics-models-family-varfuncs">
+<h1>algorithms.statistics.models.family.varfuncs<a class="headerlink" href="#algorithms-statistics-models-family-varfuncs" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-statistics-models-family-varfuncs">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.models.family.varfuncs</span></code><a class="headerlink" href="#module-algorithms-statistics-models-family-varfuncs" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.statistics.models.family.varfuncs</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-98aed876cde46e8f61673d616b8abe9c5292f5ca.png" alt="Inheritance diagram of nipy.algorithms.statistics.models.family.varfuncs" usemap="#inheritancecb2e94d2fe" class="inheritance graphviz" /></div>
+<map id="inheritancecb2e94d2fe" name="inheritancecb2e94d2fe">
+<area shape="rect" id="node1" href="#nipy.algorithms.statistics.models.family.varfuncs.Binomial" target="_top" title="Binomial variance function" alt="" coords="30,107,194,133"/>
+<area shape="rect" id="node2" href="#nipy.algorithms.statistics.models.family.varfuncs.Power" target="_top" title="Power variance function:" alt="" coords="37,56,187,83"/>
+<area shape="rect" id="node3" href="#nipy.algorithms.statistics.models.family.varfuncs.VarianceFunction" target="_top" title="Variance function that relates the variance of a random variable" alt="" coords="5,5,219,32"/>
+</map><span class="target" id="module-nipy.algorithms.statistics.models.family.varfuncs"></span></section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="binomial">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.varfuncs.Binomial" title="nipy.algorithms.statistics.models.family.varfuncs.Binomial"><code class="xref py py-class docutils literal notranslate"><span class="pre">Binomial</span></code></a><a class="headerlink" href="#binomial" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.varfuncs.Binomial">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.varfuncs.</span></span><span class="sig-name descname"><span class="pre">Binomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.varfuncs.Binomial" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Binomial variance function</p>
+<p>p = mu / n; V(mu) = p * (1 - p) * n</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>n – number of trials in Binomial</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.varfuncs.Binomial.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.varfuncs.Binomial.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.varfuncs.Binomial.clean">
+<span class="sig-name descname"><span class="pre">clean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.varfuncs.Binomial.clean" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.varfuncs.Binomial.tol">
+<span class="sig-name descname"><span class="pre">tol</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-10</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.varfuncs.Binomial.tol" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="power">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.varfuncs.Power" title="nipy.algorithms.statistics.models.family.varfuncs.Power"><code class="xref py py-class docutils literal notranslate"><span class="pre">Power</span></code></a><a class="headerlink" href="#power" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.varfuncs.Power">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.varfuncs.</span></span><span class="sig-name descname"><span class="pre">Power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">power</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.varfuncs.Power" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Power variance function:</p>
+<p>V(mu) = fabs(mu)**power</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>power – exponent used in power variance function</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.varfuncs.Power.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">power</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.varfuncs.Power.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="variancefunction">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.varfuncs.VarianceFunction" title="nipy.algorithms.statistics.models.family.varfuncs.VarianceFunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">VarianceFunction</span></code></a><a class="headerlink" href="#variancefunction" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.varfuncs.VarianceFunction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.varfuncs.</span></span><span class="sig-name descname"><span class="pre">VarianceFunction</span></span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.varfuncs.VarianceFunction" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Variance function that relates the variance of a random variable
+to its mean. Defaults to 1.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.varfuncs.VarianceFunction.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.varfuncs.VarianceFunction.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.statistics.models.family.varfuncs</a><ul>
+<li><a class="reference internal" href="#module-algorithms-statistics-models-family-varfuncs">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.models.family.varfuncs</span></code></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#binomial"><code class="xref py py-class docutils literal notranslate"><span class="pre">Binomial</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.varfuncs.Binomial"><code class="docutils literal notranslate"><span class="pre">Binomial</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.varfuncs.Binomial.__init__"><code class="docutils literal notranslate"><span class="pre">Binomial.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.varfuncs.Binomial.clean"><code class="docutils literal notranslate"><span class="pre">Binomial.clean()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.varfuncs.Binomial.tol"><code class="docutils literal notranslate"><span class="pre">Binomial.tol</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#power"><code class="xref py py-class docutils literal notranslate"><span class="pre">Power</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.varfuncs.Power"><code class="docutils literal notranslate"><span class="pre">Power</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.varfuncs.Power.__init__"><code class="docutils literal notranslate"><span class="pre">Power.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#variancefunction"><code class="xref py py-class docutils literal notranslate"><span class="pre">VarianceFunction</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.varfuncs.VarianceFunction"><code class="docutils literal notranslate"><span class="pre">VarianceFunction</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.varfuncs.VarianceFunction.__init__"><code class="docutils literal notranslate"><span class="pre">VarianceFunction.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.models.family.links.html"
+                          title="previous chapter">algorithms.statistics.models.family.links</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.models.glm.html"
+                          title="next chapter">algorithms.statistics.models.glm</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.statistics.models.family.varfuncs.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.glm.html" title="algorithms.statistics.models.glm"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.family.links.html" title="algorithms.statistics.models.family.links"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

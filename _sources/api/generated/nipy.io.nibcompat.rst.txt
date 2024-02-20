@@ -1,0 +1,26 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+io.nibcompat
+============
+
+Module: :mod:`io.nibcompat`
+---------------------------
+.. automodule:: nipy.io.nibcompat
+
+.. currentmodule:: nipy.io.nibcompat
+
+Functions
+---------
+
+
+.. autofunction:: nipy.io.nibcompat.get_affine
+
+
+.. autofunction:: nipy.io.nibcompat.get_dataobj
+
+
+.. autofunction:: nipy.io.nibcompat.get_header
+
+
+.. autofunction:: nipy.io.nibcompat.get_unscaled_data
+

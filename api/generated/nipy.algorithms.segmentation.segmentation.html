@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.slicetiming.timefuncs" href="nipy.algorithms.slicetiming.timefuncs.html" />
+    <link rel="prev" title="algorithms.segmentation.brain_segmentation" href="nipy.algorithms.segmentation.brain_segmentation.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.slicetiming.timefuncs.html" title="algorithms.slicetiming.timefuncs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.segmentation.brain_segmentation.html" title="algorithms.segmentation.brain_segmentation"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-segmentation-segmentation">
+<h1>algorithms.segmentation.segmentation<a class="headerlink" href="#algorithms-segmentation-segmentation" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-segmentation-segmentation">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.segmentation.segmentation</span></code><a class="headerlink" href="#module-algorithms-segmentation-segmentation" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.segmentation.segmentation</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-a1efe9467851f12277c9ec9442d399ad3a491c20.png" alt="Inheritance diagram of nipy.algorithms.segmentation.segmentation" usemap="#inheritance3b6d38802f" class="inheritance graphviz" /></div>
+<map id="inheritance3b6d38802f" name="inheritance3b6d38802f">
+<area shape="rect" id="node1" href="#nipy.algorithms.segmentation.segmentation.Segmentation" target="_top" title="segmentation.segmentation.Segmentation" alt="" coords="5,5,271,32"/>
+</map><span class="target" id="module-nipy.algorithms.segmentation.segmentation"></span></section>
+<section id="class">
+<h2>Class<a class="headerlink" href="#class" title="Link to this heading">¶</a></h2>
+</section>
+<section id="segmentation">
+<h2><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.Segmentation" title="nipy.algorithms.segmentation.segmentation.Segmentation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Segmentation</span></code></a><a class="headerlink" href="#segmentation" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.segmentation.segmentation.Segmentation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.segmentation.segmentation.</span></span><span class="sig-name descname"><span class="pre">Segmentation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ngb_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">26</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.segmentation.segmentation.Segmentation" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.segmentation.segmentation.Segmentation.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ngb_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">26</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.segmentation.segmentation.Segmentation.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Class for multichannel Markov random field image segmentation
+using the variational EM algorithm. For details regarding the
+underlying algorithm, see:</p>
+<p>Roche et al, 2011. On the convergence of EM-like algorithms
+for image segmentation using Markov random fields. Medical
+Image Analysis (DOI: 10.1016/j.media.2011.05.002).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">array-like</span></dt><dd><p>Input image array</p>
+</dd>
+<dt><strong>mask</strong><span class="classifier">array-like or tuple of array</span></dt><dd><p>Input mask to restrict the segmentation</p>
+</dd>
+<dt><strong>beta</strong><span class="classifier">float</span></dt><dd><p>Markov regularization parameter</p>
+</dd>
+<dt><strong>mu</strong><span class="classifier">array-like</span></dt><dd><p>Initial class-specific means</p>
+</dd>
+<dt><strong>sigma</strong><span class="classifier">array-like</span></dt><dd><p>Initial class-specific variances</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.segmentation.segmentation.Segmentation.free_energy">
+<span class="sig-name descname"><span class="pre">free_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ppm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.segmentation.segmentation.Segmentation.free_energy" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the free energy defined as:</p>
+<p>F(q, theta) = int q(x) log q(x)/p(x,y/theta) dx</p>
+<p>associated with input parameters mu,
+sigma and beta (up to an ignored constant).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.segmentation.segmentation.Segmentation.log_external_field">
+<span class="sig-name descname"><span class="pre">log_external_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.segmentation.segmentation.Segmentation.log_external_field" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the logarithm of the external field, where the
+external field is defined as the likelihood times the
+first-order component of the prior.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.segmentation.segmentation.Segmentation.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.segmentation.segmentation.Segmentation.map" title="Link to this definition">¶</a></dt>
+<dd><p>Return the maximum a posterior label map</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.segmentation.segmentation.Segmentation.normalized_external_field">
+<span class="sig-name descname"><span class="pre">normalized_external_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.segmentation.segmentation.Segmentation.normalized_external_field" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.segmentation.segmentation.Segmentation.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">niters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.segmentation.segmentation.Segmentation.run" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.segmentation.segmentation.Segmentation.set_markov_prior">
+<span class="sig-name descname"><span class="pre">set_markov_prior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.segmentation.segmentation.Segmentation.set_markov_prior" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.segmentation.segmentation.Segmentation.ve_step">
+<span class="sig-name descname"><span class="pre">ve_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.segmentation.segmentation.Segmentation.ve_step" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.segmentation.segmentation.Segmentation.vm_step">
+<span class="sig-name descname"><span class="pre">vm_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.segmentation.segmentation.Segmentation.vm_step" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.segmentation.segmentation.binarize_ppm">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.segmentation.segmentation.</span></span><span class="sig-name descname"><span class="pre">binarize_ppm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.segmentation.segmentation.binarize_ppm" title="Link to this definition">¶</a></dt>
+<dd><p>Assume input ppm is masked (ndim==2)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.segmentation.segmentation.map_from_ppm">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.segmentation.segmentation.</span></span><span class="sig-name descname"><span class="pre">map_from_ppm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ppm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.segmentation.segmentation.map_from_ppm" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.segmentation.segmentation.moment_matching">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.segmentation.segmentation.</span></span><span class="sig-name descname"><span class="pre">moment_matching</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">glob_mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">glob_sigma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.segmentation.segmentation.moment_matching" title="Link to this definition">¶</a></dt>
+<dd><p>Moment matching strategy for parameter initialization to feed a
+segmentation algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data: array</strong></dt><dd><p>Image data.</p>
+</dd>
+<dt><strong>mu</strong><span class="classifier">array</span></dt><dd><p>Template class-specific intensity means</p>
+</dd>
+<dt><strong>sigma</strong><span class="classifier">array</span></dt><dd><p>Template class-specific intensity variances</p>
+</dd>
+<dt><strong>glob_mu</strong><span class="classifier">float</span></dt><dd><p>Template global intensity mean</p>
+</dd>
+<dt><strong>glob_sigma</strong><span class="classifier">float</span></dt><dd><p>Template global intensity variance</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>dat_mu: array</dt><dd><p>Guess of class-specific intensity means</p>
+</dd>
+<dt>dat_sigma: array</dt><dd><p>Guess of class-specific intensity variances</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.segmentation.segmentation</a><ul>
+<li><a class="reference internal" href="#module-algorithms-segmentation-segmentation">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.segmentation.segmentation</span></code></a></li>
+<li><a class="reference internal" href="#class">Class</a></li>
+<li><a class="reference internal" href="#segmentation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Segmentation</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.Segmentation"><code class="docutils literal notranslate"><span class="pre">Segmentation</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.Segmentation.__init__"><code class="docutils literal notranslate"><span class="pre">Segmentation.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.Segmentation.free_energy"><code class="docutils literal notranslate"><span class="pre">Segmentation.free_energy()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.Segmentation.log_external_field"><code class="docutils literal notranslate"><span class="pre">Segmentation.log_external_field()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.Segmentation.map"><code class="docutils literal notranslate"><span class="pre">Segmentation.map()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.Segmentation.normalized_external_field"><code class="docutils literal notranslate"><span class="pre">Segmentation.normalized_external_field()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.Segmentation.run"><code class="docutils literal notranslate"><span class="pre">Segmentation.run()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.Segmentation.set_markov_prior"><code class="docutils literal notranslate"><span class="pre">Segmentation.set_markov_prior()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.Segmentation.ve_step"><code class="docutils literal notranslate"><span class="pre">Segmentation.ve_step()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.Segmentation.vm_step"><code class="docutils literal notranslate"><span class="pre">Segmentation.vm_step()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.binarize_ppm"><code class="docutils literal notranslate"><span class="pre">binarize_ppm()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.map_from_ppm"><code class="docutils literal notranslate"><span class="pre">map_from_ppm()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.segmentation.segmentation.moment_matching"><code class="docutils literal notranslate"><span class="pre">moment_matching()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.segmentation.brain_segmentation.html"
+                          title="previous chapter">algorithms.segmentation.brain_segmentation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.slicetiming.timefuncs.html"
+                          title="next chapter">algorithms.slicetiming.timefuncs</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.segmentation.segmentation.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.slicetiming.timefuncs.html" title="algorithms.slicetiming.timefuncs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.segmentation.brain_segmentation.html" title="algorithms.segmentation.brain_segmentation"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

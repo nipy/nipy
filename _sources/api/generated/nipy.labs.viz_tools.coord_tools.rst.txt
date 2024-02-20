@@ -1,0 +1,26 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+labs.viz_tools.coord_tools
+==========================
+
+Module: :mod:`labs.viz_tools.coord_tools`
+-----------------------------------------
+.. automodule:: nipy.labs.viz_tools.coord_tools
+
+.. currentmodule:: nipy.labs.viz_tools.coord_tools
+
+Functions
+---------
+
+
+.. autofunction:: nipy.labs.viz_tools.coord_tools.coord_transform
+
+
+.. autofunction:: nipy.labs.viz_tools.coord_tools.find_cut_coords
+
+
+.. autofunction:: nipy.labs.viz_tools.coord_tools.find_maxsep_cut_coords
+
+
+.. autofunction:: nipy.labs.viz_tools.coord_tools.get_mask_bounds
+

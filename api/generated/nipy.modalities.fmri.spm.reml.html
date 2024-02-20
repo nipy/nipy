@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="modalities.fmri.spm.trace" href="nipy.modalities.fmri.spm.trace.html" />
+    <link rel="prev" title="modalities.fmri.spm.model" href="nipy.modalities.fmri.spm.model.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.spm.trace.html" title="modalities.fmri.spm.trace"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.spm.model.html" title="modalities.fmri.spm.model"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="modalities-fmri-spm-reml">
+<h1>modalities.fmri.spm.reml<a class="headerlink" href="#modalities-fmri-spm-reml" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.modalities.fmri.spm.reml">
+<span id="module-modalities-fmri-spm-reml"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.spm.reml</span></code><a class="headerlink" href="#module-nipy.modalities.fmri.spm.reml" title="Link to this heading">¶</a></h2>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.spm.reml.orth">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.spm.reml.</span></span><span class="sig-name descname"><span class="pre">orth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-07</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.spm.reml.orth" title="Link to this definition">¶</a></dt>
+<dd><p>Compute orthonormal basis for the column span of X.</p>
+<p>Rank is determined by zeroing all singular values, u, less
+than or equal to tol*u.max().</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>X  – n-by-p matrix</p>
+</dd>
+<dt>OUTPUTS:</dt><dd><dl class="simple">
+<dt>B  – n-by-rank(X) matrix with orthonormal columns spanning</dt><dd><p>the column rank of X</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.spm.reml.reml">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.spm.reml.</span></span><span class="sig-name descname"><span class="pre">reml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">penalty_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.2664165549094176e-14</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">penalty_mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.spm.reml.reml" title="Link to this definition">¶</a></dt>
+<dd><p>Adapted from spm_reml.m</p>
+<p>ReML estimation of covariance components from sigma using design matrix.</p>
+<dl>
+<dt>INPUTS:</dt><dd><p>sigma        – m-by-m covariance matrix
+components   – q-by-m-by-m array of variance components</p>
+<blockquote>
+<div><p>mean of sigma is modeled as a some over components[i]</p>
+</div></blockquote>
+<dl class="simple">
+<dt>design       – m-by-p design matrix whose effect is to be removed for</dt><dd><p>ReML. If None, no effect removed (???)</p>
+</dd>
+</dl>
+<p>n            – degrees of freedom of sigma
+penalty_cov  – quadratic penalty to be applied in Fisher algorithm.</p>
+<blockquote>
+<div><p>If the value is a float, f, the penalty is
+f * identity(m). If the value is a 1d array, this is
+the diagonal of the penalty.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>penalty_mean – mean of quadratic penalty to be applied in Fisher</dt><dd><p>algorithm. If the value is a float, f, the location
+is f * np.ones(m).</p>
+</dd>
+</dl>
+</dd>
+<dt>OUTPUTS:</dt><dd><p>C            – estimated mean of sigma
+h            – array of length q representing coefficients</p>
+<blockquote>
+<div><p>of variance components</p>
+</div></blockquote>
+<p>cov_h        – estimated covariance matrix of h</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">modalities.fmri.spm.reml</a><ul>
+<li><a class="reference internal" href="#module-nipy.modalities.fmri.spm.reml">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.spm.reml</span></code></a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.spm.reml.orth"><code class="docutils literal notranslate"><span class="pre">orth()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.spm.reml.reml"><code class="docutils literal notranslate"><span class="pre">reml()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.spm.model.html"
+                          title="previous chapter">modalities.fmri.spm.model</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.spm.trace.html"
+                          title="next chapter">modalities.fmri.spm.trace</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.modalities.fmri.spm.reml.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.spm.trace.html" title="modalities.fmri.spm.trace"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.spm.model.html" title="modalities.fmri.spm.model"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

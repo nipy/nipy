@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="utils.arrays" href="nipy.utils.arrays.html" />
+    <link rel="prev" title="testing.decorators" href="nipy.testing.decorators.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.utils.arrays.html" title="utils.arrays"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.testing.decorators.html" title="testing.decorators"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="utils">
+<h1>utils<a class="headerlink" href="#utils" title="Link to this heading">¶</a></h1>
+<section id="module-utils">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">utils</span></code><a class="headerlink" href="#module-utils" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.utils</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-909b441634404289a2914ec501c5730e0629da69.png" alt="Inheritance diagram of nipy.utils" usemap="#inheritance1927e97648" class="inheritance graphviz" /></div>
+<map id="inheritance1927e97648" name="inheritance1927e97648">
+<area shape="rect" id="node1" href="#nipy.utils.VisibleDeprecationWarning" target="_top" title="Visible deprecation warning." alt="" coords="5,5,238,32"/>
+</map><p id="module-nipy.utils">General utilities for code support.</p>
+<p>These are modules that we (broadly-speaking) wrote; packages that other people
+wrote, that we ship, go in the nipy.externals tree.</p>
+</section>
+<section id="visibledeprecationwarning">
+<h2><a class="reference internal" href="#nipy.utils.VisibleDeprecationWarning" title="nipy.utils.VisibleDeprecationWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">VisibleDeprecationWarning</span></code></a><a class="headerlink" href="#visibledeprecationwarning" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.utils.VisibleDeprecationWarning">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.utils.</span></span><span class="sig-name descname"><span class="pre">VisibleDeprecationWarning</span></span><a class="headerlink" href="#nipy.utils.VisibleDeprecationWarning" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">UserWarning</span></code></p>
+<p>Visible deprecation warning.</p>
+<p>Python does not show any DeprecationWarning by default.  Sometimes we do
+want to show a deprecation warning, when the deprecation is urgent, or the
+usage is probably a bug.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.utils.VisibleDeprecationWarning.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.utils.VisibleDeprecationWarning.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.utils.VisibleDeprecationWarning.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#nipy.utils.VisibleDeprecationWarning.args" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.utils.VisibleDeprecationWarning.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.utils.VisibleDeprecationWarning.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">utils</a><ul>
+<li><a class="reference internal" href="#module-utils">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">utils</span></code></a></li>
+<li><a class="reference internal" href="#visibledeprecationwarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">VisibleDeprecationWarning</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.utils.VisibleDeprecationWarning"><code class="docutils literal notranslate"><span class="pre">VisibleDeprecationWarning</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.utils.VisibleDeprecationWarning.__init__"><code class="docutils literal notranslate"><span class="pre">VisibleDeprecationWarning.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.utils.VisibleDeprecationWarning.args"><code class="docutils literal notranslate"><span class="pre">VisibleDeprecationWarning.args</span></code></a></li>
+<li><a class="reference internal" href="#nipy.utils.VisibleDeprecationWarning.with_traceback"><code class="docutils literal notranslate"><span class="pre">VisibleDeprecationWarning.with_traceback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.testing.decorators.html"
+                          title="previous chapter">testing.decorators</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.utils.arrays.html"
+                          title="next chapter">utils.arrays</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.utils.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.utils.arrays.html" title="utils.arrays"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.testing.decorators.html" title="testing.decorators"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

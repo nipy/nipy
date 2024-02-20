@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="labs.datasets.transforms.transform" href="nipy.labs.datasets.transforms.transform.html" />
+    <link rel="prev" title="labs.datasets.transforms.affine_transform" href="nipy.labs.datasets.transforms.affine_transform.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.datasets.transforms.transform.html" title="labs.datasets.transforms.transform"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.datasets.transforms.affine_transform.html" title="labs.datasets.transforms.affine_transform"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="labs-datasets-transforms-affine-utils">
+<h1>labs.datasets.transforms.affine_utils<a class="headerlink" href="#labs-datasets-transforms-affine-utils" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.labs.datasets.transforms.affine_utils">
+<span id="module-labs-datasets-transforms-affine-utils"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.datasets.transforms.affine_utils</span></code><a class="headerlink" href="#module-nipy.labs.datasets.transforms.affine_utils" title="Link to this heading">¶</a></h2>
+<p>Functions working with affine transformation matrices.</p>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.datasets.transforms.affine_utils.apply_affine">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.datasets.transforms.affine_utils.</span></span><span class="sig-name descname"><span class="pre">apply_affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.datasets.transforms.affine_utils.apply_affine" title="Link to this definition">¶</a></dt>
+<dd><p>Apply the affine matrix to the given coordinate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x: number or ndarray</strong></dt><dd><p>The x coordinates</p>
+</dd>
+<dt><strong>y: number or ndarray</strong></dt><dd><p>The y coordinates</p>
+</dd>
+<dt><strong>z: number or ndarray</strong></dt><dd><p>The z coordinates</p>
+</dd>
+<dt><strong>affine: 4x4 ndarray</strong></dt><dd><p>The affine matrix of the transformation</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.datasets.transforms.affine_utils.from_matrix_vector">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.datasets.transforms.affine_utils.</span></span><span class="sig-name descname"><span class="pre">from_matrix_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.datasets.transforms.affine_utils.from_matrix_vector" title="Link to this definition">¶</a></dt>
+<dd><p>Combine a matrix and vector into a homogeneous transform.</p>
+<p>Combine a rotation matrix and translation vector into a transform
+in homogeneous coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>matrix</strong><span class="classifier">ndarray</span></dt><dd><p>An NxN array representing the rotation matrix.</p>
+</dd>
+<dt><strong>vector</strong><span class="classifier">ndarray</span></dt><dd><p>A 1xN array representing the translation.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>xform</strong><span class="classifier">ndarray</span></dt><dd><p>An N+1xN+1 transform matrix.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#nipy.labs.datasets.transforms.affine_utils.to_matrix_vector" title="nipy.labs.datasets.transforms.affine_utils.to_matrix_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_matrix_vector</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.datasets.transforms.affine_utils.get_bounds">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.datasets.transforms.affine_utils.</span></span><span class="sig-name descname"><span class="pre">get_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.datasets.transforms.affine_utils.get_bounds" title="Link to this definition">¶</a></dt>
+<dd><p>Return the world-space bounds occupied by an array given an affine.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.datasets.transforms.affine_utils.to_matrix_vector">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.datasets.transforms.affine_utils.</span></span><span class="sig-name descname"><span class="pre">to_matrix_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transform</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.datasets.transforms.affine_utils.to_matrix_vector" title="Link to this definition">¶</a></dt>
+<dd><p>Split a transform into it’s matrix and vector components.</p>
+<p>The transformation must be represented in homogeneous coordinates
+and is split into it’s rotation matrix and translation vector
+components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>transform</strong><span class="classifier">ndarray</span></dt><dd><p>Transform matrix in homogeneous coordinates.  Example, a 4x4
+transform representing rotations and translations in 3
+dimensions.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>matrix, vector</strong><span class="classifier">ndarray</span></dt><dd><p>The matrix and vector components of the transform matrix.  For
+an NxN transform, matrix will be N-1xN-1 and vector will be
+1xN-1.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#nipy.labs.datasets.transforms.affine_utils.from_matrix_vector" title="nipy.labs.datasets.transforms.affine_utils.from_matrix_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_matrix_vector</span></code></a></dt><dd></dd>
+</dl>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">labs.datasets.transforms.affine_utils</a><ul>
+<li><a class="reference internal" href="#module-nipy.labs.datasets.transforms.affine_utils">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.datasets.transforms.affine_utils</span></code></a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.labs.datasets.transforms.affine_utils.apply_affine"><code class="docutils literal notranslate"><span class="pre">apply_affine()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.datasets.transforms.affine_utils.from_matrix_vector"><code class="docutils literal notranslate"><span class="pre">from_matrix_vector()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.datasets.transforms.affine_utils.get_bounds"><code class="docutils literal notranslate"><span class="pre">get_bounds()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.datasets.transforms.affine_utils.to_matrix_vector"><code class="docutils literal notranslate"><span class="pre">to_matrix_vector()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.labs.datasets.transforms.affine_transform.html"
+                          title="previous chapter">labs.datasets.transforms.affine_transform</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.labs.datasets.transforms.transform.html"
+                          title="next chapter">labs.datasets.transforms.transform</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.labs.datasets.transforms.affine_utils.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.datasets.transforms.transform.html" title="labs.datasets.transforms.transform"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.datasets.transforms.affine_transform.html" title="labs.datasets.transforms.affine_transform"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="labs.spatial_models.parcel_io" href="nipy.labs.spatial_models.parcel_io.html" />
+    <link rel="prev" title="labs.spatial_models.hroi" href="nipy.labs.spatial_models.hroi.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.parcel_io.html" title="labs.spatial_models.parcel_io"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.hroi.html" title="labs.spatial_models.hroi"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="labs-spatial-models-mroi">
+<h1>labs.spatial_models.mroi<a class="headerlink" href="#labs-spatial-models-mroi" title="Link to this heading">¶</a></h1>
+<section id="module-labs-spatial-models-mroi">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.spatial_models.mroi</span></code><a class="headerlink" href="#module-labs-spatial-models-mroi" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.labs.spatial_models.mroi</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-bc27ff8ac37ee59da9a49eda93eee4acd53cf1bf.png" alt="Inheritance diagram of nipy.labs.spatial_models.mroi" usemap="#inheritance3be2910832" class="inheritance graphviz" /></div>
+<map id="inheritance3be2910832" name="inheritance3be2910832">
+<area shape="rect" id="node1" href="#nipy.labs.spatial_models.mroi.SubDomains" target="_top" title="This is a class to represent multiple ROI objects, where the" alt="" coords="5,5,222,32"/>
+</map><span class="target" id="module-nipy.labs.spatial_models.mroi"></span></section>
+<section id="class">
+<h2>Class<a class="headerlink" href="#class" title="Link to this heading">¶</a></h2>
+</section>
+<section id="subdomains">
+<h2><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains" title="nipy.labs.spatial_models.mroi.SubDomains"><code class="xref py py-class docutils literal notranslate"><span class="pre">SubDomains</span></code></a><a class="headerlink" href="#subdomains" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.labs.spatial_models.mroi.</span></span><span class="sig-name descname"><span class="pre">SubDomains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This is a class to represent multiple ROI objects, where the
+reference to a given domain is explicit.</p>
+<p>A multiple ROI object is a set of ROI defined on a given domain,
+each having its own ‘region-level’ characteristics (ROI features).</p>
+<p>Every voxel of the domain can have its own characteristics yet,
+defined at the ‘voxel-level’, but those features can only be accessed
+familywise (i.e. the values are grouped by ROI).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>k</strong><span class="classifier">int</span></dt><dd><p>Number of ROI in the SubDomains object</p>
+</dd>
+<dt><strong>label</strong><span class="classifier">array of shape (domain.size), dtype=np.int_</span></dt><dd><p>An array use to define which voxel belongs to which ROI.
+The label values greater than -1 correspond to subregions
+labelling. The labels are recomputed so as to be consecutive
+integers.
+The labels should not be accessed outside this class. One has to
+use the API mapping methods instead.</p>
+</dd>
+<dt><strong>features</strong><span class="classifier">dict {str: list of object, length=self.k}</span></dt><dd><p>Describe the voxels features, grouped by ROI</p>
+</dd>
+<dt><strong>roi_features</strong><span class="classifier">dict {str: array-like, shape=(self.k, roi_feature_dim)</span></dt><dd><p>Describe the ROI features. A special feature, <cite>id</cite>, is read-only and
+is used to give an unique identifier for region, which is persistent
+through the MROI objects manipulations. On should access the different
+ROI’s features using ids.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize subdomains instance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>domain: ROI instance</strong></dt><dd><p>defines the spatial context of the SubDomains</p>
+</dd>
+<dt><strong>label: array of shape (domain.size), dtype=np.int_,</strong></dt><dd><p>An array use to define which voxel belongs to which ROI.
+The label values greater than -1 correspond to subregions
+labelling. The labels are recomputed so as to be consecutive
+integers.
+The labels should not be accessed outside this class. One has to
+use the select_id() mapping method instead.</p>
+</dd>
+<dt><strong>id: array of shape (n_roi)</strong></dt><dd><p>Define the ROI identifiers. Once an id has been associated to a ROI
+it becomes impossible to change it using the API. Hence, one
+should access ROI through their id to avoid hazardous manipulations.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.copy" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a copy of self.</p>
+<p>Note that self.domain is not copied.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.feature_to_voxel_map">
+<span class="sig-name descname"><span class="pre">feature_to_voxel_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.feature_to_voxel_map" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a feature to a flat voxel-mapping array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fid: str</strong></dt><dd><p>Identifier of the feature to be mapped.</p>
+</dd>
+<dt><strong>roi: bool, optional</strong></dt><dd><p>If True, compute the map from a ROI feature.</p>
+</dd>
+<dt><strong>method: str, optional</strong></dt><dd><p>Representative feature computation method if <cite>fid</cite> is a feature
+and <cite>roi</cite> is True.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>res: array-like, shape=(domain.size, feature_dim)</dt><dd><p>A flat array, giving the correspondence between voxels
+and the feature.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.get_coord">
+<span class="sig-name descname"><span class="pre">get_coord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.get_coord" title="Link to this definition">¶</a></dt>
+<dd><p>Get coordinates of ROI’s voxels</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>id: any hashable type</strong></dt><dd><p>Id of the ROI from which we want the voxels’ coordinates.
+Can be None (default) if we want all ROIs’s voxels coordinates.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt>coords: array-like, shape=(roi_size, domain_dimension)</dt><dd><dl class="simple">
+<dt>if an id is provided,</dt><dd><p>or list of arrays of shape(roi_size, domain_dimension)</p>
+</dd>
+</dl>
+<p>if no id provided (default)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.get_feature">
+<span class="sig-name descname"><span class="pre">get_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.get_feature" title="Link to this definition">¶</a></dt>
+<dd><p>Return a voxel-wise feature, grouped by ROI.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fid: str,</strong></dt><dd><p>Feature to be returned</p>
+</dd>
+<dt><strong>id: any hashable type</strong></dt><dd><p>Id of the ROI from which we want to get the feature.
+Can be None (default) if we want all ROIs’s features.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt>feature: array-like, shape=(roi_size, feature_dim)</dt><dd><dl class="simple">
+<dt>if an id is provided,</dt><dd><p>or list of arrays, shape=(roi_size, feature_dim)</p>
+</dd>
+</dl>
+<p>if no id provided (default)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.get_id">
+<span class="sig-name descname"><span class="pre">get_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.get_id" title="Link to this definition">¶</a></dt>
+<dd><p>Return ROI’s id list.</p>
+<p>Users must access ROIs with the use of the identifiers of this list
+and the methods that give access to their properties/features.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.get_local_volume">
+<span class="sig-name descname"><span class="pre">get_local_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.get_local_volume" title="Link to this definition">¶</a></dt>
+<dd><p>Get volume of ROI’s voxels</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>id: any hashable type</strong></dt><dd><p>Id of the ROI from which we want the voxels’ volumes.
+Can be None (default) if we want all ROIs’s voxels volumes.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt>loc_volume: array-like, shape=(roi_size, ),</dt><dd><dl class="simple">
+<dt>if an id is provided,</dt><dd><p>or list of arrays of shape(roi_size, )</p>
+</dd>
+</dl>
+<p>if no id provided (default)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.get_roi_feature">
+<span class="sig-name descname"><span class="pre">get_roi_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.get_roi_feature" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.get_size">
+<span class="sig-name descname"><span class="pre">get_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.get_size" title="Link to this definition">¶</a></dt>
+<dd><p>Get ROI size (counted in terms of voxels)</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>id: any hashable type</strong></dt><dd><p>Id of the ROI from which we want to get the size.
+Can be None (default) if we want all ROIs’s sizes.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt>size: int</dt><dd><dl class="simple">
+<dt>if an id is provided,</dt><dd><p>or list of int</p>
+</dd>
+</dl>
+<p>if no id provided (default)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.get_volume">
+<span class="sig-name descname"><span class="pre">get_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.get_volume" title="Link to this definition">¶</a></dt>
+<dd><p>Get ROI volume</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>id: any hashable type</strong></dt><dd><p>Id of the ROI from which we want to get the volume.
+Can be None (default) if we want all ROIs’s volumes.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>volume</strong><span class="classifier">float</span></dt><dd><dl class="simple">
+<dt>if an id is provided,</dt><dd><p>or list of float</p>
+</dd>
+</dl>
+<p>if no id provided (default)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.integrate">
+<span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.integrate" title="Link to this definition">¶</a></dt>
+<dd><p>Integrate  certain feature on each ROI and return the k results</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fid</strong><span class="classifier">str</span></dt><dd><p>Feature identifier.
+By default, the 1 function is integrated, yielding ROI volumes.</p>
+</dd>
+<dt><strong>id: any hashable type</strong></dt><dd><p>The ROI on which we want to integrate.
+Can be None if we want the results for every region.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>lsum = array of shape (self.k, self.feature[fid].shape[1]),</dt><dd><p>The results</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.plot_feature">
+<span class="sig-name descname"><span class="pre">plot_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.plot_feature" title="Link to this definition">¶</a></dt>
+<dd><p>Boxplot the distribution of features within ROIs.
+Note that this assumes 1-d features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fid: string</strong></dt><dd><p>the feature identifier</p>
+</dd>
+<dt><strong>ax: axis handle, optional</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.recompute_labels">
+<span class="sig-name descname"><span class="pre">recompute_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.recompute_labels" title="Link to this definition">¶</a></dt>
+<dd><p>Redefine labels so that they are consecutive integers.</p>
+<p>Labels are used as a map to associate voxels to a given ROI.
+It is an inner object that should not be accessed outside this class.
+The number of nodes is updated appropriately.</p>
+<p class="rubric">Notes</p>
+<p>This method must be called every time the MROI structure is modified.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.remove_feature">
+<span class="sig-name descname"><span class="pre">remove_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.remove_feature" title="Link to this definition">¶</a></dt>
+<dd><p>Remove a certain feature</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fid: str</strong></dt><dd><p>Feature id</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>f</strong><span class="classifier">object</span></dt><dd><p>The removed feature.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.remove_roi_feature">
+<span class="sig-name descname"><span class="pre">remove_roi_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.remove_roi_feature" title="Link to this definition">¶</a></dt>
+<dd><p>Remove a certain ROI feature.</p>
+<p>The <cite>id</cite> ROI feature cannot be removed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>f</strong><span class="classifier">object</span></dt><dd><p>The removed Roi feature.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.representative_feature">
+<span class="sig-name descname"><span class="pre">representative_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assess_quality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.representative_feature" title="Link to this definition">¶</a></dt>
+<dd><p>Compute a ROI representative of a given feature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fid</strong><span class="classifier">str</span></dt><dd><p>Feature id</p>
+</dd>
+<dt><strong>method</strong><span class="classifier">str, optional</span></dt><dd><p>Method used to compute a representative.
+Chosen among ‘mean’ (default), ‘max’, ‘median’, ‘min’,
+‘weighted mean’.</p>
+</dd>
+<dt><strong>id</strong><span class="classifier">any hashable type, optional</span></dt><dd><p>Id of the ROI from which we want to extract a representative feature.
+Can be None (default) if we want to get all ROIs’s representatives.</p>
+</dd>
+<dt><strong>assess_quality: bool, optional</strong></dt><dd><p>If True, a new roi feature is created, which represent the quality of
+the feature representative (the number of non-nan value for the
+feature over the ROI size).  Default is False.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>summary_feature: np.ndarray, shape=(self.k, feature_dim)</dt><dd><p>Representative feature computed according to <cite>method</cite>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.select_id">
+<span class="sig-name descname"><span class="pre">select_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.select_id" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a ROI id into an index to be used to index features safely.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>id</strong><span class="classifier">any hashable type, must be in self.get_id()</span></dt><dd><p>The id of the region one wants to access.</p>
+</dd>
+<dt><strong>roi</strong><span class="classifier">bool</span></dt><dd><p>If True (default), return the ROI index in the ROI list.
+If False, return the indices of the voxels of the ROI with the given
+id. That way, internal access to self.label can be made.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>index</strong><span class="classifier">int or np.array of shape (roi.size, )</span></dt><dd><p>Either the position of the ROI in the ROI list (if roi == True),
+or the positions of the voxels of the ROI with id <cite>id</cite>
+with respect to the self.label array.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.select_roi">
+<span class="sig-name descname"><span class="pre">select_roi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.select_roi" title="Link to this definition">¶</a></dt>
+<dd><p>Returns an instance of MROI with only the subset of chosen ROIs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>id_list: list of id (any hashable type)</strong></dt><dd><p>The id of the ROI to be kept in the structure.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.set_feature">
+<span class="sig-name descname"><span class="pre">set_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.set_feature" title="Link to this definition">¶</a></dt>
+<dd><p>Append or modify a feature</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fid</strong><span class="classifier">str</span></dt><dd><p>feature identifier</p>
+</dd>
+<dt><strong>data: list or array</strong></dt><dd><p>The feature data. Can be a list of self.k arrays of
+shape(self.size[k], p) or array of shape(self.size[k])</p>
+</dd>
+<dt><strong>id: any hashable type, optional</strong></dt><dd><p>Id of the ROI from which we want to set the feature.
+Can be None (default) if we want to set all ROIs’s features.</p>
+</dd>
+<dt><strong>override: bool, optional</strong></dt><dd><p>Allow feature overriding</p>
+</dd>
+<dt><strong>Note that we cannot create a feature having the same name than</strong></dt><dd></dd>
+<dt><strong>a ROI feature.</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.set_roi_feature">
+<span class="sig-name descname"><span class="pre">set_roi_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.set_roi_feature" title="Link to this definition">¶</a></dt>
+<dd><p>Append or modify a ROI feature</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fid: str,</strong></dt><dd><p>feature identifier</p>
+</dd>
+<dt><strong>data: list of self.k features or a single feature</strong></dt><dd><p>The ROI feature data</p>
+</dd>
+<dt><strong>id: any hashable type</strong></dt><dd><p>Id of the ROI of which we want to set the ROI feature.
+Can be None (default) if we want to set all ROIs’s ROI features.</p>
+</dd>
+<dt><strong>override: bool, optional,</strong></dt><dd><p>Allow feature overriding</p>
+</dd>
+<dt><strong>Note that we cannot create a ROI feature having the same name than</strong></dt><dd></dd>
+<dt><strong>a feature.</strong></dt><dd></dd>
+<dt><strong>Note that the `id` feature cannot be modified as an internal</strong></dt><dd></dd>
+<dt><strong>component.</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.SubDomains.to_image">
+<span class="sig-name descname"><span class="pre">to_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descrip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.SubDomains.to_image" title="Link to this definition">¶</a></dt>
+<dd><p>Generates a label image that represents self.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fid: str,</strong></dt><dd><p>Feature to be represented. If None, a binary image of the MROI
+domain will be we created.</p>
+</dd>
+<dt><strong>roi: bool,</strong></dt><dd><p>Whether or not to write the desired feature as a ROI one.
+(i.e. a ROI feature corresponding to <cite>fid</cite> will be looked upon,
+and if not found, a representative feature will be computed from
+the <cite>fid</cite> feature).</p>
+</dd>
+<dt><strong>method: str,</strong></dt><dd><p>If a feature is written as a ROI feature, this keyword tweaks
+the way the representative feature is computed.</p>
+</dd>
+<dt><strong>descrip: str,</strong></dt><dd><p>Description of the image, to be written in its header.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>nim</strong><span class="classifier">nibabel nifti image</span></dt><dd><p>Nifti image corresponding to the ROI feature to be written.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Requires that self.dom is an ddom.NDGridDomain</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.subdomain_from_array">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.spatial_models.mroi.</span></span><span class="sig-name descname"><span class="pre">subdomain_from_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.subdomain_from_array" title="Link to this definition">¶</a></dt>
+<dd><p>Return a SubDomain from an n-d int array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>label: np.array instance</strong></dt><dd><p>A supposedly boolean array that yields the regions.</p>
+</dd>
+<dt><strong>affine: np.array, optional</strong></dt><dd><p>Affine transform that maps the array coordinates
+to some embedding space by default, this is np.eye(dim+1, dim+1).</p>
+</dd>
+<dt><strong>nn: int,</strong></dt><dd><p>Neighboring system considered.
+Unused at the moment.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Only labels &gt; -1 are considered.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.subdomain_from_balls">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.spatial_models.mroi.</span></span><span class="sig-name descname"><span class="pre">subdomain_from_balls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radii</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.subdomain_from_balls" title="Link to this definition">¶</a></dt>
+<dd><p>Create discrete ROIs as a set of balls within a certain
+coordinate systems.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>domain: StructuredDomain instance,</strong></dt><dd><p>the description of a discrete domain</p>
+</dd>
+<dt><strong>positions: array of shape(k, dim):</strong></dt><dd><p>the positions of the balls</p>
+</dd>
+<dt><strong>radii: array of shape(k):</strong></dt><dd><p>the sphere radii</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.subdomain_from_image">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.spatial_models.mroi.</span></span><span class="sig-name descname"><span class="pre">subdomain_from_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">18</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.subdomain_from_image" title="Link to this definition">¶</a></dt>
+<dd><p>Return a SubDomain instance from the input mask image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mim: NiftiIImage instance, or string path toward such an image</strong></dt><dd><p>supposedly a label image</p>
+</dd>
+<dt><strong>nn: int, optional</strong></dt><dd><p>Neighboring system considered from the image can be 6, 18 or 26.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>The MultipleROI instance</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Only labels &gt; -1 are considered</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.mroi.subdomain_from_position_and_image">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.spatial_models.mroi.</span></span><span class="sig-name descname"><span class="pre">subdomain_from_position_and_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.mroi.subdomain_from_position_and_image" title="Link to this definition">¶</a></dt>
+<dd><p>Keep the set of labels of the image corresponding to a certain index
+so that their position is closest to the prescribed one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mim: NiftiIImage instance, or string path toward such an image</strong></dt><dd><p>supposedly a label image</p>
+</dd>
+<dt><strong>pos: array of shape(3) or list of length 3,</strong></dt><dd><p>the prescribed position</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">labs.spatial_models.mroi</a><ul>
+<li><a class="reference internal" href="#module-labs-spatial-models-mroi">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.spatial_models.mroi</span></code></a></li>
+<li><a class="reference internal" href="#class">Class</a></li>
+<li><a class="reference internal" href="#subdomains"><code class="xref py py-class docutils literal notranslate"><span class="pre">SubDomains</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains"><code class="docutils literal notranslate"><span class="pre">SubDomains</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.__init__"><code class="docutils literal notranslate"><span class="pre">SubDomains.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.copy"><code class="docutils literal notranslate"><span class="pre">SubDomains.copy()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.feature_to_voxel_map"><code class="docutils literal notranslate"><span class="pre">SubDomains.feature_to_voxel_map()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.get_coord"><code class="docutils literal notranslate"><span class="pre">SubDomains.get_coord()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.get_feature"><code class="docutils literal notranslate"><span class="pre">SubDomains.get_feature()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.get_id"><code class="docutils literal notranslate"><span class="pre">SubDomains.get_id()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.get_local_volume"><code class="docutils literal notranslate"><span class="pre">SubDomains.get_local_volume()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.get_roi_feature"><code class="docutils literal notranslate"><span class="pre">SubDomains.get_roi_feature()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.get_size"><code class="docutils literal notranslate"><span class="pre">SubDomains.get_size()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.get_volume"><code class="docutils literal notranslate"><span class="pre">SubDomains.get_volume()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.integrate"><code class="docutils literal notranslate"><span class="pre">SubDomains.integrate()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.plot_feature"><code class="docutils literal notranslate"><span class="pre">SubDomains.plot_feature()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.recompute_labels"><code class="docutils literal notranslate"><span class="pre">SubDomains.recompute_labels()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.remove_feature"><code class="docutils literal notranslate"><span class="pre">SubDomains.remove_feature()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.remove_roi_feature"><code class="docutils literal notranslate"><span class="pre">SubDomains.remove_roi_feature()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.representative_feature"><code class="docutils literal notranslate"><span class="pre">SubDomains.representative_feature()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.select_id"><code class="docutils literal notranslate"><span class="pre">SubDomains.select_id()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.select_roi"><code class="docutils literal notranslate"><span class="pre">SubDomains.select_roi()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.set_feature"><code class="docutils literal notranslate"><span class="pre">SubDomains.set_feature()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.set_roi_feature"><code class="docutils literal notranslate"><span class="pre">SubDomains.set_roi_feature()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.SubDomains.to_image"><code class="docutils literal notranslate"><span class="pre">SubDomains.to_image()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.subdomain_from_array"><code class="docutils literal notranslate"><span class="pre">subdomain_from_array()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.subdomain_from_balls"><code class="docutils literal notranslate"><span class="pre">subdomain_from_balls()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.subdomain_from_image"><code class="docutils literal notranslate"><span class="pre">subdomain_from_image()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.mroi.subdomain_from_position_and_image"><code class="docutils literal notranslate"><span class="pre">subdomain_from_position_and_image()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.labs.spatial_models.hroi.html"
+                          title="previous chapter">labs.spatial_models.hroi</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.labs.spatial_models.parcel_io.html"
+                          title="next chapter">labs.spatial_models.parcel_io</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.labs.spatial_models.mroi.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.parcel_io.html" title="labs.spatial_models.parcel_io"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.hroi.html" title="labs.spatial_models.hroi"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

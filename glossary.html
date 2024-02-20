@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+    <script src="_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="NeuroSpin tools" href="labs/index.html" />
+    <link rel="prev" title="Specifying a GLM in NiPy" href="users/glm_spec.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="index.html">
+  <img src="_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="labs/index.html" title="NeuroSpin tools"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="users/glm_spec.html" title="Specifying a GLM in NiPy"
+             accesskey="P">previous</a> |</li>
+  <li><a href="index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="users/index.html" accesskey="U">User Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="glossary">
+<h1>Glossary<a class="headerlink" href="#glossary" title="Link to this heading">¶</a></h1>
+<dl class="simple glossary">
+<dt id="term-AFNI">AFNI<a class="headerlink" href="#term-AFNI" title="Link to this term">¶</a></dt><dd><p><a class="reference external" href="http://afni.nimh.nih.gov/afni">AFNI</a> is a functional imaging analysis package.  It is funded by
+the NIMH, based in Bethesda, Maryland, and directed by Robert
+Cox.  Like <a class="reference internal" href="#term-FSL"><span class="xref std std-term">FSL</span></a>, it is written in C, and it’s very common
+to use shell scripting of AFNI command line utilities to
+automate analyses.  Users often describe liking AFNI’s
+scriptability, and image visualization.  It uses the <a class="reference internal" href="#term-GPL"><span class="xref std std-term">GPL</span></a>
+license.</p>
+</dd>
+<dt id="term-BSD">BSD<a class="headerlink" href="#term-BSD" title="Link to this term">¶</a></dt><dd><p>Berkeley software distribution license.  The <a class="reference external" href="http://www.opensource.org/licenses/bsd-license.php">BSD</a> license is
+permissive, in that it allows you to modify and use the code
+without requiring that you use the same license.  It allows
+you to distribute closed-source binaries.</p>
+</dd>
+<dt id="term-BOLD">BOLD<a class="headerlink" href="#term-BOLD" title="Link to this term">¶</a></dt><dd><p>Contrast that is blood oxygen level dependent.  When a brain
+area becomes active, blood flow increases to that area.  It
+turns out that, with the blood flow increase, there is a change
+in the relative concentrations of oxygenated and deoxygenated
+hemoglobin.  Oxy- and deoxy- hemoglobin have different magnetic
+properties.  This in turn leads to a change in MRI signal that
+can be detected by collecting suitably sensitive MRI images at
+regular short intervals during the blood flow change.
+See the <a class="reference external" href="http://en.wikipedia.org/wiki/Functional_magnetic_resonance_imaging">Wikipedia FMRI</a> article for more detail.</p>
+</dd>
+<dt id="term-BrainVisa">BrainVisa<a class="headerlink" href="#term-BrainVisa" title="Link to this term">¶</a></dt><dd><p><a class="reference external" href="http://brainvisa.info">BrainVISA</a> is a sister project to NIPY.  It also uses Python,
+and provides a carefully designed framework and automatic GUI
+for defining imaging processing workflows.  It has tools to
+integrate command line and other utilities into these
+workflows.  Its particular strength is anatomical image
+processing but it also supports FMRI and other imaging
+modalities.  BrainVISA is based in <a class="reference external" href="http://neurospin-wiki.org/">NeuroSpin</a>, outside Paris.</p>
+</dd>
+<dt id="term-DTI">DTI<a class="headerlink" href="#term-DTI" title="Link to this term">¶</a></dt><dd><p>Diffusion tensor imaging.  DTI is rather poorly named, because
+it is a model of the diffusion signal, and an analysis method,
+rather than an imaging method.  The simplest and most common
+diffusion tensor model assumes that diffusion direction and
+velocity at every voxel can be modeled by a single tensor - that
+is, by an ellipse of regular shape, fully described by the length
+and orientation of its three orthogonal axes.  This model can
+easily fail in fairly common situations, such as white-matter
+fiber track crossings.</p>
+</dd>
+<dt id="term-DWI">DWI<a class="headerlink" href="#term-DWI" title="Link to this term">¶</a></dt><dd><p>Diffusion-weighted imaging.  DWI is the general term for MRI
+imaging designed to image diffusion processes.  Sometimes
+researchers use <a class="reference internal" href="#term-DTI"><span class="xref std std-term">DTI</span></a> to have the same meaning, but
+<a class="reference internal" href="#term-DTI"><span class="xref std std-term">DTI</span></a> is a common DWI signal model and analysis method.</p>
+</dd>
+<dt id="term-EEGlab">EEGlab<a class="headerlink" href="#term-EEGlab" title="Link to this term">¶</a></dt><dd><p>The most widely-used open-source package for analyzing
+electro-physiological data.  <a class="reference external" href="http://sccn.ucsd.edu/eeglab">EEGlab</a> is written in <a class="reference internal" href="#term-Matlab"><span class="xref std std-term">matlab</span></a>
+and uses a <a class="reference internal" href="#term-GPL"><span class="xref std std-term">GPL</span></a> license.</p>
+</dd>
+<dt id="term-FMRI">FMRI<a class="headerlink" href="#term-FMRI" title="Link to this term">¶</a></dt><dd><p>Functional magnetic resonance imaging.  It refers to MRI image
+acquisitions and analysis designed to look at brain function
+rather than structure.  Most people use FMRI to refer to
+<a class="reference internal" href="#term-BOLD"><span class="xref std std-term">BOLD</span></a> imaging in particular.  See the <a class="reference external" href="http://en.wikipedia.org/wiki/Functional_magnetic_resonance_imaging">Wikipedia FMRI</a>
+article for more detail.</p>
+</dd>
+<dt id="term-FSL">FSL<a class="headerlink" href="#term-FSL" title="Link to this term">¶</a></dt><dd><p><a class="reference external" href="http://www.fmrib.ox.ac.uk/fsl">FSL</a> is the <a class="reference external" href="http://www.fmrib.ox.ac.uk">FMRIB</a> software library, written by the <a class="reference external" href="http://www.fmrib.ox.ac.uk">FMRIB</a>
+analysis group, and directed by Steve Smith.  Like <a class="reference internal" href="#term-AFNI"><span class="xref std std-term">AFNI</span></a>,
+it is a large collection of C / C++ command line utilities that
+can be scripted with a custom GUI / batch system, or using shell
+scripting.  Its particular strength is analysis of <a class="reference internal" href="#term-DWI"><span class="xref std std-term">DWI</span></a>
+data, and <a class="reference internal" href="#term-ICA"><span class="xref std std-term">ICA</span></a> functional data analysis, although it has
+strong tools for the standard <a class="reference internal" href="#term-SPM-approach"><span class="xref std std-term">SPM approach</span></a> to FMRI.  It
+is free for academic use, and open-source, but not free for
+commercial use.</p>
+</dd>
+<dt id="term-GPL">GPL<a class="headerlink" href="#term-GPL" title="Link to this term">¶</a></dt><dd><p>The <a class="reference external" href="http://www.gnu.org/licenses/gpl.html">GPL</a> is the GNU general public license.  It is one of the
+most commonly-used open-source software licenses.  The
+distinctive feature of the GPL license is that it requires that
+any code derived from GPL code also uses a GPL license.  It also
+requires that any code that is statically or dynamically linked
+to GPL code has a GPL-compatible license.  See: <a class="reference external" href="https://en.Wikipedia.org/wiki/GNU_General_Public_License">Wikipedia GPL</a>
+and <a class="reference external" href="http://www.gnu.org/licenses/gpl-faq.html">http://www.gnu.org/licenses/gpl-faq.html</a>.</p>
+</dd>
+<dt id="term-ICA">ICA<a class="headerlink" href="#term-ICA" title="Link to this term">¶</a></dt><dd><p>Independent component analysis is a multivariate technique
+related to <a class="reference internal" href="#term-PCA"><span class="xref std std-term">PCA</span></a>, to estimate independent components of
+signal from multiple sensors.  In functional imaging, this
+usually means detecting underlying spatial and temporal
+components within the brain, where the brain voxels can be
+considered to be different sensors of the signal.  See the
+<a class="reference external" href="http://en.wikipedia.org/wiki/Independent_component_analysis">Wikipedia ICA</a> page.</p>
+</dd>
+<dt id="term-LGPL">LGPL<a class="headerlink" href="#term-LGPL" title="Link to this term">¶</a></dt><dd><p>The lesser GNU public license.  <a class="reference external" href="http://www.gnu.org/copyleft/lesser.html">LGPL</a> differs from the
+<a class="reference internal" href="#term-GPL"><span class="xref std std-term">GPL</span></a> in that you can link to LGPL code from non-LGPL code
+without having to adopt a GPL-compatible license.  However, if
+you modify the code (create a “derivative work”), that
+modification has to be released under the LGPL.  See <a class="reference external" href="https://en.Wikipedia.org/wiki/GNU_Lesser_General_Public_License">Wikipedia
+LGPL</a>
+for more discussion.</p>
+</dd>
+<dt id="term-Matlab">Matlab<a class="headerlink" href="#term-Matlab" title="Link to this term">¶</a></dt><dd><p><a class="reference external" href="http://www.mathworks.com">matlab</a> began as a high-level programming language for working
+with matrices.  Over time it has expanded to become a fairly
+general-purpose language.  See also: <a class="reference external" href="https://en.Wikipedia.org/wiki/MATLAB">Wikipedia MATLAB</a>.  It has good numerical
+algorithms, 2D graphics, and documentation.  There are several
+large neuroscience software projects written in MATLAB,
+including <a class="reference internal" href="#term-SPM-software"><span class="xref std std-term">SPM software</span></a>, and <a class="reference internal" href="#term-EEGlab"><span class="xref std std-term">EEGlab</span></a>.</p>
+</dd>
+<dt id="term-PCA">PCA<a class="headerlink" href="#term-PCA" title="Link to this term">¶</a></dt><dd><p>Principal component analysis is a multivariate technique to
+determine orthogonal components across multiple sources (or
+sensors).  See <a class="reference internal" href="#term-ICA"><span class="xref std std-term">ICA</span></a> and the <a class="reference external" href="http://en.wikipedia.org/wiki/Principal_component_analysis">Wikipedia PCA</a> page.</p>
+</dd>
+<dt id="term-PET">PET<a class="headerlink" href="#term-PET" title="Link to this term">¶</a></dt><dd><p>Positron emission tomography is a method of detecting the
+spatial distributions of certain radio-labeled compounds -
+usually in the brain.  The scanner detectors pick up the spatial
+distribution of emitted radiation from within the body.  From
+this pattern, it is possible to reconstruct the distribution of
+radiactivity in the body, using techniques such as filtered back
+projection.  PET was the first mainstream technique used for
+detecting regional changes in blood-flow as an index of which
+brain areas were active when the subject is doing various tasks,
+or at rest.  These studies nearly all used <a class="reference internal" href="#term-water-activation-PET"><span class="xref std std-term">water
+activation PET</span></a>.  See the <a class="reference external" href="http://en.wikipedia.org/wiki/Positron_emission_tomography">Wikipedia PET</a> entry.</p>
+</dd>
+<dt id="term-SPM">SPM<a class="headerlink" href="#term-SPM" title="Link to this term">¶</a></dt><dd><p>SPM (statistical parametric mapping) refers either to the
+<a class="reference internal" href="#term-SPM-approach"><span class="xref std std-term">SPM approach</span></a> to analysis or the <a class="reference internal" href="#term-SPM-software"><span class="xref std std-term">SPM software</span></a>
+package.</p>
+</dd>
+<dt id="term-SPM-approach">SPM approach<a class="headerlink" href="#term-SPM-approach" title="Link to this term">¶</a></dt><dd><p>Statistical parametric mapping is a way of analyzing data, that
+involves creating an image (the <em>map</em>) containing statistics,
+and then doing tests on this statistic image.  For example, we
+often create a t statistic image where each <a class="reference internal" href="#term-voxel"><span class="xref std std-term">voxel</span></a>
+contains a t statistic value for the time-series from that
+voxel.  The <a class="reference internal" href="#term-SPM-software"><span class="xref std std-term">SPM software</span></a> package implements this
+approach - as do several others, including <a class="reference internal" href="#term-FSL"><span class="xref std std-term">FSL</span></a> and
+<a class="reference internal" href="#term-AFNI"><span class="xref std std-term">AFNI</span></a>.</p>
+</dd>
+<dt id="term-SPM-software">SPM software<a class="headerlink" href="#term-SPM-software" title="Link to this term">¶</a></dt><dd><p><a class="reference external" href="http://www.fil.ion.ucl.ac.uk/spm">SPM</a> (statistical parametric mapping) is the name of the
+<a class="reference external" href="http://www.mathworks.com">matlab</a> based package written by John Ashburner, Karl Friston
+and others at the <a class="reference external" href="http://www.fil.ion.ucl.ac.uk">Functional Imaging Laboratory</a> in
+London.  More people use the SPM package to analyze <a class="reference internal" href="#term-FMRI"><span class="xref std std-term">FMRI</span></a>
+and <a class="reference internal" href="#term-PET"><span class="xref std std-term">PET</span></a> data than any other.  It has good lab and
+community support, and the <a class="reference internal" href="#term-Matlab"><span class="xref std std-term">matlab</span></a> source code is
+available under the <a class="reference internal" href="#term-GPL"><span class="xref std std-term">GPL</span></a> license.</p>
+</dd>
+<dt id="term-VoxBo">VoxBo<a class="headerlink" href="#term-VoxBo" title="Link to this term">¶</a></dt><dd><p>Quoting from the <a class="reference external" href="http://www.voxbo.org">Voxbo</a> webpage - “VoxBo is a software package
+for the processing, analysis, and display of data from
+functional neuroimaging experiments”.  Like <a class="reference internal" href="#term-SPM"><span class="xref std std-term">SPM</span></a>,
+<a class="reference internal" href="#term-FSL"><span class="xref std std-term">FSL</span></a> and <a class="reference internal" href="#term-AFNI"><span class="xref std std-term">AFNI</span></a>, VoxBo provides algorithms for a
+full FMRI analysis, including statistics.  It also provides
+software for lesion-symptom analysis, and has a parallel
+scripting engine.  VoxBo has a <a class="reference internal" href="#term-GPL"><span class="xref std std-term">GPL</span></a> license.  Dan Kimberg
+leads development.</p>
+</dd>
+<dt id="term-voxel">voxel<a class="headerlink" href="#term-voxel" title="Link to this term">¶</a></dt><dd><p>Voxels are volumetric pixels - that is, they are values in a
+regular grid in three dimensional space - see the <a class="reference external" href="https://en.Wikipedia.org/wiki/Voxel">Wikipedia voxel</a> entry.</p>
+</dd>
+<dt id="term-water-activation-PET">water activation PET<a class="headerlink" href="#term-water-activation-PET" title="Link to this term">¶</a></dt><dd><p>A <a class="reference internal" href="#term-PET"><span class="xref std std-term">PET</span></a> technique to detect regional changes in blood
+flow.  Before each scan, we inject the subject with radio-labeled
+water.  The radio-labeled water reaches the arterial blood, and
+then distributes (to some extent) in the brain.  The
+concentration of radioactive water increases in brain areas with
+higher blood flow.  Thus, the image of estimated counts in the
+brain has an intensity that is influenced by blood flow.  This
+use has been almost completely replaced by the less invasive
+<a class="reference internal" href="#term-BOLD"><span class="xref std std-term">BOLD</span></a> <a class="reference internal" href="#term-FMRI"><span class="xref std std-term">FMRI</span></a> technique.</p>
+</dd>
+</dl>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="documentation.html">Documentation</a></li>
+    <li><a href="devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="users/glm_spec.html"
+                          title="previous chapter">Specifying a GLM in NiPy</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="labs/index.html"
+                          title="next chapter">NeuroSpin tools</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/glossary.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="labs/index.html" title="NeuroSpin tools"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="users/glm_spec.html" title="Specifying a GLM in NiPy"
+             >previous</a> |</li>
+  <li><a href="index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="users/index.html" >User Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Code discussions" href="../code_discussions/index.html" />
+    <link rel="prev" title="Nipy roadmap" href="roadmap.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../code_discussions/index.html" title="Code discussions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="roadmap.html" title="Nipy roadmap"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">Development Planning</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="todo-for-nipy-development">
+<span id="todo"></span><h1>TODO for nipy development<a class="headerlink" href="#todo-for-nipy-development" title="Link to this heading">¶</a></h1>
+<p>This document will serve to organize current development work on nipy.
+It will include current sprint items, future feature ideas, and design
+discussions, etc…</p>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Create NIPY sidebar with links to all project related websites.</p></li>
+<li><p>Create a Best Practices document.</p></li>
+<li><p>Create a rst doc for <em>Request a review</em> process.</p></li>
+</ul>
+<section id="tutorials">
+<h3>Tutorials<a class="headerlink" href="#tutorials" title="Link to this heading">¶</a></h3>
+<p>Tutorials are an excellent way to document and test the software.
+Some ideas for tutorials to write in our Sphinx documentation (in no
+specific order):</p>
+<ul class="simple">
+<li><p>Slice timing</p></li>
+<li><p>Image resampling</p></li>
+<li><p>Image IO</p></li>
+<li><p>Registration using SPM/FSL</p></li>
+<li><p>FMRI analysis</p></li>
+<li><p>Making one 4D image from many 3D images, and vice versa.  Document
+ImageList and FmriImageList.</p></li>
+<li><p>Apply SPM registration .mat to a NIPY image.</p></li>
+<li><p>Create working example out of this TRAC <a class="reference external" href="http://neuroimaging.scipy.org/neuroimaging/ni/wiki/PrincipalComponents">pca</a>
+page.  Should also be a rest document.</p></li>
+<li><p>Add analysis pipeline(s) blueprint.</p></li>
+</ul>
+</section>
+</section>
+<section id="bugs">
+<h2>Bugs<a class="headerlink" href="#bugs" title="Link to this heading">¶</a></h2>
+<p>These should be moved to the <a class="reference external" href="http://nipy.org/nipy">nipy</a> bug section on github.  Placed
+here until they can be input.</p>
+<ul class="simple">
+<li><p>Fix possible precision error in
+fixes.scipy.ndimage.test_registration function
+test_autoalign_nmi_value_2.  See FIXME.</p></li>
+<li><p>Fix error in test_segment test_texture2 functions
+(fixes.scipy.ndimage).  See FIXME.</p></li>
+<li><p>import nipy.algorithms is very slow!  Find and fix.  The
+shared library is slow.</p></li>
+<li><p>base class for all new-style classes should be <em>object</em>; preliminary
+search with <code class="docutils literal notranslate"><span class="pre">grin</span> <span class="pre">&quot;class</span> <span class="pre">+[a-zA-Z0-9]+</span> <span class="pre">*:&quot;</span></code></p></li>
+</ul>
+</section>
+<section id="refactorings">
+<h2>Refactorings<a class="headerlink" href="#refactorings" title="Link to this heading">¶</a></h2>
+<ul>
+<li><p>image.save function should accept filename or file-like object.  If
+I have an open file I would like to be able to pass that in also,
+instead of fp.name.  Happens in test code a lot.</p></li>
+<li><p>image._open function should accept Image objects in addition to
+ndarrays and filenames.  Currently the save function has to call
+np.asarray(img) to get the data array out of the image and pass them
+to _open in order to create the output image.</p></li>
+<li><p>Add dtype options when saving. When saving images it uses the native
+dtype for the system.  Should be able to specify this.  in the
+test_file_roundtrip, self.img is a uint8, but is saved to tmpfile as
+float64.  Adding this would allow us to save images without the
+scaling being applied.</p></li>
+<li><p>In image._open(url, …), should we test if the “url” is a PyNiftiIO
+object already? This was in the tests from ‘old code’ and passed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">new</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="o">.</span><span class="n">grid</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>img._data is a PyNIftiIO object.  It works, but we should verify
+it’s harmless otherwise prevent it from happening.</p>
+</li>
+<li><p>Look at image.merge_image function.  Is it still needed?  Does it
+fit into the current api?</p></li>
+<li><p>FmriImageList.emptycopy() - Is there a better way to do this?
+Matthew proposed possibly implementing Gael’s dress/undress metadata
+example.</p></li>
+<li><p>Verify documentation of the image generators. Create a simple
+example using them.</p></li>
+<li><p>Use python 2.5 feature of being able to reset the generator?</p></li>
+<li><p>Add test data where volumes contain intensity ramps.  Slice with
+generator and test ramp values.</p></li>
+<li><p>Implement <a class="reference external" href="https://blueprints.launchpad.net/nipy/+spec/fmriimagelist">fmriimagelist blueprint</a>.</p></li>
+</ul>
+</section>
+<section id="code-design-thoughts">
+<h2>Code Design Thoughts<a class="headerlink" href="#code-design-thoughts" title="Link to this heading">¶</a></h2>
+<p>A central location to dump thoughts that could be shared by the
+developers and tracked easily.</p>
+</section>
+<section id="future-features">
+<h2>Future Features<a class="headerlink" href="#future-features" title="Link to this heading">¶</a></h2>
+<p>Put ideas here for features nipy should have but are not part of our
+current development.  These features will eventually be added to a
+weekly sprint log.</p>
+<ul class="simple">
+<li><p>Auto backup script for nipy repos to run as weekly cron job.  We
+should setup a machine to perform regular branch builds and tests.
+This would also provide an on-site backup.</p></li>
+<li><p>See if we can add bz2 support to nifticlib.</p></li>
+<li><p>Should image.load have an optional squeeze keyword to squeeze a 4D
+image with one frame into a 3D image?</p></li>
+</ul>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">TODO for nipy development</a><ul>
+<li><a class="reference internal" href="#documentation">Documentation</a><ul>
+<li><a class="reference internal" href="#tutorials">Tutorials</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bugs">Bugs</a></li>
+<li><a class="reference internal" href="#refactorings">Refactorings</a></li>
+<li><a class="reference internal" href="#code-design-thoughts">Code Design Thoughts</a></li>
+<li><a class="reference internal" href="#future-features">Future Features</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="roadmap.html"
+                          title="previous chapter">Nipy roadmap</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../code_discussions/index.html"
+                          title="next chapter">Code discussions</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/devel/planning/TODO.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../code_discussions/index.html" title="Code discussions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="roadmap.html" title="Nipy roadmap"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" >Development Planning</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

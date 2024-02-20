@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.optimize" href="nipy.algorithms.optimize.html" />
+    <link rel="prev" title="algorithms.interpolation" href="nipy.algorithms.interpolation.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.optimize.html" title="algorithms.optimize"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.interpolation.html" title="algorithms.interpolation"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-kernel-smooth">
+<h1>algorithms.kernel_smooth<a class="headerlink" href="#algorithms-kernel-smooth" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-kernel-smooth">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.kernel_smooth</span></code><a class="headerlink" href="#module-algorithms-kernel-smooth" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.kernel_smooth</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-10318cdb6c2c057c71e3e7a948846e58aedd9e48.png" alt="Inheritance diagram of nipy.algorithms.kernel_smooth" usemap="#inheritance47a48ff640" class="inheritance graphviz" /></div>
+<map id="inheritance47a48ff640" name="inheritance47a48ff640">
+<area shape="rect" id="node1" href="#nipy.algorithms.kernel_smooth.LinearFilter" target="_top" title="A class to implement some FFT smoothers for Image objects." alt="" coords="5,5,244,32"/>
+</map><p id="module-nipy.algorithms.kernel_smooth">Linear filter(s).  For the moment, only a Gaussian smoothing filter</p>
+</section>
+<section id="class">
+<h2>Class<a class="headerlink" href="#class" title="Link to this heading">¶</a></h2>
+</section>
+<section id="linearfilter">
+<h2><a class="reference internal" href="#nipy.algorithms.kernel_smooth.LinearFilter" title="nipy.algorithms.kernel_smooth.LinearFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">LinearFilter</span></code></a><a class="headerlink" href="#linearfilter" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.kernel_smooth.LinearFilter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.kernel_smooth.</span></span><span class="sig-name descname"><span class="pre">LinearFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.kernel_smooth.LinearFilter" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to implement some FFT smoothers for Image objects.
+By default, this does a Gaussian kernel smooth. More choices
+would be better!</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.kernel_smooth.LinearFilter.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.kernel_smooth.LinearFilter.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>coordmap</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">CoordinateMap</span></code></span></dt><dd></dd>
+<dt><strong>shape</strong><span class="classifier">sequence</span></dt><dd></dd>
+<dt><strong>fwhm</strong><span class="classifier">float, optional</span></dt><dd><p>fwhm for Gaussian kernel, default is 6.0</p>
+</dd>
+<dt><strong>scale</strong><span class="classifier">float, optional</span></dt><dd><p>scaling to apply to data after smooth, default 1.0</p>
+</dd>
+<dt><strong>location</strong><span class="classifier">float</span></dt><dd><p>offset to apply to data after smooth and scaling, default 0</p>
+</dd>
+<dt><strong>cov</strong><span class="classifier">None or array, optional</span></dt><dd><p>Covariance matrix</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.kernel_smooth.LinearFilter.normalization">
+<span class="sig-name descname"><span class="pre">normalization</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'l1sum'</span></em><a class="headerlink" href="#nipy.algorithms.kernel_smooth.LinearFilter.normalization" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.kernel_smooth.LinearFilter.smooth">
+<span class="sig-name descname"><span class="pre">smooth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inimage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_fft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.kernel_smooth.LinearFilter.smooth" title="Link to this definition">¶</a></dt>
+<dd><p>Apply smoothing to <cite>inimage</cite></p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>inimage</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code></span></dt><dd><p>The image to be smoothed.  Should be 3D.</p>
+</dd>
+<dt><strong>clean</strong><span class="classifier">bool, optional</span></dt><dd><p>Should we call <code class="docutils literal notranslate"><span class="pre">nan_to_num</span></code> on the data before smoothing?</p>
+</dd>
+<dt><strong>is_fft</strong><span class="classifier">bool, optional</span></dt><dd><p>Has the data already been fft’d?</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>s_image</strong><span class="classifier"><cite>Image</cite></span></dt><dd><p>New image, with smoothing applied</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.kernel_smooth.fwhm2sigma">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.kernel_smooth.</span></span><span class="sig-name descname"><span class="pre">fwhm2sigma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fwhm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.kernel_smooth.fwhm2sigma" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a FWHM value to sigma in a Gaussian kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fwhm</strong><span class="classifier">array-like</span></dt><dd><p>FWHM value or values</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>sigma</strong><span class="classifier">array or float</span></dt><dd><p>sigma values corresponding to <cite>fwhm</cite> values</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sigma</span> <span class="o">=</span> <span class="n">fwhm2sigma</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sigmae</span> <span class="o">=</span> <span class="n">fwhm2sigma</span><span class="p">([</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sigma</span> <span class="o">==</span> <span class="n">sigmae</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.kernel_smooth.sigma2fwhm">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.kernel_smooth.</span></span><span class="sig-name descname"><span class="pre">sigma2fwhm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.kernel_smooth.sigma2fwhm" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a sigma in a Gaussian kernel to a FWHM value</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sigma</strong><span class="classifier">array-like</span></dt><dd><p>sigma value or values</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fwhm</strong><span class="classifier">array or float</span></dt><dd><p>fwhm values corresponding to <cite>sigma</cite> values</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fwhm</span> <span class="o">=</span> <span class="n">sigma2fwhm</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fwhms</span> <span class="o">=</span> <span class="n">sigma2fwhm</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fwhm</span> <span class="o">==</span> <span class="n">fwhms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.kernel_smooth</a><ul>
+<li><a class="reference internal" href="#module-algorithms-kernel-smooth">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.kernel_smooth</span></code></a></li>
+<li><a class="reference internal" href="#class">Class</a></li>
+<li><a class="reference internal" href="#linearfilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">LinearFilter</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.kernel_smooth.LinearFilter"><code class="docutils literal notranslate"><span class="pre">LinearFilter</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.kernel_smooth.LinearFilter.__init__"><code class="docutils literal notranslate"><span class="pre">LinearFilter.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.kernel_smooth.LinearFilter.normalization"><code class="docutils literal notranslate"><span class="pre">LinearFilter.normalization</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.kernel_smooth.LinearFilter.smooth"><code class="docutils literal notranslate"><span class="pre">LinearFilter.smooth()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.kernel_smooth.fwhm2sigma"><code class="docutils literal notranslate"><span class="pre">fwhm2sigma()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.kernel_smooth.sigma2fwhm"><code class="docutils literal notranslate"><span class="pre">sigma2fwhm()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.interpolation.html"
+                          title="previous chapter">algorithms.interpolation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.optimize.html"
+                          title="next chapter">algorithms.optimize</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.kernel_smooth.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.optimize.html" title="algorithms.optimize"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.interpolation.html" title="algorithms.interpolation"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

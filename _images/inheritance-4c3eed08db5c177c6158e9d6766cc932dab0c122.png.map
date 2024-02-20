@@ -1,0 +1,7 @@
+<map id="inheritancecf0d4ec7af" name="inheritancecf0d4ec7af">
+<area shape="rect" id="node1" href="#nipy.core.reference.spaces.AffineError" target="_top" title="reference.spaces.AffineError" alt="" coords="260,5,446,32"/>
+<area shape="rect" id="node2" href="#nipy.core.reference.spaces.SpaceError" target="_top" title="reference.spaces.SpaceError" alt="" coords="5,56,196,83"/>
+<area shape="rect" id="node3" href="#nipy.core.reference.spaces.AxesError" target="_top" title="reference.spaces.AxesError" alt="" coords="261,56,445,83"/>
+<area shape="rect" id="node4" href="#nipy.core.reference.spaces.SpaceTypeError" target="_top" title="reference.spaces.SpaceTypeError" alt="" coords="244,107,462,133"/>
+<area shape="rect" id="node5" href="#nipy.core.reference.spaces.XYZSpace" target="_top" title="Class contains logic for spaces with XYZ coordinate systems" alt="" coords="6,5,195,32"/>
+</map>

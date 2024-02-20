@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Optional data packages" href="../users/install_data.html" />
+    <link rel="prev" title="Why we should be using BSD" href="../faq/johns_bsd_pitch.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../index.html">
+  <img src="../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../users/install_data.html" title="Optional data packages"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../faq/johns_bsd_pitch.html" title="Why we should be using BSD"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="brainpy-hbm-abstract-2005">
+<span id="brainpy-hbm-abstract"></span><h1>BrainPy HBM abstract, 2005<a class="headerlink" href="#brainpy-hbm-abstract-2005" title="Link to this heading">¶</a></h1>
+<p>This is the abstract describing the BrainPy / NIPY project from
+the <a class="reference external" href="http://www.humanbrainmapping.org/toronto2005">HBM2005</a> conference.</p>
+<section id="brainpy-an-open-source-environment-for-the-analysis-and-visualization-of-human-brain-data">
+<h2>BrainPy: an open source environment for the analysis and visualization of human brain data<a class="headerlink" href="#brainpy-an-open-source-environment-for-the-analysis-and-visualization-of-human-brain-data" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>Jonathan Taylor (1), Keith Worsley (2), Matthew Brett (3), Yann
+Cointepas (4), John Hunter (5), Jarrod Millman (3), Jean-Baptiste
+Poline (4), Fernando Perez (6)</p>
+</div></blockquote>
+<ol class="arabic simple">
+<li><p>Dept. of Statistics, Stanford University, U.S.A.</p></li>
+<li><p>Dept. of Mathematics and Statistics, !McGill University, Canada</p></li>
+<li><p>Department of Neuroscience, University of California, Berkeley, U.S.A</p></li>
+<li><p>Service Hospitalier Frédéric Joliot, France</p></li>
+<li><p>Complex Systems Laboratory, University of Chicago, U.S.A.</p></li>
+<li><p>Department of Applied Mathematics, University of Colorado at Boulder, U.S.A.</p></li>
+</ol>
+<section id="objective">
+<h3>Objective<a class="headerlink" href="#objective" title="Link to this heading">¶</a></h3>
+<p>What follows are the goals of BrainPy, a multi-center project to
+provide an open source environment for the analysis and visualization
+of human brain data built on top of python. While the project is still
+in its initial stages, packages for file I/O, script support as well
+as single subject fMRI and random effects group comparisons model are
+currently available.</p>
+</section>
+<section id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Link to this heading">¶</a></h3>
+<p>Scientific computing has evolved over the last two decades in two
+broad directions. One, there has been a movement to the use of
+high-level interface languages that glue existing high-performance
+libraries into an accessible, scripted, interactive environment, eg
+IDL, matlab. Two, there has been a shift to open algorithms and
+software because this development process leads to better code, and
+because it more consistent with the scientific method.</p>
+</section>
+<section id="results-discussion">
+<h3>Results &amp; Discussion<a class="headerlink" href="#results-discussion" title="Link to this heading">¶</a></h3>
+<p>The proposed environment includes the following:</p>
+<ul class="simple">
+<li><p>We intend to provide users with an open source environment which is
+interoperable with current packages such as SPM and AFNI, both at a
+file I/O level and, where possible, interactively (e.g. pymat –
+calling matlab/SPM from python).</p></li>
+<li><p>Read/write/conversion support for all major imaging formats and
+packages (SPM/ANALYZE, <a class="reference internal" href="../glossary.html#term-FSL"><span class="xref std std-term">FSL</span></a>, <a class="reference internal" href="../glossary.html#term-AFNI"><span class="xref std std-term">AFNI</span></a>, MINC, NIFTI, and
+<a class="reference internal" href="../glossary.html#term-VoxBo"><span class="xref std std-term">VoxBo</span></a></p></li>
+<li><p>Low-level access to data through an interactive shell, which is
+important for developing new analysis methods, as well as
+high-level access through GUIs for specialized tasks using standard
+python tools.</p></li>
+<li><p>Visualization of results using pre-existing tools such as
+<a class="reference internal" href="../glossary.html#term-BrainVisa"><span class="xref std std-term">BrainVisa</span></a>, as well as support for development of new tools
+using VTK.</p></li>
+<li><p>Support for MATLAB style numeric packages (Numarray) and plotting
+(<a class="reference external" href="http://matplotlib.sourceforge.net">matplotlib</a>).</p></li>
+<li><p>Support for EEG analysis including EEG/MEG/fMRI fusion analysis.</p></li>
+<li><p>Support for spatio-temporal wavelet analysis
+(<a class="reference external" href="http://phiwave.sourceforge.net">PhiWave</a>)</p></li>
+</ul>
+</section>
+<section id="conclusions">
+<h3>Conclusions<a class="headerlink" href="#conclusions" title="Link to this heading">¶</a></h3>
+<p>BrainPy is an open-source environment for the analysis and
+visualization of neuroimaging data built on top of python.</p>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../documentation.html">Documentation</a></li>
+    <li><a href="../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">BrainPy HBM abstract, 2005</a><ul>
+<li><a class="reference internal" href="#brainpy-an-open-source-environment-for-the-analysis-and-visualization-of-human-brain-data">BrainPy: an open source environment for the analysis and visualization of human brain data</a><ul>
+<li><a class="reference internal" href="#objective">Objective</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+<li><a class="reference internal" href="#results-discussion">Results &amp; Discussion</a></li>
+<li><a class="reference internal" href="#conclusions">Conclusions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../faq/johns_bsd_pitch.html"
+                          title="previous chapter">Why we should be using BSD</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../users/install_data.html"
+                          title="next chapter">Optional data packages</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/references/brainpy_abstract.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../users/install_data.html" title="Optional data packages"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../faq/johns_bsd_pitch.html" title="Why we should be using BSD"
+             >previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

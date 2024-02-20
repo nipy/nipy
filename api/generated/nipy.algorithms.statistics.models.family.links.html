@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.statistics.models.family.varfuncs" href="nipy.algorithms.statistics.models.family.varfuncs.html" />
+    <link rel="prev" title="algorithms.statistics.models.family.family" href="nipy.algorithms.statistics.models.family.family.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.family.varfuncs.html" title="algorithms.statistics.models.family.varfuncs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.family.family.html" title="algorithms.statistics.models.family.family"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-statistics-models-family-links">
+<h1>algorithms.statistics.models.family.links<a class="headerlink" href="#algorithms-statistics-models-family-links" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-statistics-models-family-links">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.models.family.links</span></code><a class="headerlink" href="#module-algorithms-statistics-models-family-links" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.statistics.models.family.links</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-0e479ff3ef903931c310dc805a27f30379d3cd4d.png" alt="Inheritance diagram of nipy.algorithms.statistics.models.family.links" usemap="#inheritancead4ca599ab" class="inheritance graphviz" /></div>
+<map id="inheritancead4ca599ab" name="inheritancead4ca599ab">
+<area shape="rect" id="node1" href="#nipy.algorithms.statistics.models.family.links.CDFLink" target="_top" title="The use the CDF of a scipy.stats distribution as a link function:" alt="" coords="343,5,485,32"/>
+<area shape="rect" id="node2" href="#nipy.algorithms.statistics.models.family.links.Logit" target="_top" title="The logit transform as a link function:" alt="" coords="172,31,291,57"/>
+<area shape="rect" id="node3" href="#nipy.algorithms.statistics.models.family.links.CLogLog" target="_top" title="The complementary log&#45;log transform as a link function:" alt="" coords="343,56,485,83"/>
+<area shape="rect" id="node4" href="#nipy.algorithms.statistics.models.family.links.Link" target="_top" title="A generic link function for one&#45;parameter exponential" alt="" coords="5,81,120,108"/>
+<area shape="rect" id="node5" href="#nipy.algorithms.statistics.models.family.links.Log" target="_top" title="The log transform as a link function:" alt="" coords="176,81,287,108"/>
+<area shape="rect" id="node6" href="#nipy.algorithms.statistics.models.family.links.Power" target="_top" title="The power transform as a link function:" alt="" coords="168,132,295,159"/>
+</map><span class="target" id="module-nipy.algorithms.statistics.models.family.links"></span></section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="cdflink">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CDFLink" title="nipy.algorithms.statistics.models.family.links.CDFLink"><code class="xref py py-class docutils literal notranslate"><span class="pre">CDFLink</span></code></a><a class="headerlink" href="#cdflink" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CDFLink">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.links.</span></span><span class="sig-name descname"><span class="pre">CDFLink</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbn=&lt;scipy.stats._continuous_distns.norm_gen</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CDFLink" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Logit" title="nipy.algorithms.statistics.models.family.links.Logit"><code class="xref py py-class docutils literal notranslate"><span class="pre">Logit</span></code></a></p>
+<p>The use the CDF of a scipy.stats distribution as a link function:</p>
+<p>g(x) = dbn.ppf(x)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CDFLink.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbn=&lt;scipy.stats._continuous_distns.norm_gen</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CDFLink.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CDFLink.clean">
+<span class="sig-name descname"><span class="pre">clean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CDFLink.clean" title="Link to this definition">¶</a></dt>
+<dd><p>Clip logistic values to range (tol, 1-tol)</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>p     – probabilities</p>
+</dd>
+<dt>OUTPUTS: pclip</dt><dd><p>pclip – clipped probabilities</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CDFLink.deriv">
+<span class="sig-name descname"><span class="pre">deriv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CDFLink.deriv" title="Link to this definition">¶</a></dt>
+<dd><p>Derivative of CDF link</p>
+<p>g(p) = 1/self.dbn.pdf(self.dbn.ppf(p))</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>x   – mean parameters</p>
+</dd>
+<dt>OUTPUTS: z</dt><dd><p>z   – derivative of CDF transform of x</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CDFLink.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CDFLink.initialize" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CDFLink.inverse">
+<span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CDFLink.inverse" title="Link to this definition">¶</a></dt>
+<dd><p>Derivative of CDF link</p>
+<p>g(z) = self.dbn.cdf(z)</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>z   – linear predictors in GLM</p>
+</dd>
+<dt>OUTPUTS: p</dt><dd><p>p   – inverse of CDF link of z</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CDFLink.tol">
+<span class="sig-name descname"><span class="pre">tol</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-10</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CDFLink.tol" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="cloglog">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CLogLog" title="nipy.algorithms.statistics.models.family.links.CLogLog"><code class="xref py py-class docutils literal notranslate"><span class="pre">CLogLog</span></code></a><a class="headerlink" href="#cloglog" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CLogLog">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.links.</span></span><span class="sig-name descname"><span class="pre">CLogLog</span></span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CLogLog" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Logit" title="nipy.algorithms.statistics.models.family.links.Logit"><code class="xref py py-class docutils literal notranslate"><span class="pre">Logit</span></code></a></p>
+<p>The complementary log-log transform as a link function:</p>
+<p>g(x) = log(-log(x))</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CLogLog.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CLogLog.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CLogLog.clean">
+<span class="sig-name descname"><span class="pre">clean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CLogLog.clean" title="Link to this definition">¶</a></dt>
+<dd><p>Clip logistic values to range (tol, 1-tol)</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>p     – probabilities</p>
+</dd>
+<dt>OUTPUTS: pclip</dt><dd><p>pclip – clipped probabilities</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CLogLog.deriv">
+<span class="sig-name descname"><span class="pre">deriv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CLogLog.deriv" title="Link to this definition">¶</a></dt>
+<dd><p>Derivatve of C-Log-Log transform</p>
+<p>g(p) = - 1 / (log(p) * p)</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>p   – mean parameters</p>
+</dd>
+<dt>OUTPUTS: z</dt><dd><p>z   –  - 1 / (log(p) * p)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CLogLog.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CLogLog.initialize" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CLogLog.inverse">
+<span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CLogLog.inverse" title="Link to this definition">¶</a></dt>
+<dd><p>Inverse of C-Log-Log transform</p>
+<p>g(z) = exp(-exp(z))</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>z   – linear predictor scale</p>
+</dd>
+<dt>OUTPUTS: p</dt><dd><p>p   – mean parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.CLogLog.tol">
+<span class="sig-name descname"><span class="pre">tol</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-10</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.CLogLog.tol" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="link">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Link" title="nipy.algorithms.statistics.models.family.links.Link"><code class="xref py py-class docutils literal notranslate"><span class="pre">Link</span></code></a><a class="headerlink" href="#link" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Link">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.links.</span></span><span class="sig-name descname"><span class="pre">Link</span></span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Link" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A generic link function for one-parameter exponential
+family, with call, inverse and deriv methods.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Link.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Link.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Link.deriv">
+<span class="sig-name descname"><span class="pre">deriv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Link.deriv" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Link.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Link.initialize" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Link.inverse">
+<span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Link.inverse" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="log">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Log" title="nipy.algorithms.statistics.models.family.links.Log"><code class="xref py py-class docutils literal notranslate"><span class="pre">Log</span></code></a><a class="headerlink" href="#log" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Log">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.links.</span></span><span class="sig-name descname"><span class="pre">Log</span></span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Log" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Link" title="nipy.algorithms.statistics.models.family.links.Link"><code class="xref py py-class docutils literal notranslate"><span class="pre">Link</span></code></a></p>
+<p>The log transform as a link function:</p>
+<p>g(x) = log(x)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Log.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Log.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Log.clean">
+<span class="sig-name descname"><span class="pre">clean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Log.clean" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Log.deriv">
+<span class="sig-name descname"><span class="pre">deriv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Log.deriv" title="Link to this definition">¶</a></dt>
+<dd><p>Derivative of log transform</p>
+<p>g(x) = 1/x</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>x   – mean parameters</p>
+</dd>
+<dt>OUTPUTS: z</dt><dd><p>z   – derivative of log transform of x</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Log.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Log.initialize" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Log.inverse">
+<span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Log.inverse" title="Link to this definition">¶</a></dt>
+<dd><p>Inverse of log transform</p>
+<p>g(x) = exp(x)</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>z   – linear predictors in GLM</p>
+</dd>
+<dt>OUTPUTS: x</dt><dd><p>x   – exp(z)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Log.tol">
+<span class="sig-name descname"><span class="pre">tol</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-10</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Log.tol" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="logit">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Logit" title="nipy.algorithms.statistics.models.family.links.Logit"><code class="xref py py-class docutils literal notranslate"><span class="pre">Logit</span></code></a><a class="headerlink" href="#logit" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Logit">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.links.</span></span><span class="sig-name descname"><span class="pre">Logit</span></span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Logit" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Link" title="nipy.algorithms.statistics.models.family.links.Link"><code class="xref py py-class docutils literal notranslate"><span class="pre">Link</span></code></a></p>
+<p>The logit transform as a link function:</p>
+<p>g’(x) = 1 / (x * (1 - x))
+g^(-1)(x) = exp(x)/(1 + exp(x))</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Logit.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Logit.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Logit.clean">
+<span class="sig-name descname"><span class="pre">clean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Logit.clean" title="Link to this definition">¶</a></dt>
+<dd><p>Clip logistic values to range (tol, 1-tol)</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>p     – probabilities</p>
+</dd>
+<dt>OUTPUTS: pclip</dt><dd><p>pclip – clipped probabilities</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Logit.deriv">
+<span class="sig-name descname"><span class="pre">deriv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Logit.deriv" title="Link to this definition">¶</a></dt>
+<dd><p>Derivative of logit transform</p>
+<p>g(p) = 1 / (p * (1 - p))</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>p   – probabilities</p>
+</dd>
+<dt>OUTPUTS: y</dt><dd><p>y   – derivative of logit transform of p</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Logit.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Logit.initialize" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Logit.inverse">
+<span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Logit.inverse" title="Link to this definition">¶</a></dt>
+<dd><p>Inverse logit transform</p>
+<p>h(z) = exp(z)/(1+exp(z))</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>z – logit transform of p</p>
+</dd>
+<dt>OUTPUTS: p</dt><dd><p>p   – probabilities</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Logit.tol">
+<span class="sig-name descname"><span class="pre">tol</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-10</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Logit.tol" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="power">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Power" title="nipy.algorithms.statistics.models.family.links.Power"><code class="xref py py-class docutils literal notranslate"><span class="pre">Power</span></code></a><a class="headerlink" href="#power" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Power">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.links.</span></span><span class="sig-name descname"><span class="pre">Power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">power</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Power" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Link" title="nipy.algorithms.statistics.models.family.links.Link"><code class="xref py py-class docutils literal notranslate"><span class="pre">Link</span></code></a></p>
+<p>The power transform as a link function:</p>
+<p>g(x) = x**power</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Power.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">power</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Power.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Power.deriv">
+<span class="sig-name descname"><span class="pre">deriv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Power.deriv" title="Link to this definition">¶</a></dt>
+<dd><p>Derivative of power transform</p>
+<p>g(x) = self.power * x**(self.power - 1)</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>x   – mean parameters</p>
+</dd>
+<dt>OUTPUTS: z</dt><dd><p>z   – derivative of power transform of x</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Power.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Power.initialize" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.links.Power.inverse">
+<span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.links.Power.inverse" title="Link to this definition">¶</a></dt>
+<dd><p>Inverse of power transform</p>
+<p>g(x) = x**(1/self.power)</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>z   – linear predictors in GLM</p>
+</dd>
+<dt>OUTPUTS: x</dt><dd><p>x   – mean parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.statistics.models.family.links</a><ul>
+<li><a class="reference internal" href="#module-algorithms-statistics-models-family-links">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.models.family.links</span></code></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#cdflink"><code class="xref py py-class docutils literal notranslate"><span class="pre">CDFLink</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CDFLink"><code class="docutils literal notranslate"><span class="pre">CDFLink</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CDFLink.__init__"><code class="docutils literal notranslate"><span class="pre">CDFLink.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CDFLink.clean"><code class="docutils literal notranslate"><span class="pre">CDFLink.clean()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CDFLink.deriv"><code class="docutils literal notranslate"><span class="pre">CDFLink.deriv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CDFLink.initialize"><code class="docutils literal notranslate"><span class="pre">CDFLink.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CDFLink.inverse"><code class="docutils literal notranslate"><span class="pre">CDFLink.inverse()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CDFLink.tol"><code class="docutils literal notranslate"><span class="pre">CDFLink.tol</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cloglog"><code class="xref py py-class docutils literal notranslate"><span class="pre">CLogLog</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CLogLog"><code class="docutils literal notranslate"><span class="pre">CLogLog</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CLogLog.__init__"><code class="docutils literal notranslate"><span class="pre">CLogLog.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CLogLog.clean"><code class="docutils literal notranslate"><span class="pre">CLogLog.clean()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CLogLog.deriv"><code class="docutils literal notranslate"><span class="pre">CLogLog.deriv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CLogLog.initialize"><code class="docutils literal notranslate"><span class="pre">CLogLog.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CLogLog.inverse"><code class="docutils literal notranslate"><span class="pre">CLogLog.inverse()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.CLogLog.tol"><code class="docutils literal notranslate"><span class="pre">CLogLog.tol</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#link"><code class="xref py py-class docutils literal notranslate"><span class="pre">Link</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Link"><code class="docutils literal notranslate"><span class="pre">Link</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Link.__init__"><code class="docutils literal notranslate"><span class="pre">Link.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Link.deriv"><code class="docutils literal notranslate"><span class="pre">Link.deriv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Link.initialize"><code class="docutils literal notranslate"><span class="pre">Link.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Link.inverse"><code class="docutils literal notranslate"><span class="pre">Link.inverse()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#log"><code class="xref py py-class docutils literal notranslate"><span class="pre">Log</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Log"><code class="docutils literal notranslate"><span class="pre">Log</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Log.__init__"><code class="docutils literal notranslate"><span class="pre">Log.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Log.clean"><code class="docutils literal notranslate"><span class="pre">Log.clean()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Log.deriv"><code class="docutils literal notranslate"><span class="pre">Log.deriv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Log.initialize"><code class="docutils literal notranslate"><span class="pre">Log.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Log.inverse"><code class="docutils literal notranslate"><span class="pre">Log.inverse()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Log.tol"><code class="docutils literal notranslate"><span class="pre">Log.tol</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#logit"><code class="xref py py-class docutils literal notranslate"><span class="pre">Logit</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Logit"><code class="docutils literal notranslate"><span class="pre">Logit</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Logit.__init__"><code class="docutils literal notranslate"><span class="pre">Logit.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Logit.clean"><code class="docutils literal notranslate"><span class="pre">Logit.clean()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Logit.deriv"><code class="docutils literal notranslate"><span class="pre">Logit.deriv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Logit.initialize"><code class="docutils literal notranslate"><span class="pre">Logit.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Logit.inverse"><code class="docutils literal notranslate"><span class="pre">Logit.inverse()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Logit.tol"><code class="docutils literal notranslate"><span class="pre">Logit.tol</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#power"><code class="xref py py-class docutils literal notranslate"><span class="pre">Power</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Power"><code class="docutils literal notranslate"><span class="pre">Power</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Power.__init__"><code class="docutils literal notranslate"><span class="pre">Power.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Power.deriv"><code class="docutils literal notranslate"><span class="pre">Power.deriv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Power.initialize"><code class="docutils literal notranslate"><span class="pre">Power.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.links.Power.inverse"><code class="docutils literal notranslate"><span class="pre">Power.inverse()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.models.family.family.html"
+                          title="previous chapter">algorithms.statistics.models.family.family</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.models.family.varfuncs.html"
+                          title="next chapter">algorithms.statistics.models.family.varfuncs</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.statistics.models.family.links.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.family.varfuncs.html" title="algorithms.statistics.models.family.varfuncs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.family.family.html" title="algorithms.statistics.models.family.family"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

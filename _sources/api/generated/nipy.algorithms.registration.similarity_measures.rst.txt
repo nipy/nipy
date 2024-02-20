@@ -1,0 +1,136 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+algorithms.registration.similarity_measures
+===========================================
+
+Module: :mod:`algorithms.registration.similarity_measures`
+----------------------------------------------------------
+Inheritance diagram for ``nipy.algorithms.registration.similarity_measures``:
+
+.. inheritance-diagram:: nipy.algorithms.registration.similarity_measures 
+   :parts: 3
+
+.. automodule:: nipy.algorithms.registration.similarity_measures
+
+.. currentmodule:: nipy.algorithms.registration.similarity_measures
+
+Classes
+-------
+
+:class:`CorrelationCoefficient`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CorrelationCoefficient
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CorrelationRatio`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CorrelationRatio
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CorrelationRatioL1`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CorrelationRatioL1
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`DiscreteParzenMutualInformation`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: DiscreteParzenMutualInformation
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`MutualInformation`
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: MutualInformation
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`NormalizedMutualInformation`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: NormalizedMutualInformation
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`ParzenMutualInformation`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ParzenMutualInformation
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`SimilarityMeasure`
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SimilarityMeasure
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`SupervisedLikelihoodRatio`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: SupervisedLikelihoodRatio
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: nipy.algorithms.registration.similarity_measures.correlation2loglikelihood
+
+
+.. autofunction:: nipy.algorithms.registration.similarity_measures.dist2loss
+

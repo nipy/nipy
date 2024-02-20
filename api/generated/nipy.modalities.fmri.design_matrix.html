@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="modalities.fmri.experimental_paradigm" href="nipy.modalities.fmri.experimental_paradigm.html" />
+    <link rel="prev" title="modalities.fmri.design" href="nipy.modalities.fmri.design.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.experimental_paradigm.html" title="modalities.fmri.experimental_paradigm"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.design.html" title="modalities.fmri.design"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="modalities-fmri-design-matrix">
+<h1>modalities.fmri.design_matrix<a class="headerlink" href="#modalities-fmri-design-matrix" title="Link to this heading">¶</a></h1>
+<section id="module-modalities-fmri-design-matrix">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.design_matrix</span></code><a class="headerlink" href="#module-modalities-fmri-design-matrix" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.modalities.fmri.design_matrix</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-27972abd68cbf16c91558102193f1fb37e3f89cf.png" alt="Inheritance diagram of nipy.modalities.fmri.design_matrix" usemap="#inheritancef43feb9e66" class="inheritance graphviz" /></div>
+<map id="inheritancef43feb9e66" name="inheritancef43feb9e66">
+<area shape="rect" id="node1" href="#nipy.modalities.fmri.design_matrix.DesignMatrix" target="_top" title="This is a container for a light&#45;weight class for design matrices" alt="" coords="5,5,215,32"/>
+</map><p id="module-nipy.modalities.fmri.design_matrix">This module implements fMRI Design Matrix creation.</p>
+<p>The DesignMatrix object is just a container that represents the design matrix.
+Computations of the different parts of the design matrix are confined
+to the make_dmtx() function, that instantiates the DesignMatrix object.
+All the remainder are just ancillary functions.</p>
+<p>Design matrices contain three different types of regressors:</p>
+<ol class="arabic simple">
+<li><p>Task-related regressors, that result from the convolution
+of the experimental paradigm regressors with hemodynamic models</p></li>
+<li><p>User-specified regressors, that represent information available on
+the data, e.g. motion parameters, physiological data resampled at
+the acquisition rate, or sinusoidal regressors that model the
+signal at a frequency of interest.</p></li>
+<li><p>Drift regressors, that represent low_frequency phenomena of no
+interest in the data; they need to be included to reduce variance
+estimates.</p></li>
+</ol>
+<p>Author: Bertrand Thirion, 2009-2011</p>
+</section>
+<section id="class">
+<h2>Class<a class="headerlink" href="#class" title="Link to this heading">¶</a></h2>
+</section>
+<section id="designmatrix">
+<h2><a class="reference internal" href="#nipy.modalities.fmri.design_matrix.DesignMatrix" title="nipy.modalities.fmri.design_matrix.DesignMatrix"><code class="xref py py-class docutils literal notranslate"><span class="pre">DesignMatrix</span></code></a><a class="headerlink" href="#designmatrix" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.design_matrix.DesignMatrix">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.design_matrix.</span></span><span class="sig-name descname"><span class="pre">DesignMatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frametimes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.design_matrix.DesignMatrix" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This is a container for a light-weight class for design matrices</p>
+<p>This class is only used to make IO and visualization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>matrix: array of shape (n_scans, n_regressors)</strong></dt><dd><p>the numerical specification of the matrix.</p>
+</dd>
+<dt><strong>names: list of len (n_regressors)</strong></dt><dd><p>the names associated with the columns.</p>
+</dd>
+<dt><strong>frametimes: array of shape (n_scans), optional</strong></dt><dd><p>the occurrence time of the matrix rows.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.design_matrix.DesignMatrix.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frametimes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.design_matrix.DesignMatrix.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.design_matrix.DesignMatrix.show">
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rescale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.design_matrix.DesignMatrix.show" title="Link to this definition">¶</a></dt>
+<dd><p>Visualization of a design matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>rescale: bool, optional</strong></dt><dd><p>rescale columns magnitude for visualization or not.</p>
+</dd>
+<dt><strong>ax: axis handle, optional</strong></dt><dd><p>Handle to axis onto which we will draw design matrix.</p>
+</dd>
+<dt><strong>cmap: colormap, optional</strong></dt><dd><p>Matplotlib colormap to use, passed to <cite>imshow</cite>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ax: axis handle</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.design_matrix.DesignMatrix.show_contrast">
+<span class="sig-name descname"><span class="pre">show_contrast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contrast</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.design_matrix.DesignMatrix.show_contrast" title="Link to this definition">¶</a></dt>
+<dd><p>Plot a contrast for a design matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>contrast</strong><span class="classifier">np.float64</span></dt><dd><p>Array forming contrast with respect to the design matrix.</p>
+</dd>
+<dt><strong>ax: axis handle, optional</strong></dt><dd><p>Handle to axis onto which we will draw design matrix.</p>
+</dd>
+<dt><strong>cmap: colormap, optional</strong></dt><dd><p>Matplotlib colormap to use, passed to <cite>imshow</cite>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ax: axis handle</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.design_matrix.DesignMatrix.write_csv">
+<span class="sig-name descname"><span class="pre">write_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.design_matrix.DesignMatrix.write_csv" title="Link to this definition">¶</a></dt>
+<dd><p>write self.matrix as a csv file with appropriate column names</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path: string, path of the resulting csv file</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The frametimes are not written</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.design_matrix.dmtx_from_csv">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.design_matrix.</span></span><span class="sig-name descname"><span class="pre">dmtx_from_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frametimes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.design_matrix.dmtx_from_csv" title="Link to this definition">¶</a></dt>
+<dd><p>Return a DesignMatrix instance from  a csv file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path: string, path of the .csv file</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>A DesignMatrix instance</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.design_matrix.dmtx_light">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.design_matrix.</span></span><span class="sig-name descname"><span class="pre">dmtx_light</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frametimes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paradigm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hrf_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'canonical'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drift_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cosine'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hfcut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drift_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fir_delays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_regs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_reg_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-24</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.design_matrix.dmtx_light" title="Link to this definition">¶</a></dt>
+<dd><p>Make a design matrix while avoiding framework</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>see make_dmtx, plus</strong></dt><dd></dd>
+<dt><strong>path: string, optional: a path to write the output</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>dmtx array of shape(nreg, nbframes):</dt><dd><p>the sampled design matrix</p>
+</dd>
+<dt>names list of strings of len (nreg)</dt><dd><p>the names of the columns of the design matrix</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.design_matrix.make_dmtx">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.design_matrix.</span></span><span class="sig-name descname"><span class="pre">make_dmtx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frametimes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paradigm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hrf_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'canonical'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drift_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cosine'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hfcut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drift_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fir_delays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_regs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_reg_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-24</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.design_matrix.make_dmtx" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a design matrix from the input parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>frametimes: array of shape(nbframes), the timing of the scans</strong></dt><dd></dd>
+<dt><strong>paradigm: Paradigm instance, optional</strong></dt><dd><p>description of the experimental paradigm</p>
+</dd>
+<dt><strong>hrf_model: string, optional,</strong></dt><dd><p>that specifies the hemodynamic response function.
+Can be one of {‘canonical’, ‘canonical with derivative’,
+‘fir’, ‘spm’, ‘spm_time’, ‘spm_time_dispersion’}.</p>
+</dd>
+<dt><strong>drift_model: string, optional</strong></dt><dd><p>specifies the desired drift model,
+to be chosen among ‘polynomial’, ‘cosine’, ‘blank’</p>
+</dd>
+<dt><strong>hfcut: float, optional</strong></dt><dd><p>cut period of the low-pass filter</p>
+</dd>
+<dt><strong>drift_order: int, optional</strong></dt><dd><p>order of the drift model (in case it is polynomial)</p>
+</dd>
+<dt><strong>fir_delays: array of shape(nb_onsets) or list, optional,</strong></dt><dd><p>in case of FIR design, yields the array of delays
+used in the FIR model</p>
+</dd>
+<dt><strong>add_regs: array of shape(nbframes, naddreg), optional</strong></dt><dd><p>additional user-supplied regressors</p>
+</dd>
+<dt><strong>add_reg_names: list of (naddreg) regressor names, optional</strong></dt><dd><p>if None, while naddreg&gt;0, these will be termed
+‘reg_%i’,i=0..naddreg-1</p>
+</dd>
+<dt><strong>min_onset: float, optional</strong></dt><dd><p>minimal onset relative to frametimes[0] (in seconds)
+events that start before frametimes[0] + min_onset are not considered</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>DesignMatrix instance</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">modalities.fmri.design_matrix</a><ul>
+<li><a class="reference internal" href="#module-modalities-fmri-design-matrix">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.design_matrix</span></code></a></li>
+<li><a class="reference internal" href="#class">Class</a></li>
+<li><a class="reference internal" href="#designmatrix"><code class="xref py py-class docutils literal notranslate"><span class="pre">DesignMatrix</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.design_matrix.DesignMatrix"><code class="docutils literal notranslate"><span class="pre">DesignMatrix</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.design_matrix.DesignMatrix.__init__"><code class="docutils literal notranslate"><span class="pre">DesignMatrix.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.design_matrix.DesignMatrix.show"><code class="docutils literal notranslate"><span class="pre">DesignMatrix.show()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.design_matrix.DesignMatrix.show_contrast"><code class="docutils literal notranslate"><span class="pre">DesignMatrix.show_contrast()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.design_matrix.DesignMatrix.write_csv"><code class="docutils literal notranslate"><span class="pre">DesignMatrix.write_csv()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.design_matrix.dmtx_from_csv"><code class="docutils literal notranslate"><span class="pre">dmtx_from_csv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.design_matrix.dmtx_light"><code class="docutils literal notranslate"><span class="pre">dmtx_light()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.design_matrix.make_dmtx"><code class="docutils literal notranslate"><span class="pre">make_dmtx()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.design.html"
+                          title="previous chapter">modalities.fmri.design</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.experimental_paradigm.html"
+                          title="next chapter">modalities.fmri.experimental_paradigm</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.modalities.fmri.design_matrix.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.experimental_paradigm.html" title="modalities.fmri.experimental_paradigm"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.design.html" title="modalities.fmri.design"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

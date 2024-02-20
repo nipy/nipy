@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="nipy.labs.viz_tools.activation_maps.plot_map" href="generated/nipy.labs.viz_tools.activation_maps.plot_map.html" />
+    <link rel="prev" title="Empirical null" href="enn.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../index.html">
+  <img src="../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/nipy.labs.viz_tools.activation_maps.plot_map.html" title="nipy.labs.viz_tools.activation_maps.plot_map"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enn.html" title="Empirical null"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">NeuroSpin tools</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="plotting-of-activation-maps">
+<h1>Plotting of activation maps<a class="headerlink" href="#plotting-of-activation-maps" title="Link to this heading">¶</a></h1>
+<p>The module <code class="xref py py-mod docutils literal notranslate"><span class="pre">nipy.labs.viz</span></code> provides functions to plot
+visualization of activation maps in a non-interactive way.</p>
+<p>2D cuts of an activation map can be plotted and superimposed on an
+anatomical map using <a class="reference external" href="http://matplotlib.sourceforge.net">matplotlib</a>. In addition, <a class="reference external" href="http://code.enthought.com/projects/mayavi">Mayavi2</a> can be used to
+plot 3D maps, using volumetric rendering. Some emphasis is made on
+automatic choice of default parameters, such as cut coordinates, to give
+a sensible view of a map in a purely automatic way, for instance to save
+a summary of the output of a calculation.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The content of the module will change over time, as neuroimaging
+volumetric data structures are used instead of plain numpy arrays.</p>
+</div>
+<section id="an-example">
+<h2>An example<a class="headerlink" href="#an-example" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nipy.labs.viz</span> <span class="kn">import</span> <span class="n">plot_map</span><span class="p">,</span> <span class="n">mni_sform</span><span class="p">,</span> <span class="n">coord_transform</span>
+
+<span class="c1"># First, create a fake activation map: a 3D image in MNI space with</span>
+<span class="c1"># a large rectangle of activation around Broca Area</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">mni_sform_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">mni_sform</span><span class="p">)</span>
+<span class="c1"># Color an asymmetric rectangle around Broca area:</span>
+<span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="o">-</span><span class="mi">52</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">22</span>
+<span class="n">x_map</span><span class="p">,</span> <span class="n">y_map</span><span class="p">,</span> <span class="n">z_map</span> <span class="o">=</span> <span class="n">coord_transform</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">mni_sform_inv</span><span class="p">)</span>
+<span class="nb">map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">182</span><span class="p">,</span> <span class="mi">218</span><span class="p">,</span> <span class="mi">182</span><span class="p">))</span>
+<span class="nb">map</span><span class="p">[</span><span class="n">x_map</span><span class="o">-</span><span class="mi">30</span><span class="p">:</span><span class="n">x_map</span><span class="o">+</span><span class="mi">30</span><span class="p">,</span> <span class="n">y_map</span><span class="o">-</span><span class="mi">3</span><span class="p">:</span><span class="n">y_map</span><span class="o">+</span><span class="mi">3</span><span class="p">,</span> <span class="n">z_map</span><span class="o">-</span><span class="mi">10</span><span class="p">:</span><span class="n">z_map</span><span class="o">+</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1"># We use a masked array to add transparency to the parts that we are</span>
+<span class="c1"># not interested in:</span>
+<span class="n">thresholded_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_less</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+
+<span class="c1"># And now, visualize it:</span>
+<span class="n">plot_map</span><span class="p">(</span><span class="n">thresholded_map</span><span class="p">,</span> <span class="n">mni_sform</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">),</span> <span class="n">vmin</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This creates the following image:</p>
+<img alt="../_images/viz.png" src="../_images/viz.png" />
+<p>The same plot can be obtained fully automatically, by letting
+<a class="reference internal" href="generated/nipy.labs.viz_tools.activation_maps.plot_map.html#nipy.labs.viz_tools.activation_maps.plot_map" title="nipy.labs.viz_tools.activation_maps.plot_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_map()</span></code></a> find the activation threshold and the cut coordinates:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot_map</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="n">mni_sform</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this simple example, the code will easily detect the bar as activation
+and position the cut at the center of the bar.</p>
+</section>
+<section id="nipy-labs-viz-functions">
+<h2><cite>nipy.labs.viz</cite> functions<a class="headerlink" href="#nipy-labs-viz-functions" title="Link to this heading">¶</a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/nipy.labs.viz_tools.activation_maps.plot_map.html#nipy.labs.viz_tools.activation_maps.plot_map" title="nipy.labs.viz_tools.activation_maps.plot_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_map</span></code></a>(map, affine[, cut_coords, anat, ...])</p></td>
+<td><p>Plot three cuts of a given activation map (Frontal, Axial, and Lateral)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="d-plotting-utilities">
+<h2>3D plotting utilities<a class="headerlink" href="#d-plotting-utilities" title="Link to this heading">¶</a></h2>
+<p>The module <code class="xref py py-mod docutils literal notranslate"><span class="pre">nipy.labs.viz3d</span></code> can be used as helpers to
+represent neuroimaging volumes with <a class="reference external" href="http://code.enthought.com/projects/mayavi">Mayavi2</a>.</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/nipy.labs.viz_tools.maps_3d.plot_map_3d.html#nipy.labs.viz_tools.maps_3d.plot_map_3d" title="nipy.labs.viz_tools.maps_3d.plot_map_3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_map_3d</span></code></a>(map, affine[, cut_coords, anat, ...])</p></td>
+<td><p>Plot a 3D volume rendering view of the activation, with an outline of the brain.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/nipy.labs.viz_tools.maps_3d.plot_anat_3d.html#nipy.labs.viz_tools.maps_3d.plot_anat_3d" title="nipy.labs.viz_tools.maps_3d.plot_anat_3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_anat_3d</span></code></a>([anat, anat_affine, scale, ...])</p></td>
+<td><p>3D anatomical display</p></td>
+</tr>
+</tbody>
+</table>
+<p>For more versatile visualizations the core idea is that given a 3D map
+and an affine, the data is exposed in Mayavi as a volumetric source, with
+world space coordinates corresponding to figure coordinates.
+Visualization modules can be applied on this data source as explained in
+the <a class="reference external" href="http://code.enthought.com/projects/mayavi/docs/development/html/mayavi/mlab.html#assembling-pipelines-with-mlab">Mayavi manual</a></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/nipy.labs.viz_tools.maps_3d.affine_img_src.html#nipy.labs.viz_tools.maps_3d.affine_img_src" title="nipy.labs.viz_tools.maps_3d.affine_img_src"><code class="xref py py-obj docutils literal notranslate"><span class="pre">affine_img_src</span></code></a>(data, affine[, scale, name, ...])</p></td>
+<td><p>Make a Mayavi source defined by a 3D array and an affine, for which the voxel of the 3D array are mapped by the affine.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../documentation.html">Documentation</a></li>
+    <li><a href="../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Plotting of activation maps</a><ul>
+<li><a class="reference internal" href="#an-example">An example</a></li>
+<li><a class="reference internal" href="#nipy-labs-viz-functions"><cite>nipy.labs.viz</cite> functions</a></li>
+<li><a class="reference internal" href="#d-plotting-utilities">3D plotting utilities</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="enn.html"
+                          title="previous chapter">Empirical null</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="generated/nipy.labs.viz_tools.activation_maps.plot_map.html"
+                          title="next chapter">nipy.labs.viz_tools.activation_maps.plot_map</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/labs/viz.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/nipy.labs.viz_tools.activation_maps.plot_map.html" title="nipy.labs.viz_tools.activation_maps.plot_map"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enn.html" title="Empirical null"
+             >previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >NeuroSpin tools</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

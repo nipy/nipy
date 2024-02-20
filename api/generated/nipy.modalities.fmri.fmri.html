@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="modalities.fmri.fmristat.hrf" href="nipy.modalities.fmri.fmristat.hrf.html" />
+    <link rel="prev" title="modalities.fmri.experimental_paradigm" href="nipy.modalities.fmri.experimental_paradigm.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmristat.hrf.html" title="modalities.fmri.fmristat.hrf"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.experimental_paradigm.html" title="modalities.fmri.experimental_paradigm"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="modalities-fmri-fmri">
+<h1>modalities.fmri.fmri<a class="headerlink" href="#modalities-fmri-fmri" title="Link to this heading">¶</a></h1>
+<section id="module-modalities-fmri-fmri">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.fmri</span></code><a class="headerlink" href="#module-modalities-fmri-fmri" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.modalities.fmri.fmri</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-0bfa855255b58f18635db1258a47926f9bed93c3.png" alt="Inheritance diagram of nipy.modalities.fmri.fmri" usemap="#inheritanced431345556" class="inheritance graphviz" /></div>
+<map id="inheritanced431345556" name="inheritanced431345556">
+<area shape="rect" id="node1" href="#nipy.modalities.fmri.fmri.FmriImageList" target="_top" title="Class to implement image list interface for FMRI time series" alt="" coords="234,5,390,32"/>
+<area shape="rect" id="node2" href="nipy.core.image.image_list.html#nipy.core.image.image_list.ImageList" target="_top" title="Class to contain ND image as list of (N&#45;1)D images" alt="" coords="5,5,186,32"/>
+</map><span class="target" id="module-nipy.modalities.fmri.fmri"></span></section>
+<section id="fmriimagelist">
+<h2><a class="reference internal" href="#nipy.modalities.fmri.fmri.FmriImageList" title="nipy.modalities.fmri.fmri.FmriImageList"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmriImageList</span></code></a><a class="headerlink" href="#fmriimagelist" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmri.FmriImageList">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmri.</span></span><span class="sig-name descname"><span class="pre">FmriImageList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_start_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmri.FmriImageList" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="nipy.core.image.image_list.html#nipy.core.image.image_list.ImageList" title="nipy.core.image.image_list.ImageList"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageList</span></code></a></p>
+<p>Class to implement image list interface for FMRI time series</p>
+<p>Allows metadata such as volume and slice times</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmri.FmriImageList.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_start_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmri.FmriImageList.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>An implementation of an fMRI image as in ImageList</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>images</strong><span class="classifier">iterable</span></dt><dd><p>an iterable object whose items are meant to be images; this is
+checked by asserting that each has a <cite>coordmap</cite> attribute and a
+<code class="docutils literal notranslate"><span class="pre">get_fdata</span></code> method.  Note that Image objects are not iterable by
+default; use the <code class="docutils literal notranslate"><span class="pre">from_image</span></code> classmethod or <code class="docutils literal notranslate"><span class="pre">iter_axis</span></code> function
+to convert images to image lists - see examples below for the latter.</p>
+</dd>
+<dt><strong>volume_start_times: None or float or (N,) ndarray</strong></dt><dd><p>start time of each frame. It can be specified either as an ndarray
+with <code class="docutils literal notranslate"><span class="pre">N=len(images)</span></code> elements or as a single float, the TR. None
+results in <code class="docutils literal notranslate"><span class="pre">np.arange(len(images)).astype(np.float64)</span></code></p>
+</dd>
+<dt><strong>slice_times: None or (N,) ndarray</strong></dt><dd><p>specifying offset for each slice of each frame, from the frame start
+time.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">nipy.core.image_list.ImageList</span></code></dt><dd></dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.testing</span> <span class="kn">import</span> <span class="n">funcfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.io.api</span> <span class="kn">import</span> <span class="n">load_image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.api</span> <span class="kn">import</span> <span class="n">iter_axis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">funcim</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">funcfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iterable_img</span> <span class="o">=</span> <span class="n">iter_axis</span><span class="p">(</span><span class="n">funcim</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmrilist</span> <span class="o">=</span> <span class="n">FmriImageList</span><span class="p">(</span><span class="n">iterable_img</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">fmrilist</span><span class="o">.</span><span class="n">get_list_data</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(20, 17, 21, 3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">fmrilist</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(17, 21, 3)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmri.FmriImageList.from_image">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fourdimage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_start_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmri.FmriImageList.from_image" title="Link to this definition">¶</a></dt>
+<dd><p>Create an FmriImageList from a 4D Image</p>
+<p>Get images by extracting 3d images along the ‘t’ axis.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>fourdimage</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code> instance</span></dt><dd><p>A 4D Image</p>
+</dd>
+<dt><strong>volume_start_times: None or float or (N,) ndarray</strong></dt><dd><p>start time of each frame. It can be specified either as an ndarray
+with <code class="docutils literal notranslate"><span class="pre">N=len(images)</span></code> elements or as a single float, the TR. None
+results in <code class="docutils literal notranslate"><span class="pre">np.arange(len(images)).astype(np.float64)</span></code></p>
+</dd>
+<dt><strong>slice_times: None or (N,) ndarray</strong></dt><dd><p>specifying offset for each slice of each frame, from the frame start
+time.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>filist</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">FmriImageList</span></code> instance</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmri.FmriImageList.get_list_data">
+<span class="sig-name descname"><span class="pre">get_list_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmri.FmriImageList.get_list_data" title="Link to this definition">¶</a></dt>
+<dd><p>Return data in ndarray with list dimension at position <cite>axis</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>axis</strong><span class="classifier">int</span></dt><dd><p><cite>axis</cite> specifies which axis of the output will take the role of the
+list dimension. For example, 0 will put the list dimension in the
+first axis of the result.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">ndarray</span></dt><dd><p>data in image list as array, with data across elements of the list
+concetenated at dimension <cite>axis</cite> of the array.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.testing</span> <span class="kn">import</span> <span class="n">funcfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.io.api</span> <span class="kn">import</span> <span class="n">load_image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">funcim</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">funcfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ilist</span> <span class="o">=</span> <span class="n">ImageList</span><span class="o">.</span><span class="n">from_image</span><span class="p">(</span><span class="n">funcim</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;t&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ilist</span><span class="o">.</span><span class="n">get_list_data</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(20, 17, 21, 3)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmri.axis0_generator">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmri.</span></span><span class="sig-name descname"><span class="pre">axis0_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slicers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmri.axis0_generator" title="Link to this definition">¶</a></dt>
+<dd><p>Takes array-like <cite>data</cite>, returning slices over axes &gt; 0</p>
+<p>This function takes an array-like object <cite>data</cite> and yields tuples of slicing
+thing and slices like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">slicer</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">)[:,</span><span class="n">slicer</span><span class="p">]</span> <span class="k">for</span> <span class="n">slicer</span> <span class="ow">in</span> <span class="n">slicer</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>which in the default (<cite>slicers</cite> is None) case, boils down to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">)[:,</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+</pre></div>
+</div>
+<p>This can be used to get arrays of time series out of an array if the time
+axis is axis 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">array-like</span></dt><dd><p>object such that <code class="docutils literal notranslate"><span class="pre">arr</span> <span class="pre">=</span> <span class="pre">np.asarray(data)</span></code> returns an array of
+at least 2 dimensions.</p>
+</dd>
+<dt><strong>slicers</strong><span class="classifier">None or sequence</span></dt><dd><p>sequence of objects that can be used to slice into array <code class="docutils literal notranslate"><span class="pre">arr</span></code>
+returned from data.  If None, default is <code class="docutils literal notranslate"><span class="pre">range(data.shape[1])</span></code></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">modalities.fmri.fmri</a><ul>
+<li><a class="reference internal" href="#module-modalities-fmri-fmri">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.fmri</span></code></a></li>
+<li><a class="reference internal" href="#fmriimagelist"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmriImageList</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmri.FmriImageList"><code class="docutils literal notranslate"><span class="pre">FmriImageList</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmri.FmriImageList.__init__"><code class="docutils literal notranslate"><span class="pre">FmriImageList.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmri.FmriImageList.from_image"><code class="docutils literal notranslate"><span class="pre">FmriImageList.from_image()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmri.FmriImageList.get_list_data"><code class="docutils literal notranslate"><span class="pre">FmriImageList.get_list_data()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmri.axis0_generator"><code class="docutils literal notranslate"><span class="pre">axis0_generator()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.experimental_paradigm.html"
+                          title="previous chapter">modalities.fmri.experimental_paradigm</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.fmristat.hrf.html"
+                          title="next chapter">modalities.fmri.fmristat.hrf</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.modalities.fmri.fmri.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmristat.hrf.html" title="modalities.fmri.fmristat.hrf"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.experimental_paradigm.html" title="modalities.fmri.experimental_paradigm"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

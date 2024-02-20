@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.clustering.hierarchical_clustering" href="nipy.algorithms.clustering.hierarchical_clustering.html" />
+    <link rel="prev" title="algorithms.clustering.ggmixture" href="nipy.algorithms.clustering.ggmixture.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.clustering.hierarchical_clustering.html" title="algorithms.clustering.hierarchical_clustering"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.clustering.ggmixture.html" title="algorithms.clustering.ggmixture"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-clustering-gmm">
+<h1>algorithms.clustering.gmm<a class="headerlink" href="#algorithms-clustering-gmm" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-clustering-gmm">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.clustering.gmm</span></code><a class="headerlink" href="#module-algorithms-clustering-gmm" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.clustering.gmm</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-2fa54709120c46101684854b46c5e9538308906d.png" alt="Inheritance diagram of nipy.algorithms.clustering.gmm" usemap="#inheritance7cc09430f1" class="inheritance graphviz" /></div>
+<map id="inheritance7cc09430f1" name="inheritance7cc09430f1">
+<area shape="rect" id="node1" href="#nipy.algorithms.clustering.gmm.GMM" target="_top" title="Standard GMM." alt="" coords="31,56,178,83"/>
+<area shape="rect" id="node2" href="#nipy.algorithms.clustering.gmm.GridDescriptor" target="_top" title="A tiny class to handle cartesian grids" alt="" coords="5,5,204,32"/>
+</map><p id="module-nipy.algorithms.clustering.gmm">Gaussian Mixture Model Class:
+contains the basic fields and methods of GMMs
+The class GMM _old uses C bindings which are
+computationally and memory efficient.</p>
+<p>Author : Bertrand Thirion, 2006-2009</p>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="gmm">
+<h3><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM" title="nipy.algorithms.clustering.gmm.GMM"><code class="xref py py-class docutils literal notranslate"><span class="pre">GMM</span></code></a><a class="headerlink" href="#gmm" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.clustering.gmm.</span></span><span class="sig-name descname"><span class="pre">GMM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'full'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">means</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precisions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Standard GMM.</p>
+<p>this class contains the following members
+k (int): the number of components in the mixture
+dim (int): is the dimension of the data
+prec_type = ‘full’ (string) is the parameterization</p>
+<blockquote>
+<div><p>of the precisions/covariance matrices:
+either ‘full’ or ‘diagonal’.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>means: array of shape (k,dim):</dt><dd><p>all the means (mean parameters) of the components</p>
+</dd>
+<dt>precisions: array of shape (k,dim,dim):</dt><dd><p>the precisions (inverse covariance matrix) of the components</p>
+</dd>
+</dl>
+<p>weights: array of shape(k): weights of the mixture</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'full'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">means</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precisions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the structure, at least with the dimensions of the problem</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>k (int) the number of classes of the model</strong></dt><dd></dd>
+<dt><strong>dim (int) the dimension of the problem</strong></dt><dd></dd>
+<dt><strong>prec_type = ‘full’</strong><span class="classifier">coavriance:precision parameterization</span></dt><dd><p>(diagonal ‘diag’ or full ‘full’).</p>
+</dd>
+<dt><strong>means = None: array of shape (self.k,self.dim)</strong></dt><dd></dd>
+<dt><strong>precisions = None:  array of shape (self.k,self.dim,self.dim)</strong></dt><dd><p>or (self.k, self.dim)</p>
+</dd>
+<dt><strong>weights=None: array of shape (self.k)</strong></dt><dd></dd>
+<dt><strong>By default, means, precision and weights are set as</strong></dt><dd></dd>
+<dt><strong>zeros()</strong></dt><dd></dd>
+<dt><strong>eye()</strong></dt><dd></dd>
+<dt><strong>1/k ones()</strong></dt><dd></dd>
+<dt><strong>with the correct dimensions</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.average_log_like">
+<span class="sig-name descname"><span class="pre">average_log_like</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tiny</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-15</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.average_log_like" title="Link to this definition">¶</a></dt>
+<dd><p>returns the averaged log-likelihood of the mode for the dataset x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x:  array of shape (n_samples,self.dim)</strong></dt><dd><p>the data used in the estimation process</p>
+</dd>
+<dt><strong>tiny = 1.e-15: a small constant to avoid numerical singularities</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.bic">
+<span class="sig-name descname"><span class="pre">bic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">like</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tiny</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-15</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.bic" title="Link to this definition">¶</a></dt>
+<dd><p>Computation of bic approximation of evidence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>like, array of shape (n_samples, self.k)</strong></dt><dd><p>component-wise likelihood</p>
+</dd>
+<dt><strong>tiny=1.e-15, a small constant to avoid numerical singularities</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>the bic value, float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.check">
+<span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.check" title="Link to this definition">¶</a></dt>
+<dd><p>Checking the shape of different matrices involved in the model</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.check_x">
+<span class="sig-name descname"><span class="pre">check_x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.check_x" title="Link to this definition">¶</a></dt>
+<dd><p>essentially check that x.shape[1]==self.dim</p>
+<p>x is returned with possibly reshaping</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.estimate">
+<span class="sig-name descname"><span class="pre">estimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.estimate" title="Link to this definition">¶</a></dt>
+<dd><p>Estimation of the model given a dataset x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x array of shape (n_samples,dim)</strong></dt><dd><p>the data from which the model is estimated</p>
+</dd>
+<dt><strong>niter=100: maximal number of iterations in the estimation process</strong></dt><dd></dd>
+<dt><strong>delta = 1.e-4: increment of data likelihood at which</strong></dt><dd><p>convergence is declared</p>
+</dd>
+<dt><strong>verbose=0: verbosity mode</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>bic</strong><span class="classifier">an asymptotic approximation of model evidence</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.evidence">
+<span class="sig-name descname"><span class="pre">evidence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.evidence" title="Link to this definition">¶</a></dt>
+<dd><p>Computation of bic approximation of evidence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x array of shape (n_samples,dim)</strong></dt><dd><p>the data from which bic is computed</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>the bic value</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.guess_regularizing">
+<span class="sig-name descname"><span class="pre">guess_regularizing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bcheck</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.guess_regularizing" title="Link to this definition">¶</a></dt>
+<dd><p>Set the regularizing priors as weakly informative
+according to Fraley and raftery;
+Journal of Classification 24:155-181 (2007)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x array of shape (n_samples,dim)</strong></dt><dd><p>the data used in the estimation process</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.initialize" title="Link to this definition">¶</a></dt>
+<dd><p>Initializes self according to a certain dataset x:
+1. sets the regularizing hyper-parameters
+2. initializes z using a k-means algorithm, then
+3. update the parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x, array of shape (n_samples,self.dim)</strong></dt><dd><p>the data used in the estimation process</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.initialize_and_estimate">
+<span class="sig-name descname"><span class="pre">initialize_and_estimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ninit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.initialize_and_estimate" title="Link to this definition">¶</a></dt>
+<dd><p>Estimation of self given x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x array of shape (n_samples,dim)</strong></dt><dd><p>the data from which the model is estimated</p>
+</dd>
+<dt><strong>z = None: array of shape (n_samples)</strong></dt><dd><p>a prior labelling of the data to initialize the computation</p>
+</dd>
+<dt><strong>niter=100: maximal number of iterations in the estimation process</strong></dt><dd></dd>
+<dt><strong>delta = 1.e-4: increment of data likelihood at which</strong></dt><dd><p>convergence is declared</p>
+</dd>
+<dt><strong>ninit=1: number of initialization performed</strong></dt><dd><p>to reach a good solution</p>
+</dd>
+<dt><strong>verbose=0: verbosity mode</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>the best model is returned</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.likelihood">
+<span class="sig-name descname"><span class="pre">likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.likelihood" title="Link to this definition">¶</a></dt>
+<dd><p>return the likelihood of the model for the data x
+the values are weighted by the components weights</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x array of shape (n_samples,self.dim)</strong></dt><dd><p>the data used in the estimation process</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>like, array of shape(n_samples,self.k)</dt><dd><p>component-wise likelihood</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.map_label">
+<span class="sig-name descname"><span class="pre">map_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">like</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.map_label" title="Link to this definition">¶</a></dt>
+<dd><p>return the MAP labelling of x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x array of shape (n_samples,dim)</strong></dt><dd><p>the data under study</p>
+</dd>
+<dt><strong>like=None array of shape(n_samples,self.k)</strong></dt><dd><p>component-wise likelihood
+if like==None, it is recomputed</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>z: array of shape(n_samples): the resulting MAP labelling</dt><dd><p>of the rows of x</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.mixture_likelihood">
+<span class="sig-name descname"><span class="pre">mixture_likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.mixture_likelihood" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the likelihood of the mixture for x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x: array of shape (n_samples,self.dim)</strong></dt><dd><p>the data used in the estimation process</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.plugin">
+<span class="sig-name descname"><span class="pre">plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">means</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precisions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.plugin" title="Link to this definition">¶</a></dt>
+<dd><p>Set manually the weights, means and precision of the model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>means: array of shape (self.k,self.dim)</strong></dt><dd></dd>
+<dt><strong>precisions:  array of shape (self.k,self.dim,self.dim)</strong></dt><dd><p>or (self.k, self.dim)</p>
+</dd>
+<dt><strong>weights: array of shape (self.k)</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">like</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tiny</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-15</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.pop" title="Link to this definition">¶</a></dt>
+<dd><p>compute the population, i.e. the statistics of allocation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>like: array of shape (n_samples,self.k):</strong></dt><dd><p>the likelihood of each item being in each class</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.show">
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.show" title="Link to this definition">¶</a></dt>
+<dd><p>Function to plot a GMM, still in progress
+Currently, works only in 1D and 2D</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x: array of shape(n_samples, dim)</strong></dt><dd><p>the data under study</p>
+</dd>
+<dt><strong>gd: GridDescriptor instance</strong></dt><dd></dd>
+<dt><strong>density: array os shape(prod(gd.n_bins))</strong></dt><dd><p>density of the model one the discrete grid implied by gd
+by default, this is recomputed</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.show_components">
+<span class="sig-name descname"><span class="pre">show_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mpaxes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.show_components" title="Link to this definition">¶</a></dt>
+<dd><p>Function to plot a GMM – Currently, works only in 1D</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x: array of shape(n_samples, dim)</strong></dt><dd><p>the data under study</p>
+</dd>
+<dt><strong>gd: GridDescriptor instance</strong></dt><dd></dd>
+<dt><strong>density: array os shape(prod(gd.n_bins))</strong></dt><dd><p>density of the model one the discrete grid implied by gd
+by default, this is recomputed</p>
+</dd>
+<dt><strong>mpaxes: axes handle to make the figure, optional,</strong></dt><dd><p>if None, a new figure is created</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.test">
+<span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tiny</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-15</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.test" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the log-likelihood of the mixture for x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x array of shape (n_samples,self.dim)</strong></dt><dd><p>the data used in the estimation process</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ll: array of shape(n_samples)</dt><dd><p>the log-likelihood of the rows of x</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ninit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.train" title="Link to this definition">¶</a></dt>
+<dd><p>Idem initialize_and_estimate</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.unweighted_likelihood">
+<span class="sig-name descname"><span class="pre">unweighted_likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.unweighted_likelihood" title="Link to this definition">¶</a></dt>
+<dd><p>return the likelihood of each data for each component
+the values are not weighted by the component weights</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x: array of shape (n_samples,self.dim)</strong></dt><dd><p>the data used in the estimation process</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>like, array of shape(n_samples,self.k)</dt><dd><p>unweighted component-wise likelihood</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Hopefully faster</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.unweighted_likelihood_">
+<span class="sig-name descname"><span class="pre">unweighted_likelihood_</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.unweighted_likelihood_" title="Link to this definition">¶</a></dt>
+<dd><p>return the likelihood of each data for each component
+the values are not weighted by the component weights</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x: array of shape (n_samples,self.dim)</strong></dt><dd><p>the data used in the estimation process</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>like, array of shape(n_samples,self.k)</dt><dd><p>unweighted component-wise likelihood</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GMM.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GMM.update" title="Link to this definition">¶</a></dt>
+<dd><p>Identical to self._Mstep(x,l)</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="griddescriptor">
+<h3><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GridDescriptor" title="nipy.algorithms.clustering.gmm.GridDescriptor"><code class="xref py py-class docutils literal notranslate"><span class="pre">GridDescriptor</span></code></a><a class="headerlink" href="#griddescriptor" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GridDescriptor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.clustering.gmm.</span></span><span class="sig-name descname"><span class="pre">GridDescriptor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GridDescriptor" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A tiny class to handle cartesian grids</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GridDescriptor.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GridDescriptor.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dim: int, optional,</strong></dt><dd><p>the dimension of the grid</p>
+</dd>
+<dt><strong>lim: list of len(2*self.dim),</strong></dt><dd><p>the limits of the grid as (xmin, xmax, ymin, ymax, …)</p>
+</dd>
+<dt><strong>n_bins: list of len(self.dim),</strong></dt><dd><p>the number of bins in each direction</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GridDescriptor.make_grid">
+<span class="sig-name descname"><span class="pre">make_grid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GridDescriptor.make_grid" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the grid points</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>grid: array of shape (nb_nodes, self.dim)</dt><dd><p>where nb_nodes is the prod of self.n_bins</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.GridDescriptor.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.GridDescriptor.set" title="Link to this definition">¶</a></dt>
+<dd><p>set the limits of the grid and the number of bins</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lim: list of len(2*self.dim),</strong></dt><dd><p>the limits of the grid as (xmin, xmax, ymin, ymax, …)</p>
+</dd>
+<dt><strong>n_bins: list of len(self.dim), optional</strong></dt><dd><p>the number of bins in each direction</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.best_fitting_GMM">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.clustering.gmm.</span></span><span class="sig-name descname"><span class="pre">best_fitting_GMM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">krange</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prec_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'full'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ninit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.best_fitting_GMM" title="Link to this definition">¶</a></dt>
+<dd><p>Given a certain dataset x, find the best-fitting GMM
+with a number k of classes in a certain range defined by krange</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x: array of shape (n_samples,dim)</strong></dt><dd><p>the data from which the model is estimated</p>
+</dd>
+<dt><strong>krange: list of floats,</strong></dt><dd><p>the range of values to test for k</p>
+</dd>
+<dt><strong>prec_type: string (to be chosen within ‘full’,’diag’), optional,</strong></dt><dd><p>the covariance parameterization</p>
+</dd>
+<dt><strong>niter: int, optional,</strong></dt><dd><p>maximal number of iterations in the estimation process</p>
+</dd>
+<dt><strong>delta: float, optional,</strong></dt><dd><p>increment of data likelihood at which convergence is declared</p>
+</dd>
+<dt><strong>ninit: int</strong></dt><dd><p>number of initialization performed</p>
+</dd>
+<dt><strong>verbose=0: verbosity mode</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>mg</strong><span class="classifier">the best-fitting GMM instance</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.gmm.plot2D">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.clustering.gmm.</span></span><span class="sig-name descname"><span class="pre">plot2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">my_gmm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_dots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mpaxes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.gmm.plot2D" title="Link to this definition">¶</a></dt>
+<dd><p>Given a set of points in a plane and a GMM, plot them</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x: array of shape (npoints, dim=2),</strong></dt><dd><p>sample points</p>
+</dd>
+<dt><strong>my_gmm: GMM instance,</strong></dt><dd><p>whose density has to be plotted</p>
+</dd>
+<dt><strong>z: array of shape (npoints), optional</strong></dt><dd><p>that gives a labelling of the points in x
+by default, it is not taken into account</p>
+</dd>
+<dt><strong>with_dots, bool, optional</strong></dt><dd><p>whether to plot the dots or not</p>
+</dd>
+<dt><strong>log_scale: bool, optional</strong></dt><dd><p>whether to plot the likelihood in log scale or not</p>
+</dd>
+<dt><strong>mpaxes=None, int, optional</strong></dt><dd><p>if not None, axes handle for plotting</p>
+</dd>
+<dt><strong>verbose: verbosity mode, optional</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>gd, GridDescriptor instance,</dt><dd><p>that represents the grid used in the function</p>
+</dd>
+<dt>ax, handle to the figure axes</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p><code class="docutils literal notranslate"><span class="pre">my_gmm</span></code> is assumed to have have a  ‘nixture_likelihood’ method that takes
+an array of points of shape (np, dim) and returns an array of shape
+(np,my_gmm.k) that represents the likelihood component-wise</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.clustering.gmm</a><ul>
+<li><a class="reference internal" href="#module-algorithms-clustering-gmm">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.clustering.gmm</span></code></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#gmm"><code class="xref py py-class docutils literal notranslate"><span class="pre">GMM</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM"><code class="docutils literal notranslate"><span class="pre">GMM</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.__init__"><code class="docutils literal notranslate"><span class="pre">GMM.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.average_log_like"><code class="docutils literal notranslate"><span class="pre">GMM.average_log_like()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.bic"><code class="docutils literal notranslate"><span class="pre">GMM.bic()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.check"><code class="docutils literal notranslate"><span class="pre">GMM.check()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.check_x"><code class="docutils literal notranslate"><span class="pre">GMM.check_x()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.estimate"><code class="docutils literal notranslate"><span class="pre">GMM.estimate()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.evidence"><code class="docutils literal notranslate"><span class="pre">GMM.evidence()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.guess_regularizing"><code class="docutils literal notranslate"><span class="pre">GMM.guess_regularizing()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.initialize"><code class="docutils literal notranslate"><span class="pre">GMM.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.initialize_and_estimate"><code class="docutils literal notranslate"><span class="pre">GMM.initialize_and_estimate()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.likelihood"><code class="docutils literal notranslate"><span class="pre">GMM.likelihood()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.map_label"><code class="docutils literal notranslate"><span class="pre">GMM.map_label()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.mixture_likelihood"><code class="docutils literal notranslate"><span class="pre">GMM.mixture_likelihood()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.plugin"><code class="docutils literal notranslate"><span class="pre">GMM.plugin()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.pop"><code class="docutils literal notranslate"><span class="pre">GMM.pop()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.show"><code class="docutils literal notranslate"><span class="pre">GMM.show()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.show_components"><code class="docutils literal notranslate"><span class="pre">GMM.show_components()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.test"><code class="docutils literal notranslate"><span class="pre">GMM.test()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.train"><code class="docutils literal notranslate"><span class="pre">GMM.train()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.unweighted_likelihood"><code class="docutils literal notranslate"><span class="pre">GMM.unweighted_likelihood()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.unweighted_likelihood_"><code class="docutils literal notranslate"><span class="pre">GMM.unweighted_likelihood_()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GMM.update"><code class="docutils literal notranslate"><span class="pre">GMM.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#griddescriptor"><code class="xref py py-class docutils literal notranslate"><span class="pre">GridDescriptor</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GridDescriptor"><code class="docutils literal notranslate"><span class="pre">GridDescriptor</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GridDescriptor.__init__"><code class="docutils literal notranslate"><span class="pre">GridDescriptor.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GridDescriptor.make_grid"><code class="docutils literal notranslate"><span class="pre">GridDescriptor.make_grid()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.GridDescriptor.set"><code class="docutils literal notranslate"><span class="pre">GridDescriptor.set()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.best_fitting_GMM"><code class="docutils literal notranslate"><span class="pre">best_fitting_GMM()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.gmm.plot2D"><code class="docutils literal notranslate"><span class="pre">plot2D()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.clustering.ggmixture.html"
+                          title="previous chapter">algorithms.clustering.ggmixture</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.clustering.hierarchical_clustering.html"
+                          title="next chapter">algorithms.clustering.hierarchical_clustering</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.clustering.gmm.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.clustering.hierarchical_clustering.html" title="algorithms.clustering.hierarchical_clustering"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.clustering.ggmixture.html" title="algorithms.clustering.ggmixture"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

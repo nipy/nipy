@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+cli.tsdiffana
+=============
+
+Module: :mod:`cli.tsdiffana`
+----------------------------
+.. automodule:: nipy.cli.tsdiffana
+
+.. currentmodule:: nipy.cli.tsdiffana
+
+.. autofunction:: nipy.cli.tsdiffana.main
+

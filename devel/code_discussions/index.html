@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Understanding voxel and real world mappings" href="understanding_affines.html" />
+    <link rel="prev" title="TODO for nipy development" href="../planning/TODO.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="understanding_affines.html" title="Understanding voxel and real world mappings"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../planning/TODO.html" title="TODO for nipy development"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">Developer Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="code-discussions">
+<span id="id1"></span><h1>Code discussions<a class="headerlink" href="#code-discussions" title="Link to this heading">¶</a></h1>
+<p>These are some developer discussions about design of code in NIPY.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Release<span class="colon">:</span></dt>
+<dd class="field-odd"><p>0.6.1.dev1</p>
+</dd>
+<dt class="field-even">Date<span class="colon">:</span></dt>
+<dd class="field-even"><p>February 20, 2024</p>
+</dd>
+</dl>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="understanding_affines.html">Understanding voxel and real world mappings</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="understanding_affines.html#voxel-coordinates-and-real-world-coordinates">Voxel coordinates and real-world coordinates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="understanding_affines.html#image-index-ordering">Image index ordering</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="image_ordering.html">Image index ordering</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="image_ordering.html#background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="image_ordering.html#the-problem">The problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="image_ordering.html#native-fortran-or-c-indexing-for-images">Native fortran or C indexing for images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="image_ordering.html#an-alternative-proposal-xyz-ordering-of-output-coordinates">An alternative proposal - XYZ ordering of output coordinates</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="registration_api.html">Registration API Design</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="registration_api.html#transform-multiplication">Transform Multiplication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="registration_api.html#matching-coordinate-systems">Matching Coordinate Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="registration_api.html#coordinatemap">CoordinateMap</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="repository_design.html">Repository design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="brainvisa_repositories.html">Can NIPY get something interesting from BrainVISA databases?</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="brainvisa_repositories.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="brainvisa_repositories.html#what-is-a-database-in-brainvisa-today">What is a database in BrainVISA today?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="brainvisa_repositories.html#a-few-thoughts-about-a-possible-api-for-repositories">A few thoughts about a possible API for repositories</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="repository_api.html">Repository API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipelining_api.html">What would pipelining look like?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simple_viewer.html">Simple image viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simple_viewer.html#other-attempts">Other attempts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usecases/index.html">Defining use cases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usecases/transformations.html">Transformation use cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases/images.html">Image model use cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases/resampling.html">Resampling use cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases/batching.html">Batching use cases</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="refactoring/index.html">Defining use cases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="refactoring/imagelists.html">Refactoring imagelists</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="comparisons/index.html">Software Design</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="comparisons/vtk_datasets.html">VTK datasets</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../planning/TODO.html"
+                          title="previous chapter">TODO for nipy development</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="understanding_affines.html"
+                          title="next chapter">Understanding voxel and real world mappings</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/devel/code_discussions/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="understanding_affines.html" title="Understanding voxel and real world mappings"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../planning/TODO.html" title="TODO for nipy development"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >Developer Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

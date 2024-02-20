@@ -1,0 +1,5 @@
+<map id="inheritance664ed21912" name="inheritance664ed21912">
+<area shape="rect" id="node1" href="#nipy.algorithms.clustering.bgmm.BGMM" target="_top" title="This class implements Bayesian GMMs" alt="" coords="200,5,362,32"/>
+<area shape="rect" id="node3" href="#nipy.algorithms.clustering.bgmm.VBGMM" target="_top" title="Subclass of Bayesian GMMs (BGMM)" alt="" coords="410,5,581,32"/>
+<area shape="rect" id="node2" href="nipy.algorithms.clustering.gmm.html#nipy.algorithms.clustering.gmm.GMM" target="_top" title="Standard GMM." alt="" coords="5,5,152,32"/>
+</map>

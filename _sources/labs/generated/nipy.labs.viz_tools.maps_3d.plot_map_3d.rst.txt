@@ -1,0 +1,6 @@
+﻿nipy.labs.viz\_tools.maps\_3d.plot\_map\_3d
+===========================================
+
+.. currentmodule:: nipy.labs.viz_tools.maps_3d
+
+.. autofunction:: plot_map_3d

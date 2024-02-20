@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+cli.diagnose
+============
+
+Module: :mod:`cli.diagnose`
+---------------------------
+.. automodule:: nipy.cli.diagnose
+
+.. currentmodule:: nipy.cli.diagnose
+
+.. autofunction:: nipy.cli.diagnose.main
+

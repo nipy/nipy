@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="modalities.fmri.spm.reml" href="nipy.modalities.fmri.spm.reml.html" />
+    <link rel="prev" title="modalities.fmri.spm.correlation" href="nipy.modalities.fmri.spm.correlation.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.spm.reml.html" title="modalities.fmri.spm.reml"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.spm.correlation.html" title="modalities.fmri.spm.correlation"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="modalities-fmri-spm-model">
+<h1>modalities.fmri.spm.model<a class="headerlink" href="#modalities-fmri-spm-model" title="Link to this heading">¶</a></h1>
+<section id="module-modalities-fmri-spm-model">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.spm.model</span></code><a class="headerlink" href="#module-modalities-fmri-spm-model" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.modalities.fmri.spm.model</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-46ea0ea8d56272d56ff05aec897894716e843438.png" alt="Inheritance diagram of nipy.modalities.fmri.spm.model" usemap="#inheritance09fa802a2b" class="inheritance graphviz" /></div>
+<map id="inheritance09fa802a2b" name="inheritance09fa802a2b">
+<area shape="rect" id="node1" href="#nipy.modalities.fmri.spm.model.SecondStage" target="_top" title="Parameters" alt="" coords="5,5,173,32"/>
+</map><span class="target" id="module-nipy.modalities.fmri.spm.model"></span></section>
+<section id="class">
+<h2>Class<a class="headerlink" href="#class" title="Link to this heading">¶</a></h2>
+</section>
+<section id="secondstage">
+<h2><a class="reference internal" href="#nipy.modalities.fmri.spm.model.SecondStage" title="nipy.modalities.fmri.spm.model.SecondStage"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecondStage</span></code></a><a class="headerlink" href="#secondstage" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.spm.model.SecondStage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.spm.model.</span></span><span class="sig-name descname"><span class="pre">SecondStage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmri_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_start_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.spm.model.SecondStage" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>fmri_image</strong><span class="classifier"><cite>FmriImageList</cite></span></dt><dd><p>object returning 4D array from <code class="docutils literal notranslate"><span class="pre">np.asarray</span></code>, having attribute
+<code class="docutils literal notranslate"><span class="pre">volume_start_times</span></code> (if <cite>volume_start_times</cite> is None), and
+such that <code class="docutils literal notranslate"><span class="pre">object[0]</span></code> returns something with attributes <code class="docutils literal notranslate"><span class="pre">shape</span></code></p>
+</dd>
+<dt><strong>formula</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">nipy.algorithms.statistics.formula.Formula</span></code></span></dt><dd></dd>
+<dt><strong>sigma</strong></dt><dd></dd>
+<dt><strong>outputs</strong></dt><dd></dd>
+<dt><strong>volume_start_times</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.spm.model.SecondStage.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmri_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_start_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.spm.model.SecondStage.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.spm.model.SecondStage.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.spm.model.SecondStage.execute" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.spm.model.Fmask">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.spm.model.</span></span><span class="sig-name descname"><span class="pre">Fmask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Fimg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dfnum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dfdenom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pvalue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.spm.model.Fmask" title="Link to this definition">¶</a></dt>
+<dd><p>Create mask for use in estimating pooled covariance based on
+an F contrast.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.spm.model.estimate_pooled_covariance">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.spm.model.</span></span><span class="sig-name descname"><span class="pre">estimate_pooled_covariance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ARtarget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.3]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.spm.model.estimate_pooled_covariance" title="Link to this definition">¶</a></dt>
+<dd><p>Use SPM’s REML implementation to estimate a pooled covariance matrix.</p>
+<p>Thresholds an F statistic at a marginal pvalue to estimate
+covariance matrix.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">modalities.fmri.spm.model</a><ul>
+<li><a class="reference internal" href="#module-modalities-fmri-spm-model">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.spm.model</span></code></a></li>
+<li><a class="reference internal" href="#class">Class</a></li>
+<li><a class="reference internal" href="#secondstage"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecondStage</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.spm.model.SecondStage"><code class="docutils literal notranslate"><span class="pre">SecondStage</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.spm.model.SecondStage.__init__"><code class="docutils literal notranslate"><span class="pre">SecondStage.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.spm.model.SecondStage.execute"><code class="docutils literal notranslate"><span class="pre">SecondStage.execute()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.spm.model.Fmask"><code class="docutils literal notranslate"><span class="pre">Fmask()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.spm.model.estimate_pooled_covariance"><code class="docutils literal notranslate"><span class="pre">estimate_pooled_covariance()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.spm.correlation.html"
+                          title="previous chapter">modalities.fmri.spm.correlation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.spm.reml.html"
+                          title="next chapter">modalities.fmri.spm.reml</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.modalities.fmri.spm.model.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.spm.reml.html" title="modalities.fmri.spm.reml"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.spm.correlation.html" title="modalities.fmri.spm.correlation"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

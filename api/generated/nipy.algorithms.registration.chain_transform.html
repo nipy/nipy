@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.registration.groupwise_registration" href="nipy.algorithms.registration.groupwise_registration.html" />
+    <link rel="prev" title="algorithms.registration.affine" href="nipy.algorithms.registration.affine.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.groupwise_registration.html" title="algorithms.registration.groupwise_registration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.affine.html" title="algorithms.registration.affine"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-registration-chain-transform">
+<h1>algorithms.registration.chain_transform<a class="headerlink" href="#algorithms-registration-chain-transform" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-registration-chain-transform">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.registration.chain_transform</span></code><a class="headerlink" href="#module-algorithms-registration-chain-transform" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.registration.chain_transform</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-8e2ea47a41776f5a5ed904a66bdb16af03a9dcaa.png" alt="Inheritance diagram of nipy.algorithms.registration.chain_transform" usemap="#inheritancec0a7acd724" class="inheritance graphviz" /></div>
+<map id="inheritancec0a7acd724" name="inheritancec0a7acd724">
+<area shape="rect" id="node1" href="#nipy.algorithms.registration.chain_transform.ChainTransform" target="_top" title="registration.chain_transform.ChainTransform" alt="" coords="5,5,285,32"/>
+</map><p id="module-nipy.algorithms.registration.chain_transform">Chain transforms</p>
+</section>
+<section id="chaintransform">
+<h2><a class="reference internal" href="#nipy.algorithms.registration.chain_transform.ChainTransform" title="nipy.algorithms.registration.chain_transform.ChainTransform"><code class="xref py py-class docutils literal notranslate"><span class="pre">ChainTransform</span></code></a><a class="headerlink" href="#chaintransform" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.chain_transform.ChainTransform">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.chain_transform.</span></span><span class="sig-name descname"><span class="pre">ChainTransform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.chain_transform.ChainTransform" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.chain_transform.ChainTransform.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.chain_transform.ChainTransform.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Create chain transform instance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>optimizable</strong><span class="classifier">array or Transform</span></dt><dd><p>Transform that we are optimizing.  If this is an array, then assume
+it’s an affine matrix.</p>
+</dd>
+<dt><strong>pre</strong><span class="classifier">None or array or Transform, optional</span></dt><dd><p>If not None, a transform that should be applied to points before
+applying the <cite>optimizable</cite> transform.  If an array, then assume it’s
+an affine matrix.</p>
+</dd>
+<dt><strong>post</strong><span class="classifier">None or Transform, optional</span></dt><dd><p>If not None, a transform that should be applied to points after
+applying any <cite>pre</cite> transform, and then the <cite>optimizable</cite>
+transform.  If an array, assume it’s an affine matrix</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.chain_transform.ChainTransform.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.chain_transform.ChainTransform.apply" title="Link to this definition">¶</a></dt>
+<dd><p>Apply full transformation to points <cite>pts</cite></p>
+<p>If there are N points, then <cite>pts</cite> will be N by 3</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>pts</strong><span class="classifier">array-like</span></dt><dd><p>array of points</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>transformed_pts</strong><span class="classifier">array</span></dt><dd><p>N by 3 array of transformed points</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.chain_transform.ChainTransform.param">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">param</span></span><a class="headerlink" href="#nipy.algorithms.registration.chain_transform.ChainTransform.param" title="Link to this definition">¶</a></dt>
+<dd><p>get/set param</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.registration.chain_transform</a><ul>
+<li><a class="reference internal" href="#module-algorithms-registration-chain-transform">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.registration.chain_transform</span></code></a></li>
+<li><a class="reference internal" href="#chaintransform"><code class="xref py py-class docutils literal notranslate"><span class="pre">ChainTransform</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.chain_transform.ChainTransform"><code class="docutils literal notranslate"><span class="pre">ChainTransform</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.chain_transform.ChainTransform.__init__"><code class="docutils literal notranslate"><span class="pre">ChainTransform.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.chain_transform.ChainTransform.apply"><code class="docutils literal notranslate"><span class="pre">ChainTransform.apply()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.chain_transform.ChainTransform.param"><code class="docutils literal notranslate"><span class="pre">ChainTransform.param</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.registration.affine.html"
+                          title="previous chapter">algorithms.registration.affine</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.registration.groupwise_registration.html"
+                          title="next chapter">algorithms.registration.groupwise_registration</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.registration.chain_transform.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.groupwise_registration.html" title="algorithms.registration.groupwise_registration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.affine.html" title="algorithms.registration.affine"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

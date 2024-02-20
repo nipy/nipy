@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.statistics.bayesian_mixed_effects" href="nipy.algorithms.statistics.bayesian_mixed_effects.html" />
+    <link rel="prev" title="algorithms.segmentation.segmentation" href="nipy.algorithms.segmentation.segmentation.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.bayesian_mixed_effects.html" title="algorithms.statistics.bayesian_mixed_effects"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.segmentation.segmentation.html" title="algorithms.segmentation.segmentation"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-slicetiming-timefuncs">
+<h1>algorithms.slicetiming.timefuncs<a class="headerlink" href="#algorithms-slicetiming-timefuncs" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.algorithms.slicetiming.timefuncs">
+<span id="module-algorithms-slicetiming-timefuncs"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.slicetiming.timefuncs</span></code><a class="headerlink" href="#module-nipy.algorithms.slicetiming.timefuncs" title="Link to this heading">¶</a></h2>
+<p>Utility functions for returning slice times from number of slices and TR</p>
+<p>Slice timing routines in nipy need a vector of slice times.</p>
+<p>Slice times are vectors <span class="math notranslate nohighlight">\(t_i\)</span> with <span class="math notranslate nohighlight">\(i = 0 ... N\)</span> of times, one for each slice, where
+<span class="math notranslate nohighlight">\(t_i\)</span> gives the time at which slice number <span class="math notranslate nohighlight">\(i\)</span> was acquired, relative to the
+beginning of the volume acquisition.</p>
+<p>We like these vectors because they are unambiguous; the indices <span class="math notranslate nohighlight">\(i\)</span> refer to
+positions in space, and the values <span class="math notranslate nohighlight">\(t_i\)</span> refer to times.</p>
+<p>But, there are many common slice timing regimes for which it’s easy to get the
+slice times once you know the volume acquisition time (the TR) and the number of
+slices.</p>
+<p>For example, if you acquired the slices in a simple ascending order, and you
+have 10 slices and the TR was 2.0, then the slice times are:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">/</span> <span class="mf">10.</span>  <span class="o">*</span> <span class="mf">2.0</span>
+<span class="go">array([ 0. ,  0.2,  0.4,  0.6,  0.8,  1. ,  1.2,  1.4,  1.6,  1.8])</span>
+</pre></div>
+</div>
+<p>These are small convenience functions that accept the number of slices and the
+TR as input, and return a vector of slice times:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ascending</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">2.</span><span class="p">)</span>
+<span class="go">array([ 0. ,  0.2,  0.4,  0.6,  0.8,  1. ,  1.2,  1.4,  1.6,  1.8])</span>
+</pre></div>
+</div>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.slicetiming.timefuncs.st_01234">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.slicetiming.timefuncs.</span></span><span class="sig-name descname"><span class="pre">st_01234</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_slices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TR</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.slicetiming.timefuncs.st_01234" title="Link to this definition">¶</a></dt>
+<dd><p>Simple ascending slice sequence</p>
+<p>slice 0 first, slice 1 second etc.</p>
+<p>For example, for 5 slices and a TR of 1:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st_01234</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="go">array([ 0. ,  0.2,  0.4,  0.6,  0.8])</span>
+</pre></div>
+</div>
+<p>Note: slice 0 is the first slice in the voxel data block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_slices</strong><span class="classifier">int</span></dt><dd><p>Number of slices in volume</p>
+</dd>
+<dt><strong>TR</strong><span class="classifier">float</span></dt><dd><p>Time to acquire one full volume</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>slice_times</strong><span class="classifier">(n_slices,) ndarray</span></dt><dd><p>Vectors <span class="math notranslate nohighlight">\(t_i i = 0 ... N\)</span> of times, one for each slice, where <span class="math notranslate nohighlight">\(t_i\)</span>
+gives the time at which slice number <span class="math notranslate nohighlight">\(i\)</span> was acquired, relative to the
+beginning of the volume acquisition.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.slicetiming.timefuncs.st_02413">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.slicetiming.timefuncs.</span></span><span class="sig-name descname"><span class="pre">st_02413</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_slices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TR</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.slicetiming.timefuncs.st_02413" title="Link to this definition">¶</a></dt>
+<dd><p>Ascend alternate every second slice, starting at first slice</p>
+<p>Collect slice 0 first, slice 2 second up to top.  Then return to collect
+slice 1, slice 3 etc.</p>
+<p>For example, for 5 slices and a TR of 1:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st_02413</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="go">array([ 0. ,  0.6,  0.2,  0.8,  0.4])</span>
+</pre></div>
+</div>
+<p>Note: slice 0 is the first slice in the voxel data block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_slices</strong><span class="classifier">int</span></dt><dd><p>Number of slices in volume</p>
+</dd>
+<dt><strong>TR</strong><span class="classifier">float</span></dt><dd><p>Time to acquire one full volume</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>slice_times</strong><span class="classifier">(n_slices,) ndarray</span></dt><dd><p>Vectors <span class="math notranslate nohighlight">\(t_i i = 0 ... N\)</span> of times, one for each slice, where <span class="math notranslate nohighlight">\(t_i\)</span>
+gives the time at which slice number <span class="math notranslate nohighlight">\(i\)</span> was acquired, relative to the
+beginning of the volume acquisition.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.slicetiming.timefuncs.st_03142">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.slicetiming.timefuncs.</span></span><span class="sig-name descname"><span class="pre">st_03142</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_slices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TR</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.slicetiming.timefuncs.st_03142" title="Link to this definition">¶</a></dt>
+<dd><p>Ascend alternate, where alternation is by half the volume</p>
+<p>Collect slice 0 then slice <code class="docutils literal notranslate"><span class="pre">ceil(n_slices</span> <span class="pre">/</span> <span class="pre">2.)</span></code> then slice 1 then slice
+<code class="docutils literal notranslate"><span class="pre">ceil(nslices</span> <span class="pre">/</span> <span class="pre">2.)</span> <span class="pre">+</span> <span class="pre">1</span></code> etc.</p>
+<p>For example, for 5 slices and a TR of 1:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st_03142</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="go">array([ 0. ,  0.4,  0.8,  0.2,  0.6])</span>
+</pre></div>
+</div>
+<p>Note: slice 0 is the first slice in the voxel data block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_slices</strong><span class="classifier">int</span></dt><dd><p>Number of slices in volume</p>
+</dd>
+<dt><strong>TR</strong><span class="classifier">float</span></dt><dd><p>Time to acquire one full volume</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>slice_times</strong><span class="classifier">(n_slices,) ndarray</span></dt><dd><p>Vectors <span class="math notranslate nohighlight">\(t_i i = 0 ... N\)</span> of times, one for each slice, where <span class="math notranslate nohighlight">\(t_i\)</span>
+gives the time at which slice number <span class="math notranslate nohighlight">\(i\)</span> was acquired, relative to the
+beginning of the volume acquisition.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.slicetiming.timefuncs.st_13024">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.slicetiming.timefuncs.</span></span><span class="sig-name descname"><span class="pre">st_13024</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_slices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TR</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.slicetiming.timefuncs.st_13024" title="Link to this definition">¶</a></dt>
+<dd><p>Ascend alternate every second slice, starting at second slice</p>
+<p>Collect slice 1 first, slice 3 second up to top (highest numbered slice).
+Then return to collect slice 0, slice 2 etc.  This order is rare except on
+Siemens acquisitions with an even number of slices.  See
+<a class="reference internal" href="#nipy.algorithms.slicetiming.timefuncs.st_odd0_even1" title="nipy.algorithms.slicetiming.timefuncs.st_odd0_even1"><code class="xref py py-func docutils literal notranslate"><span class="pre">st_odd0_even1()</span></code></a> for this logic.</p>
+<p>For example, for 5 slices and a TR of 1:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st_13024</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="go">array([ 0.4,  0. ,  0.6,  0.2,  0.8])</span>
+</pre></div>
+</div>
+<p>Note: slice 0 is the first slice in the voxel data block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_slices</strong><span class="classifier">int</span></dt><dd><p>Number of slices in volume</p>
+</dd>
+<dt><strong>TR</strong><span class="classifier">float</span></dt><dd><p>Time to acquire one full volume</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>slice_times</strong><span class="classifier">(n_slices,) ndarray</span></dt><dd><p>Vectors <span class="math notranslate nohighlight">\(t_i i = 0 ... N\)</span> of times, one for each slice, where <span class="math notranslate nohighlight">\(t_i\)</span>
+gives the time at which slice number <span class="math notranslate nohighlight">\(i\)</span> was acquired, relative to the
+beginning of the volume acquisition.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.slicetiming.timefuncs.st_41302">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.slicetiming.timefuncs.</span></span><span class="sig-name descname"><span class="pre">st_41302</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_slices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TR</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.slicetiming.timefuncs.st_41302" title="Link to this definition">¶</a></dt>
+<dd><p>Descend alternate, where alternation is by half the volume</p>
+<p>Collect slice <code class="docutils literal notranslate"><span class="pre">(n_slices</span> <span class="pre">-</span> <span class="pre">1)</span></code> then slice <code class="docutils literal notranslate"><span class="pre">floor(nslices</span> <span class="pre">/</span> <span class="pre">2.)</span> <span class="pre">-</span> <span class="pre">1</span></code>
+then slice <code class="docutils literal notranslate"><span class="pre">(n_slices</span> <span class="pre">-</span> <span class="pre">2)</span></code> then slice <code class="docutils literal notranslate"><span class="pre">floor(nslices</span> <span class="pre">/</span> <span class="pre">2.)</span> <span class="pre">-</span> <span class="pre">2</span></code> etc.</p>
+<p>For example, for 5 slices and a TR of 1:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st_41302</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="go">array([ 0.6,  0.2,  0.8,  0.4,  0. ])</span>
+</pre></div>
+</div>
+<p>Note: slice 0 is the first slice in the voxel data block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_slices</strong><span class="classifier">int</span></dt><dd><p>Number of slices in volume</p>
+</dd>
+<dt><strong>TR</strong><span class="classifier">float</span></dt><dd><p>Time to acquire one full volume</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>slice_times</strong><span class="classifier">(n_slices,) ndarray</span></dt><dd><p>Vectors <span class="math notranslate nohighlight">\(t_i i = 0 ... N\)</span> of times, one for each slice, where <span class="math notranslate nohighlight">\(t_i\)</span>
+gives the time at which slice number <span class="math notranslate nohighlight">\(i\)</span> was acquired, relative to the
+beginning of the volume acquisition.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.slicetiming.timefuncs.st_42031">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.slicetiming.timefuncs.</span></span><span class="sig-name descname"><span class="pre">st_42031</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_slices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TR</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.slicetiming.timefuncs.st_42031" title="Link to this definition">¶</a></dt>
+<dd><p>Descend alternate every second slice, starting at last slice</p>
+<p>Collect slice (<cite>n_slices</cite> - 1) first, slice (<cite>nslices</cite> - 3) second down to
+bottom (lowest numbered slice).  Then return to collect slice (<cite>n_slices</cite>
+-2), slice (<cite>n_slices</cite> - 4) etc.</p>
+<p>For example, for 5 slices and a TR of 1:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st_42031</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="go">array([ 0.4,  0.8,  0.2,  0.6,  0. ])</span>
+</pre></div>
+</div>
+<p>Note: slice 0 is the first slice in the voxel data block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_slices</strong><span class="classifier">int</span></dt><dd><p>Number of slices in volume</p>
+</dd>
+<dt><strong>TR</strong><span class="classifier">float</span></dt><dd><p>Time to acquire one full volume</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>slice_times</strong><span class="classifier">(n_slices,) ndarray</span></dt><dd><p>Vectors <span class="math notranslate nohighlight">\(t_i i = 0 ... N\)</span> of times, one for each slice, where <span class="math notranslate nohighlight">\(t_i\)</span>
+gives the time at which slice number <span class="math notranslate nohighlight">\(i\)</span> was acquired, relative to the
+beginning of the volume acquisition.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.slicetiming.timefuncs.st_43210">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.slicetiming.timefuncs.</span></span><span class="sig-name descname"><span class="pre">st_43210</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_slices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TR</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.slicetiming.timefuncs.st_43210" title="Link to this definition">¶</a></dt>
+<dd><p>Simple descending slice sequence</p>
+<p>slice <code class="docutils literal notranslate"><span class="pre">n_slices-1</span></code> first, slice <code class="docutils literal notranslate"><span class="pre">n_slices</span> <span class="pre">-</span> <span class="pre">2</span></code> second etc.</p>
+<p>For example, for 5 slices and a TR of 1:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st_43210</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="go">array([ 0.8,  0.6,  0.4,  0.2,  0. ])</span>
+</pre></div>
+</div>
+<p>Note: slice 0 is the first slice in the voxel data block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_slices</strong><span class="classifier">int</span></dt><dd><p>Number of slices in volume</p>
+</dd>
+<dt><strong>TR</strong><span class="classifier">float</span></dt><dd><p>Time to acquire one full volume</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>slice_times</strong><span class="classifier">(n_slices,) ndarray</span></dt><dd><p>Vectors <span class="math notranslate nohighlight">\(t_i i = 0 ... N\)</span> of times, one for each slice, where <span class="math notranslate nohighlight">\(t_i\)</span>
+gives the time at which slice number <span class="math notranslate nohighlight">\(i\)</span> was acquired, relative to the
+beginning of the volume acquisition.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.slicetiming.timefuncs.st_odd0_even1">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.slicetiming.timefuncs.</span></span><span class="sig-name descname"><span class="pre">st_odd0_even1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_slices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TR</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.slicetiming.timefuncs.st_odd0_even1" title="Link to this definition">¶</a></dt>
+<dd><p>Ascend alternate starting at slice 0 for odd, slice 1 for even <cite>n_slices</cite></p>
+<p>Acquisitions with alternating ascending slices from Siemens scanners often
+seem to have this behavior as default - see:</p>
+<blockquote>
+<div><p><a class="reference external" href="https://mri.radiology.uiowa.edu/fmri_images.html">https://mri.radiology.uiowa.edu/fmri_images.html</a></p>
+</div></blockquote>
+<p>This means we use the <a class="reference internal" href="#nipy.algorithms.slicetiming.timefuncs.st_02413" title="nipy.algorithms.slicetiming.timefuncs.st_02413"><code class="xref py py-func docutils literal notranslate"><span class="pre">st_02413()</span></code></a> algorithm if <cite>n_slices</cite> is odd, and
+the <a class="reference internal" href="#nipy.algorithms.slicetiming.timefuncs.st_13024" title="nipy.algorithms.slicetiming.timefuncs.st_13024"><code class="xref py py-func docutils literal notranslate"><span class="pre">st_13024()</span></code></a> algorithm if <cite>n_slices</cite> is even.</p>
+<p>For example, for 4 slices and a TR of 1:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st_odd0_even1</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="go">array([ 0.5 ,  0.  ,  0.75,  0.25])</span>
+</pre></div>
+</div>
+<p>5 slices and a TR of 1:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">st_odd0_even1</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+<span class="go">array([ 0. ,  0.6,  0.2,  0.8,  0.4])</span>
+</pre></div>
+</div>
+<p>Note: slice 0 is the first slice in the voxel data block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_slices</strong><span class="classifier">int</span></dt><dd><p>Number of slices in volume</p>
+</dd>
+<dt><strong>TR</strong><span class="classifier">float</span></dt><dd><p>Time to acquire one full volume</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>slice_times</strong><span class="classifier">(n_slices,) ndarray</span></dt><dd><p>Vectors <span class="math notranslate nohighlight">\(t_i i = 0 ... N\)</span> of times, one for each slice, where <span class="math notranslate nohighlight">\(t_i\)</span>
+gives the time at which slice number <span class="math notranslate nohighlight">\(i\)</span> was acquired, relative to the
+beginning of the volume acquisition.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.slicetiming.timefuncs</a><ul>
+<li><a class="reference internal" href="#module-nipy.algorithms.slicetiming.timefuncs">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.slicetiming.timefuncs</span></code></a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.slicetiming.timefuncs.st_01234"><code class="docutils literal notranslate"><span class="pre">st_01234()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.slicetiming.timefuncs.st_02413"><code class="docutils literal notranslate"><span class="pre">st_02413()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.slicetiming.timefuncs.st_03142"><code class="docutils literal notranslate"><span class="pre">st_03142()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.slicetiming.timefuncs.st_13024"><code class="docutils literal notranslate"><span class="pre">st_13024()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.slicetiming.timefuncs.st_41302"><code class="docutils literal notranslate"><span class="pre">st_41302()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.slicetiming.timefuncs.st_42031"><code class="docutils literal notranslate"><span class="pre">st_42031()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.slicetiming.timefuncs.st_43210"><code class="docutils literal notranslate"><span class="pre">st_43210()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.slicetiming.timefuncs.st_odd0_even1"><code class="docutils literal notranslate"><span class="pre">st_odd0_even1()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.segmentation.segmentation.html"
+                          title="previous chapter">algorithms.segmentation.segmentation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.bayesian_mixed_effects.html"
+                          title="next chapter">algorithms.statistics.bayesian_mixed_effects</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.slicetiming.timefuncs.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.bayesian_mixed_effects.html" title="algorithms.statistics.bayesian_mixed_effects"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.segmentation.segmentation.html" title="algorithms.segmentation.segmentation"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

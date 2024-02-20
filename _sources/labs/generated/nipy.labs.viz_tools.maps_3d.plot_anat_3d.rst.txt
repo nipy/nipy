@@ -1,0 +1,6 @@
+﻿nipy.labs.viz\_tools.maps\_3d.plot\_anat\_3d
+============================================
+
+.. currentmodule:: nipy.labs.viz_tools.maps_3d
+
+.. autofunction:: plot_anat_3d

@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+labs.viz_tools.test.test_slicers
+================================
+
+Module: :mod:`labs.viz_tools.test.test_slicers`
+-----------------------------------------------
+.. automodule:: nipy.labs.viz_tools.test.test_slicers
+
+.. currentmodule:: nipy.labs.viz_tools.test.test_slicers
+
+.. autofunction:: nipy.labs.viz_tools.test.test_slicers.test_demo_ortho_slicer
+

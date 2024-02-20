@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <script src="../../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Image model use cases" href="images.html" />
+    <link rel="prev" title="Defining use cases" href="index.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../../index.html">
+  <img src="../../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="images.html" title="Image model use cases"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Defining use cases"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../index.html" >Code discussions</a> &#187;</li>
+          <li class="nav-item nav-item-4"><a href="index.html" accesskey="U">Defining use cases</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="transformation-use-cases">
+<span id="transformations"></span><h1>Transformation use cases<a class="headerlink" href="#transformation-use-cases" title="Link to this heading">¶</a></h1>
+<p>Use cases for defining and using transforms on images.</p>
+<p>We should be very careful to only use the terms <code class="docutils literal notranslate"><span class="pre">x,</span> <span class="pre">y,</span> <span class="pre">z</span></code> to refer to
+physical space.  For voxels, we should use <code class="docutils literal notranslate"><span class="pre">i,</span> <span class="pre">j,</span> <span class="pre">k</span></code>, or <code class="docutils literal notranslate"><span class="pre">i',</span> <span class="pre">j',</span> <span class="pre">k'</span></code> (i
+prime, j prime k prime).</p>
+<p>I have an image <em>Img</em>.</p>
+<section id="image-orientation">
+<h2>Image Orientation<a class="headerlink" href="#image-orientation" title="Link to this heading">¶</a></h2>
+<p>I would like to know what the voxel sizes are.</p>
+<p>I would like to determine whether it was acquired axially,
+coronally or sagittally.  What is the brain orientation in relation to
+the voxels?  Has it been acquired at an oblique angle?  What are the
+voxel dimensions?:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">img</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+<span class="n">cm</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">coordmap</span>
+<span class="nb">print</span> <span class="n">cm</span>
+
+<span class="n">input_coords</span> <span class="n">axis_i</span><span class="p">:</span>
+             <span class="n">axis_j</span><span class="p">:</span>
+             <span class="n">axis_k</span><span class="p">:</span>
+
+             <span class="n">effective</span> <span class="n">pixel</span> <span class="n">dimensions</span>
+                            <span class="n">axis_i</span><span class="p">:</span> <span class="mi">4</span><span class="n">mm</span>
+                            <span class="n">axis_j</span><span class="p">:</span> <span class="mi">2</span><span class="n">mm</span>
+                            <span class="n">axis_k</span><span class="p">:</span> <span class="mi">2</span><span class="n">mm</span>
+
+<span class="nb">input</span><span class="o">/</span><span class="n">output</span> <span class="n">mapping</span>
+               <span class="o">&lt;</span><span class="n">Affine</span> <span class="n">Matrix</span><span class="o">&gt;</span>
+
+
+
+
+                   <span class="n">x</span>   <span class="n">y</span>   <span class="n">z</span>
+                 <span class="o">------------</span>
+               <span class="n">i</span><span class="o">|</span>  <span class="mi">90</span>  <span class="mi">90</span>   <span class="mi">0</span>
+               <span class="n">j</span><span class="o">|</span>  <span class="mi">90</span>   <span class="mi">0</span>  <span class="mi">90</span>
+               <span class="n">k</span><span class="o">|</span> <span class="mi">180</span>  <span class="mi">90</span>  <span class="mi">90</span>
+
+               <span class="nb">input</span> <span class="n">axis_i</span> <span class="n">maps</span> <span class="n">exactly</span> <span class="n">to</span> <span class="n">output</span> <span class="n">axis_z</span>
+               <span class="nb">input</span> <span class="n">axis_j</span> <span class="n">maps</span> <span class="n">exactly</span> <span class="n">to</span> <span class="n">output</span> <span class="n">axis_y</span>
+               <span class="nb">input</span> <span class="n">axis_k</span> <span class="n">maps</span> <span class="n">exactly</span> <span class="n">to</span> <span class="n">output</span> <span class="n">axis_x</span> <span class="n">flipped</span> <span class="mi">180</span>
+
+<span class="n">output_coords</span> <span class="n">axis0</span><span class="p">:</span> <span class="n">Left</span> <span class="o">-&gt;</span> <span class="n">Right</span>
+              <span class="n">axis1</span><span class="p">:</span> <span class="n">Posterior</span> <span class="o">-&gt;</span> <span class="n">Anterior</span>
+              <span class="n">axis2</span><span class="p">:</span> <span class="n">Inferior</span> <span class="o">-&gt;</span> <span class="n">Superior</span>
+</pre></div>
+</div>
+<p>In the case of a mapping that does not exactly align the input and
+output axes, something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="nb">input</span><span class="o">/</span><span class="n">output</span> <span class="n">mapping</span>
+               <span class="o">&lt;</span><span class="n">Affine</span> <span class="n">Matrix</span><span class="o">&gt;</span>
+
+               <span class="nb">input</span> <span class="n">axis0</span> <span class="n">maps</span> <span class="n">closest</span> <span class="n">to</span> <span class="n">output</span> <span class="n">axis2</span>
+               <span class="nb">input</span> <span class="n">axis1</span> <span class="n">maps</span> <span class="n">closest</span> <span class="n">to</span> <span class="n">output</span> <span class="n">axis1</span>
+               <span class="nb">input</span> <span class="n">axis2</span> <span class="n">maps</span> <span class="n">closest</span> <span class="n">to</span> <span class="n">output</span> <span class="n">axis0</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>If the best matching axis is reversed compared to input axis:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="nb">input</span> <span class="n">axis0</span> <span class="n">maps</span> <span class="p">[</span><span class="n">closest</span><span class="o">|</span><span class="n">exactly</span><span class="p">]</span> <span class="n">to</span> <span class="n">negative</span> <span class="n">output</span> <span class="n">axis2</span>
+</pre></div>
+</div>
+<p>and so on.</p>
+</section>
+<section id="creating-transformations-coordinate-maps">
+<h2>Creating transformations / coordinate maps<a class="headerlink" href="#creating-transformations-coordinate-maps" title="Link to this heading">¶</a></h2>
+<p>I have an array <em>pixelarray</em> that represents voxels in an image and have a
+matrix/transform <em>mat</em> which represents the relation between the voxel
+coordinates and the coordinates in scanner space (world coordinates).
+I want to associate the array with the matrix:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">img</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+<span class="n">pixelarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<em>pixelarray</em> is an array and does not have a coordinate map.):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pixelarray</span><span class="o">.</span><span class="n">shape</span>
+<span class="p">(</span><span class="mi">40</span><span class="p">,</span><span class="mi">256</span><span class="p">,</span><span class="mi">256</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>So, now I have some arbitrary transformation matrix:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">mat</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1"># giving x mm scaling</span>
+<span class="n">mat</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1"># giving y mm scaling</span>
+<span class="n">mat</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span> <span class="c1"># giving z mm scaling</span>
+<span class="n">mat</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># because it must be so</span>
+<span class="c1"># Note inverse diagonal for zyx-&gt;xyz coordinate flip</span>
+</pre></div>
+</div>
+<p>I want to make an <code class="docutils literal notranslate"><span class="pre">Image</span></code> with these two:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coordmap</span> <span class="o">=</span> <span class="n">voxel2mm</span><span class="p">(</span><span class="n">pixelarray</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">mat</span><span class="p">)</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">pixelarray</span><span class="p">,</span> <span class="n">coordmap</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">voxel2mm</span></code> function allows separation of the image <em>array</em> from
+the size of the array, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coordmap</span> <span class="o">=</span> <span class="n">voxel2mm</span><span class="p">((</span><span class="mi">40</span><span class="p">,</span><span class="mi">256</span><span class="p">,</span><span class="mi">256</span><span class="p">),</span> <span class="n">mat</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We could have another way of constructing image which allows passing
+of <em>mat</em> directly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">pixelarray</span><span class="p">,</span> <span class="n">mat</span><span class="o">=</span><span class="n">mat</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">from_data_and_mat</span><span class="p">(</span><span class="n">pixelarray</span><span class="p">,</span> <span class="n">mat</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>but there should be “only one (obvious) way to do it”.</p>
+<section id="composing-transforms">
+<h3>Composing transforms<a class="headerlink" href="#composing-transforms" title="Link to this heading">¶</a></h3>
+<p>I have two images, <em>img1</em> and <em>img2</em>.  Each image has a voxel-to-world
+transform associated with it.  (The “world” for these two transforms
+could be similar or even identical in the case of an fmri series.)  I
+would like to get from voxel coordinates in <em>img1</em> to voxel
+coordinates in <em>img2</em>, for resampling:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">imgA</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">infile_A</span><span class="p">)</span>
+<span class="n">vx2mmA</span> <span class="o">=</span> <span class="n">imgA</span><span class="o">.</span><span class="n">coordmap</span>
+<span class="n">imgB</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">infile_B</span><span class="p">)</span>
+<span class="n">vx2mmB</span> <span class="o">=</span> <span class="n">imgB</span><span class="o">.</span><span class="n">coordmap</span>
+<span class="n">mm2vxB</span> <span class="o">=</span> <span class="n">vx2mmB</span><span class="o">.</span><span class="n">inverse</span>
+<span class="c1"># I want to first apply transform implied in</span>
+<span class="c1"># cmA, then the inverse of transform implied in</span>
+<span class="c1"># cmB.  If these are matrices then this would be</span>
+<span class="c1"># np.dot(mm2vxB, vx2mmA)</span>
+<span class="n">voxA_to_voxB</span> <span class="o">=</span> <span class="n">mm2vxB</span><span class="o">.</span><span class="n">composewith</span><span class="p">(</span><span class="n">vx2mmA</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The (matrix) multiply version of this syntax would be:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">voxA_to_voxB</span> <span class="o">=</span> <span class="n">mm2vxB</span> <span class="o">*</span> <span class="n">vx2mmA</span>
+</pre></div>
+</div>
+<p>Composition should be of form <code class="docutils literal notranslate"><span class="pre">Second.composewith(First)</span></code> - as in
+<code class="docutils literal notranslate"><span class="pre">voxA_to_voxB</span> <span class="pre">=</span> <span class="pre">mm2vxB.composewith(vx2mmA)</span></code> above. The alternative
+is <code class="docutils literal notranslate"><span class="pre">First.composewith(Second)</span></code>, as in <code class="docutils literal notranslate"><span class="pre">voxA_to_voxB</span> <span class="pre">=</span>
+<span class="pre">vx2mmA.composewith(mm2vxB)</span></code>.  We choose <code class="docutils literal notranslate"><span class="pre">Second.composewith(First)</span></code>
+on the basis that people need to understand the mathematics of
+function composition to some degree - see
+<a class="reference external" href="http://en.wikipedia.org/wiki/Function_composition">wikipedia_function_composition</a>.</p>
+</section>
+<section id="real-world-to-real-world-transform">
+<h3>Real world to real world transform<a class="headerlink" href="#real-world-to-real-world-transform" title="Link to this heading">¶</a></h3>
+<p>We remind each other that a mapping is a function (callable) that takes
+coordinates as input and returns coordinates as output.  So, if <em>M</em> is
+a mapping then:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">i</span><span class="s1">&#39;,j&#39;</span><span class="p">,</span><span class="n">k</span><span class="s1">&#39;] = M(i, j, k)</span>
+</pre></div>
+</div>
+<p>where the <em>i, j, k</em> tuple is a coordinate, and the <em>i’, j’, k’</em> tuple is a
+transformed coordinate.</p>
+<p>Let us imagine we have somehow come by a mapping <em>T</em> that relates a
+coordinate in a world space (mm) to other coordinates in a world
+space.  A registration may return such a real-world to
+real-world mapping.  Let us say that <em>V</em> is a useful mapping
+matching the voxel coordinates in <em>img1</em> to voxel coordinates in
+<em>img2</em>.  If <em>img1</em> has a voxel to mm mapping <em>M1</em> and <em>img2</em> has a mm
+to voxel mapping of <em>inv_M2</em>, as in the previous example (repeated here):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">imgA</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">infile_A</span><span class="p">)</span>
+<span class="n">vx2mmA</span> <span class="o">=</span> <span class="n">imgA</span><span class="o">.</span><span class="n">coordmap</span>
+<span class="n">imgB</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">infile_B</span><span class="p">)</span>
+<span class="n">vx2mmB</span> <span class="o">=</span> <span class="n">imgB</span><span class="o">.</span><span class="n">coordmap</span>
+<span class="n">mm2vxB</span> <span class="o">=</span> <span class="n">vx2mmB</span><span class="o">.</span><span class="n">inverse</span>
+</pre></div>
+</div>
+<p>then the registration may return the some coordinate map, <em>T</em> such that the
+intended mapping <em>V</em> from voxels in <em>img1</em> to voxels in <em>img2</em> is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mm2vxB_map</span> <span class="o">=</span> <span class="n">mm2vxB</span><span class="o">.</span><span class="n">mapping</span>
+<span class="n">vx2mmA_map</span> <span class="o">=</span> <span class="n">vx2mmA</span><span class="o">.</span><span class="n">mapping</span>
+<span class="n">V</span> <span class="o">=</span> <span class="n">mm2vxB_map</span><span class="o">.</span><span class="n">composewith</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">composedwith</span><span class="p">(</span><span class="n">vx2mmA_map</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>To support this, there should be a CoordinateMap constructor that
+looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">T_coordmap</span> <span class="o">=</span> <span class="n">mm2mm</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <em>T</em> is a mapping, so that:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">V_coordmap</span> <span class="o">=</span> <span class="n">mm2vxB</span><span class="o">.</span><span class="n">composewith</span><span class="p">(</span><span class="n">T_coordmap</span><span class="o">.</span><span class="n">composedwith</span><span class="p">(</span><span class="n">vx2mmA</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>I have done a coregistration between two images, <em>img1</em> and <em>img2</em>.
+This has given me a voxel-to-voxel transformation and I want to store
+this transformation in such a way that I can use this transform to
+resample <em>img1</em> to <em>img2</em>.  <a class="reference internal" href="resampling.html#resampling"><span class="std std-ref">Resampling use cases</span></a></p>
+<p>I have done a coregistration between two images, <em>img1</em> and <em>img2</em>. I
+may want this to give me a worldA-to-worldB transformation, where
+worldA is the world of voxel-to-world for <em>img1</em>, and worldB is the
+world of voxel-to-world of <em>img2</em>.</p>
+<p>My <em>img1</em> has a voxel to world transformation.  This transformation
+may (for example) have come from the scanner that acquired the image -
+so telling me how the voxel positions in <em>img1</em> correspond to
+physical coordinates in terms of the magnet isocenter and millimeters
+in terms of the primary gradient orientations (x, y and z). I have the
+same for <em>img2</em>.  For example, I might choose to display this image
+resampled so each voxel is a 1mm cube.</p>
+<p>Now I have these transformations:  ST(<em>img1</em>-V2W), and
+ST(<em>img2</em>-V2W) (where ST is <em>scanner transform</em> as above, and <em>V2W</em> is
+voxel to world).</p>
+<p>I have now done a coregistration between <em>img1</em> and <em>img2</em>
+(somehow) - giving me, in addition to <em>img1</em> and <em>img2</em>, a
+transformation that registers <em>img1</em> and <em>img2</em>. Let’s call this
+transformation V2V(<em>img1</em>, <em>img2</em>), where V2V is voxel-to-voxel.</p>
+<p>In actuality <em>img2</em> can be an array of images, such as series of fMRI
+images and I want to align all the <em>img2</em> series to <em>img1</em> and then
+take these voxel-to-voxel aligned images (the <em>img1</em> and <em>img2</em> array)
+and remap them to the world space (voxel-to-world). Since remapping is
+an interpolation operation I can generate errors in the resampled
+pixel values. If I do more than one resampling, error will
+accumulate. I want to do only a single resampling. To avoid the errors
+associated with resampling I will build a <em>composite transformation</em>
+that will chain the separate voxel-to-voxel and voxel-to-world
+transformations into a single transformation function (such as an
+affine matrix that is the result of multiplying the several affine
+matrices together). With this single <em>composite transformatio</em> I now
+resample <em>img1</em> and <em>img2</em> and put them into the world coordinate
+system from which I can make measurements.</p>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../../documentation.html">Documentation</a></li>
+    <li><a href="../../index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Transformation use cases</a><ul>
+<li><a class="reference internal" href="#image-orientation">Image Orientation</a></li>
+<li><a class="reference internal" href="#creating-transformations-coordinate-maps">Creating transformations / coordinate maps</a><ul>
+<li><a class="reference internal" href="#composing-transforms">Composing transforms</a></li>
+<li><a class="reference internal" href="#real-world-to-real-world-transform">Real world to real world transform</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">Defining use cases</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="images.html"
+                          title="next chapter">Image model use cases</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/devel/code_discussions/usecases/transformations.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="images.html" title="Image model use cases"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Defining use cases"
+             >previous</a> |</li>
+  <li><a href="../../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../index.html" >Code discussions</a> &#187;</li>
+          <li class="nav-item nav-item-4"><a href="index.html" >Defining use cases</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

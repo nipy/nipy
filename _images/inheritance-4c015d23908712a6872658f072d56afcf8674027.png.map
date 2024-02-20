@@ -1,0 +1,8 @@
+<map id="inheritance9704126152" name="inheritance9704126152">
+<area shape="rect" id="node1" href="#nipy.algorithms.registration.groupwise_registration.FmriRealign4d" target="_top" title="registration.groupwise_registration.FmriRealign4d" alt="" coords="403,56,710,83"/>
+<area shape="rect" id="node2" href="#nipy.algorithms.registration.groupwise_registration.Realign4d" target="_top" title="registration.groupwise_registration.Realign4d" alt="" coords="33,107,314,133"/>
+<area shape="rect" id="node5" href="#nipy.algorithms.registration.groupwise_registration.SpaceRealign" target="_top" title="registration.groupwise_registration.SpaceRealign" alt="" coords="404,107,709,133"/>
+<area shape="rect" id="node6" href="#nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign" target="_top" title="registration.groupwise_registration.SpaceTimeRealign" alt="" coords="390,157,723,184"/>
+<area shape="rect" id="node3" href="#nipy.algorithms.registration.groupwise_registration.Image4d" target="_top" title="Class to represent a sequence of 3d scans (possibly acquired on a" alt="" coords="37,56,310,83"/>
+<area shape="rect" id="node4" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm" target="_top" title="registration.groupwise_registration.Realign4dAlgorithm" alt="" coords="5,5,342,32"/>
+</map>

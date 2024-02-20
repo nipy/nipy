@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Documentation FAQ" href="documentation_faq.html" />
+    <link rel="prev" title="Why …" href="why.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../index.html">
+  <img src="../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="documentation_faq.html" title="Documentation FAQ"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="why.html" title="Why …"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">FAQ</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="licensing">
+<span id="id1"></span><h1>Licensing<a class="headerlink" href="#licensing" title="Link to this heading">¶</a></h1>
+<section id="how-do-you-spell-licence">
+<h2>How do you spell licence?<a class="headerlink" href="#how-do-you-spell-licence" title="Link to this heading">¶</a></h2>
+<p>If you are British you spell it differently from Americans, sometimes:</p>
+<p><a class="reference external" href="http://www.tiscali.co.uk/reference/dictionaries/english/data/d0082350.html">http://www.tiscali.co.uk/reference/dictionaries/english/data/d0082350.html</a></p>
+<p>As usual the American spelling rule (always use <em>s</em>) was less painful
+and arbitrary, so I (MB) went for that.</p>
+</section>
+<section id="why-did-you-choose-bsd">
+<h2>Why did you choose BSD?<a class="headerlink" href="#why-did-you-choose-bsd" title="Link to this heading">¶</a></h2>
+<p>We have chosen BSD licensing, for compatibility with SciPy, and to
+increase input from developers in industry.  Wherever possible we will
+keep packages that can have BSD licensing separate from packages
+needing a GPL license.</p>
+<p>Our choices were between:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../glossary.html#term-BSD"><span class="xref std std-term">BSD</span></a></p></li>
+<li><p><a class="reference internal" href="../glossary.html#term-GPL"><span class="xref std std-term">GPL</span></a></p></li>
+</ul>
+<p>John Hunter made the argument for the BSD license in
+<a class="reference internal" href="johns_bsd_pitch.html#johns-bsd-pitch"><span class="std std-ref">Why we should be using BSD</span></a>, and we agree.  Richard Stallman makes the case
+for the GPL here: <a class="reference external" href="http://www.gnu.org/licenses/why-not-lgpl.html">http://www.gnu.org/licenses/why-not-lgpl.html</a></p>
+</section>
+<section id="how-does-the-bsd-license-affect-our-relationship-to-other-projects">
+<h2>How does the BSD license affect our relationship to other projects?<a class="headerlink" href="#how-does-the-bsd-license-affect-our-relationship-to-other-projects" title="Link to this heading">¶</a></h2>
+<p>The BSD license allows other projects with virtually any license,
+including GPL, to use our code.  BSD makes it more likely that we will
+attract support from companies, including open-source software
+companies, such as <a class="reference external" href="&lt;http://www.enthought.com&gt;">Enthought</a> and <a class="reference external" href="http://www.kitware.com">Kitware</a>.</p>
+<p>Any part of our code that uses (links to) GPL code, should be in
+a separable package.</p>
+<p>Note that we do not have this problem with <a class="reference internal" href="../glossary.html#term-LGPL"><span class="xref std std-term">LGPL</span></a>, which allows
+us to link without ourselves having a GPL.</p>
+</section>
+<section id="what-license-does-the-nih-prefer">
+<h2>What license does the NIH prefer?<a class="headerlink" href="#what-license-does-the-nih-prefer" title="Link to this heading">¶</a></h2>
+<p>The NIH asks that software written with NIH money can be
+commercialized.  Quoting from: <a class="reference external" href="http://grants1.nih.gov/grants/guide/rfa-files/RFA-RM-04-003.html">NIH NATIONAL CENTERS FOR BIOMEDICAL
+COMPUTING</a>
+grant application document:</p>
+<blockquote>
+<div><p>A software dissemination plan must be included in the application.
+There is no prescribed single license for software produced in this
+project.  However NIH does have goals for software dissemination,
+and reviewers will be instructed to evaluate the dissemination plan
+relative to these goals:</p>
+<p>1. The software should be freely available to biomedical researchers
+and educators in the non-profit sector, such as institutions of
+education, research institutes, and government laboratories.</p>
+<p>2. The terms of software availability should permit the
+commercialization of enhanced or customized versions of the software,
+or incorporation of the software or pieces of it into other software
+packages.</p>
+</div></blockquote>
+<p>There is more discussion of licensing in this <a class="reference external" href="http://www.na-mic.org/Wiki/images/a/ae/NA-MIC-2005-10-30-Licencing.ppt">na-mic presentation</a>.
+See also these links (from the presentation):</p>
+<ul class="simple">
+<li><p><a class="reference external" href="http://www.rosenlaw.com/oslbook.htm">http://www.rosenlaw.com/oslbook.htm</a></p></li>
+<li><p><a class="reference external" href="http://www.opensource.org">http://www.opensource.org</a></p></li>
+<li><p><a class="reference external" href="http://wiki.na-mic.org/Wiki/index.php/NAMIC_Wiki:Community_Licensing">http://wiki.na-mic.org/Wiki/index.php/NAMIC_Wiki:Community_Licensing</a></p></li>
+</ul>
+<p>So far this might suggest that the NIH would prefer at least a
+BSD-like license, but the NIH has supported several GPL’d projects in
+imaging, <a class="reference internal" href="../glossary.html#term-AFNI"><span class="xref std std-term">AFNI</span></a> being the most obvious example.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../documentation.html">Documentation</a></li>
+    <li><a href="../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Licensing</a><ul>
+<li><a class="reference internal" href="#how-do-you-spell-licence">How do you spell licence?</a></li>
+<li><a class="reference internal" href="#why-did-you-choose-bsd">Why did you choose BSD?</a></li>
+<li><a class="reference internal" href="#how-does-the-bsd-license-affect-our-relationship-to-other-projects">How does the BSD license affect our relationship to other projects?</a></li>
+<li><a class="reference internal" href="#what-license-does-the-nih-prefer">What license does the NIH prefer?</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="why.html"
+                          title="previous chapter">Why …</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="documentation_faq.html"
+                          title="next chapter">Documentation FAQ</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/faq/licensing.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="documentation_faq.html" title="Documentation FAQ"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="why.html" title="Why …"
+             >previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >FAQ</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

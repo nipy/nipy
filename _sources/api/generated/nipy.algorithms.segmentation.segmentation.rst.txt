@@ -1,0 +1,43 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+algorithms.segmentation.segmentation
+====================================
+
+Module: :mod:`algorithms.segmentation.segmentation`
+---------------------------------------------------
+Inheritance diagram for ``nipy.algorithms.segmentation.segmentation``:
+
+.. inheritance-diagram:: nipy.algorithms.segmentation.segmentation 
+   :parts: 3
+
+.. automodule:: nipy.algorithms.segmentation.segmentation
+
+.. currentmodule:: nipy.algorithms.segmentation.segmentation
+
+Class
+-----
+
+:class:`Segmentation`
+---------------------
+
+
+.. autoclass:: Segmentation
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: nipy.algorithms.segmentation.segmentation.binarize_ppm
+
+
+.. autofunction:: nipy.algorithms.segmentation.segmentation.map_from_ppm
+
+
+.. autofunction:: nipy.algorithms.segmentation.segmentation.moment_matching
+

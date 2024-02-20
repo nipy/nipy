@@ -1,0 +1,6 @@
+﻿nipy.labs.viz\_tools.activation\_maps.plot\_map
+===============================================
+
+.. currentmodule:: nipy.labs.viz_tools.activation_maps
+
+.. autofunction:: plot_map

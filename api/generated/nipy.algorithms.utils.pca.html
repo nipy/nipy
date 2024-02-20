@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="cli.diagnose" href="nipy.cli.diagnose.html" />
+    <link rel="prev" title="algorithms.utils.matrices" href="nipy.algorithms.utils.matrices.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.cli.diagnose.html" title="cli.diagnose"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.utils.matrices.html" title="algorithms.utils.matrices"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-utils-pca">
+<h1>algorithms.utils.pca<a class="headerlink" href="#algorithms-utils-pca" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.algorithms.utils.pca">
+<span id="module-algorithms-utils-pca"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.utils.pca</span></code><a class="headerlink" href="#module-nipy.algorithms.utils.pca" title="Link to this heading">¶</a></h2>
+<p>This module provides a class for principal components analysis (PCA).</p>
+<p>PCA is an orthonormal, linear transform (i.e., a rotation) that maps the
+data to a new coordinate system such that the maximal variability of the
+data lies on the first coordinate (or the first principal component), the
+second greatest variability is projected onto the second coordinate, and
+so on.  The resulting data has unit covariance (i.e., it is decorrelated).
+This technique can be used to reduce the dimensionality of the data.</p>
+<p>More specifically, the data is projected onto the eigenvectors of the
+covariance matrix.</p>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.utils.pca.pca">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.utils.pca.</span></span><span class="sig-name descname"><span class="pre">pca</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncomp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standardize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design_keep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design_resid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.utils.pca.pca" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the SVD PCA of an array-like thing over <cite>axis</cite>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>data</strong><span class="classifier">ndarray-like (float)</span></dt><dd><p>The array on which to perform PCA over axis <cite>axis</cite> (below)</p>
+</dd>
+<dt><strong>axis</strong><span class="classifier">int, optional</span></dt><dd><p>The axis over which to perform PCA (axis identifying
+observations).  Default is 0 (first)</p>
+</dd>
+<dt><strong>mask</strong><span class="classifier">ndarray-like (<a href="#id1"><span class="problematic" id="id2">np.bool_</span></a>), optional</span></dt><dd><p>An optional mask, should have shape given by data axes, with
+<cite>axis</cite> removed, i.e.: <code class="docutils literal notranslate"><span class="pre">s</span> <span class="pre">=</span> <span class="pre">data.shape;</span> <span class="pre">s.pop(axis);</span>
+<span class="pre">msk_shape=s</span></code></p>
+</dd>
+<dt><strong>ncomp</strong><span class="classifier">{None, int}, optional</span></dt><dd><p>How many component basis projections to return. If ncomp is None
+(the default) then the number of components is given by the
+calculated rank of the data, after applying <cite>design_keep</cite>,
+<cite>design_resid</cite> and <cite>tol_ratio</cite> below.  We always return all the
+basis vectors and percent variance for each component; <cite>ncomp</cite>
+refers only to the number of basis_projections returned.</p>
+</dd>
+<dt><strong>standardize</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, standardize so each time series (after application of
+<cite>design_keep</cite> and <cite>design_resid</cite>) has the same standard
+deviation, as calculated by the <code class="docutils literal notranslate"><span class="pre">np.std</span></code> function.</p>
+</dd>
+<dt><strong>design_keep</strong><span class="classifier">None or ndarray, optional</span></dt><dd><p>Data is projected onto the column span of design_keep.
+None (default) equivalent to <code class="docutils literal notranslate"><span class="pre">np.identity(data.shape[axis])</span></code></p>
+</dd>
+<dt><strong>design_resid</strong><span class="classifier">str or None or ndarray, optional</span></dt><dd><p>After projecting onto the column span of design_keep, data is
+projected perpendicular to the column span of this matrix.  If
+None, we do no such second projection.  If a string ‘mean’, then
+the mean of the data is removed, equivalent to passing a column
+vector matrix of 1s.</p>
+</dd>
+<dt><strong>tol_ratio</strong><span class="classifier">float, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">XZ</span></code> is the vector of singular values of the projection
+matrix from <cite>design_keep</cite> and <cite>design_resid</cite>, and S are the
+singular values of <code class="docutils literal notranslate"><span class="pre">XZ</span></code>, then <cite>tol_ratio</cite> is the value used to
+calculate the effective rank of the projection of the design, as
+in <code class="docutils literal notranslate"><span class="pre">rank</span> <span class="pre">=</span> <span class="pre">((S</span> <span class="pre">/</span> <span class="pre">S.max)</span> <span class="pre">&gt;</span> <span class="pre">tol_ratio).sum()</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>results</strong><span class="classifier">dict</span></dt><dd><blockquote>
+<div><p><span class="math notranslate nohighlight">\(G\)</span> is the number of non-trivial components found after applying</p>
+</div></blockquote>
+<p><cite>tol_ratio</cite> to the projections of <cite>design_keep</cite> and
+<cite>design_resid</cite>.</p>
+<p><cite>results</cite> has keys:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">basis_vectors</span></code>: series over <cite>axis</cite>, shape (data.shape[axis], G) -</dt><dd><p>the eigenvectors of the PCA</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">pcnt_var</span></code>: percent variance explained by component, shape</dt><dd><p>(G,)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">basis_projections</span></code>: PCA components, with components varying</dt><dd><p>over axis <cite>axis</cite>; thus shape given by: <code class="docutils literal notranslate"><span class="pre">s</span> <span class="pre">=</span> <span class="pre">list(data.shape);</span>
+<span class="pre">s[axis]</span> <span class="pre">=</span> <span class="pre">ncomp</span></code></p>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">axis</span></code>: axis over which PCA has been performed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>See <code class="docutils literal notranslate"><span class="pre">pca_image.m</span></code> from <code class="docutils literal notranslate"><span class="pre">fmristat</span></code> for Keith Worsley’s code on
+which some of this is based.</p>
+<p>See: <a class="reference external" href="http://en.wikipedia.org/wiki/Principal_component_analysis">http://en.wikipedia.org/wiki/Principal_component_analysis</a> for
+some inspiration for naming - particularly ‘basis_vectors’ and
+‘basis_projections’</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">msk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">arr</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">pca</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">msk</span><span class="p">,</span> <span class="n">ncomp</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Basis vectors are columns.  There is one column for each component.  The
+number of components is the calculated rank of the data matrix after
+applying the various projections listed in the parameters.  In this case we
+are only removing the mean, so the number of components is one less than the
+axis over which we do the PCA (here axis=0 by default).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;basis_vectors&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(17, 16)</span>
+</pre></div>
+</div>
+<p>Basis projections are arrays with components in the dimension over which we
+have done the PCA (axis=0 by default).  Because we set <cite>ncomp</cite> above, we
+only retain <cite>ncomp</cite> components.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;basis_projections&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(9, 10, 12, 14)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.utils.pca.pca_image">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.utils.pca.</span></span><span class="sig-name descname"><span class="pre">pca_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncomp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standardize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design_keep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design_resid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.utils.pca.pca_image" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the PCA of an image over a specified axis</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>img</strong><span class="classifier">Image</span></dt><dd><p>The image on which to perform PCA over the given <cite>axis</cite></p>
+</dd>
+<dt><strong>axis</strong><span class="classifier">str or int, optional</span></dt><dd><p>Axis over which to perform PCA. Default is ‘t’. If <cite>axis</cite> is an integer,
+gives the index of the input (domain) axis of <cite>img</cite>. If <cite>axis</cite> is a str, can be
+an input (domain) name, or an output (range) name, that maps to an input
+(domain) name.</p>
+</dd>
+<dt><strong>mask</strong><span class="classifier">Image, optional</span></dt><dd><p>An optional mask, should have shape == image.shape[:3] and the same
+coordinate map as <cite>img</cite> but with <cite>axis</cite> dropped</p>
+</dd>
+<dt><strong>ncomp</strong><span class="classifier">{None, int}, optional</span></dt><dd><p>How many component basis projections to return. If ncomp is None
+(the default) then the number of components is given by the
+calculated rank of the data, after applying <cite>design_keep</cite>,
+<cite>design_resid</cite> and <cite>tol_ratio</cite> below.  We always return all the
+basis vectors and percent variance for each component; <cite>ncomp</cite>
+refers only to the number of basis_projections returned.</p>
+</dd>
+<dt><strong>standardize</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, standardize so each time series (after application of
+<cite>design_keep</cite> and <cite>design_resid</cite>) has the same standard
+deviation, as calculated by the <code class="docutils literal notranslate"><span class="pre">np.std</span></code> function.</p>
+</dd>
+<dt><strong>design_keep</strong><span class="classifier">None or ndarray, optional</span></dt><dd><p>Data is projected onto the column span of design_keep.
+None (default) equivalent to <code class="docutils literal notranslate"><span class="pre">np.identity(data.shape[axis])</span></code></p>
+</dd>
+<dt><strong>design_resid</strong><span class="classifier">str or None or ndarray, optional</span></dt><dd><p>After projecting onto the column span of design_keep, data is
+projected perpendicular to the column span of this matrix.  If
+None, we do no such second projection.  If a string ‘mean’, then
+the mean of the data is removed, equivalent to passing a column
+vector matrix of 1s.</p>
+</dd>
+<dt><strong>tol_ratio</strong><span class="classifier">float, optional</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">XZ</span></code> is the vector of singular values of the projection
+matrix from <cite>design_keep</cite> and <cite>design_resid</cite>, and S are the
+singular values of <code class="docutils literal notranslate"><span class="pre">XZ</span></code>, then <cite>tol_ratio</cite> is the value used to
+calculate the effective rank of the projection of the design, as
+in <code class="docutils literal notranslate"><span class="pre">rank</span> <span class="pre">=</span> <span class="pre">((S</span> <span class="pre">/</span> <span class="pre">S.max)</span> <span class="pre">&gt;</span> <span class="pre">tol_ratio).sum()</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>results</strong><span class="classifier">dict</span></dt><dd><blockquote>
+<div><p><span class="math notranslate nohighlight">\(L\)</span> is the number of non-trivial components found after applying</p>
+</div></blockquote>
+<p><cite>tol_ratio</cite> to the projections of <cite>design_keep</cite> and
+<cite>design_resid</cite>.</p>
+<p><cite>results</cite> has keys:
+* <code class="docutils literal notranslate"><span class="pre">basis_vectors</span></code>: series over <cite>axis</cite>, shape (data.shape[axis], L) -</p>
+<blockquote>
+<div><p>the eigenvectors of the PCA</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">pcnt_var</span></code>: percent variance explained by component, shape</dt><dd><p>(L,)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">basis_projections</span></code>: PCA components, with components varying</dt><dd><p>over axis <cite>axis</cite>; thus shape given by: <code class="docutils literal notranslate"><span class="pre">s</span> <span class="pre">=</span> <span class="pre">list(data.shape);</span>
+<span class="pre">s[axis]</span> <span class="pre">=</span> <span class="pre">ncomp</span></code></p>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">axis</span></code>: axis over which PCA has been performed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.testing</span> <span class="kn">import</span> <span class="n">funcfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy</span> <span class="kn">import</span> <span class="n">load_image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">func_img</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">funcfile</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Time is the fourth axis</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">func_img</span><span class="o">.</span><span class="n">coordmap</span><span class="o">.</span><span class="n">function_range</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;aligned-x=L-&gt;R&#39;, &#39;aligned-y=P-&gt;A&#39;, &#39;aligned-z=I-&gt;S&#39;, &#39;t&#39;), name=&#39;aligned&#39;, coord_dtype=float64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">func_img</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(17, 21, 3, 20)</span>
+</pre></div>
+</div>
+<p>Calculate the PCA over time, by default</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">pca_image</span><span class="p">(</span><span class="n">func_img</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;basis_projections&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">coordmap</span><span class="o">.</span><span class="n">function_range</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;aligned-x=L-&gt;R&#39;, &#39;aligned-y=P-&gt;A&#39;, &#39;aligned-z=I-&gt;S&#39;, &#39;PCA components&#39;), name=&#39;aligned&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+<p>The number of components is one less than the number of time points</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;basis_projections&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(17, 21, 3, 19)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.utils.pca</a><ul>
+<li><a class="reference internal" href="#module-nipy.algorithms.utils.pca">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.utils.pca</span></code></a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.utils.pca.pca"><code class="docutils literal notranslate"><span class="pre">pca()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.utils.pca.pca_image"><code class="docutils literal notranslate"><span class="pre">pca_image()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.utils.matrices.html"
+                          title="previous chapter">algorithms.utils.matrices</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.cli.diagnose.html"
+                          title="next chapter">cli.diagnose</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.utils.pca.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.cli.diagnose.html" title="cli.diagnose"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.utils.matrices.html" title="algorithms.utils.matrices"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Building Scipy/Numpy on Windows with Optimized Numerical Libraries" href="install/windows_scipy_build.html" />
+    <link rel="prev" title="Some notes on compiling on windows with Visual Studio" href="guidelines/compiling_windows.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../index.html">
+  <img src="../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install/windows_scipy_build.html" title="Building Scipy/Numpy on Windows with Optimized Numerical Libraries"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="guidelines/compiling_windows.html" title="Some notes on compiling on windows with Visual Studio"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="describing-images">
+<h1>Describing images<a class="headerlink" href="#describing-images" title="Link to this heading">¶</a></h1>
+<p>Here we set out what we think an image is and how it should work in our
+code.  We are largely following the <a class="reference external" href="http://nifti.nimh.nih.gov">nifti</a> standard.</p>
+<section id="what-is-an-image">
+<h2>What is an image?<a class="headerlink" href="#what-is-an-image" title="Link to this heading">¶</a></h2>
+<p>An image is the association of a block (array) of spatial data, with the
+relationship of the position of that data to some continuous space.</p>
+<p>Therefore an image contains:</p>
+<ul class="simple">
+<li><p>an array</p></li>
+<li><p>a spatial transformation describing the position of the data in the
+array relative to some space.</p></li>
+</ul>
+<p>An image always has 3 spatial dimensions.  It can have other dimensions,
+such as time.</p>
+<p>A slice from a 3D image is also a 3D image, but with one dimension of
+the image having length 1.</p>
+<p>The transformation is spatial and refers to exactly three dimensions.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">neuroimaging</span> <span class="k">as</span> <span class="nn">ni</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load_image</span><span class="p">(</span><span class="s1">&#39;example3d.img&#39;</span><span class="p">)</span>
+<span class="n">arr</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+<span class="n">xform</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">get_transform</span><span class="p">()</span>
+<span class="n">voxel_position</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">world_position</span> <span class="o">=</span> <span class="n">xform</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">voxel_position</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">world_position</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
+</pre></div>
+</div>
+<p>An image has an array.  The first 3 axes (dimensions) of that array are
+spatial.  Further dimensions can have various meanings.  The most common
+meaning of the 4th axis is time.</p>
+<p>The relationship of the first three dimensions to any particular
+orientation in space are only known from the image transform.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../documentation.html">Documentation</a></li>
+    <li><a href="index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Describing images</a><ul>
+<li><a class="reference internal" href="#what-is-an-image">What is an image?</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="guidelines/compiling_windows.html"
+                          title="previous chapter">Some notes on compiling on windows with Visual Studio</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="install/windows_scipy_build.html"
+                          title="next chapter">Building Scipy/Numpy on Windows with Optimized Numerical Libraries</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/devel/images.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install/windows_scipy_build.html" title="Building Scipy/Numpy on Windows with Optimized Numerical Libraries"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="guidelines/compiling_windows.html" title="Some notes on compiling on windows with Visual Studio"
+             >previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.registration.histogram_registration" href="nipy.algorithms.registration.histogram_registration.html" />
+    <link rel="prev" title="algorithms.registration.chain_transform" href="nipy.algorithms.registration.chain_transform.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.histogram_registration.html" title="algorithms.registration.histogram_registration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.chain_transform.html" title="algorithms.registration.chain_transform"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-registration-groupwise-registration">
+<h1>algorithms.registration.groupwise_registration<a class="headerlink" href="#algorithms-registration-groupwise-registration" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-registration-groupwise-registration">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.registration.groupwise_registration</span></code><a class="headerlink" href="#module-algorithms-registration-groupwise-registration" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.registration.groupwise_registration</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-4c015d23908712a6872658f072d56afcf8674027.png" alt="Inheritance diagram of nipy.algorithms.registration.groupwise_registration" usemap="#inheritance9704126152" class="inheritance graphviz" /></div>
+<map id="inheritance9704126152" name="inheritance9704126152">
+<area shape="rect" id="node1" href="#nipy.algorithms.registration.groupwise_registration.FmriRealign4d" target="_top" title="registration.groupwise_registration.FmriRealign4d" alt="" coords="403,56,710,83"/>
+<area shape="rect" id="node2" href="#nipy.algorithms.registration.groupwise_registration.Realign4d" target="_top" title="registration.groupwise_registration.Realign4d" alt="" coords="33,107,314,133"/>
+<area shape="rect" id="node5" href="#nipy.algorithms.registration.groupwise_registration.SpaceRealign" target="_top" title="registration.groupwise_registration.SpaceRealign" alt="" coords="404,107,709,133"/>
+<area shape="rect" id="node6" href="#nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign" target="_top" title="registration.groupwise_registration.SpaceTimeRealign" alt="" coords="390,157,723,184"/>
+<area shape="rect" id="node3" href="#nipy.algorithms.registration.groupwise_registration.Image4d" target="_top" title="Class to represent a sequence of 3d scans (possibly acquired on a" alt="" coords="37,56,310,83"/>
+<area shape="rect" id="node4" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm" target="_top" title="registration.groupwise_registration.Realign4dAlgorithm" alt="" coords="5,5,342,32"/>
+</map><p id="module-nipy.algorithms.registration.groupwise_registration">Motion correction / motion correction with slice timing</p>
+<p>Routines implementing motion correction and motion correction combined with
+slice-timing.</p>
+<p>See:</p>
+<p>Roche, Alexis (2011) A four-dimensional registration algorithm with application
+to joint correction of motion and slice timing in fMRI. <em>Medical Imaging, IEEE
+Transactions on</em>;  30:1546–1554</p>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="fmrirealign4d">
+<h3><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.FmriRealign4d" title="nipy.algorithms.registration.groupwise_registration.FmriRealign4d"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmriRealign4d</span></code></a><a class="headerlink" href="#fmrirealign4d" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.FmriRealign4d">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">FmriRealign4d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_order=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tr=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tr_slices=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interleaved=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_interp=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_times=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine_class=&lt;class</span> <span class="pre">'nipy.algorithms.registration.affine.Rigid'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_info=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.FmriRealign4d" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4d" title="nipy.algorithms.registration.groupwise_registration.Realign4d"><code class="xref py py-class docutils literal notranslate"><span class="pre">Realign4d</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.FmriRealign4d.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_order=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tr=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tr_slices=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interleaved=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_interp=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_times=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine_class=&lt;class</span> <span class="pre">'nipy.algorithms.registration.affine.Rigid'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_info=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.FmriRealign4d.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Spatiotemporal realignment class for fMRI series. This class
+is similar to <cite>Realign4d</cite> but provides a more flexible API for
+initialization in order to make it easier to declare slice
+acquisition times for standard sequences.</p>
+<p>Warning: this class is deprecated; please use <a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign" title="nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpaceTimeRealign</span></code></a>
+instead.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>images</strong><span class="classifier">image or list of images</span></dt><dd><p>Single or multiple input 4d images representing one or
+several fMRI runs.</p>
+</dd>
+<dt><strong>slice_order</strong><span class="classifier">str or array-like</span></dt><dd><p>If str, one of {‘ascending’, ‘descending’}. If array-like,
+then the order in which the slices were collected in
+time. For instance, the following represents an ascending
+contiguous sequence:</p>
+<p>slice_order = [0, 1, 2, …]</p>
+<p>Note that <cite>slice_order</cite> differs from the argument used
+e.g. in the SPM slice timing routine in that it maps spatial
+slice positions to slice times. It is a mapping from space
+to time, while SPM conventionally uses the reverse mapping
+from time to space. For example, for an interleaved sequence
+with 10 slices, where we acquired slice 0 (in space) first,
+then slice 2 (in space) etc, <cite>slice_order</cite> would be [0, 5,
+1, 6, 2, 7, 3, 8, 4, 9]</p>
+<p>Using <cite>slice_order</cite> assumes that the inter-slice acquisition
+time is constant throughout acquisition. If this is not the
+case, use the <cite>slice_times</cite> argument instead and leave
+<cite>slice_order</cite> to None.</p>
+</dd>
+<dt><strong>tr</strong><span class="classifier">float</span></dt><dd><p>Inter-scan repetition time, i.e. the time elapsed between
+two consecutive scans. The unit in which <cite>tr</cite> is given is
+arbitrary although it needs to be consistent with the
+<cite>tr_slices</cite> and <cite>start</cite> arguments if provided. If None, <cite>tr</cite>
+is computed internally assuming a regular slice acquisition
+scheme.</p>
+</dd>
+<dt><strong>tr_slices</strong><span class="classifier">float</span></dt><dd><p>Inter-slice repetition time, same as <cite>tr</cite> for slices. If
+None, acquisition is assumed regular and <cite>tr_slices</cite> is set
+to <cite>tr</cite> divided by the number of slices.</p>
+</dd>
+<dt><strong>start</strong><span class="classifier">float</span></dt><dd><p>Starting acquisition time (time of the first acquired slice)
+respective to the time origin for resampling. <cite>start</cite> is
+assumed to be given in the same unit as <cite>tr</cite>. Setting
+<cite>start=0</cite> means that the resampled data will be synchronous
+with the first acquired slice. Setting <cite>start=-tr/2</cite> means
+that the resampled data will be synchronous with the slice
+acquired at half repetition time.</p>
+</dd>
+<dt><strong>time_interp: bool</strong></dt><dd><p>Tells whether time interpolation is used or not within the
+realignment algorithm. If False, slices are considered to be
+acquired all at the same time, thus no slice timing
+correction will be performed.</p>
+</dd>
+<dt><strong>interleaved</strong><span class="classifier">bool</span></dt><dd><p>Deprecated argument.</p>
+<p>Tells whether slice acquisition order is interleaved in a
+certain sense. Setting <cite>interleaved</cite> to True or False will
+trigger an error unless <cite>slice_order</cite> is ‘ascending’ or
+‘descending’ and <cite>slice_times</cite> is None.</p>
+<p>If slice_order==’ascending’ and interleaved==True, the
+assumed slice order is (assuming 10 slices):</p>
+<p>[0, 5, 1, 6, 2, 7, 3, 8, 4, 9]</p>
+<p>If slice_order==’descending’ and interleaved==True, the
+assumed slice order is:</p>
+<p>[9, 4, 8, 3, 7, 2, 6, 1, 5, 0]</p>
+<p>WARNING: given that there exist other types of interleaved
+acquisitions depending on scanner settings and
+manufacturers, you should refrain from using the
+<cite>interleaved</cite> keyword argument unless you are sure what you
+are doing. It is generally safer to explicitly input
+<cite>slice_order</cite> or <cite>slice_times</cite>.</p>
+</dd>
+<dt><strong>slice_times</strong><span class="classifier">None, str or array-like</span></dt><dd><p>This argument can be used instead of <cite>slice_order</cite>,
+<cite>tr_slices</cite>, <cite>start</cite> and <cite>time_interp</cite> altogether.</p>
+<p>If None, slices are assumed to be acquired simultaneously
+hence no slice timing correction is performed. If
+array-like, then <cite>slice_times</cite> gives the slice acquisition
+times along the slice axis in units that are consistent with
+the provided <cite>tr</cite>.</p>
+<p>Generally speaking, the following holds for sequences with
+constant inter-slice repetition time <cite>tr_slices</cite>:</p>
+<p><cite>slice_times</cite> = <cite>start</cite> + <cite>tr_slices</cite> * <cite>slice_order</cite></p>
+<p>For other sequences such as, e.g., sequences with
+simultaneously acquired slices, it is necessary to input
+<cite>slice_times</cite> explicitly along with <cite>tr</cite>.</p>
+</dd>
+<dt><strong>slice_info</strong><span class="classifier">None or tuple, optional</span></dt><dd><p>None, or a tuple with slice axis as the first element and
+direction as the second, for instance (2, 1). If None, then
+the slice axis and direction are guessed from the first
+run’s affine assuming that slices are collected along the
+closest axis to the z-axis. This means that we assume by
+default an axial acquisition with slice axis pointing from
+bottom to top of the head.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.FmriRealign4d.estimate">
+<span class="sig-name descname"><span class="pre">estimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">between_loops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">align_runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">speedup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refscan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">borders</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ncg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stepsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxfun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.FmriRealign4d.estimate" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate motion parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>loops</strong><span class="classifier">int or sequence of ints</span></dt><dd><p>Determines the number of iterations performed to realign
+scans within each run for each pass defined by the
+<code class="docutils literal notranslate"><span class="pre">speedup</span></code> argument. For instance, setting <code class="docutils literal notranslate"><span class="pre">speedup</span></code> ==
+(5,2) and <code class="docutils literal notranslate"><span class="pre">loops</span></code> == (5,1) means that 5 iterations are
+performed in a first pass where scans are subsampled by an
+isotropic factor 5, followed by one iteration where scans
+are subsampled by a factor 2.</p>
+</dd>
+<dt><strong>between_loops</strong><span class="classifier">None, int or sequence of ints</span></dt><dd><p>Similar to <code class="docutils literal notranslate"><span class="pre">loops</span></code> for between-run motion
+estimation. Determines the number of iterations used to
+realign scans across runs, a procedure similar to
+within-run realignment that uses the mean images from each
+run. If None, assumed to be the same as <code class="docutils literal notranslate"><span class="pre">loops</span></code>.
+The setting used in the experiments described in Roche,
+IEEE TMI 2011, was: <code class="docutils literal notranslate"><span class="pre">speedup</span></code> = (5, 2), <code class="docutils literal notranslate"><span class="pre">loops</span></code> = (5,
+1) and <code class="docutils literal notranslate"><span class="pre">between_loops</span></code> = (5, 1).</p>
+</dd>
+<dt><strong>align_runs</strong><span class="classifier">bool</span></dt><dd><p>Determines whether between-run motion is estimated or
+not. If False, the <code class="docutils literal notranslate"><span class="pre">between_loops</span></code> argument is ignored.</p>
+</dd>
+<dt><strong>speedup: int or sequence of ints</strong></dt><dd><p>Determines an isotropic sub-sampling factor, or a sequence
+of such factors, applied to the scans to perform motion
+estimation. If a sequence, several estimation passes are
+applied.</p>
+</dd>
+<dt><strong>refscan</strong><span class="classifier">None or int</span></dt><dd><p>Defines the number of the scan used as the reference
+coordinate system for each run. If None, a reference
+coordinate system is defined internally that does not
+correspond to any particular scan. Note that the
+coordinate system associated with the first run is always</p>
+</dd>
+<dt><strong>borders</strong><span class="classifier">sequence of ints</span></dt><dd><p>Should be of length 3. Determines the field of view for
+motion estimation in terms of the number of slices at each
+extremity of the reference grid that are ignored for
+motion parameter estimation. For instance,
+<code class="docutils literal notranslate"><span class="pre">borders``==(1,1,1)</span> <span class="pre">means</span> <span class="pre">that</span> <span class="pre">the</span> <span class="pre">realignment</span> <span class="pre">cost</span>
+<span class="pre">function</span> <span class="pre">will</span> <span class="pre">not</span> <span class="pre">take</span> <span class="pre">into</span> <span class="pre">account</span> <span class="pre">voxels</span> <span class="pre">located</span> <span class="pre">in</span> <span class="pre">the</span>
+<span class="pre">first</span> <span class="pre">and</span> <span class="pre">last</span> <span class="pre">axial/sagittal/coronal</span> <span class="pre">slices</span> <span class="pre">in</span> <span class="pre">the</span>
+<span class="pre">reference</span> <span class="pre">grid.</span> <span class="pre">Please</span> <span class="pre">note</span> <span class="pre">that</span> <span class="pre">this</span> <span class="pre">choice</span> <span class="pre">only</span> <span class="pre">affects</span>
+<span class="pre">parameter</span> <span class="pre">estimation</span> <span class="pre">but</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">affect</span> <span class="pre">image</span> <span class="pre">resampling</span>
+<span class="pre">in</span> <span class="pre">any</span> <span class="pre">way,</span> <span class="pre">see</span> <span class="pre">``resample</span></code> method.</p>
+</dd>
+<dt><strong>optimizer</strong><span class="classifier">str</span></dt><dd><p>Defines the optimization method. One of ‘simplex’,
+‘powell’, ‘cg’, ‘ncg’, ‘bfgs’ and ‘steepest’.</p>
+</dd>
+<dt><strong>xtol</strong><span class="classifier">float</span></dt><dd><p>Tolerance on variations of transformation parameters to
+test numerical convergence.</p>
+</dd>
+<dt><strong>ftol</strong><span class="classifier">float</span></dt><dd><p>Tolerance on variations of the intensity comparison metric
+to test numerical convergence.</p>
+</dd>
+<dt><strong>gtol</strong><span class="classifier">float</span></dt><dd><p>Tolerance on the gradient of the intensity comparison
+metric to test numerical convergence. Applicable to
+optimizers ‘cg’, ‘ncg’, ‘bfgs’ and ‘steepest’.</p>
+</dd>
+<dt><strong>stepsize</strong><span class="classifier">float</span></dt><dd><p>Step size to approximate the gradient and Hessian of the
+intensity comparison metric w.r.t. transformation
+parameters. Applicable to optimizers ‘cg’, ‘ncg’, ‘bfgs’
+and ‘steepest’.</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">int</span></dt><dd><p>Maximum number of iterations in optimization.</p>
+</dd>
+<dt><strong>maxfun</strong><span class="classifier">int</span></dt><dd><p>Maximum number of function evaluations in maxfun.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.FmriRealign4d.resample">
+<span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">align_runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.FmriRealign4d.resample" title="Link to this definition">¶</a></dt>
+<dd><p>Return the resampled run number r as a 4d nipy-like
+image. Returns all runs as a list of images if r is None.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="image4d">
+<h3><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Image4d" title="nipy.algorithms.registration.groupwise_registration.Image4d"><code class="xref py py-class docutils literal notranslate"><span class="pre">Image4d</span></code></a><a class="headerlink" href="#image4d" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Image4d">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">Image4d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Image4d" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to represent a sequence of 3d scans (possibly acquired on a
+slice-by-slice basis).</p>
+<p>Object remains empty until the data array is actually loaded in memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">nd array or proxy (function that actually gets the array)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Image4d.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Image4d.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Configure fMRI acquisition time parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Image4d.free_data">
+<span class="sig-name descname"><span class="pre">free_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Image4d.free_data" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Image4d.get_fdata">
+<span class="sig-name descname"><span class="pre">get_fdata</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Image4d.get_fdata" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Image4d.get_shape">
+<span class="sig-name descname"><span class="pre">get_shape</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Image4d.get_shape" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Image4d.scanner_time">
+<span class="sig-name descname"><span class="pre">scanner_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Image4d.scanner_time" title="Link to this definition">¶</a></dt>
+<dd><p>tv = scanner_time(zv, t)
+zv, tv are grid coordinates; t is an actual time value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Image4d.z_to_slice">
+<span class="sig-name descname"><span class="pre">z_to_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Image4d.z_to_slice" title="Link to this definition">¶</a></dt>
+<dd><p>Account for the fact that slices may be stored in reverse
+order wrt the scanner coordinate system convention (slice 0 ==
+bottom of the head)</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="realign4d">
+<h3><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4d" title="nipy.algorithms.registration.groupwise_registration.Realign4d"><code class="xref py py-class docutils literal notranslate"><span class="pre">Realign4d</span></code></a><a class="headerlink" href="#realign4d" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4d">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">Realign4d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_times=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_info=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine_class=&lt;class</span> <span class="pre">'nipy.algorithms.registration.affine.Rigid'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4d" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4d.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_times=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_info=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine_class=&lt;class</span> <span class="pre">'nipy.algorithms.registration.affine.Rigid'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4d.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Spatiotemporal realignment class for series of 3D images.</p>
+<p>The algorithm performs simultaneous motion and slice timing
+correction for fMRI series or other data where slices are not
+acquired simultaneously.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>images</strong><span class="classifier">image or list of images</span></dt><dd><p>Single or multiple input 4d images representing one or
+several sessions.</p>
+</dd>
+<dt><strong>tr</strong><span class="classifier">float</span></dt><dd><p>Inter-scan repetition time, i.e. the time elapsed between
+two consecutive scans. The unit in which <cite>tr</cite> is given is
+arbitrary although it needs to be consistent with the
+<cite>slice_times</cite> argument.</p>
+</dd>
+<dt><strong>slice_times</strong><span class="classifier">None or array-like</span></dt><dd><p>If None, slices are assumed to be acquired simultaneously
+hence no slice timing correction is performed. If
+array-like, then the slice acquisition times.</p>
+</dd>
+<dt><strong>slice_info</strong><span class="classifier">None or tuple, optional</span></dt><dd><p>None, or a tuple with slice axis as the first element and
+direction as the second, for instance (2, 1).  If None, then
+guess the slice axis, and direction, as the closest to the z
+axis, as estimated from the affine.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4d.estimate">
+<span class="sig-name descname"><span class="pre">estimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">between_loops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">align_runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">speedup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refscan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">borders</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ncg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stepsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxfun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4d.estimate" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate motion parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>loops</strong><span class="classifier">int or sequence of ints</span></dt><dd><p>Determines the number of iterations performed to realign
+scans within each run for each pass defined by the
+<code class="docutils literal notranslate"><span class="pre">speedup</span></code> argument. For instance, setting <code class="docutils literal notranslate"><span class="pre">speedup</span></code> ==
+(5,2) and <code class="docutils literal notranslate"><span class="pre">loops</span></code> == (5,1) means that 5 iterations are
+performed in a first pass where scans are subsampled by an
+isotropic factor 5, followed by one iteration where scans
+are subsampled by a factor 2.</p>
+</dd>
+<dt><strong>between_loops</strong><span class="classifier">None, int or sequence of ints</span></dt><dd><p>Similar to <code class="docutils literal notranslate"><span class="pre">loops</span></code> for between-run motion
+estimation. Determines the number of iterations used to
+realign scans across runs, a procedure similar to
+within-run realignment that uses the mean images from each
+run. If None, assumed to be the same as <code class="docutils literal notranslate"><span class="pre">loops</span></code>.
+The setting used in the experiments described in Roche,
+IEEE TMI 2011, was: <code class="docutils literal notranslate"><span class="pre">speedup</span></code> = (5, 2), <code class="docutils literal notranslate"><span class="pre">loops</span></code> = (5,
+1) and <code class="docutils literal notranslate"><span class="pre">between_loops</span></code> = (5, 1).</p>
+</dd>
+<dt><strong>align_runs</strong><span class="classifier">bool</span></dt><dd><p>Determines whether between-run motion is estimated or
+not. If False, the <code class="docutils literal notranslate"><span class="pre">between_loops</span></code> argument is ignored.</p>
+</dd>
+<dt><strong>speedup: int or sequence of ints</strong></dt><dd><p>Determines an isotropic sub-sampling factor, or a sequence
+of such factors, applied to the scans to perform motion
+estimation. If a sequence, several estimation passes are
+applied.</p>
+</dd>
+<dt><strong>refscan</strong><span class="classifier">None or int</span></dt><dd><p>Defines the number of the scan used as the reference
+coordinate system for each run. If None, a reference
+coordinate system is defined internally that does not
+correspond to any particular scan. Note that the
+coordinate system associated with the first run is always</p>
+</dd>
+<dt><strong>borders</strong><span class="classifier">sequence of ints</span></dt><dd><p>Should be of length 3. Determines the field of view for
+motion estimation in terms of the number of slices at each
+extremity of the reference grid that are ignored for
+motion parameter estimation. For instance,
+<code class="docutils literal notranslate"><span class="pre">borders``==(1,1,1)</span> <span class="pre">means</span> <span class="pre">that</span> <span class="pre">the</span> <span class="pre">realignment</span> <span class="pre">cost</span>
+<span class="pre">function</span> <span class="pre">will</span> <span class="pre">not</span> <span class="pre">take</span> <span class="pre">into</span> <span class="pre">account</span> <span class="pre">voxels</span> <span class="pre">located</span> <span class="pre">in</span> <span class="pre">the</span>
+<span class="pre">first</span> <span class="pre">and</span> <span class="pre">last</span> <span class="pre">axial/sagittal/coronal</span> <span class="pre">slices</span> <span class="pre">in</span> <span class="pre">the</span>
+<span class="pre">reference</span> <span class="pre">grid.</span> <span class="pre">Please</span> <span class="pre">note</span> <span class="pre">that</span> <span class="pre">this</span> <span class="pre">choice</span> <span class="pre">only</span> <span class="pre">affects</span>
+<span class="pre">parameter</span> <span class="pre">estimation</span> <span class="pre">but</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">affect</span> <span class="pre">image</span> <span class="pre">resampling</span>
+<span class="pre">in</span> <span class="pre">any</span> <span class="pre">way,</span> <span class="pre">see</span> <span class="pre">``resample</span></code> method.</p>
+</dd>
+<dt><strong>optimizer</strong><span class="classifier">str</span></dt><dd><p>Defines the optimization method. One of ‘simplex’,
+‘powell’, ‘cg’, ‘ncg’, ‘bfgs’ and ‘steepest’.</p>
+</dd>
+<dt><strong>xtol</strong><span class="classifier">float</span></dt><dd><p>Tolerance on variations of transformation parameters to
+test numerical convergence.</p>
+</dd>
+<dt><strong>ftol</strong><span class="classifier">float</span></dt><dd><p>Tolerance on variations of the intensity comparison metric
+to test numerical convergence.</p>
+</dd>
+<dt><strong>gtol</strong><span class="classifier">float</span></dt><dd><p>Tolerance on the gradient of the intensity comparison
+metric to test numerical convergence. Applicable to
+optimizers ‘cg’, ‘ncg’, ‘bfgs’ and ‘steepest’.</p>
+</dd>
+<dt><strong>stepsize</strong><span class="classifier">float</span></dt><dd><p>Step size to approximate the gradient and Hessian of the
+intensity comparison metric w.r.t. transformation
+parameters. Applicable to optimizers ‘cg’, ‘ncg’, ‘bfgs’
+and ‘steepest’.</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">int</span></dt><dd><p>Maximum number of iterations in optimization.</p>
+</dd>
+<dt><strong>maxfun</strong><span class="classifier">int</span></dt><dd><p>Maximum number of function evaluations in maxfun.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4d.resample">
+<span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">align_runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4d.resample" title="Link to this definition">¶</a></dt>
+<dd><p>Return the resampled run number r as a 4d nipy-like
+image. Returns all runs as a list of images if r is None.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="realign4dalgorithm">
+<h3><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm" title="nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">Realign4dAlgorithm</span></code></a><a class="headerlink" href="#realign4dalgorithm" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">Realign4dAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im4d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine_class=&lt;class</span> <span class="pre">'nipy.algorithms.registration.affine.Rigid'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transforms=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_interp=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsampling=(1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refscan=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">borders=(1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer='ncg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_template=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xtol=1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftol=1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol=1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stepsize=1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter=64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxfun=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im4d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine_class=&lt;class</span> <span class="pre">'nipy.algorithms.registration.affine.Rigid'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transforms=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_interp=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsampling=(1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refscan=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">borders=(1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer='ncg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_template=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xtol=1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftol=1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol=1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stepsize=1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter=64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxfun=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.align_to_refscan">
+<span class="sig-name descname"><span class="pre">align_to_refscan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.align_to_refscan" title="Link to this definition">¶</a></dt>
+<dd><p>The <cite>motion_estimate</cite> method aligns scans with an online
+template so that spatial transforms map some average head
+space to the scanner space. To conventionally redefine the
+head space as being aligned with some reference scan, we need
+to right compose each head_average-to-scanner transform with
+the refscan’s ‘to head_average’ transform.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.estimate_instant_motion">
+<span class="sig-name descname"><span class="pre">estimate_instant_motion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.estimate_instant_motion" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate motion parameters at a particular time.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.estimate_motion">
+<span class="sig-name descname"><span class="pre">estimate_motion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.estimate_motion" title="Link to this definition">¶</a></dt>
+<dd><p>Optimize motion parameters for the whole sequence. All the
+time frames are initially resampled according to the current
+space/time transformation, the parameters of which are further
+optimized sequentially.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.init_instant_motion">
+<span class="sig-name descname"><span class="pre">init_instant_motion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.init_instant_motion" title="Link to this definition">¶</a></dt>
+<dd><p>Pre-compute and cache some constants (at fixed time) for
+repeated computations of the alignment energy.</p>
+<p>The idea is to decompose the average temporal variance via:</p>
+<p>V = (n-1)/n V* + (n-1)/n^2 (x-m*)^2</p>
+<p>with x the considered volume at time t, and m* the mean of all
+resampled volumes but x. Only the second term is variable when</p>
+<p>one volumes while the others are fixed. A similar
+decomposition is used for the global variance, so we end up
+with:</p>
+<p>V/V0 = [nV* + (x-m*)^2] / [nV0* + (x-m0*)^2]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.resample">
+<span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.resample" title="Link to this definition">¶</a></dt>
+<dd><p>Resample a particular time frame on the (sub-sampled) working
+grid.</p>
+<p>x,y,z,t are “head” grid coordinates
+X,Y,Z,T are “scanner” grid coordinates</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.resample_full_data">
+<span class="sig-name descname"><span class="pre">resample_full_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.resample_full_data" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.set_fmin">
+<span class="sig-name descname"><span class="pre">set_fmin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stepsize</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.set_fmin" title="Link to this definition">¶</a></dt>
+<dd><p>Return the minimization function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.set_transform">
+<span class="sig-name descname"><span class="pre">set_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.set_transform" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="spacerealign">
+<h3><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.SpaceRealign" title="nipy.algorithms.registration.groupwise_registration.SpaceRealign"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpaceRealign</span></code></a><a class="headerlink" href="#spacerealign" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.SpaceRealign">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">SpaceRealign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine_class=&lt;class</span> <span class="pre">'nipy.algorithms.registration.affine.Rigid'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.SpaceRealign" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4d" title="nipy.algorithms.registration.groupwise_registration.Realign4d"><code class="xref py py-class docutils literal notranslate"><span class="pre">Realign4d</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.SpaceRealign.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine_class=&lt;class</span> <span class="pre">'nipy.algorithms.registration.affine.Rigid'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.SpaceRealign.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Spatial registration of time series with no time interpolation</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>images</strong><span class="classifier">image or list of images</span></dt><dd><p>Single or multiple input 4d images representing one or several fMRI
+runs.</p>
+</dd>
+<dt><strong>affine_class</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Affine</span></code> class, optional</span></dt><dd><p>transformation class to use to calculate transformations between
+the volumes. Default is :class:<code class="docutils literal notranslate"><span class="pre">Rigid</span></code></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.SpaceRealign.estimate">
+<span class="sig-name descname"><span class="pre">estimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">between_loops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">align_runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">speedup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refscan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">borders</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ncg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stepsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxfun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.SpaceRealign.estimate" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate motion parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>loops</strong><span class="classifier">int or sequence of ints</span></dt><dd><p>Determines the number of iterations performed to realign
+scans within each run for each pass defined by the
+<code class="docutils literal notranslate"><span class="pre">speedup</span></code> argument. For instance, setting <code class="docutils literal notranslate"><span class="pre">speedup</span></code> ==
+(5,2) and <code class="docutils literal notranslate"><span class="pre">loops</span></code> == (5,1) means that 5 iterations are
+performed in a first pass where scans are subsampled by an
+isotropic factor 5, followed by one iteration where scans
+are subsampled by a factor 2.</p>
+</dd>
+<dt><strong>between_loops</strong><span class="classifier">None, int or sequence of ints</span></dt><dd><p>Similar to <code class="docutils literal notranslate"><span class="pre">loops</span></code> for between-run motion
+estimation. Determines the number of iterations used to
+realign scans across runs, a procedure similar to
+within-run realignment that uses the mean images from each
+run. If None, assumed to be the same as <code class="docutils literal notranslate"><span class="pre">loops</span></code>.
+The setting used in the experiments described in Roche,
+IEEE TMI 2011, was: <code class="docutils literal notranslate"><span class="pre">speedup</span></code> = (5, 2), <code class="docutils literal notranslate"><span class="pre">loops</span></code> = (5,
+1) and <code class="docutils literal notranslate"><span class="pre">between_loops</span></code> = (5, 1).</p>
+</dd>
+<dt><strong>align_runs</strong><span class="classifier">bool</span></dt><dd><p>Determines whether between-run motion is estimated or
+not. If False, the <code class="docutils literal notranslate"><span class="pre">between_loops</span></code> argument is ignored.</p>
+</dd>
+<dt><strong>speedup: int or sequence of ints</strong></dt><dd><p>Determines an isotropic sub-sampling factor, or a sequence
+of such factors, applied to the scans to perform motion
+estimation. If a sequence, several estimation passes are
+applied.</p>
+</dd>
+<dt><strong>refscan</strong><span class="classifier">None or int</span></dt><dd><p>Defines the number of the scan used as the reference
+coordinate system for each run. If None, a reference
+coordinate system is defined internally that does not
+correspond to any particular scan. Note that the
+coordinate system associated with the first run is always</p>
+</dd>
+<dt><strong>borders</strong><span class="classifier">sequence of ints</span></dt><dd><p>Should be of length 3. Determines the field of view for
+motion estimation in terms of the number of slices at each
+extremity of the reference grid that are ignored for
+motion parameter estimation. For instance,
+<code class="docutils literal notranslate"><span class="pre">borders``==(1,1,1)</span> <span class="pre">means</span> <span class="pre">that</span> <span class="pre">the</span> <span class="pre">realignment</span> <span class="pre">cost</span>
+<span class="pre">function</span> <span class="pre">will</span> <span class="pre">not</span> <span class="pre">take</span> <span class="pre">into</span> <span class="pre">account</span> <span class="pre">voxels</span> <span class="pre">located</span> <span class="pre">in</span> <span class="pre">the</span>
+<span class="pre">first</span> <span class="pre">and</span> <span class="pre">last</span> <span class="pre">axial/sagittal/coronal</span> <span class="pre">slices</span> <span class="pre">in</span> <span class="pre">the</span>
+<span class="pre">reference</span> <span class="pre">grid.</span> <span class="pre">Please</span> <span class="pre">note</span> <span class="pre">that</span> <span class="pre">this</span> <span class="pre">choice</span> <span class="pre">only</span> <span class="pre">affects</span>
+<span class="pre">parameter</span> <span class="pre">estimation</span> <span class="pre">but</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">affect</span> <span class="pre">image</span> <span class="pre">resampling</span>
+<span class="pre">in</span> <span class="pre">any</span> <span class="pre">way,</span> <span class="pre">see</span> <span class="pre">``resample</span></code> method.</p>
+</dd>
+<dt><strong>optimizer</strong><span class="classifier">str</span></dt><dd><p>Defines the optimization method. One of ‘simplex’,
+‘powell’, ‘cg’, ‘ncg’, ‘bfgs’ and ‘steepest’.</p>
+</dd>
+<dt><strong>xtol</strong><span class="classifier">float</span></dt><dd><p>Tolerance on variations of transformation parameters to
+test numerical convergence.</p>
+</dd>
+<dt><strong>ftol</strong><span class="classifier">float</span></dt><dd><p>Tolerance on variations of the intensity comparison metric
+to test numerical convergence.</p>
+</dd>
+<dt><strong>gtol</strong><span class="classifier">float</span></dt><dd><p>Tolerance on the gradient of the intensity comparison
+metric to test numerical convergence. Applicable to
+optimizers ‘cg’, ‘ncg’, ‘bfgs’ and ‘steepest’.</p>
+</dd>
+<dt><strong>stepsize</strong><span class="classifier">float</span></dt><dd><p>Step size to approximate the gradient and Hessian of the
+intensity comparison metric w.r.t. transformation
+parameters. Applicable to optimizers ‘cg’, ‘ncg’, ‘bfgs’
+and ‘steepest’.</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">int</span></dt><dd><p>Maximum number of iterations in optimization.</p>
+</dd>
+<dt><strong>maxfun</strong><span class="classifier">int</span></dt><dd><p>Maximum number of function evaluations in maxfun.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.SpaceRealign.resample">
+<span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">align_runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.SpaceRealign.resample" title="Link to this definition">¶</a></dt>
+<dd><p>Return the resampled run number r as a 4d nipy-like
+image. Returns all runs as a list of images if r is None.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="spacetimerealign">
+<h3><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign" title="nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpaceTimeRealign</span></code></a><a class="headerlink" href="#spacetimerealign" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">SpaceTimeRealign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine_class=&lt;class</span> <span class="pre">'nipy.algorithms.registration.affine.Rigid'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4d" title="nipy.algorithms.registration.groupwise_registration.Realign4d"><code class="xref py py-class docutils literal notranslate"><span class="pre">Realign4d</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine_class=&lt;class</span> <span class="pre">'nipy.algorithms.registration.affine.Rigid'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Spatiotemporal realignment class for fMRI series.</p>
+<p>This class gives a high-level interface to <a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4d" title="nipy.algorithms.registration.groupwise_registration.Realign4d"><code class="xref py py-class docutils literal notranslate"><span class="pre">Realign4d</span></code></a></p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>images</strong><span class="classifier">image or list of images</span></dt><dd><p>Single or multiple input 4d images representing one or several fMRI
+runs.</p>
+</dd>
+<dt><strong>tr</strong><span class="classifier">None or float or “header-allow-1.0”</span></dt><dd><p>Inter-scan repetition time in seconds, i.e. the time elapsed between
+two consecutive scans. If None, an attempt is made to read the TR
+from the header, but an exception is thrown for values 0 or 1. A
+value of “header-allow-1.0” will signal to accept a header TR of 1.</p>
+</dd>
+<dt><strong>slice_times</strong><span class="classifier">str or callable or array-like</span></dt><dd><p>If str, one of the function names in <code class="docutils literal notranslate"><span class="pre">SLICETIME_FUNCTIONS</span></code>
+dictionary from <a class="reference internal" href="nipy.algorithms.slicetiming.timefuncs.html#module-nipy.algorithms.slicetiming.timefuncs" title="nipy.algorithms.slicetiming.timefuncs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nipy.algorithms.slicetiming.timefuncs</span></code></a>.  If
+callable, a function taking two parameters: <code class="docutils literal notranslate"><span class="pre">n_slices</span></code> and <code class="docutils literal notranslate"><span class="pre">tr</span></code>
+(number of slices in the images, inter-scan repetition time in
+seconds). This function returns a vector of times of slice
+acquisition <span class="math notranslate nohighlight">\(t_i\)</span> for each slice <span class="math notranslate nohighlight">\(i\)</span> in the volumes.  See
+<a class="reference internal" href="nipy.algorithms.slicetiming.timefuncs.html#module-nipy.algorithms.slicetiming.timefuncs" title="nipy.algorithms.slicetiming.timefuncs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nipy.algorithms.slicetiming.timefuncs</span></code></a> for a collection of
+functions for common slice acquisition schemes. If array-like, then
+should be a slice time vector as above.</p>
+</dd>
+<dt><strong>slice_info</strong><span class="classifier">int or length 2 sequence</span></dt><dd><p>If int, the axis in <cite>images</cite> that is the slice axis.  In a 4D image,
+this will often be axis = 2.  If a 2 sequence, then elements are
+<code class="docutils literal notranslate"><span class="pre">(slice_axis,</span> <span class="pre">slice_direction)</span></code>, where <code class="docutils literal notranslate"><span class="pre">slice_axis</span></code> is the slice
+axis in the image as above, and <code class="docutils literal notranslate"><span class="pre">slice_direction</span></code> is 1 if the
+slices were acquired slice 0 first, slice -1 last, or -1 if acquired
+slice -1 first, slice 0 last.  If <cite>slice_info</cite> is an int, assume
+<code class="docutils literal notranslate"><span class="pre">slice_direction</span></code> == 1.</p>
+</dd>
+<dt><strong>affine_class</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Affine</span></code> class, optional</span></dt><dd><p>transformation class to use to calculate transformations between
+the volumes. Default is :class:<code class="docutils literal notranslate"><span class="pre">Rigid</span></code></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign.estimate">
+<span class="sig-name descname"><span class="pre">estimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">between_loops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">align_runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">speedup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refscan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">borders</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ncg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stepsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxfun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign.estimate" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate motion parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>loops</strong><span class="classifier">int or sequence of ints</span></dt><dd><p>Determines the number of iterations performed to realign
+scans within each run for each pass defined by the
+<code class="docutils literal notranslate"><span class="pre">speedup</span></code> argument. For instance, setting <code class="docutils literal notranslate"><span class="pre">speedup</span></code> ==
+(5,2) and <code class="docutils literal notranslate"><span class="pre">loops</span></code> == (5,1) means that 5 iterations are
+performed in a first pass where scans are subsampled by an
+isotropic factor 5, followed by one iteration where scans
+are subsampled by a factor 2.</p>
+</dd>
+<dt><strong>between_loops</strong><span class="classifier">None, int or sequence of ints</span></dt><dd><p>Similar to <code class="docutils literal notranslate"><span class="pre">loops</span></code> for between-run motion
+estimation. Determines the number of iterations used to
+realign scans across runs, a procedure similar to
+within-run realignment that uses the mean images from each
+run. If None, assumed to be the same as <code class="docutils literal notranslate"><span class="pre">loops</span></code>.
+The setting used in the experiments described in Roche,
+IEEE TMI 2011, was: <code class="docutils literal notranslate"><span class="pre">speedup</span></code> = (5, 2), <code class="docutils literal notranslate"><span class="pre">loops</span></code> = (5,
+1) and <code class="docutils literal notranslate"><span class="pre">between_loops</span></code> = (5, 1).</p>
+</dd>
+<dt><strong>align_runs</strong><span class="classifier">bool</span></dt><dd><p>Determines whether between-run motion is estimated or
+not. If False, the <code class="docutils literal notranslate"><span class="pre">between_loops</span></code> argument is ignored.</p>
+</dd>
+<dt><strong>speedup: int or sequence of ints</strong></dt><dd><p>Determines an isotropic sub-sampling factor, or a sequence
+of such factors, applied to the scans to perform motion
+estimation. If a sequence, several estimation passes are
+applied.</p>
+</dd>
+<dt><strong>refscan</strong><span class="classifier">None or int</span></dt><dd><p>Defines the number of the scan used as the reference
+coordinate system for each run. If None, a reference
+coordinate system is defined internally that does not
+correspond to any particular scan. Note that the
+coordinate system associated with the first run is always</p>
+</dd>
+<dt><strong>borders</strong><span class="classifier">sequence of ints</span></dt><dd><p>Should be of length 3. Determines the field of view for
+motion estimation in terms of the number of slices at each
+extremity of the reference grid that are ignored for
+motion parameter estimation. For instance,
+<code class="docutils literal notranslate"><span class="pre">borders``==(1,1,1)</span> <span class="pre">means</span> <span class="pre">that</span> <span class="pre">the</span> <span class="pre">realignment</span> <span class="pre">cost</span>
+<span class="pre">function</span> <span class="pre">will</span> <span class="pre">not</span> <span class="pre">take</span> <span class="pre">into</span> <span class="pre">account</span> <span class="pre">voxels</span> <span class="pre">located</span> <span class="pre">in</span> <span class="pre">the</span>
+<span class="pre">first</span> <span class="pre">and</span> <span class="pre">last</span> <span class="pre">axial/sagittal/coronal</span> <span class="pre">slices</span> <span class="pre">in</span> <span class="pre">the</span>
+<span class="pre">reference</span> <span class="pre">grid.</span> <span class="pre">Please</span> <span class="pre">note</span> <span class="pre">that</span> <span class="pre">this</span> <span class="pre">choice</span> <span class="pre">only</span> <span class="pre">affects</span>
+<span class="pre">parameter</span> <span class="pre">estimation</span> <span class="pre">but</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">affect</span> <span class="pre">image</span> <span class="pre">resampling</span>
+<span class="pre">in</span> <span class="pre">any</span> <span class="pre">way,</span> <span class="pre">see</span> <span class="pre">``resample</span></code> method.</p>
+</dd>
+<dt><strong>optimizer</strong><span class="classifier">str</span></dt><dd><p>Defines the optimization method. One of ‘simplex’,
+‘powell’, ‘cg’, ‘ncg’, ‘bfgs’ and ‘steepest’.</p>
+</dd>
+<dt><strong>xtol</strong><span class="classifier">float</span></dt><dd><p>Tolerance on variations of transformation parameters to
+test numerical convergence.</p>
+</dd>
+<dt><strong>ftol</strong><span class="classifier">float</span></dt><dd><p>Tolerance on variations of the intensity comparison metric
+to test numerical convergence.</p>
+</dd>
+<dt><strong>gtol</strong><span class="classifier">float</span></dt><dd><p>Tolerance on the gradient of the intensity comparison
+metric to test numerical convergence. Applicable to
+optimizers ‘cg’, ‘ncg’, ‘bfgs’ and ‘steepest’.</p>
+</dd>
+<dt><strong>stepsize</strong><span class="classifier">float</span></dt><dd><p>Step size to approximate the gradient and Hessian of the
+intensity comparison metric w.r.t. transformation
+parameters. Applicable to optimizers ‘cg’, ‘ncg’, ‘bfgs’
+and ‘steepest’.</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">int</span></dt><dd><p>Maximum number of iterations in optimization.</p>
+</dd>
+<dt><strong>maxfun</strong><span class="classifier">int</span></dt><dd><p>Maximum number of function evaluations in maxfun.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign.resample">
+<span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">align_runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign.resample" title="Link to this definition">¶</a></dt>
+<dd><p>Return the resampled run number r as a 4d nipy-like
+image. Returns all runs as a list of images if r is None.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.adjust_subsampling">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">adjust_subsampling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">speedup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dims</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.adjust_subsampling" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.guess_slice_axis_and_direction">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">guess_slice_axis_and_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slice_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.guess_slice_axis_and_direction" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.interp_slice_times">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">interp_slice_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.interp_slice_times" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.make_grid">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">make_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">borders</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.make_grid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.realign4d">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">realign4d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine_class=&lt;class</span> <span class="pre">'nipy.algorithms.registration.affine.Rigid'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_interp=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">align_runs=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loops=5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">between_loops=5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">speedup=5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refscan=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">borders=(1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer='ncg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xtol=1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftol=1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol=1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stepsize=1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter=64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxfun=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.realign4d" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>runs</strong><span class="classifier">list of Image4d objects</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>transforms</strong><span class="classifier">list</span></dt><dd><p>nested list of rigid transformations</p>
+</dd>
+<dt>transforms map an ‘ideal’ 4d grid (conventionally aligned with the</dt><dd></dd>
+<dt>first scan of the first run) to the ‘acquisition’ 4d grid for each</dt><dd></dd>
+<dt>run</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.resample4d">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">resample4d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im4d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transforms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_interp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.resample4d" title="Link to this definition">¶</a></dt>
+<dd><p>Resample a 4D image according to the specified sequence of spatial
+transforms, using either 4D interpolation if <cite>time_interp</cite> is True
+and 3D interpolation otherwise.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.scanner_coords">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">scanner_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_world</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_world</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.scanner_coords" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.single_run_realign4d">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">single_run_realign4d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im4d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine_class=&lt;class</span> <span class="pre">'nipy.algorithms.registration.affine.Rigid'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_interp=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loops=5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">speedup=5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refscan=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">borders=(1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer='ncg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xtol=1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftol=1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gtol=1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stepsize=1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter=64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxfun=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.single_run_realign4d" title="Link to this definition">¶</a></dt>
+<dd><p>Realign a single run in space and time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>im4d</strong><span class="classifier">Image4d instance</span></dt><dd></dd>
+<dt><strong>speedup</strong><span class="classifier">int or sequence</span></dt><dd><p>If a sequence, implement a multi-scale realignment</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.groupwise_registration.tr_from_header">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.groupwise_registration.</span></span><span class="sig-name descname"><span class="pre">tr_from_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.groupwise_registration.tr_from_header" title="Link to this definition">¶</a></dt>
+<dd><p>Return the TR from the header of an image or list of images.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>images</strong><span class="classifier">image or list of images</span></dt><dd><p>Single or multiple input 4d images representing one or
+several sessions.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>float</dt><dd><p>Repetition time, as specified in NIfTI header.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>if the TR between the images is inconsistent.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.registration.groupwise_registration</a><ul>
+<li><a class="reference internal" href="#module-algorithms-registration-groupwise-registration">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.registration.groupwise_registration</span></code></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#fmrirealign4d"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmriRealign4d</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.FmriRealign4d"><code class="docutils literal notranslate"><span class="pre">FmriRealign4d</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.FmriRealign4d.__init__"><code class="docutils literal notranslate"><span class="pre">FmriRealign4d.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.FmriRealign4d.estimate"><code class="docutils literal notranslate"><span class="pre">FmriRealign4d.estimate()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.FmriRealign4d.resample"><code class="docutils literal notranslate"><span class="pre">FmriRealign4d.resample()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#image4d"><code class="xref py py-class docutils literal notranslate"><span class="pre">Image4d</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Image4d"><code class="docutils literal notranslate"><span class="pre">Image4d</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Image4d.__init__"><code class="docutils literal notranslate"><span class="pre">Image4d.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Image4d.free_data"><code class="docutils literal notranslate"><span class="pre">Image4d.free_data()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Image4d.get_fdata"><code class="docutils literal notranslate"><span class="pre">Image4d.get_fdata()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Image4d.get_shape"><code class="docutils literal notranslate"><span class="pre">Image4d.get_shape()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Image4d.scanner_time"><code class="docutils literal notranslate"><span class="pre">Image4d.scanner_time()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Image4d.z_to_slice"><code class="docutils literal notranslate"><span class="pre">Image4d.z_to_slice()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#realign4d"><code class="xref py py-class docutils literal notranslate"><span class="pre">Realign4d</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4d"><code class="docutils literal notranslate"><span class="pre">Realign4d</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4d.__init__"><code class="docutils literal notranslate"><span class="pre">Realign4d.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4d.estimate"><code class="docutils literal notranslate"><span class="pre">Realign4d.estimate()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4d.resample"><code class="docutils literal notranslate"><span class="pre">Realign4d.resample()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#realign4dalgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">Realign4dAlgorithm</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm"><code class="docutils literal notranslate"><span class="pre">Realign4dAlgorithm</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.__init__"><code class="docutils literal notranslate"><span class="pre">Realign4dAlgorithm.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.align_to_refscan"><code class="docutils literal notranslate"><span class="pre">Realign4dAlgorithm.align_to_refscan()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.estimate_instant_motion"><code class="docutils literal notranslate"><span class="pre">Realign4dAlgorithm.estimate_instant_motion()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.estimate_motion"><code class="docutils literal notranslate"><span class="pre">Realign4dAlgorithm.estimate_motion()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.init_instant_motion"><code class="docutils literal notranslate"><span class="pre">Realign4dAlgorithm.init_instant_motion()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.resample"><code class="docutils literal notranslate"><span class="pre">Realign4dAlgorithm.resample()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.resample_full_data"><code class="docutils literal notranslate"><span class="pre">Realign4dAlgorithm.resample_full_data()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.set_fmin"><code class="docutils literal notranslate"><span class="pre">Realign4dAlgorithm.set_fmin()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.Realign4dAlgorithm.set_transform"><code class="docutils literal notranslate"><span class="pre">Realign4dAlgorithm.set_transform()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spacerealign"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpaceRealign</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.SpaceRealign"><code class="docutils literal notranslate"><span class="pre">SpaceRealign</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.SpaceRealign.__init__"><code class="docutils literal notranslate"><span class="pre">SpaceRealign.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.SpaceRealign.estimate"><code class="docutils literal notranslate"><span class="pre">SpaceRealign.estimate()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.SpaceRealign.resample"><code class="docutils literal notranslate"><span class="pre">SpaceRealign.resample()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spacetimerealign"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpaceTimeRealign</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign"><code class="docutils literal notranslate"><span class="pre">SpaceTimeRealign</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign.__init__"><code class="docutils literal notranslate"><span class="pre">SpaceTimeRealign.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign.estimate"><code class="docutils literal notranslate"><span class="pre">SpaceTimeRealign.estimate()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.SpaceTimeRealign.resample"><code class="docutils literal notranslate"><span class="pre">SpaceTimeRealign.resample()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.adjust_subsampling"><code class="docutils literal notranslate"><span class="pre">adjust_subsampling()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.guess_slice_axis_and_direction"><code class="docutils literal notranslate"><span class="pre">guess_slice_axis_and_direction()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.interp_slice_times"><code class="docutils literal notranslate"><span class="pre">interp_slice_times()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.make_grid"><code class="docutils literal notranslate"><span class="pre">make_grid()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.realign4d"><code class="docutils literal notranslate"><span class="pre">realign4d()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.resample4d"><code class="docutils literal notranslate"><span class="pre">resample4d()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.scanner_coords"><code class="docutils literal notranslate"><span class="pre">scanner_coords()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.single_run_realign4d"><code class="docutils literal notranslate"><span class="pre">single_run_realign4d()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.groupwise_registration.tr_from_header"><code class="docutils literal notranslate"><span class="pre">tr_from_header()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.registration.chain_transform.html"
+                          title="previous chapter">algorithms.registration.chain_transform</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.registration.histogram_registration.html"
+                          title="next chapter">algorithms.registration.histogram_registration</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.registration.groupwise_registration.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.histogram_registration.html" title="algorithms.registration.histogram_registration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.chain_transform.html" title="algorithms.registration.chain_transform"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

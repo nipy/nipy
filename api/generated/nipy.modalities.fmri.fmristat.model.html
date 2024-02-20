@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="modalities.fmri.fmristat.outputters" href="nipy.modalities.fmri.fmristat.outputters.html" />
+    <link rel="prev" title="modalities.fmri.fmristat.invert" href="nipy.modalities.fmri.fmristat.invert.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmristat.outputters.html" title="modalities.fmri.fmristat.outputters"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmristat.invert.html" title="modalities.fmri.fmristat.invert"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="modalities-fmri-fmristat-model">
+<h1>modalities.fmri.fmristat.model<a class="headerlink" href="#modalities-fmri-fmristat-model" title="Link to this heading">¶</a></h1>
+<section id="module-modalities-fmri-fmristat-model">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.fmristat.model</span></code><a class="headerlink" href="#module-modalities-fmri-fmristat-model" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.modalities.fmri.fmristat.model</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-b0c5941ac31f21395e3924865b95e06241cd97c0.png" alt="Inheritance diagram of nipy.modalities.fmri.fmristat.model" usemap="#inheritance6888041a7d" class="inheritance graphviz" /></div>
+<map id="inheritance6888041a7d" name="inheritance6888041a7d">
+<area shape="rect" id="node1" href="#nipy.modalities.fmri.fmristat.model.AR1" target="_top" title="Second pass through fmri_image." alt="" coords="272,56,406,83"/>
+<area shape="rect" id="node2" href="#nipy.modalities.fmri.fmristat.model.OLS" target="_top" title="First pass through fmri_image." alt="" coords="47,56,182,83"/>
+<area shape="rect" id="node3" href="#nipy.modalities.fmri.fmristat.model.ModelOutputImage" target="_top" title="These images have their values filled in as the model is fit, and" alt="" coords="5,5,224,32"/>
+</map><p id="module-nipy.modalities.fmri.fmristat.model">This module defines the two default GLM passes of fmristat</p>
+<p>The results of both passes of the GLM get pushed around by generators, which
+know how to get out the (probably 3D) data for each slice, or parcel (for the
+AR) case, estimate in 2D, then store the data back again in its original shape.</p>
+<p>The containers here, in the execute methods, know how to reshape the data on the
+way into the estimation (to 2D), then back again, to 3D, or 4D.</p>
+<p>It’s relatively easy to do this when just iterating over simple slices, but it
+gets a bit more complicated when taking arbitrary shaped samples from the image,
+as we do for estimating the AR coefficients, where we take all the voxels with
+similar AR coefficients at once.</p>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="ar1">
+<h3><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.AR1" title="nipy.modalities.fmri.fmristat.model.AR1"><code class="xref py py-class docutils literal notranslate"><span class="pre">AR1</span></code></a><a class="headerlink" href="#ar1" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.AR1">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.model.</span></span><span class="sig-name descname"><span class="pre">AR1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmri_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_start_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.AR1" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.OLS" title="nipy.modalities.fmri.fmristat.model.OLS"><code class="xref py py-class docutils literal notranslate"><span class="pre">OLS</span></code></a></p>
+<p>Second pass through fmri_image.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>fmri_image</strong><span class="classifier"><cite>FmriImageList</cite></span></dt><dd><p>object returning 4D array from <code class="docutils literal notranslate"><span class="pre">np.asarray</span></code>, having attribute
+<code class="docutils literal notranslate"><span class="pre">volume_start_times</span></code> (if <cite>volume_start_times</cite> is None), and
+such that <code class="docutils literal notranslate"><span class="pre">object[0]</span></code> returns something with attributes <code class="docutils literal notranslate"><span class="pre">shape</span></code></p>
+</dd>
+<dt><strong>formula</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">nipy.algorithms.statistics.formula.Formula</span></code></span></dt><dd></dd>
+<dt><strong>rho</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code></span></dt><dd><p>image of AR(1) coefficients.  Returning data from
+<code class="docutils literal notranslate"><span class="pre">rho.get_fdata()</span></code>, and having attribute <code class="docutils literal notranslate"><span class="pre">coordmap</span></code></p>
+</dd>
+<dt><strong>outputs</strong><span class="classifier">list</span></dt><dd><p>Store for model outputs.</p>
+</dd>
+<dt><strong>volume_start_times: None or float or (N,) ndarray</strong></dt><dd><p>start time of each frame. It can be specified either as an ndarray
+with <code class="docutils literal notranslate"><span class="pre">N=len(images)</span></code> elements or as a single float, the TR. None
+results in <code class="docutils literal notranslate"><span class="pre">np.arange(len(images)).astype(np.float64)</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ValueError</dt><dd><p>If <cite>volume_start_times</cite> not specified, and 4D image passed.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.AR1.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmri_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_start_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.AR1.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.AR1.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.AR1.execute" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="modeloutputimage">
+<h3><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.ModelOutputImage" title="nipy.modalities.fmri.fmristat.model.ModelOutputImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelOutputImage</span></code></a><a class="headerlink" href="#modeloutputimage" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.ModelOutputImage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.model.</span></span><span class="sig-name descname"><span class="pre">ModelOutputImage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clobber</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.ModelOutputImage" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>These images have their values filled in as the model is fit, and
+are saved to disk after being completely filled in.</p>
+<p>They are saved to disk by calling the ‘save’ method.</p>
+<p>The __getitem__ and __setitem__ calls are delegated to a private
+Image.  An exception is raised if trying to get/set data after the
+data has been saved to disk.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.ModelOutputImage.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clobber</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.ModelOutputImage.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.ModelOutputImage.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.ModelOutputImage.save" title="Link to this definition">¶</a></dt>
+<dd><p>Save current Image data to disk</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="ols">
+<h3><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.OLS" title="nipy.modalities.fmri.fmristat.model.OLS"><code class="xref py py-class docutils literal notranslate"><span class="pre">OLS</span></code></a><a class="headerlink" href="#ols" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.OLS">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.model.</span></span><span class="sig-name descname"><span class="pre">OLS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmri_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_start_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.OLS" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>First pass through fmri_image.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>fmri_image</strong><span class="classifier"><cite>FmriImageList</cite> or 4D image</span></dt><dd><p>object returning 4D data from np.asarray, with first
+(<code class="docutils literal notranslate"><span class="pre">object[0]</span></code>) axis being the independent variable of the model;
+object[0] returns an object with attribute <code class="docutils literal notranslate"><span class="pre">shape</span></code>.</p>
+</dd>
+<dt><strong>formula</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">nipy.algorithms.statistics.formula.Formula</span></code></span></dt><dd></dd>
+<dt><strong>outputs</strong><span class="classifier">list</span></dt><dd><p>Store for model outputs.</p>
+</dd>
+<dt><strong>volume_start_times: None or float or (N,) ndarray</strong></dt><dd><p>start time of each frame. It can be specified either as an ndarray
+with <code class="docutils literal notranslate"><span class="pre">N=len(images)</span></code> elements or as a single float, the TR. None
+results in <code class="docutils literal notranslate"><span class="pre">np.arange(len(images)).astype(np.float64)</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ValueError</dt><dd><p>If <cite>volume_start_times</cite> not specified, and 4D image passed.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.OLS.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmri_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_start_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.OLS.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.OLS.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.OLS.execute" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.estimateAR">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.model.</span></span><span class="sig-name descname"><span class="pre">estimateAR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.estimateAR" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate AR parameters using bias correction from fMRIstat.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>resid:  array-like</strong></dt><dd><p>residuals from model</p>
+</dd>
+<dt><strong>model:  an OLS model used to estimate residuals</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>output</strong><span class="classifier">array</span></dt><dd><p>shape (order, resid</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.generate_output">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.model.</span></span><span class="sig-name descname"><span class="pre">generate_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reshape=&lt;function</span> <span class="pre">&lt;lambda&gt;&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.generate_output" title="Link to this definition">¶</a></dt>
+<dd><p>Write out results of a given output.</p>
+<p>In the regression setting, results is generally going to be a
+scipy.stats.models.model.LikelihoodModelResults instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>outputs</strong><span class="classifier">sequence</span></dt><dd><p>sequence of output objects</p>
+</dd>
+<dt><strong>iterable</strong><span class="classifier">object</span></dt><dd><p>Object which iterates, returning tuples of (indexer, results), where
+<code class="docutils literal notranslate"><span class="pre">indexer</span></code> can be used to index into the <cite>outputs</cite></p>
+</dd>
+<dt><strong>reshape</strong><span class="classifier">callable</span></dt><dd><p>accepts two arguments, first is the indexer, and the second is the array
+which will be indexed; returns modified indexer and array ready for
+slicing with modified indexer.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.model_generator">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.model.</span></span><span class="sig-name descname"><span class="pre">model_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_start_times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterable=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slicetimes=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type=&lt;class</span> <span class="pre">'nipy.algorithms.statistics.models.regression.OLSModel'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_params=&lt;function</span> <span class="pre">&lt;lambda&gt;&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.model_generator" title="Link to this definition">¶</a></dt>
+<dd><p>Generator for the models for a pass of fmristat analysis.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.output_AR1">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.model.</span></span><span class="sig-name descname"><span class="pre">output_AR1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmri_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clobber</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.output_AR1" title="Link to this definition">¶</a></dt>
+<dd><p>Create an output file of the AR1 parameter from the OLS pass of
+fmristat.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>outfile</strong></dt><dd></dd>
+<dt><strong>fmri_image</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">FmriImageList</span></code> or 4D image</span></dt><dd><p>object such that <code class="docutils literal notranslate"><span class="pre">object[0]</span></code> has attributes <code class="docutils literal notranslate"><span class="pre">coordmap</span></code> and <code class="docutils literal notranslate"><span class="pre">shape</span></code></p>
+</dd>
+<dt><strong>clobber</strong><span class="classifier">bool</span></dt><dd><p>if True, overwrite previous output</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>regression_output</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">RegressionOutput</span></code> instance</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.output_F">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.model.</span></span><span class="sig-name descname"><span class="pre">output_F</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contrast</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmri_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clobber</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.output_F" title="Link to this definition">¶</a></dt>
+<dd><p>output F statistic images</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>outfile</strong><span class="classifier">str</span></dt><dd><p>filename for F contrast image</p>
+</dd>
+<dt><strong>contrast</strong><span class="classifier">array</span></dt><dd><p>F contrast matrix</p>
+</dd>
+<dt><strong>fmri_image</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">FmriImageList</span></code> or <code class="docutils literal notranslate"><span class="pre">Image</span></code></span></dt><dd><p>object such that <code class="docutils literal notranslate"><span class="pre">object[0]</span></code> has attributes <code class="docutils literal notranslate"><span class="pre">shape</span></code> and
+<code class="docutils literal notranslate"><span class="pre">coordmap</span></code></p>
+</dd>
+<dt><strong>clobber</strong><span class="classifier">bool</span></dt><dd><p>if True, overwrites previous output; if False, raises error</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>f_reg_out</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">RegressionOutput</span></code> instance</span></dt><dd><p>Object that can a) be called with a results instance as argument,
+returning an array, and b) accept the output array for storing, via
+<code class="docutils literal notranslate"><span class="pre">obj[slice_spec]</span> <span class="pre">=</span> <span class="pre">arr</span></code> type slicing.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.output_T">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.model.</span></span><span class="sig-name descname"><span class="pre">output_T</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outbase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contrast</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmri_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clobber</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.output_T" title="Link to this definition">¶</a></dt>
+<dd><p>Return t contrast regression outputs list for <cite>contrast</cite></p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>outbase</strong><span class="classifier">string</span></dt><dd><p>Base filename that will be used to construct a set of files
+for the TContrast.  For example, outbase=’output.nii’ will
+result in the following files (assuming defaults for all other
+params): output_effect.nii, output_sd.nii, output_t.nii</p>
+</dd>
+<dt><strong>contrast</strong><span class="classifier">array</span></dt><dd><p>F contrast matrix</p>
+</dd>
+<dt><strong>fmri_image</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">FmriImageList</span></code> or <code class="docutils literal notranslate"><span class="pre">Image</span></code></span></dt><dd><p>object such that <code class="docutils literal notranslate"><span class="pre">object[0]</span></code> has attributes <code class="docutils literal notranslate"><span class="pre">shape</span></code> and
+<code class="docutils literal notranslate"><span class="pre">coordmap</span></code></p>
+</dd>
+<dt><strong>effect</strong><span class="classifier">{True, False}, optional</span></dt><dd><p>whether to write an effect image</p>
+</dd>
+<dt><strong>sd</strong><span class="classifier">{True, False}, optional</span></dt><dd><p>whether to write a standard deviation image</p>
+</dd>
+<dt><strong>t</strong><span class="classifier">{True, False}, optional</span></dt><dd><p>whether to write a t image</p>
+</dd>
+<dt><strong>clobber</strong><span class="classifier">{False, True}, optional</span></dt><dd><p>whether to overwrite images that exist.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>reglist</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">RegressionOutputList</span></code> instance</span></dt><dd><p>Regression output list with selected outputs, where selection is by
+inputs <cite>effect</cite>, <cite>sd</cite> and <cite>t</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Note that this routine uses the corresponding <code class="docutils literal notranslate"><span class="pre">output_T</span></code> routine in
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">outputters</span></code>, but indirectly via the TOutput object.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.output_resid">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.model.</span></span><span class="sig-name descname"><span class="pre">output_resid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmri_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clobber</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.output_resid" title="Link to this definition">¶</a></dt>
+<dd><p>Create an output file of the residuals parameter from the OLS pass of
+fmristat.</p>
+<p>Uses affine part of the first image to output resids unless
+fmri_image is an Image.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>outfile</strong></dt><dd></dd>
+<dt><strong>fmri_image</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">FmriImageList</span></code> or 4D image</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">FmriImageList</span></code>, needs attributes <code class="docutils literal notranslate"><span class="pre">volume_start_times</span></code>,
+supports len(), and object[0] has attributes <code class="docutils literal notranslate"><span class="pre">affine</span></code>,
+<code class="docutils literal notranslate"><span class="pre">coordmap</span></code> and <code class="docutils literal notranslate"><span class="pre">shape</span></code>, from which we create a new 4D
+coordmap and shape
+If 4D image, use the images coordmap and shape</p>
+</dd>
+<dt><strong>clobber</strong><span class="classifier">bool</span></dt><dd><p>if True, overwrite previous output</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>regression_output</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.model.results_generator">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.model.</span></span><span class="sig-name descname"><span class="pre">results_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_iterable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.model.results_generator" title="Link to this definition">¶</a></dt>
+<dd><p>Generator for results from an iterator that returns
+(index, data, model) tuples.</p>
+<p>See model_generator.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">modalities.fmri.fmristat.model</a><ul>
+<li><a class="reference internal" href="#module-modalities-fmri-fmristat-model">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.fmristat.model</span></code></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#ar1"><code class="xref py py-class docutils literal notranslate"><span class="pre">AR1</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.AR1"><code class="docutils literal notranslate"><span class="pre">AR1</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.AR1.__init__"><code class="docutils literal notranslate"><span class="pre">AR1.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.AR1.execute"><code class="docutils literal notranslate"><span class="pre">AR1.execute()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#modeloutputimage"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelOutputImage</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.ModelOutputImage"><code class="docutils literal notranslate"><span class="pre">ModelOutputImage</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.ModelOutputImage.__init__"><code class="docutils literal notranslate"><span class="pre">ModelOutputImage.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.ModelOutputImage.save"><code class="docutils literal notranslate"><span class="pre">ModelOutputImage.save()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ols"><code class="xref py py-class docutils literal notranslate"><span class="pre">OLS</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.OLS"><code class="docutils literal notranslate"><span class="pre">OLS</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.OLS.__init__"><code class="docutils literal notranslate"><span class="pre">OLS.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.OLS.execute"><code class="docutils literal notranslate"><span class="pre">OLS.execute()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.estimateAR"><code class="docutils literal notranslate"><span class="pre">estimateAR()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.generate_output"><code class="docutils literal notranslate"><span class="pre">generate_output()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.model_generator"><code class="docutils literal notranslate"><span class="pre">model_generator()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.output_AR1"><code class="docutils literal notranslate"><span class="pre">output_AR1()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.output_F"><code class="docutils literal notranslate"><span class="pre">output_F()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.output_T"><code class="docutils literal notranslate"><span class="pre">output_T()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.output_resid"><code class="docutils literal notranslate"><span class="pre">output_resid()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.model.results_generator"><code class="docutils literal notranslate"><span class="pre">results_generator()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.fmristat.invert.html"
+                          title="previous chapter">modalities.fmri.fmristat.invert</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.fmristat.outputters.html"
+                          title="next chapter">modalities.fmri.fmristat.outputters</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.modalities.fmri.fmristat.model.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmristat.outputters.html" title="modalities.fmri.fmristat.outputters"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmristat.invert.html" title="modalities.fmri.fmristat.invert"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

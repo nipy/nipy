@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="core.reference.coordinate_system" href="nipy.core.reference.coordinate_system.html" />
+    <link rel="prev" title="core.reference.array_coords" href="nipy.core.reference.array_coords.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.reference.coordinate_system.html" title="core.reference.coordinate_system"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.reference.array_coords.html" title="core.reference.array_coords"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="core-reference-coordinate-map">
+<h1>core.reference.coordinate_map<a class="headerlink" href="#core-reference-coordinate-map" title="Link to this heading">¶</a></h1>
+<section id="module-core-reference-coordinate-map">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">core.reference.coordinate_map</span></code><a class="headerlink" href="#module-core-reference-coordinate-map" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.core.reference.coordinate_map</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-0b35eeb99a13b51a5130c5ae86767b3f4af9362a.png" alt="Inheritance diagram of nipy.core.reference.coordinate_map" usemap="#inheritance2fde3dc69c" class="inheritance graphviz" /></div>
+<map id="inheritance2fde3dc69c" name="inheritance2fde3dc69c">
+<area shape="rect" id="node1" href="#nipy.core.reference.coordinate_map.AffineTransform" target="_top" title="Class for affine transformation from domain to a range" alt="" coords="21,208,289,235"/>
+<area shape="rect" id="node2" href="#nipy.core.reference.coordinate_map.AxisError" target="_top" title="Error for incorrect axis selection" alt="" coords="40,157,270,184"/>
+<area shape="rect" id="node3" href="#nipy.core.reference.coordinate_map.CoordMapMaker" target="_top" title="Class to create coordinate maps of different dimensions" alt="" coords="19,107,291,133"/>
+<area shape="rect" id="node4" href="#nipy.core.reference.coordinate_map.CoordMapMakerError" target="_top" title="reference.coordinate_map.CoordMapMakerError" alt="" coords="5,56,305,83"/>
+<area shape="rect" id="node5" href="#nipy.core.reference.coordinate_map.CoordinateMap" target="_top" title="A set of domain and range CoordinateSystems and a function between them." alt="" coords="23,5,287,32"/>
+</map><p id="module-nipy.core.reference.coordinate_map">This module describes two types of <em>mappings</em>:</p>
+<ul class="simple">
+<li><p>CoordinateMap: a general function from a domain to a range, with a possible
+inverse function;</p></li>
+<li><p>AffineTransform: an affine function from a domain to a range, not
+necessarily of the same dimension, hence not always invertible.</p></li>
+</ul>
+<p>Each of these objects is meant to encapsulate a tuple of (domain, range,
+function).  Each of the mapping objects contain all the details about their
+domain CoordinateSystem, their range CoordinateSystem and the mapping between
+them.</p>
+<section id="common-api">
+<h3>Common API<a class="headerlink" href="#common-api" title="Link to this heading">¶</a></h3>
+<p>They are separate classes, neither one inheriting from the other.
+They do, however, share some parts of an API, each having methods:</p>
+<ul class="simple">
+<li><p>renamed_domain : rename on the coordinates of the domain (returns a new
+mapping)</p></li>
+<li><p>renamed_range : rename the coordinates of the range (returns a new mapping)</p></li>
+<li><p>reordered_domain : reorder the coordinates of the domain (returns a new
+mapping)</p></li>
+<li><p>reordered_range : reorder the coordinates of the range (returns a new
+mapping)</p></li>
+<li><p>inverse : when appropriate, return the inverse <em>mapping</em></p></li>
+</ul>
+<p>These methods are implemented by module level functions of the same name.</p>
+<p>They also share some attributes:</p>
+<ul class="simple">
+<li><p>ndims : the dimensions of the domain and range, respectively</p></li>
+<li><p>function_domain : CoordinateSystem describing the domain</p></li>
+<li><p>function_range : CoordinateSystem describing the range</p></li>
+</ul>
+</section>
+<section id="operations-on-mappings-module-level-functions">
+<h3>Operations on mappings (module level functions)<a class="headerlink" href="#operations-on-mappings-module-level-functions" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>compose : Take a sequence of mappings (either CoordinateMaps or
+AffineTransforms) and return their composition. If they are all
+AffineTransforms, an AffineTransform is returned. This checks to ensure that
+domains and ranges of the various mappings agree.</p></li>
+<li><p>product : Take a sequence of mappings (either CoordinateMaps or
+AffineTransforms) and return a new mapping that has domain and range given by
+the concatenation of their domains and ranges, and the mapping simply
+concatenates the output of each of the individual mappings. If they are all
+AffineTransforms, an AffineTransform is returned. If they are all
+AffineTransforms that are in fact linear (i.e. origin=0) then can is
+represented as a block matrix with the size of the blocks determined by</p></li>
+<li><p>concat : Take a mapping and prepend a coordinate to its domain and
+range.  For mapping <code class="docutils literal notranslate"><span class="pre">m</span></code>, this is the same as
+<code class="docutils literal notranslate"><span class="pre">product(AffineTransform.identity('concat'),</span> <span class="pre">m)</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="affinetransform">
+<h3><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform" title="nipy.core.reference.coordinate_map.AffineTransform"><code class="xref py py-class docutils literal notranslate"><span class="pre">AffineTransform</span></code></a><a class="headerlink" href="#affinetransform" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">AffineTransform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function_domain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for affine transformation from domain to a range</p>
+<p>This class has an affine attribute, which is a matrix representing
+the affine transformation in homogeneous coordinates.  This matrix
+is used to evaluate the function, rather than having an explicit
+function (as is the case for a CoordinateMap).</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">inp_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">inp_cs</span><span class="p">,</span> <span class="n">out_cs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[ 1.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  2.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  3.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  1.]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[ 1.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  2.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  3.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  1.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="go">array([ 1.,  2.,  3.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">icm</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">icm</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="go">array([ 1.,  1.,  1.])</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function_domain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize AffineTransform</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>function_domain</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystem</span></code></span></dt><dd><p>input coordinates</p>
+</dd>
+<dt><strong>function_range</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystem</span></code></span></dt><dd><p>output coordinates</p>
+</dd>
+<dt><strong>affine</strong><span class="classifier">array-like</span></dt><dd><p>affine homogeneous coordinate matrix</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The dtype of the resulting matrix is determined by finding a
+safe typecast for the function_domain, function_range and affine.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.affine">
+<span class="sig-name descname"><span class="pre">affine</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">array([[3,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">[0,</span> <span class="pre">4,</span> <span class="pre">0,</span> <span class="pre">0],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">5,</span> <span class="pre">0],</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">1]])</span></em><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.affine" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.from_params">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">innames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">range_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.from_params" title="Link to this definition">¶</a></dt>
+<dd><p>Create <cite>AffineTransform</cite> from <cite>innames</cite> and <cite>outnames</cite></p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>innames</strong><span class="classifier">sequence of str or str</span></dt><dd><p>The names of the axes of the domain.  If str, then names
+given by <code class="docutils literal notranslate"><span class="pre">list(innames)</span></code></p>
+</dd>
+<dt><strong>outnames</strong><span class="classifier">sequence of str or str</span></dt><dd><p>The names of the axes of the range. If str, then names
+given by <code class="docutils literal notranslate"><span class="pre">list(outnames)</span></code></p>
+</dd>
+<dt><strong>params</strong><span class="classifier">AffineTransform, array or (array, array)</span></dt><dd><p>An affine function between the domain and range.
+This can be represented either by a single
+ndarray (which is interpreted as the representation of the
+function in homogeneous coordinates) or an (A,b) tuple.</p>
+</dd>
+<dt><strong>domain_name</strong><span class="classifier">str, optional</span></dt><dd><p>Name of domain CoordinateSystem</p>
+</dd>
+<dt><strong>range_name</strong><span class="classifier">str, optional</span></dt><dd><p>Name of range CoordinateSystem</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>aff</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">AffineTransform</span></code></span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Precondition<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">len(shape)</span> <span class="pre">==</span> <span class="pre">len(names)</span></code></p>
+</dd>
+<dt class="field-even">Raises ValueError<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">len(shape)</span> <span class="pre">!=</span> <span class="pre">len(names)</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.from_start_step">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_start_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">innames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">range_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.from_start_step" title="Link to this definition">¶</a></dt>
+<dd><p>New <cite>AffineTransform</cite> from names, start and step.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>innames</strong><span class="classifier">sequence of str or str</span></dt><dd><p>The names of the axes of the domain.  If str, then names
+given by <code class="docutils literal notranslate"><span class="pre">list(innames)</span></code></p>
+</dd>
+<dt><strong>outnames</strong><span class="classifier">sequence of str or str</span></dt><dd><p>The names of the axes of the range. If str, then names
+given by <code class="docutils literal notranslate"><span class="pre">list(outnames)</span></code></p>
+</dd>
+<dt><strong>start</strong><span class="classifier">sequence of float</span></dt><dd><p>Start vector used in constructing affine transformation</p>
+</dd>
+<dt><strong>step</strong><span class="classifier">sequence of float</span></dt><dd><p>Step vector used in constructing affine transformation</p>
+</dd>
+<dt><strong>domain_name</strong><span class="classifier">str, optional</span></dt><dd><p>Name of domain CoordinateSystem</p>
+</dd>
+<dt><strong>range_name</strong><span class="classifier">str, optional</span></dt><dd><p>Name of range CoordinateSystem</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>cm</strong><span class="classifier"><cite>CoordinateMap</cite></span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p><code class="docutils literal notranslate"><span class="pre">len(names)</span> <span class="pre">==</span> <span class="pre">len(start)</span> <span class="pre">==</span> <span class="pre">len(step)</span></code></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="o">.</span><span class="n">from_start_step</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">,</span> <span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[ 4.,  0.,  0.,  1.],</span>
+<span class="go">       [ 0.,  5.,  0.,  2.],</span>
+<span class="go">       [ 0.,  0.,  6.,  3.],</span>
+<span class="go">       [ 0.,  0.,  0.,  1.]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.function_domain">
+<span class="sig-name descname"><span class="pre">function_domain</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">CoordinateSystem(coord_names=('x',),</span> <span class="pre">name='',</span> <span class="pre">coord_dtype=float64)</span></em><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.function_domain" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.function_range">
+<span class="sig-name descname"><span class="pre">function_range</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">CoordinateSystem(coord_names=('y',),</span> <span class="pre">name='',</span> <span class="pre">coord_dtype=float64)</span></em><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.function_range" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.identity">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.identity" title="Link to this definition">¶</a></dt>
+<dd><p>Return an identity coordmap of the given shape</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coord_names</strong><span class="classifier">sequence of str or str</span></dt><dd><p>The names of the axes of the domain.  If str, then names
+given by <code class="docutils literal notranslate"><span class="pre">list(coord_names)</span></code></p>
+</dd>
+<dt><strong>name</strong><span class="classifier">str, optional</span></dt><dd><p>Name of origin of coordinate system</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>cm</strong><span class="classifier"><cite>CoordinateMap</cite></span></dt><dd><p><code class="docutils literal notranslate"><span class="pre">CoordinateMap</span></code> with <code class="docutils literal notranslate"><span class="pre">CoordinateSystem</span></code> domain and an
+identity transform, with identical domain and range.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">,</span> <span class="s1">&#39;somewhere&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[ 1.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  1.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  1.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  1.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">function_domain</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;), name=&#39;somewhere&#39;, coord_dtype=float64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">function_range</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;), name=&#39;somewhere&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.inverse">
+<span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preserve_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.inverse" title="Link to this definition">¶</a></dt>
+<dd><p>Return coordinate map with inverse affine transform or None</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>preserve_dtype</strong><span class="classifier">bool</span></dt><dd><p>If False, return affine mapping from inverting the <code class="docutils literal notranslate"><span class="pre">affine</span></code>.  The
+domain / range dtypes for the inverse may then change as a function
+of the dtype of the inverted <code class="docutils literal notranslate"><span class="pre">affine</span></code>.  If True, try to invert our
+<code class="docutils literal notranslate"><span class="pre">affine</span></code>, and see if it can be cast to the needed data type, which
+is <code class="docutils literal notranslate"><span class="pre">self.function_domain.coord_dtype</span></code>.  We need this dtype in
+order for the inverse to preserve the coordinate system dtypes.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>aff_cm_inv</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">AffineTransform</span></code> instance or None</span></dt><dd><p><code class="docutils literal notranslate"><span class="pre">AffineTransform</span></code> mapping from the <em>range</em> of input <cite>self</cite> to the
+<em>domain</em> of input <cite>self</cite> - the inverse of <cite>self</cite>.  If
+<code class="docutils literal notranslate"><span class="pre">self.affine</span></code> was not invertible return None.  If <cite>preserve_dtype</cite>
+is True, and the inverse of <code class="docutils literal notranslate"><span class="pre">self.affine</span></code> cannot be cast to
+<code class="docutils literal notranslate"><span class="pre">self.function_domain.coord_dtype</span></code>, then return None.  Otherwise
+return <code class="docutils literal notranslate"><span class="pre">AffineTransform</span></code> inverse mapping.  If <cite>preserve_dtype</cite> is
+False, the domain / range dtypes of the return inverse may well be
+different from those of the input <cite>self</cite>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">input_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+<span class="gp">... </span>                   <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+<span class="gp">... </span>                   <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+<span class="gp">... </span>                   <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_transform</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">input_cs</span><span class="p">,</span> <span class="n">output_cs</span><span class="p">,</span> <span class="n">affine</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_transform</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span> 
+<span class="go">array([3, 4, 5])</span>
+</pre></div>
+</div>
+<p>The inverse transform, by default, generates a floating point inverse
+matrix and therefore floating point output:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">affine_transform_inv</span> <span class="o">=</span> <span class="n">affine_transform</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_transform_inv</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">])</span>
+<span class="go">array([  1.,   5.,  11.])</span>
+</pre></div>
+</div>
+<p>You can force it to preserve the coordinate system dtype with the
+<cite>preserve_dtype</cite> flag:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">at_inv_preserved</span> <span class="o">=</span> <span class="n">affine_transform</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">preserve_dtype</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">at_inv_preserved</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">])</span> 
+<span class="go">array([  1,   5,  11])</span>
+</pre></div>
+</div>
+<p>If you <cite>preserve_dtype</cite>, and there is no inverse affine preserving the
+dtype, the inverse is None:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">affine2</span> <span class="o">=</span> <span class="n">affine</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine2</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1"># now inverse can&#39;t be integer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aff_t</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">input_cs</span><span class="p">,</span> <span class="n">output_cs</span><span class="p">,</span> <span class="n">affine2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aff_t</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">preserve_dtype</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.ndims">
+<span class="sig-name descname"><span class="pre">ndims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(3,</span> <span class="pre">3)</span></em><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.ndims" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.renamed_domain">
+<span class="sig-name descname"><span class="pre">renamed_domain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.renamed_domain" title="Link to this definition">¶</a></dt>
+<dd><p>New AffineTransform with function_domain renamed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>newnames</strong><span class="classifier">dict</span></dt><dd><p>A dictionary whose keys are integers or are in
+mapping.function_domain.coord_names and whose values are the
+new names.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>newmapping</strong><span class="classifier">AffineTransform</span></dt><dd><p>A new AffineTransform with renamed function_domain.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">affine_domain</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_range</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_mapping</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">affine_domain</span><span class="p">,</span> <span class="n">affine_range</span><span class="p">,</span> <span class="n">affine_matrix</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">new_affine_mapping</span> <span class="o">=</span> <span class="n">affine_mapping</span><span class="o">.</span><span class="n">renamed_domain</span><span class="p">({</span><span class="s1">&#39;i&#39;</span><span class="p">:</span><span class="s1">&#39;phase&#39;</span><span class="p">,</span><span class="s1">&#39;k&#39;</span><span class="p">:</span><span class="s1">&#39;freq&#39;</span><span class="p">,</span><span class="s1">&#39;j&#39;</span><span class="p">:</span><span class="s1">&#39;slice&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_affine_mapping</span><span class="o">.</span><span class="n">function_domain</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;phase&#39;, &#39;slice&#39;, &#39;freq&#39;), name=&#39;&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">new_affine_mapping</span> <span class="o">=</span> <span class="n">affine_mapping</span><span class="o">.</span><span class="n">renamed_domain</span><span class="p">({</span><span class="s1">&#39;i&#39;</span><span class="p">:</span><span class="s1">&#39;phase&#39;</span><span class="p">,</span><span class="s1">&#39;k&#39;</span><span class="p">:</span><span class="s1">&#39;freq&#39;</span><span class="p">,</span><span class="s1">&#39;l&#39;</span><span class="p">:</span><span class="s1">&#39;slice&#39;</span><span class="p">})</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">   </span><span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">no domain coordinate named l</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.renamed_range">
+<span class="sig-name descname"><span class="pre">renamed_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.renamed_range" title="Link to this definition">¶</a></dt>
+<dd><p>New AffineTransform with renamed function_domain</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>newnames</strong><span class="classifier">dict</span></dt><dd><p>A dictionary whose keys are integers or are in
+mapping.function_range.coord_names and whose values are the
+new names.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>newmapping</strong><span class="classifier">AffineTransform</span></dt><dd><p>A new AffineTransform with renamed function_range.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">affine_domain</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_range</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_mapping</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">affine_domain</span><span class="p">,</span> <span class="n">affine_range</span><span class="p">,</span> <span class="n">affine_matrix</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">new_affine_mapping</span> <span class="o">=</span> <span class="n">affine_mapping</span><span class="o">.</span><span class="n">renamed_range</span><span class="p">({</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="s1">&#39;u&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_affine_mapping</span><span class="o">.</span><span class="n">function_range</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;u&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">new_affine_mapping</span> <span class="o">=</span> <span class="n">affine_mapping</span><span class="o">.</span><span class="n">renamed_range</span><span class="p">({</span><span class="s1">&#39;w&#39;</span><span class="p">:</span><span class="s1">&#39;u&#39;</span><span class="p">})</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">   </span><span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">no range coordinate named w</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.reordered_domain">
+<span class="sig-name descname"><span class="pre">reordered_domain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.reordered_domain" title="Link to this definition">¶</a></dt>
+<dd><p>New AffineTransform with function_domain reordered</p>
+<p>Default behaviour is to reverse the order of the coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>order</strong><span class="classifier">sequence</span></dt><dd><p>Order to use, defaults to reverse. The elements can be
+integers, strings or 2-tuples of strings.  If they are
+strings, they should be in
+mapping.function_domain.coord_names.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>newmapping :AffineTransform</dt><dd><p>A new AffineTransform with the coordinates of function_domain
+reordered.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">input_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">input_cs</span><span class="p">,</span> <span class="n">output_cs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">reordered_domain</span><span class="p">(</span><span class="s1">&#39;ikj&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">function_domain</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;i&#39;, &#39;k&#39;, &#39;j&#39;), name=&#39;&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.reordered_range">
+<span class="sig-name descname"><span class="pre">reordered_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.reordered_range" title="Link to this definition">¶</a></dt>
+<dd><p>New AffineTransform with function_range reordered</p>
+<p>Defaults to reversing the coordinates of function_range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>order</strong><span class="classifier">sequence</span></dt><dd><p>Order to use, defaults to reverse. The elements can be
+integers, strings or 2-tuples of strings.  If they are
+strings, they should be in
+mapping.function_range.coord_names.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>newmapping</strong><span class="classifier">AffineTransform</span></dt><dd><p>A new AffineTransform with the coordinates of function_range
+reordered.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">input_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">input_cs</span><span class="p">,</span> <span class="n">output_cs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">(</span><span class="s1">&#39;xzy&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">function_range</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;x&#39;, &#39;z&#39;, &#39;y&#39;), name=&#39;&#39;, coord_dtype=float64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">function_range</span><span class="o">.</span><span class="n">coord_names</span>
+<span class="go">(&#39;x&#39;, &#39;z&#39;, &#39;y&#39;)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">newcm</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">(</span><span class="s1">&#39;yzx&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newcm</span><span class="o">.</span><span class="n">function_range</span><span class="o">.</span><span class="n">coord_names</span>
+<span class="go">(&#39;y&#39;, &#39;z&#39;, &#39;x&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AffineTransform.similar_to">
+<span class="sig-name descname"><span class="pre">similar_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AffineTransform.similar_to" title="Link to this definition">¶</a></dt>
+<dd><p>Does <cite>other</cite> have similar coordinate systems and same mappings?</p>
+<p>A “similar” coordinate system is one with the same coordinate names and
+data dtype, but ignoring the coordinate system name.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="axiserror">
+<h3><a class="reference internal" href="#nipy.core.reference.coordinate_map.AxisError" title="nipy.core.reference.coordinate_map.AxisError"><code class="xref py py-class docutils literal notranslate"><span class="pre">AxisError</span></code></a><a class="headerlink" href="#axiserror" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AxisError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">AxisError</span></span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AxisError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Error for incorrect axis selection</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AxisError.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AxisError.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AxisError.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AxisError.args" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.AxisError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.AxisError.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="coordmapmaker">
+<h3><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordMapMaker" title="nipy.core.reference.coordinate_map.CoordMapMaker"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordMapMaker</span></code></a><a class="headerlink" href="#coordmapmaker" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordMapMaker">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">CoordMapMaker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_maker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">range_maker</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordMapMaker" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to create coordinate maps of different dimensions</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordMapMaker.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_maker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">range_maker</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordMapMaker.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Create coordinate map maker</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>domain_maker</strong><span class="classifier">callable</span></dt><dd><p>A coordinate system maker, returning a coordinate system with input
+argument only <code class="docutils literal notranslate"><span class="pre">N</span></code>, an integer giving the length of the coordinate
+map.</p>
+</dd>
+<dt><strong>range_maker</strong><span class="classifier">callable</span></dt><dd><p>A coordinate system maker, returning a coordinate system with input
+argument only <code class="docutils literal notranslate"><span class="pre">N</span></code>, an integer giving the length of the coordinate
+map.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.reference.coordinate_system</span> <span class="kn">import</span> <span class="n">CoordSysMaker</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dmaker</span> <span class="o">=</span> <span class="n">CoordSysMaker</span><span class="p">(</span><span class="s1">&#39;ijkl&#39;</span><span class="p">,</span> <span class="s1">&#39;generic-array&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rmaker</span> <span class="o">=</span> <span class="n">CoordSysMaker</span><span class="p">(</span><span class="s1">&#39;xyzt&#39;</span><span class="p">,</span> <span class="s1">&#39;generic-scanner&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm_maker</span> <span class="o">=</span> <span class="n">CoordMapMaker</span><span class="p">(</span><span class="n">dmaker</span><span class="p">,</span> <span class="n">rmaker</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordMapMaker.affine_maker">
+<span class="sig-name descname"><span class="pre">affine_maker</span></span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordMapMaker.affine_maker" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform" title="nipy.core.reference.coordinate_map.AffineTransform"><code class="xref py py-class docutils literal notranslate"><span class="pre">AffineTransform</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordMapMaker.generic_maker">
+<span class="sig-name descname"><span class="pre">generic_maker</span></span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordMapMaker.generic_maker" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap" title="nipy.core.reference.coordinate_map.CoordinateMap"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateMap</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordMapMaker.make_affine">
+<span class="sig-name descname"><span class="pre">make_affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">affine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">append_zooms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">append_offsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordMapMaker.make_affine" title="Link to this definition">¶</a></dt>
+<dd><p>Create affine coordinate map</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>affine</strong><span class="classifier">(M, N) array-like</span></dt><dd><p>Array expressing the affine transformation</p>
+</dd>
+<dt><strong>append_zooms</strong><span class="classifier">scalar or sequence length E</span></dt><dd><p>If scalar, converted to sequence length E==1. Append E entries to
+the diagonal of <cite>affine</cite> (see examples)</p>
+</dd>
+<dt><strong>append_offsets</strong><span class="classifier">scalar or sequence length F</span></dt><dd><p>If scalar, converted to sequence length F==1. If F==0, and E!=0, use
+sequence of zeros length E.  Append E entries to the translations
+(final column) of <cite>affine</cite> (see examples).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>affmap</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">AffineTransform</span></code> coordinate map</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.reference.coordinate_system</span> <span class="kn">import</span> <span class="n">CoordSysMaker</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dmaker</span> <span class="o">=</span> <span class="n">CoordSysMaker</span><span class="p">(</span><span class="s1">&#39;ijkl&#39;</span><span class="p">,</span> <span class="s1">&#39;generic-array&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rmaker</span> <span class="o">=</span> <span class="n">CoordSysMaker</span><span class="p">(</span><span class="s1">&#39;xyzt&#39;</span><span class="p">,</span> <span class="s1">&#39;generic-scanner&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm_maker</span> <span class="o">=</span> <span class="n">CoordMapMaker</span><span class="p">(</span><span class="n">dmaker</span><span class="p">,</span> <span class="n">rmaker</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm_maker</span><span class="o">.</span><span class="n">make_affine</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;), name=&#39;generic-array&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;generic-scanner&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[ 2.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  3.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  4.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  1.]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<p>We can add extra orthogonal dimensions, by specifying the diagonal
+elements:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cm_maker</span><span class="o">.</span><span class="n">make_affine</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="mi">6</span><span class="p">)</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;), name=&#39;generic-array&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;t&#39;), name=&#39;generic-scanner&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[ 2.,  0.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  3.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  4.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  6.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  0.,  1.]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<p>Or the diagonal elements and the offset elements:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cm_maker</span><span class="o">.</span><span class="n">make_affine</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">9</span><span class="p">])</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;), name=&#39;generic-array&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;t&#39;), name=&#39;generic-scanner&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[ 2.,  0.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  3.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  4.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  6.,  9.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  0.,  1.]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordMapMaker.make_cmap">
+<span class="sig-name descname"><span class="pre">make_cmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_xform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordMapMaker.make_cmap" title="Link to this definition">¶</a></dt>
+<dd><p>Coordinate map with transform function <cite>xform</cite></p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>domain_N</strong><span class="classifier">int</span></dt><dd><p>Number of domain coordinates</p>
+</dd>
+<dt><strong>xform</strong><span class="classifier">callable</span></dt><dd><p>Function that transforms points of dimension <cite>domain_N</cite></p>
+</dd>
+<dt><strong>inv_xform</strong><span class="classifier">None or callable, optional</span></dt><dd><p>Function, such that <code class="docutils literal notranslate"><span class="pre">inv_xform(xform(pts))</span></code> returns <code class="docutils literal notranslate"><span class="pre">pts</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>cmap</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">CoordinateMap</span></code></span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.reference.coordinate_system</span> <span class="kn">import</span> <span class="n">CoordSysMaker</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dmaker</span> <span class="o">=</span> <span class="n">CoordSysMaker</span><span class="p">(</span><span class="s1">&#39;ijkl&#39;</span><span class="p">,</span> <span class="s1">&#39;generic-array&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rmaker</span> <span class="o">=</span> <span class="n">CoordSysMaker</span><span class="p">(</span><span class="s1">&#39;xyzt&#39;</span><span class="p">,</span> <span class="s1">&#39;generic-scanner&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm_maker</span> <span class="o">=</span> <span class="n">CoordMapMaker</span><span class="p">(</span><span class="n">dmaker</span><span class="p">,</span> <span class="n">rmaker</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm_maker</span><span class="o">.</span><span class="n">make_cmap</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> 
+<span class="go">CoordinateMap(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;), name=&#39;generic-array&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;t&#39;), name=&#39;generic-scanner&#39;, coord_dtype=float64),</span>
+<span class="go">   function=&lt;function &lt;lambda&gt; at ...&gt;</span>
+<span class="go">  )</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="coordmapmakererror">
+<h3><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordMapMakerError" title="nipy.core.reference.coordinate_map.CoordMapMakerError"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordMapMakerError</span></code></a><a class="headerlink" href="#coordmapmakererror" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordMapMakerError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">CoordMapMakerError</span></span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordMapMakerError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordMapMakerError.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordMapMakerError.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordMapMakerError.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordMapMakerError.args" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordMapMakerError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordMapMakerError.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="coordinatemap">
+<h3><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap" title="nipy.core.reference.coordinate_map.CoordinateMap"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateMap</span></code></a><a class="headerlink" href="#coordinatemap" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordinateMap">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">CoordinateMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function_domain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inverse_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordinateMap" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A set of domain and range CoordinateSystems and a function between them.</p>
+<p>For example, the function may represent the mapping of a voxel (the
+domain of the function) to real space (the range).  The function may
+be an affine or non-affine transformation.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">function_domain</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">,</span> <span class="s1">&#39;voxels&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">function_range</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="s1">&#39;world&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mni_orig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">90.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">126.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">72.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">mni_orig</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inv_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">-</span> <span class="n">mni_orig</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span> <span class="o">=</span> <span class="n">CoordinateMap</span><span class="p">(</span><span class="n">function_domain</span><span class="p">,</span> <span class="n">function_range</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">inv_function</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Map the first 3 voxel coordinates, along the x-axis, to mni space:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">array([[ -90., -126.,  -72.],</span>
+<span class="go">       [ -89., -126.,  -72.],</span>
+<span class="go">       [ -88., -126.,  -72.]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">CoordinateMap</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span>
+<span class="go">CoordinateMap(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;x&#39;,), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;y&#39;,), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   function=&lt;ufunc &#39;exp&#39;&gt;,</span>
+<span class="go">   inverse_function=&lt;ufunc &#39;log&#39;&gt;</span>
+<span class="go">  )</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
+<span class="go">CoordinateMap(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;y&#39;,), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;,), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   function=&lt;ufunc &#39;log&#39;&gt;,</span>
+<span class="go">   inverse_function=&lt;ufunc &#39;exp&#39;&gt;</span>
+<span class="go">  )</span>
+</pre></div>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>function_domain</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystem</span></code> instance</span></dt><dd><p>The input coordinate system.</p>
+</dd>
+<dt><strong>function_range</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystem</span></code> instance</span></dt><dd><p>The output coordinate system.</p>
+</dd>
+<dt><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.function" title="nipy.core.reference.coordinate_map.CoordinateMap.function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code></a><span class="classifier">callable</span></dt><dd><p>exp(x, /, out=None, <a href="#id1"><span class="problematic" id="id2">*</span></a>, where=True, casting=’same_kind’, order=’K’, dtype=None, subok=True[, signature, extobj])</p>
+</dd>
+<dt><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.inverse_function" title="nipy.core.reference.coordinate_map.CoordinateMap.inverse_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inverse_function</span></code></a><span class="classifier">None or callable</span></dt><dd><p>log(x, /, out=None, <a href="#id3"><span class="problematic" id="id4">*</span></a>, where=True, casting=’same_kind’, order=’K’, dtype=None, subok=True[, signature, extobj])</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordinateMap.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function_domain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inverse_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordinateMap.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Create a CoordinateMap given function, domain and range.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>function_domain</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystem</span></code></span></dt><dd><p>The input coordinate system.</p>
+</dd>
+<dt><strong>function_range</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystem</span></code></span></dt><dd><p>The output coordinate system</p>
+</dd>
+<dt><strong>function</strong><span class="classifier">callable</span></dt><dd><p>The function between function_domain and function_range.  It
+should be a callable that accepts arrays of shape (N,
+function_domain.ndim) and returns arrays of shape (N,
+function_range.ndim), where N is the number of points for
+transformation.</p>
+</dd>
+<dt><strong>inverse_function</strong><span class="classifier">None or callable, optional</span></dt><dd><p>The optional inverse of function, with the intention being
+<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">inverse_function(function(x))</span></code>.  If the function is
+affine and invertible, then this is true for all x.  The
+default is None</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>coordmap</strong><span class="classifier">CoordinateMap</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordinateMap.function">
+<span class="sig-name descname"><span class="pre">function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">where=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">casting='same_kind'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order='K'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subok=True</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">signature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extobj</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;ufunc</span> <span class="pre">'exp'&gt;</span></em><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordinateMap.function" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordinateMap.function_domain">
+<span class="sig-name descname"><span class="pre">function_domain</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">CoordinateSystem(coord_names=('x',),</span> <span class="pre">name='',</span> <span class="pre">coord_dtype=float64)</span></em><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordinateMap.function_domain" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordinateMap.function_range">
+<span class="sig-name descname"><span class="pre">function_range</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">CoordinateSystem(coord_names=('y',),</span> <span class="pre">name='',</span> <span class="pre">coord_dtype=float64)</span></em><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordinateMap.function_range" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordinateMap.inverse">
+<span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordinateMap.inverse" title="Link to this definition">¶</a></dt>
+<dd><p>New CoordinateMap with the functions reversed</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordinateMap.inverse_function">
+<span class="sig-name descname"><span class="pre">inverse_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">where=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">casting='same_kind'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order='K'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subok=True</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">signature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extobj</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;ufunc</span> <span class="pre">'log'&gt;</span></em><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordinateMap.inverse_function" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordinateMap.ndims">
+<span class="sig-name descname"><span class="pre">ndims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(1,</span> <span class="pre">1)</span></em><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordinateMap.ndims" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordinateMap.renamed_domain">
+<span class="sig-name descname"><span class="pre">renamed_domain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordinateMap.renamed_domain" title="Link to this definition">¶</a></dt>
+<dd><p>New CoordinateMap with function_domain renamed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>newnames</strong><span class="classifier">dict</span></dt><dd><p>A dictionary whose keys are integers or are in
+mapping.function_domain.coord_names and whose values are the
+new names.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>newmaping</strong><span class="classifier">CoordinateMap</span></dt><dd><p>A new CoordinateMap with renamed function_domain.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">domain</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">range</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span> <span class="o">=</span> <span class="n">CoordinateMap</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="nb">range</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">new_cm</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">renamed_domain</span><span class="p">({</span><span class="s1">&#39;i&#39;</span><span class="p">:</span><span class="s1">&#39;phase&#39;</span><span class="p">,</span><span class="s1">&#39;k&#39;</span><span class="p">:</span><span class="s1">&#39;freq&#39;</span><span class="p">,</span><span class="s1">&#39;j&#39;</span><span class="p">:</span><span class="s1">&#39;slice&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_cm</span><span class="o">.</span><span class="n">function_domain</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;phase&#39;, &#39;slice&#39;, &#39;freq&#39;), name=&#39;&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">new_cm</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">renamed_domain</span><span class="p">({</span><span class="s1">&#39;i&#39;</span><span class="p">:</span><span class="s1">&#39;phase&#39;</span><span class="p">,</span><span class="s1">&#39;k&#39;</span><span class="p">:</span><span class="s1">&#39;freq&#39;</span><span class="p">,</span><span class="s1">&#39;l&#39;</span><span class="p">:</span><span class="s1">&#39;slice&#39;</span><span class="p">})</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">   </span><span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">no domain coordinate named l</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordinateMap.renamed_range">
+<span class="sig-name descname"><span class="pre">renamed_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordinateMap.renamed_range" title="Link to this definition">¶</a></dt>
+<dd><p>New CoordinateMap with function_domain renamed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>newnames</strong><span class="classifier">dict</span></dt><dd><p>A dictionary whose keys are integers or are in
+mapping.function_range.coord_names and whose values are the
+new names.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>newmapping</strong><span class="classifier">CoordinateMap</span></dt><dd><p>A new CoordinateMap with renamed function_range.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">domain</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">range</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span> <span class="o">=</span> <span class="n">CoordinateMap</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="nb">range</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">new_cm</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">renamed_range</span><span class="p">({</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="s1">&#39;u&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_cm</span><span class="o">.</span><span class="n">function_range</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;u&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">new_cm</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">renamed_range</span><span class="p">({</span><span class="s1">&#39;w&#39;</span><span class="p">:</span><span class="s1">&#39;u&#39;</span><span class="p">})</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">   </span><span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">no range coordinate named w</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordinateMap.reordered_domain">
+<span class="sig-name descname"><span class="pre">reordered_domain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordinateMap.reordered_domain" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new CoordinateMap with the coordinates of function_domain reordered.
+Default behaviour is to reverse the order of the coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>order</strong><span class="classifier">sequence</span></dt><dd><p>Order to use, defaults to reverse. The elements can be
+integers, strings or 2-tuples of strings.  If they are
+strings, they should be in
+mapping.function_domain.coord_names.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>newmapping</strong><span class="classifier">CoordinateMap</span></dt><dd><p>A new CoordinateMap with the coordinates of function_domain
+reordered.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">input_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span> <span class="o">=</span> <span class="n">CoordinateMap</span><span class="p">(</span><span class="n">input_cs</span><span class="p">,</span> <span class="n">output_cs</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">reordered_domain</span><span class="p">(</span><span class="s1">&#39;ikj&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">function_domain</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;i&#39;, &#39;k&#39;, &#39;j&#39;), name=&#39;&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordinateMap.reordered_range">
+<span class="sig-name descname"><span class="pre">reordered_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordinateMap.reordered_range" title="Link to this definition">¶</a></dt>
+<dd><p>Nnew CoordinateMap with function_range reordered.</p>
+<p>Defaults to reversing the coordinates of function_range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>order</strong><span class="classifier">sequence</span></dt><dd><p>Order to use, defaults to reverse. The elements can be
+integers, strings or 2-tuples of strings.  If they are
+strings, they should be in
+mapping.function_range.coord_names.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>newmapping</strong><span class="classifier">CoordinateMap</span></dt><dd><p>A new CoordinateMap with the coordinates of function_range
+reordered.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">input_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span> <span class="o">=</span> <span class="n">CoordinateMap</span><span class="p">(</span><span class="n">input_cs</span><span class="p">,</span> <span class="n">output_cs</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">(</span><span class="s1">&#39;xzy&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">function_range</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;x&#39;, &#39;z&#39;, &#39;y&#39;), name=&#39;&#39;, coord_dtype=float64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">function_range</span><span class="o">.</span><span class="n">coord_names</span>
+<span class="go">(&#39;x&#39;, &#39;z&#39;, &#39;y&#39;)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">newcm</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">(</span><span class="s1">&#39;yzx&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newcm</span><span class="o">.</span><span class="n">function_range</span><span class="o">.</span><span class="n">coord_names</span>
+<span class="go">(&#39;y&#39;, &#39;z&#39;, &#39;x&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.CoordinateMap.similar_to">
+<span class="sig-name descname"><span class="pre">similar_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.CoordinateMap.similar_to" title="Link to this definition">¶</a></dt>
+<dd><p>Does <cite>other</cite> have similar coordinate systems and same mappings?</p>
+<p>A “similar” coordinate system is one with the same coordinate names and
+data dtype, but ignoring the coordinate system name.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.append_io_dim">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">append_io_dim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.append_io_dim" title="Link to this definition">¶</a></dt>
+<dd><p>Append input and output dimension to coordmap</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cm</strong><span class="classifier">Affine</span></dt><dd><p>Affine coordinate map instance to which to append dimension</p>
+</dd>
+<dt><strong>in_name</strong><span class="classifier">str</span></dt><dd><p>Name for new input dimension</p>
+</dd>
+<dt><strong>out_name</strong><span class="classifier">str</span></dt><dd><p>Name for new output dimension</p>
+</dd>
+<dt><strong>start</strong><span class="classifier">float, optional</span></dt><dd><p>Offset for transformed values in new dimension</p>
+</dd>
+<dt><strong>step</strong><span class="classifier">float, optional</span></dt><dd><p>Step, or scale factor for transformed values in new dimension</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>cm_plus</strong><span class="classifier">Affine</span></dt><dd><p>New coordinate map with appended dimension</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Typical use is creating a 4D coordinate map from a 3D</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cm3d</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="o">.</span><span class="n">from_params</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">,</span> <span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm4d</span> <span class="o">=</span> <span class="n">append_io_dim</span><span class="p">(</span><span class="n">cm3d</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm4d</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[ 1.,  0.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  2.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  3.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  5.,  9.],</span>
+<span class="go">       [ 0.,  0.,  0.,  0.,  1.]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.axmap">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">axmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'in2out'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.axmap" title="Link to this definition">¶</a></dt>
+<dd><p>Return mapping between input and output axes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordmap</strong><span class="classifier">Affine</span></dt><dd><p>Affine coordinate map instance for which to get axis mappings</p>
+</dd>
+<dt><strong>direction</strong><span class="classifier">{‘in2out’, ‘out2in’, ‘both’}</span></dt><dd><p>direction to find mapping.  If ‘in2out’, returned mapping will have keys
+from the input axis (names and indices) and values of corresponding
+output axes.  If ‘out2in’ the keys will be output axis names, indices
+and the values will be input axis indices.  If both, return both
+mappings.</p>
+</dd>
+<dt><strong>fix0: bool, optional</strong></dt><dd><p>Whether to fix potential 0 TR in affine</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>map</strong><span class="classifier">dict or tuple</span></dt><dd><ul class="simple">
+<li><p>if <cite>direction</cite> == ‘in2out’ - mapping with keys of input names and
+input indices, values of output indices. Mapping is to closest
+matching axis.  None means there appears to be no matching axis</p></li>
+<li><p>if <cite>direction</cite> == ‘out2in’ - mapping with keys of output names and
+input indices, values of input indices, as above.</p></li>
+<li><p>if <cite>direction</cite> == ‘both’ - tuple of (input to output mapping, output
+to input mapping)</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.compose">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">compose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">cmaps</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.compose" title="Link to this definition">¶</a></dt>
+<dd><p>Return the composition of two or more CoordinateMaps.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cmaps</strong><span class="classifier">sequence of CoordinateMaps</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>cmap</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">CoordinateMap</span></code></span></dt><dd><p>The resulting CoordinateMap has function_domain ==
+cmaps[-1].function_domain and function_range ==
+cmaps[0].function_range</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cmap</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="o">.</span><span class="n">from_params</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mf">2.</span><span class="p">,</span><span class="mf">1.</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cmapi</span> <span class="o">=</span> <span class="n">cmap</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">id1</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span><span class="n">cmapi</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">id1</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[ 1.,  0.],</span>
+<span class="go">       [ 0.,  1.]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">id2</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">cmapi</span><span class="p">,</span><span class="n">cmap</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">id1</span><span class="o">.</span><span class="n">function_domain</span><span class="o">.</span><span class="n">coord_names</span>
+<span class="go">(&#39;x&#39;,)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">id2</span><span class="o">.</span><span class="n">function_domain</span><span class="o">.</span><span class="n">coord_names</span>
+<span class="go">(&#39;i&#39;,)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.drop_io_dim">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">drop_io_dim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.drop_io_dim" title="Link to this definition">¶</a></dt>
+<dd><p>Drop dimensions <cite>axis_id</cite> from coordinate map, if orthogonal to others</p>
+<p>If you specify an input dimension, drop that dimension and any corresponding
+output dimension, as long as all other outputs are orthogonal to dropped
+input.  If you specify an output dimension, drop that dimension and any
+corresponding input dimension, as long as all other inputs are orthogonal
+to dropped output.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>cm</strong><span class="classifier">class:<cite>AffineTransform</cite></span></dt><dd><p>Affine coordinate map instance</p>
+</dd>
+<dt><strong>axis_id</strong><span class="classifier">int or str</span></dt><dd><p>If int, gives index of <em>input</em> axis to drop.  If str, gives name of
+input <em>or</em> output axis to drop. When specifying an input axis: if given
+input axis does not affect any output axes, just drop input axis.  If
+input axis affects only one output axis, drop both input and
+corresponding output.  Similarly when specifying an output axis.  If
+<cite>axis_id</cite> is a str, it must be unambiguous - if the named axis exists in
+both input and output, and they do not correspond, raises a AxisError.
+See Raises section for checks</p>
+</dd>
+<dt><strong>fix0: bool, optional</strong></dt><dd><p>Whether to fix potential 0 TR in affine</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>cm_redux</strong><span class="classifier">Affine</span></dt><dd><p>Affine coordinate map with orthogonal input + output dimension dropped</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>AxisError: if <cite>axis_id</cite> is a str and does not match any no input or output</dt><dd><p>coordinate names.</p>
+</dd>
+<dt>AxisError: if specified <cite>axis_id</cite> affects more than a single input / output</dt><dd><p>axis.</p>
+</dd>
+<dt>AxisError: if the named <cite>axis_id</cite> exists in both input and output, and they</dt><dd><p>do not correspond.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Typical use is in getting a 3D coordinate map from 4D</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cm4d</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="o">.</span><span class="n">from_params</span><span class="p">(</span><span class="s1">&#39;ijkl&#39;</span><span class="p">,</span> <span class="s1">&#39;xyzt&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm3d</span> <span class="o">=</span> <span class="n">drop_io_dim</span><span class="p">(</span><span class="n">cm4d</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm3d</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[ 1.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  2.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  3.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  1.]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.equivalent">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">equivalent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapping2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.equivalent" title="Link to this definition">¶</a></dt>
+<dd><p>A test to see if mapping1 is equal
+to mapping2 after possibly reordering the
+domain and range of mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mapping1</strong><span class="classifier">CoordinateMap or AffineTransform</span></dt><dd></dd>
+<dt><strong>mapping2</strong><span class="classifier">CoordinateMap or AffineTransform</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>are_they_equal</strong><span class="classifier">bool</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ijk</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xyz</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">T</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># otherwise AffineTransform raises</span>
+<span class="gp">... </span>                  <span class="c1"># an exception because</span>
+<span class="gp">... </span>                  <span class="c1"># it&#39;s supposed to represent an</span>
+<span class="gp">... </span>                  <span class="c1"># affine transform in homogeneous</span>
+<span class="gp">... </span>                  <span class="c1"># coordinates</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">ijk</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">B</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">reordered_domain</span><span class="p">(</span><span class="s1">&#39;ikj&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">(</span><span class="s1">&#39;xzy&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">C</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">renamed_domain</span><span class="p">({</span><span class="s1">&#39;i&#39;</span><span class="p">:</span><span class="s1">&#39;slice&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">equivalent</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">equivalent</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">equivalent</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">D</span> <span class="o">=</span> <span class="n">CoordinateMap</span><span class="p">(</span><span class="n">ijk</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">equivalent</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">E</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">reordered_domain</span><span class="p">(</span><span class="s1">&#39;kij&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">(</span><span class="s1">&#39;xzy&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># no non-AffineTransform will ever be</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># equivalent to a reordered version of itself,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># because their functions don&#39;t evaluate as equal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">equivalent</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">equivalent</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># This has not changed the order</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># of the axes, so the function is still the same</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">F</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reordered_domain</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">equivalent</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">id</span><span class="p">(</span><span class="n">F</span><span class="p">)</span> <span class="o">==</span> <span class="nb">id</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.input_axis_index">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">input_axis_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.input_axis_index" title="Link to this definition">¶</a></dt>
+<dd><p>Return input axis index for <cite>axis_id</cite></p>
+<p><cite>axis_id</cite> can be integer, or a name of an input axis, or it can be the name
+of an output axis which maps to an input axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordmap</strong><span class="classifier">AffineTransform</span></dt><dd></dd>
+<dt><strong>axis_id</strong><span class="classifier">int or str</span></dt><dd><p>If int, then an index of an input axis.  Can be negative, so that -2
+refers to the second to last input axis.  If a str can be the name of an
+input axis, or the name of an output axis that should have a
+corresponding input axis (see Raises section).</p>
+</dd>
+<dt><strong>fix0: bool, optional</strong></dt><dd><p>Whether to fix potential single 0 on diagonal of affine.  This often
+happens when loading nifti images with TR set to 0.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>inax</strong><span class="classifier">int</span></dt><dd><p>index of matching input axis. If <cite>axis_id</cite> is the name of an output
+axis, then <cite>inax</cite> will be the input axis that had a ‘best’ match with
+this output axis.  The ‘best’ match algorithm ensures that there can
+only be one input axis paired with one output axis.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>AxisError: if no matching name found</dt><dd></dd>
+<dt><strong>AxisError</strong><span class="classifier">if name exists in both input and output and they do not map to</span></dt><dd><p>each other</p>
+</dd>
+<dt><strong>AxisError</strong><span class="classifier">if name present in output but no matching input</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.io_axis_indices">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">io_axis_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.io_axis_indices" title="Link to this definition">¶</a></dt>
+<dd><p>Return input and output axis index for id <cite>axis_id</cite> in <cite>coordmap</cite></p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>cm</strong><span class="classifier">class:<cite>AffineTransform</cite></span></dt><dd><p>Affine coordinate map instance</p>
+</dd>
+<dt><strong>axis_id</strong><span class="classifier">int or str</span></dt><dd><p>If int, gives index of <em>input</em> axis.  Can be negative, so that -2 refers
+to the second from last input axis. If str, gives name of input <em>or</em>
+output axis.   If <cite>axis_id</cite> is a str, it must be unambiguous - if the
+named axis exists in both input and output, and they do not correspond,
+raises a AxisError.  See Raises section for checks</p>
+</dd>
+<dt><strong>fix0: bool, optional</strong></dt><dd><p>Whether to fix potential 0 column / row in affine</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>in_index</strong><span class="classifier">None or int</span></dt><dd><p>index of input axis that corresponds to <cite>axis_id</cite></p>
+</dd>
+<dt><strong>out_index</strong><span class="classifier">None or int</span></dt><dd><p>index of output axis that corresponds to <cite>axis_id</cite></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>AxisError: if <cite>axis_id</cite> is a str and does not match any input or output</dt><dd><p>coordinate names.</p>
+</dd>
+<dt>AxisError: if the named <cite>axis_id</cite> exists in both input and output, and they</dt><dd><p>do not correspond.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">aff</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cmap</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">,</span> <span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="n">aff</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">io_axis_indices</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">(0, 1)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">io_axis_indices</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">(1, 0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">io_axis_indices</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">(2, 2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">io_axis_indices</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="s1">&#39;j&#39;</span><span class="p">)</span>
+<span class="go">(1, 0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">io_axis_indices</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">)</span>
+<span class="go">(0, 1)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.orth_axes">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">orth_axes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_zero</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.orth_axes" title="Link to this definition">¶</a></dt>
+<dd><p>True if <cite>in_ax</cite> related only to <cite>out_ax</cite> in <cite>affine</cite> and vice versa</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>in_ax</strong><span class="classifier">int</span></dt><dd><p>Input axis index</p>
+</dd>
+<dt><strong>out_ax</strong><span class="classifier">int</span></dt><dd><p>Output axis index</p>
+</dd>
+<dt><strong>affine</strong><span class="classifier">array-like</span></dt><dd><p>Affine transformation matrix</p>
+</dd>
+<dt><strong>allow_zero</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to allow zero in <code class="docutils literal notranslate"><span class="pre">affine[out_ax,</span> <span class="pre">in_ax]</span></code>.  This means that the
+two axes are not related, but nor is this pair related to any other
+part of the affine.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>tf</strong><span class="classifier">bool</span></dt><dd><p>True if in_ax, out_ax pair are orthogonal to the rest of <cite>affine</cite>,
+unless <cite>allow_zero</cite> is False, in which case require in addition that
+<code class="docutils literal notranslate"><span class="pre">affine[out_ax,</span> <span class="pre">in_ax]</span> <span class="pre">!=</span> <span class="pre">0</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">aff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">orth_axes</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">aff</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">orth_axes</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">aff</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.product">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">cmaps</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.product" title="Link to this definition">¶</a></dt>
+<dd><p>“topological” product of two or more mappings</p>
+<p>The mappings can be either AffineTransforms or CoordinateMaps.</p>
+<p>If they are all AffineTransforms, the result is an AffineTransform,
+else it is a CoordinateMap.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cmaps</strong><span class="classifier">sequence of CoordinateMaps or AffineTransforms</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>cmap</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">CoordinateMap</span></code></span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">inc1</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="o">.</span><span class="n">from_params</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inc2</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="o">.</span><span class="n">from_params</span><span class="p">(</span><span class="s1">&#39;j&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inc3</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="o">.</span><span class="n">from_params</span><span class="p">(</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cmap</span> <span class="o">=</span> <span class="n">product</span><span class="p">(</span><span class="n">inc1</span><span class="p">,</span> <span class="n">inc3</span><span class="p">,</span> <span class="n">inc2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cmap</span><span class="o">.</span><span class="n">function_domain</span><span class="o">.</span><span class="n">coord_names</span>
+<span class="go">(&#39;i&#39;, &#39;k&#39;, &#39;j&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cmap</span><span class="o">.</span><span class="n">function_range</span><span class="o">.</span><span class="n">coord_names</span>
+<span class="go">(&#39;x&#39;, &#39;z&#39;, &#39;y&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cmap</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[ 2.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  4.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  3.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  1.]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">A1</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="o">.</span><span class="n">from_params</span><span class="p">(</span><span class="s1">&#39;ij&#39;</span><span class="p">,</span> <span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">7</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A2</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="o">.</span><span class="n">from_params</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="s1">&#39;de&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">8</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">13</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]]))</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">A1</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[ 2.,  3.,  7.],</span>
+<span class="go">       [ 3.,  4.,  9.],</span>
+<span class="go">       [ 1.,  5.,  3.],</span>
+<span class="go">       [ 0.,  0.,  1.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A2</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[  8.,   6.,   7.,   4.],</span>
+<span class="go">       [  1.,  -1.,  13.,   3.],</span>
+<span class="go">       [  0.,   0.,   0.,   1.]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">=</span><span class="n">product</span><span class="p">(</span><span class="n">A1</span><span class="p">,</span> <span class="n">A2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[  2.,   3.,   0.,   0.,   0.,   7.],</span>
+<span class="go">       [  3.,   4.,   0.,   0.,   0.,   9.],</span>
+<span class="go">       [  1.,   5.,   0.,   0.,   0.,   3.],</span>
+<span class="go">       [  0.,   0.,   8.,   6.,   7.,   4.],</span>
+<span class="go">       [  0.,   0.,   1.,  -1.,  13.,   3.],</span>
+<span class="go">       [  0.,   0.,   0.,   0.,   0.,   1.]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">affine</span><span class="p">[:</span><span class="mi">3</span><span class="p">,:</span><span class="mi">2</span><span class="p">],</span> <span class="n">A1</span><span class="o">.</span><span class="n">affine</span><span class="p">[:</span><span class="mi">3</span><span class="p">,:</span><span class="mi">2</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">affine</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">A1</span><span class="o">.</span><span class="n">affine</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">affine</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="mi">5</span><span class="p">],</span> <span class="n">A2</span><span class="o">.</span><span class="n">affine</span><span class="p">[:</span><span class="mi">2</span><span class="p">,:</span><span class="mi">3</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">affine</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">A2</span><span class="o">.</span><span class="n">affine</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">A1</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+<span class="go">array([ 25.,  34.,  26.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A2</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+<span class="go">array([ 129.,   93.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+<span class="go">array([  25.,   34.,   26.,  129.,   93.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.renamed_domain">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">renamed_domain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.renamed_domain" title="Link to this definition">¶</a></dt>
+<dd><p>New coordmap with the coordinates of function_domain renamed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>newnames: dict</strong></dt><dd><p>A dictionary whose keys are integers or are in
+mapping.function_range.coord_names and whose values are the new
+names.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>newmapping</strong><span class="classifier">CoordinateMap or AffineTransform</span></dt><dd><p>A new mapping with renamed function_domain. If
+isinstance(mapping, AffineTransform), newmapping is also an
+AffineTransform. Otherwise, it is a CoordinateMap.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">affine_domain</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_range</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_mapping</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">affine_domain</span><span class="p">,</span> <span class="n">affine_range</span><span class="p">,</span> <span class="n">affine_matrix</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">new_affine_mapping</span> <span class="o">=</span> <span class="n">affine_mapping</span><span class="o">.</span><span class="n">renamed_domain</span><span class="p">({</span><span class="s1">&#39;i&#39;</span><span class="p">:</span><span class="s1">&#39;phase&#39;</span><span class="p">,</span><span class="s1">&#39;k&#39;</span><span class="p">:</span><span class="s1">&#39;freq&#39;</span><span class="p">,</span><span class="s1">&#39;j&#39;</span><span class="p">:</span><span class="s1">&#39;slice&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_affine_mapping</span><span class="o">.</span><span class="n">function_domain</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;phase&#39;, &#39;slice&#39;, &#39;freq&#39;), name=&#39;&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">new_affine_mapping</span> <span class="o">=</span> <span class="n">affine_mapping</span><span class="o">.</span><span class="n">renamed_domain</span><span class="p">({</span><span class="s1">&#39;i&#39;</span><span class="p">:</span><span class="s1">&#39;phase&#39;</span><span class="p">,</span><span class="s1">&#39;k&#39;</span><span class="p">:</span><span class="s1">&#39;freq&#39;</span><span class="p">,</span><span class="s1">&#39;l&#39;</span><span class="p">:</span><span class="s1">&#39;slice&#39;</span><span class="p">})</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">   </span><span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">no domain coordinate named l</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.renamed_range">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">renamed_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newnames</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.renamed_range" title="Link to this definition">¶</a></dt>
+<dd><p>New coordmap with the coordinates of function_range renamed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>newnames</strong><span class="classifier">dict</span></dt><dd><p>A dictionary whose keys are integers or in
+mapping.function_range.coord_names and whose values are the new
+names.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>newmapping</strong><span class="classifier">CoordinateMap or AffineTransform</span></dt><dd><p>A new CoordinateMap with the coordinates of function_range
+renamed.  If isinstance(mapping, AffineTransform), newmapping is
+also an AffineTransform. Otherwise, it is a CoordinateMap.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">affine_domain</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_range</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_mapping</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">affine_domain</span><span class="p">,</span> <span class="n">affine_range</span><span class="p">,</span> <span class="n">affine_matrix</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_affine_mapping</span> <span class="o">=</span> <span class="n">affine_mapping</span><span class="o">.</span><span class="n">renamed_range</span><span class="p">({</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="s1">&#39;u&#39;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_affine_mapping</span><span class="o">.</span><span class="n">function_range</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;u&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">new_affine_mapping</span> <span class="o">=</span> <span class="n">affine_mapping</span><span class="o">.</span><span class="n">renamed_range</span><span class="p">({</span><span class="s1">&#39;w&#39;</span><span class="p">:</span><span class="s1">&#39;u&#39;</span><span class="p">})</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">   </span><span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">no range coordinate named w</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.reordered_domain">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">reordered_domain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.reordered_domain" title="Link to this definition">¶</a></dt>
+<dd><p>New coordmap with the coordinates of function_domain reordered</p>
+<p>Default behaviour is to reverse the order of the coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>order: sequence</strong></dt><dd><p>Order to use, defaults to reverse. The elements can be integers,
+strings or 2-tuples of strings.  If they are strings, they should
+be in mapping.function_domain.coord_names.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>newmapping</strong><span class="classifier">CoordinateMap or AffineTransform</span></dt><dd><p>A new CoordinateMap with the coordinates of function_domain
+reordered.  If isinstance(mapping, AffineTransform), newmapping
+is also an AffineTransform. Otherwise, it is a CoordinateMap.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If no reordering is to be performed, it returns a copy of mapping.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">input_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">input_cs</span><span class="p">,</span> <span class="n">output_cs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">reordered_domain</span><span class="p">(</span><span class="s1">&#39;ikj&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">function_domain</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;i&#39;, &#39;k&#39;, &#39;j&#39;), name=&#39;&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.reordered_range">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">reordered_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.reordered_range" title="Link to this definition">¶</a></dt>
+<dd><p>New coordmap with the coordinates of function_range reordered</p>
+<p>Defaults to reversing the coordinates of function_range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>order: sequence</strong></dt><dd><p>Order to use, defaults to reverse. The elements can be integers,
+strings or 2-tuples of strings.  If they are strings, they should
+be in mapping.function_range.coord_names.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>newmapping</strong><span class="classifier">CoordinateMap or AffineTransform</span></dt><dd><p>A new CoordinateMap with the coordinates of function_range
+reordered.  If isinstance(mapping, AffineTransform), newmapping
+is also an AffineTransform. Otherwise, it is a CoordinateMap.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If no reordering is to be performed, it returns a copy of mapping.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">input_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">input_cs</span><span class="p">,</span> <span class="n">output_cs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">(</span><span class="s1">&#39;xzy&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">function_range</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;x&#39;, &#39;z&#39;, &#39;y&#39;), name=&#39;&#39;, coord_dtype=float64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cm</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">function_range</span><span class="o">.</span><span class="n">coord_names</span>
+<span class="go">(&#39;x&#39;, &#39;z&#39;, &#39;y&#39;)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">newcm</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">(</span><span class="s1">&#39;yzx&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newcm</span><span class="o">.</span><span class="n">function_range</span><span class="o">.</span><span class="n">coord_names</span>
+<span class="go">(&#39;y&#39;, &#39;z&#39;, &#39;x&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.shifted_domain_origin">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">shifted_domain_origin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">difference_vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_origin</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.shifted_domain_origin" title="Link to this definition">¶</a></dt>
+<dd><p>Shift the origin of the domain</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>difference_vector</strong><span class="classifier">array</span></dt><dd><p>Representing the difference shifted_origin-current_origin in the
+domain’s basis.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_transform</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">CS</span><span class="p">(</span><span class="s1">&#39;ijklm&#39;</span><span class="p">,</span> <span class="s1">&#39;oldorigin&#39;</span><span class="p">),</span> <span class="n">CS</span><span class="p">(</span><span class="s1">&#39;xyzt&#39;</span><span class="p">),</span> <span class="n">A</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_transform</span><span class="o">.</span><span class="n">function_domain</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;, &#39;m&#39;), name=&#39;oldorigin&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+<p>A random change of origin</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">difference</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The same affine transformation with a different origin for its domain</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">shifted_affine_transform</span> <span class="o">=</span> <span class="n">shifted_domain_origin</span><span class="p">(</span><span class="n">affine_transform</span><span class="p">,</span> <span class="n">difference</span><span class="p">,</span> <span class="s1">&#39;neworigin&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shifted_affine_transform</span><span class="o">.</span><span class="n">function_domain</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;, &#39;m&#39;), name=&#39;neworigin&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+<p>Let’s check that things work</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">point_in_old_basis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is the relation ship between coordinates in old and new origins</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">shifted_affine_transform</span><span class="p">(</span><span class="n">point_in_old_basis</span><span class="p">),</span> <span class="n">affine_transform</span><span class="p">(</span><span class="n">point_in_old_basis</span><span class="o">+</span><span class="n">difference</span><span class="p">))</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">shifted_affine_transform</span><span class="p">(</span><span class="n">point_in_old_basis</span><span class="o">-</span><span class="n">difference</span><span class="p">),</span> <span class="n">affine_transform</span><span class="p">(</span><span class="n">point_in_old_basis</span><span class="p">))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_map.shifted_range_origin">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_map.</span></span><span class="sig-name descname"><span class="pre">shifted_range_origin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">difference_vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_origin</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_map.shifted_range_origin" title="Link to this definition">¶</a></dt>
+<dd><p>Shift the origin of the range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>difference_vector</strong><span class="classifier">array</span></dt><dd><p>Representing the difference shifted_origin-current_origin in the
+range’s basis.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_transform</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">CS</span><span class="p">(</span><span class="s1">&#39;ijklm&#39;</span><span class="p">),</span> <span class="n">CS</span><span class="p">(</span><span class="s1">&#39;xyzt&#39;</span><span class="p">,</span> <span class="s1">&#39;oldorigin&#39;</span><span class="p">),</span> <span class="n">A</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine_transform</span><span class="o">.</span><span class="n">function_range</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;t&#39;), name=&#39;oldorigin&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+<p>Make a random shift of the origin in the range</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">difference</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shifted_affine_transform</span> <span class="o">=</span> <span class="n">shifted_range_origin</span><span class="p">(</span><span class="n">affine_transform</span><span class="p">,</span> <span class="n">difference</span><span class="p">,</span> <span class="s1">&#39;neworigin&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shifted_affine_transform</span><span class="o">.</span><span class="n">function_range</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;, &#39;t&#39;), name=&#39;neworigin&#39;, coord_dtype=float64)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>Evaluate the transform and verify it does as expected</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">point_in_domain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Check that things work</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">shifted_affine_transform</span><span class="p">(</span><span class="n">point_in_domain</span><span class="p">),</span> <span class="n">affine_transform</span><span class="p">(</span><span class="n">point_in_domain</span><span class="p">)</span> <span class="o">-</span> <span class="n">difference</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">shifted_affine_transform</span><span class="p">(</span><span class="n">point_in_domain</span><span class="p">)</span> <span class="o">+</span> <span class="n">difference</span><span class="p">,</span> <span class="n">affine_transform</span><span class="p">(</span><span class="n">point_in_domain</span><span class="p">))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">core.reference.coordinate_map</a><ul>
+<li><a class="reference internal" href="#module-core-reference-coordinate-map">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">core.reference.coordinate_map</span></code></a><ul>
+<li><a class="reference internal" href="#common-api">Common API</a></li>
+<li><a class="reference internal" href="#operations-on-mappings-module-level-functions">Operations on mappings (module level functions)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#affinetransform"><code class="xref py py-class docutils literal notranslate"><span class="pre">AffineTransform</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform"><code class="docutils literal notranslate"><span class="pre">AffineTransform</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.__init__"><code class="docutils literal notranslate"><span class="pre">AffineTransform.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.affine"><code class="docutils literal notranslate"><span class="pre">AffineTransform.affine</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.from_params"><code class="docutils literal notranslate"><span class="pre">AffineTransform.from_params()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.from_start_step"><code class="docutils literal notranslate"><span class="pre">AffineTransform.from_start_step()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.function_domain"><code class="docutils literal notranslate"><span class="pre">AffineTransform.function_domain</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.function_range"><code class="docutils literal notranslate"><span class="pre">AffineTransform.function_range</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.identity"><code class="docutils literal notranslate"><span class="pre">AffineTransform.identity()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.inverse"><code class="docutils literal notranslate"><span class="pre">AffineTransform.inverse()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.ndims"><code class="docutils literal notranslate"><span class="pre">AffineTransform.ndims</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.renamed_domain"><code class="docutils literal notranslate"><span class="pre">AffineTransform.renamed_domain()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.renamed_range"><code class="docutils literal notranslate"><span class="pre">AffineTransform.renamed_range()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.reordered_domain"><code class="docutils literal notranslate"><span class="pre">AffineTransform.reordered_domain()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.reordered_range"><code class="docutils literal notranslate"><span class="pre">AffineTransform.reordered_range()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AffineTransform.similar_to"><code class="docutils literal notranslate"><span class="pre">AffineTransform.similar_to()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#axiserror"><code class="xref py py-class docutils literal notranslate"><span class="pre">AxisError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AxisError"><code class="docutils literal notranslate"><span class="pre">AxisError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AxisError.__init__"><code class="docutils literal notranslate"><span class="pre">AxisError.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AxisError.args"><code class="docutils literal notranslate"><span class="pre">AxisError.args</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.AxisError.with_traceback"><code class="docutils literal notranslate"><span class="pre">AxisError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#coordmapmaker"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordMapMaker</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordMapMaker"><code class="docutils literal notranslate"><span class="pre">CoordMapMaker</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordMapMaker.__init__"><code class="docutils literal notranslate"><span class="pre">CoordMapMaker.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordMapMaker.affine_maker"><code class="docutils literal notranslate"><span class="pre">CoordMapMaker.affine_maker</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordMapMaker.generic_maker"><code class="docutils literal notranslate"><span class="pre">CoordMapMaker.generic_maker</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordMapMaker.make_affine"><code class="docutils literal notranslate"><span class="pre">CoordMapMaker.make_affine()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordMapMaker.make_cmap"><code class="docutils literal notranslate"><span class="pre">CoordMapMaker.make_cmap()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#coordmapmakererror"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordMapMakerError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordMapMakerError"><code class="docutils literal notranslate"><span class="pre">CoordMapMakerError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordMapMakerError.__init__"><code class="docutils literal notranslate"><span class="pre">CoordMapMakerError.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordMapMakerError.args"><code class="docutils literal notranslate"><span class="pre">CoordMapMakerError.args</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordMapMakerError.with_traceback"><code class="docutils literal notranslate"><span class="pre">CoordMapMakerError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#coordinatemap"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateMap</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap"><code class="docutils literal notranslate"><span class="pre">CoordinateMap</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.__init__"><code class="docutils literal notranslate"><span class="pre">CoordinateMap.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.function"><code class="docutils literal notranslate"><span class="pre">CoordinateMap.function</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.function_domain"><code class="docutils literal notranslate"><span class="pre">CoordinateMap.function_domain</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.function_range"><code class="docutils literal notranslate"><span class="pre">CoordinateMap.function_range</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.inverse"><code class="docutils literal notranslate"><span class="pre">CoordinateMap.inverse()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.inverse_function"><code class="docutils literal notranslate"><span class="pre">CoordinateMap.inverse_function</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.ndims"><code class="docutils literal notranslate"><span class="pre">CoordinateMap.ndims</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.renamed_domain"><code class="docutils literal notranslate"><span class="pre">CoordinateMap.renamed_domain()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.renamed_range"><code class="docutils literal notranslate"><span class="pre">CoordinateMap.renamed_range()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.reordered_domain"><code class="docutils literal notranslate"><span class="pre">CoordinateMap.reordered_domain()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.reordered_range"><code class="docutils literal notranslate"><span class="pre">CoordinateMap.reordered_range()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.CoordinateMap.similar_to"><code class="docutils literal notranslate"><span class="pre">CoordinateMap.similar_to()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.append_io_dim"><code class="docutils literal notranslate"><span class="pre">append_io_dim()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.axmap"><code class="docutils literal notranslate"><span class="pre">axmap()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.compose"><code class="docutils literal notranslate"><span class="pre">compose()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.drop_io_dim"><code class="docutils literal notranslate"><span class="pre">drop_io_dim()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.equivalent"><code class="docutils literal notranslate"><span class="pre">equivalent()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.input_axis_index"><code class="docutils literal notranslate"><span class="pre">input_axis_index()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.io_axis_indices"><code class="docutils literal notranslate"><span class="pre">io_axis_indices()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.orth_axes"><code class="docutils literal notranslate"><span class="pre">orth_axes()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.product"><code class="docutils literal notranslate"><span class="pre">product()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.renamed_domain"><code class="docutils literal notranslate"><span class="pre">renamed_domain()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.renamed_range"><code class="docutils literal notranslate"><span class="pre">renamed_range()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.reordered_domain"><code class="docutils literal notranslate"><span class="pre">reordered_domain()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.reordered_range"><code class="docutils literal notranslate"><span class="pre">reordered_range()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.shifted_domain_origin"><code class="docutils literal notranslate"><span class="pre">shifted_domain_origin()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_map.shifted_range_origin"><code class="docutils literal notranslate"><span class="pre">shifted_range_origin()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.core.reference.array_coords.html"
+                          title="previous chapter">core.reference.array_coords</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.core.reference.coordinate_system.html"
+                          title="next chapter">core.reference.coordinate_system</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.core.reference.coordinate_map.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.reference.coordinate_system.html" title="core.reference.coordinate_system"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.reference.array_coords.html" title="core.reference.array_coords"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+modalities.fmri.realfuncs
+=========================
+
+Module: :mod:`modalities.fmri.realfuncs`
+----------------------------------------
+.. automodule:: nipy.modalities.fmri.realfuncs
+
+.. currentmodule:: nipy.modalities.fmri.realfuncs
+
+Functions
+---------
+
+
+.. autofunction:: nipy.modalities.fmri.realfuncs.dct_ii_basis
+
+
+.. autofunction:: nipy.modalities.fmri.realfuncs.dct_ii_cut_basis
+

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Why we should be using BSD" href="../../faq/johns_bsd_pitch.html" />
+    <link rel="prev" title="Describing images" href="../images.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../faq/johns_bsd_pitch.html" title="Why we should be using BSD"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../images.html" title="Describing images"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="building-scipy-numpy-on-windows-with-optimized-numerical-libraries">
+<span id="windows-scipy-build"></span><h1>Building Scipy/Numpy on Windows with Optimized Numerical Libraries<a class="headerlink" href="#building-scipy-numpy-on-windows-with-optimized-numerical-libraries" title="Link to this heading">¶</a></h1>
+<p>This involves compiling several libraries (ATLAS, LAPACK, FFTW and
+UMFPACK) and then building <a class="reference external" href="http://www.scipy.org/Developer_Zone">numpy</a> and <a class="reference external" href="http://www.scipy.org/Developer_Zone">scipy</a> from SVN source. But as with
+most things Windows, this turns out to be a slightly tricky affair.</p>
+<p>The following has been tested on Windows Vista Enterprise 32bit only,
+but should theoretically work on other Windows platforms. It also used
+Python 2.5.</p>
+<p>Ideally, a big chunk of this page should move to the scipy/numpy
+site. And also ideally should become a single script. But it’s also
+good to know exactly how you got there.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>You need Windows Vista enterprise/ultimate with <a class="reference external" href="http://www.microsoft.com/downloads/details.aspx?FamilyID=93ff2201-325e-487f-a398-efde5758c47f&amp;DisplayLang=en">SUA</a>
+enabled and installed or Windows (others, including other Vista
+variants) with <a class="reference external" href="http://cygwin.redhat.com">Cygwin</a> installed. You
+cannot install the SUA package on a non enterprise or ultimate Vista
+edition.</p></li>
+<li><p>MinGW (<a class="reference external" href="http://downloads.sourceforge.net/mingw/MinGW-5.1.3.exe?modtime=1168794334&amp;big_mirror=1">installer</a>)
+with gcc 3.4.5 (choose the candidate option when installing) and the
+<a class="reference external" href="http://downloads.sourceforge.net/mingw/msysCORE-1.0.11-2007.01.19-1.tar.bz2?modtime=1169236772&amp;big_mirror=1">msys</a>
+environment installed. You will need to download the following
+packages for msys:</p>
+<ul>
+<li><p>bzip2-1.0.3-MSYS-1.0.11-snapshot.tar.bz2</p></li>
+<li><p>coreutils-5.97-MSYS-1.0.11-snapshot.tar.bz2</p></li>
+<li><p>diffutils-2.8.7-MSYS-1.0.11-snapshot.tar.bz2</p></li>
+<li><p>gawk-3.1.5-MSYS-1.0.11-snapshot.tar.bz2</p></li>
+<li><p>make-3.81-MSYS-1.0.11-snapshot.tar.bz2</p></li>
+<li><p>msysCORE-1.0.11-2007.01.19-1.tar.bz2</p></li>
+<li><p>binutils-2.17.50-20070129-1.tar.gz</p></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<div><p>Just unpack all the package contents in a single directory and copy
+them over to the MinGW installation directory. You may want to add
+the following to the system path:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">PATH</span><span class="o">=</span><span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">MinGW</span><span class="p">;[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">MinGW</span>\<span class="n">libexec</span>\<span class="n">gcc</span>\<span class="n">mingw32</span>\<span class="mf">3.4.5</span><span class="p">;</span><span class="o">%</span><span class="n">PATH</span><span class="o">%</span>
+</pre></div>
+</div>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Numerical Libraries</dt><dd><ul>
+<li><p><a class="reference external" href="https://sourceforge.net/project/showfiles.php?group_id=23725">ATLAS latest developer version</a></p></li>
+<li><p>LAPACK <a class="reference external" href="http://www.netlib.org/lapack/">lapack 3.1 scroll down to Available software</a></p></li>
+<li><p>FFTW  <a class="reference external" href="http://www.fftw.org/download.html">fftw-3.1.2</a></p></li>
+<li><p>UMFPACK <a class="reference external" href="http://www.cise.ufl.edu/research/sparse/umfpack/">download UMFPACK, UFConfig, AMD</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<ul>
+<li><p>Create a directory called BUILDS, BUILDS/lib, BUILDS/include</p></li>
+<li><p>Unpack all the numerical library files in BUILDS</p></li>
+<li><p>Create subversion check out directories for scipy and numpy in BUILDS</p></li>
+<li><p>Start SUA c-shell or cygwin shell</p></li>
+<li><p>Start msys.bat:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>PATH=/mingw/libexec/gcc/mingw32/3.4.5:$PATH; export PATH
+</pre></div>
+</div>
+</li>
+<li><p>Change directory to location of BUILDS. (/dev/fs/driveletter/… in SUA, /cygdrive/driveletter/… in cygwin, /driveletter/… in msys)</p></li>
+</ul>
+<section id="compiling-atlas">
+<h3>Compiling ATLAS<a class="headerlink" href="#compiling-atlas" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>This is done in the SUA/Cygwin shell. In Cygwin you probably want to
+follow the instructions at <a class="reference external" href="http://www.scipy.org/Installing_SciPy/Windows">Installing Scipy on Windows</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">ATLAS;</span> <span class="pre">mkdir</span> <span class="pre">build;</span> <span class="pre">cd</span> <span class="pre">build</span></code></p></li>
+<li><p>Run <cite>../configure</cite> (This will probably fail but will leave you with xconfig)</p></li>
+<li><p>Run <cite>./xconfig –help</cite> (to see all options)</p></li>
+<li><p>Run <cite>../configure -O 8 -A 16 -m 3189 -b 32</cite> (replacing the values with your machine configuration)</p></li>
+<li><p>Edit Make.inc to provide correct L2SIZE</p></li>
+<li><p>Run <cite>make</cite> (leave your computer and go do something else for about an hour)</p></li>
+</ul>
+</section>
+<section id="compiling-lapack">
+<h3>Compiling LAPACK<a class="headerlink" href="#compiling-lapack" title="Link to this heading">¶</a></h3>
+<ul>
+<li><p>This is done in the msys shell</p></li>
+<li><p><cite>cd lapack_XX</cite></p></li>
+<li><p>Copy make.inc.example to make.inc</p></li>
+<li><p>Edit the following lines in make.inc:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PLAT</span> <span class="o">=</span> <span class="n">_NT</span>
+<span class="n">OPTS</span> <span class="o">=</span> <span class="o">-</span><span class="n">funroll</span><span class="o">-</span><span class="nb">all</span><span class="o">-</span><span class="n">loops</span> <span class="o">-</span><span class="n">O3</span> <span class="o">-</span><span class="n">malign</span><span class="o">-</span><span class="n">double</span> <span class="o">-</span><span class="n">msse2</span>
+<span class="n">BLASLIB</span>      <span class="o">=</span> <span class="o">-</span><span class="n">L</span><span class="o">/</span><span class="n">driveletter</span><span class="o">/</span><span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span><span class="o">/</span><span class="n">BUILDS</span><span class="o">/</span><span class="n">ATLAS</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">lib</span> <span class="o">-</span><span class="n">lf77blas</span> <span class="o">-</span><span class="n">latlas</span>
+</pre></div>
+</div>
+</li>
+<li><p>Run <cite>make lib</cite></p></li>
+</ul>
+</section>
+<section id="combining-lapack-and-atlas">
+<h3>Combining LAPACK and ATLAS<a class="headerlink" href="#combining-lapack-and-atlas" title="Link to this heading">¶</a></h3>
+<ul>
+<li><p>Stay in the msys shell after compiling LAPACK</p></li>
+<li><p>Go to the ATLAS/build/lib directory</p></li>
+<li><p>Execute the following commands:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="n">tmp</span><span class="p">;</span> <span class="n">cd</span> <span class="n">tmp</span>
+<span class="n">cp</span> <span class="o">../</span><span class="n">liblapack</span><span class="o">.</span><span class="n">a</span> <span class="o">../</span><span class="n">liblapack_ATLAS</span><span class="o">.</span><span class="n">a</span>
+<span class="n">ar</span> <span class="o">-</span><span class="n">x</span> <span class="o">../</span><span class="n">liblapack</span><span class="o">.</span><span class="n">a</span>
+<span class="n">cp</span> <span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span><span class="o">/</span><span class="n">lapack_NT</span><span class="o">.</span><span class="n">a</span> <span class="o">../</span><span class="n">liblapack</span><span class="o">.</span><span class="n">a</span>
+<span class="n">ar</span> <span class="o">-</span><span class="n">r</span> <span class="o">../</span><span class="n">liblapack</span><span class="o">.</span><span class="n">a</span> <span class="o">*.</span><span class="n">o</span>
+<span class="n">rm</span> <span class="o">*.</span><span class="n">o</span>
+<span class="n">ar</span> <span class="o">-</span><span class="n">x</span> <span class="o">../</span><span class="n">liblapack</span><span class="o">.</span><span class="n">a</span> <span class="n">xerbla</span><span class="o">.</span><span class="n">o</span>
+<span class="n">ar</span> <span class="o">-</span><span class="n">r</span> <span class="o">../</span><span class="n">libf77blas</span><span class="o">.</span><span class="n">a</span> <span class="n">xerbla</span><span class="o">.</span><span class="n">o</span>
+</pre></div>
+</div>
+</li>
+<li><p>Copy liblapack.a, libf77blas.a, libcblas.a, libatlas.a to BUILDS/lib</p></li>
+<li><p>Copy the ATLAS/include to BUILDS/include/ATLAS</p></li>
+</ul>
+</section>
+<section id="compiling-umfpack">
+<h3>Compiling UMFPACK<a class="headerlink" href="#compiling-umfpack" title="Link to this heading">¶</a></h3>
+<ul>
+<li><p>Stay in msys shell</p></li>
+<li><p>Goto UFconfig</p></li>
+<li><p>Edit UFConfig/UFconfig.mk:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">BLAS</span>   <span class="o">=</span> <span class="o">-</span><span class="n">L</span><span class="o">/</span><span class="n">driveletter</span><span class="o">/</span><span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span><span class="o">/</span><span class="n">BUILDS</span><span class="o">/</span><span class="n">lib</span> <span class="o">-</span><span class="n">llapack</span> <span class="o">-</span><span class="n">lf77blas</span> <span class="o">-</span><span class="n">lcblas</span> <span class="o">-</span><span class="n">latlas</span> <span class="o">-</span><span class="n">lg2c</span>
+<span class="n">LAPACK</span> <span class="o">=</span> <span class="o">-</span><span class="n">L</span><span class="o">/</span><span class="n">driveletter</span><span class="o">/</span><span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span><span class="o">/</span><span class="n">BUILDS</span><span class="o">/</span><span class="n">lib</span> <span class="o">-</span><span class="n">llapack</span> <span class="o">-</span><span class="n">lf77blas</span> <span class="o">-</span><span class="n">lcblas</span> <span class="o">-</span><span class="n">latlas</span> <span class="o">-</span><span class="n">lg2c</span>
+<span class="n">XERBLA</span> <span class="o">=</span>
+</pre></div>
+</div>
+</li>
+<li><p>Run the following commands:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">..</span>\<span class="n">AMD</span>
+<span class="n">make</span>
+<span class="n">cd</span> <span class="o">..</span>\<span class="n">UMFPACK</span>
+<span class="n">make</span>
+</pre></div>
+</div>
+</li>
+<li><p>Copy libamd.a (from AMD), libumfpack.a (from UMFPACK) to BUILDS/lib</p></li>
+<li><p>Copy UMFPACK/include to BUILDS/include/UMFPACK</p></li>
+<li><p>Copy UFconfig/ufconfig.h to BUILDS/include</p></li>
+<li><p>Copy AMD/include/amd.h to BUILDS/include</p></li>
+</ul>
+</section>
+<section id="compiling-fftw">
+<h3>Compiling fftw<a class="headerlink" href="#compiling-fftw" title="Link to this heading">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The latest versions of scipy do not link to FFTW, so this step is
+no longer useful for scipy</p>
+</div>
+<ul>
+<li><p>Stay in msys shell</p></li>
+<li><p>Goto fftw_XX</p></li>
+<li><p><cite>mkdir build; cd build</cite></p></li>
+<li><p>Run the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">../</span><span class="n">configure</span> <span class="o">--</span><span class="n">prefix</span><span class="o">=/</span><span class="n">c</span><span class="o">/</span><span class="n">DOWNLOADS</span><span class="o">/</span><span class="n">BUILDS</span><span class="o">/</span> <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">sse2</span> <span class="o">--</span><span class="n">disable</span><span class="o">-</span><span class="n">dependency</span><span class="o">-</span><span class="n">tracking</span> <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">threads</span> <span class="o">--</span><span class="k">with</span><span class="o">-</span><span class="n">our</span><span class="o">-</span><span class="n">malloc16</span> <span class="o">--</span><span class="k">with</span><span class="o">-</span><span class="n">windows</span><span class="o">-</span><span class="n">f77</span><span class="o">-</span><span class="n">mangling</span> <span class="o">--</span><span class="k">with</span><span class="o">-</span><span class="n">combined</span><span class="o">-</span><span class="n">threads</span>
+</pre></div>
+</div>
+</li>
+<li><p>Run <cite>make</cite> OR <cite>make -j 4</cite> if you have multiple processors (it’ll make things go faster. This build on msys in vista takes a while)</p></li>
+<li><p>Copy <cite>.libs/libfftw3.a</cite> to BUILDS/lib</p></li>
+<li><p>Copy fftw_XX/api/fftw3.h to BUILDS/include</p></li>
+</ul>
+</section>
+<section id="compiling-numpy-scipy">
+<h3>Compiling numpy/scipy<a class="headerlink" href="#compiling-numpy-scipy" title="Link to this heading">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As above, note that the FFTW linking here is no longer useful for
+the scipy install</p>
+</div>
+<ul>
+<li><p>Open a Windows cmd window and make sure you can execute python.</p></li>
+<li><p>Make a copy of each of the libs in BUILDS/lib and rename them from libname.a to name.lib</p></li>
+<li><p>Rename lapack.lib to flapack.lib</p></li>
+<li><p>rename site.cfg.example to site.cfg</p></li>
+<li><p>Edit site.cfg in the numpy directory. Replace the blas_opt and lapack_opt section with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">atlas</span><span class="p">]</span>
+<span class="n">libraries</span> <span class="o">=</span> <span class="n">f77blas</span><span class="p">,</span> <span class="n">cblas</span><span class="p">,</span> <span class="n">atlas</span><span class="p">,</span> <span class="n">g2c</span>
+<span class="n">library_dirs</span> <span class="o">=</span> <span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">MinGW</span>\<span class="n">lib</span><span class="p">;</span><span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">BUILDS</span>\<span class="n">lib</span>
+<span class="n">include_dirs</span> <span class="o">=</span> <span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">BUILDS</span>\<span class="n">include</span>\<span class="n">ATLAS</span>
+
+<span class="p">[</span><span class="n">lapack</span><span class="p">]</span>
+<span class="n">libraries</span> <span class="o">=</span> <span class="n">flapack</span><span class="p">,</span> <span class="n">f77blas</span><span class="p">,</span> <span class="n">cblas</span><span class="p">,</span> <span class="n">atlas</span>
+<span class="n">library_dirs</span> <span class="o">=</span> <span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">MinGW</span>\<span class="n">lib</span><span class="p">;</span><span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">BUILDS</span>\<span class="n">lib</span>
+
+<span class="p">[</span><span class="n">amd</span><span class="p">]</span>
+<span class="n">library_dirs</span> <span class="o">=</span> <span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">MinGW</span>\<span class="n">lib</span><span class="p">;</span><span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">BUILDS</span>\<span class="n">lib</span>
+<span class="n">include_dirs</span> <span class="o">=</span> <span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">BUILDS</span>\<span class="n">include</span>
+<span class="n">libraries</span> <span class="o">=</span> <span class="n">amd</span>
+
+<span class="p">[</span><span class="n">umfpack</span><span class="p">]</span>
+<span class="n">library_dirs</span> <span class="o">=</span> <span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">MinGW</span>\<span class="n">lib</span><span class="p">;</span><span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">BUILDS</span>\<span class="n">lib</span>
+<span class="n">include_dirs</span> <span class="o">=</span> <span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">BUILDS</span>\<span class="n">include</span>\<span class="n">UMFPACK</span>
+<span class="n">libraries</span> <span class="o">=</span> <span class="n">umfpack</span>
+
+<span class="p">[</span><span class="n">fftw3</span><span class="p">]</span>
+<span class="n">library_dirs</span> <span class="o">=</span> <span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">MinGW</span>\<span class="n">lib</span><span class="p">;</span><span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">BUILDS</span>\<span class="n">lib</span>
+<span class="n">include_dirs</span> <span class="o">=</span> <span class="n">driveletter</span><span class="p">:</span>\<span class="p">[</span><span class="n">PATH</span> <span class="n">TO</span><span class="p">]</span>\<span class="n">BUILDS</span>\<span class="n">include</span>
+<span class="n">libraries</span> <span class="o">=</span> <span class="n">fftw3</span>
+</pre></div>
+</div>
+</li>
+<li><p>Edit numpy/distutils/fcompiler/gnu.py. Find the line that says <cite>opt.append(‘gcc’)</cite> and comment it <cite># opt.append(‘gcc’)</cite>. This is probably a Vista SUA thing and perhaps won’t be required when using Cygwin to compile ATLAS.</p></li>
+<li><p>Copy site.cfg to ../scipy/site.cfg</p></li>
+<li><p>Compile numpy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">numpy</span>
+<span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">config</span> <span class="o">--</span><span class="n">compiler</span><span class="o">=</span><span class="n">mingw32</span> <span class="n">build</span> <span class="o">--</span><span class="n">compiler</span><span class="o">=</span><span class="n">mingw32</span> <span class="n">bdist_wininst</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install numpy from the numpy/dist folder</p></li>
+<li><p>Compile scipy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">scipy</span>
+<span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">config</span> <span class="o">--</span><span class="n">compiler</span><span class="o">=</span><span class="n">mingw32</span> <span class="n">build</span> <span class="o">--</span><span class="n">compiler</span><span class="o">=</span><span class="n">mingw32</span> <span class="n">bdist_wininst</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install scipy from the scipy/dist folder</p></li>
+<li><p>Test installations. In python run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+<span class="n">numpy</span><span class="o">.</span><span class="n">test</span><span class="p">()</span>
+<span class="n">scipy</span><span class="o">.</span><span class="n">test</span><span class="p">()</span>
+<span class="n">numpy</span><span class="o">.</span><span class="n">show_config</span><span class="p">()</span>
+<span class="n">scipy</span><span class="o">.</span><span class="n">show_config</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Building Scipy/Numpy on Windows with Optimized Numerical Libraries</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#installation">Installation</a><ul>
+<li><a class="reference internal" href="#compiling-atlas">Compiling ATLAS</a></li>
+<li><a class="reference internal" href="#compiling-lapack">Compiling LAPACK</a></li>
+<li><a class="reference internal" href="#combining-lapack-and-atlas">Combining LAPACK and ATLAS</a></li>
+<li><a class="reference internal" href="#compiling-umfpack">Compiling UMFPACK</a></li>
+<li><a class="reference internal" href="#compiling-fftw">Compiling fftw</a></li>
+<li><a class="reference internal" href="#compiling-numpy-scipy">Compiling numpy/scipy</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../images.html"
+                          title="previous chapter">Describing images</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../../faq/johns_bsd_pitch.html"
+                          title="next chapter">Why we should be using BSD</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/devel/install/windows_scipy_build.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../faq/johns_bsd_pitch.html" title="Why we should be using BSD"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../images.html" title="Describing images"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

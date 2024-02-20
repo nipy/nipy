@@ -1,0 +1,6 @@
+﻿nipy.labs.utils.mask.compute\_mask\_sessions
+============================================
+
+.. currentmodule:: nipy.labs.utils.mask
+
+.. autofunction:: compute_mask_sessions

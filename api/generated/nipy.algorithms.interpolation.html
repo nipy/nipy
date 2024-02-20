@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.kernel_smooth" href="nipy.algorithms.kernel_smooth.html" />
+    <link rel="prev" title="algorithms.group.parcel_analysis" href="nipy.algorithms.group.parcel_analysis.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.kernel_smooth.html" title="algorithms.kernel_smooth"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.group.parcel_analysis.html" title="algorithms.group.parcel_analysis"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-interpolation">
+<h1>algorithms.interpolation<a class="headerlink" href="#algorithms-interpolation" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-interpolation">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.interpolation</span></code><a class="headerlink" href="#module-algorithms-interpolation" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.interpolation</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-d749c2faa4794ebb5685559ee115de453cfe9d63.png" alt="Inheritance diagram of nipy.algorithms.interpolation" usemap="#inheritance9adb4a8c3e" class="inheritance graphviz" /></div>
+<map id="inheritance9adb4a8c3e" name="inheritance9adb4a8c3e">
+<area shape="rect" id="node1" href="#nipy.algorithms.interpolation.ImageInterpolator" target="_top" title="Interpolate Image instance at arbitrary points in world space" alt="" coords="5,5,266,32"/>
+</map><p id="module-nipy.algorithms.interpolation">Image interpolators using ndimage.</p>
+</section>
+<section id="imageinterpolator">
+<h2><a class="reference internal" href="#nipy.algorithms.interpolation.ImageInterpolator" title="nipy.algorithms.interpolation.ImageInterpolator"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageInterpolator</span></code></a><a class="headerlink" href="#imageinterpolator" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.interpolation.ImageInterpolator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.interpolation.</span></span><span class="sig-name descname"><span class="pre">ImageInterpolator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'constant'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.interpolation.ImageInterpolator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Interpolate Image instance at arbitrary points in world space</p>
+<p>The resampling is done with <code class="docutils literal notranslate"><span class="pre">scipy.ndimage</span></code>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.interpolation.ImageInterpolator.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'constant'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.interpolation.ImageInterpolator.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image</strong><span class="classifier">Image</span></dt><dd><p>Image to be interpolated.</p>
+</dd>
+<dt><strong>order</strong><span class="classifier">int, optional</span></dt><dd><p>order of spline interpolation as used in <code class="docutils literal notranslate"><span class="pre">scipy.ndimage</span></code>.
+Default is 3.</p>
+</dd>
+<dt><strong>mode</strong><span class="classifier">str, optional</span></dt><dd><p>Points outside the boundaries of the input are filled according to
+the given mode (‘constant’, ‘nearest’, ‘reflect’ or ‘wrap’). Default
+is ‘constant’.</p>
+</dd>
+<dt><strong>cval</strong><span class="classifier">scalar, optional</span></dt><dd><p>Value used for points outside the boundaries of the input if
+mode=’constant’. Default is 0.0.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.interpolation.ImageInterpolator.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.interpolation.ImageInterpolator.evaluate" title="Link to this definition">¶</a></dt>
+<dd><p>Resample image at points in world space</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>points</strong><span class="classifier">array</span></dt><dd><p>values in self.image.coordmap.output_coords.  Each row is a point.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>V</strong><span class="classifier">ndarray</span></dt><dd><p>interpolator of self.image evaluated at points</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.interpolation.ImageInterpolator.mode">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mode</span></span><a class="headerlink" href="#nipy.algorithms.interpolation.ImageInterpolator.mode" title="Link to this definition">¶</a></dt>
+<dd><p>Mode is read-only</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.interpolation.ImageInterpolator.n_prepad_if_needed">
+<span class="sig-name descname"><span class="pre">n_prepad_if_needed</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">12</span></em><a class="headerlink" href="#nipy.algorithms.interpolation.ImageInterpolator.n_prepad_if_needed" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.interpolation.ImageInterpolator.order">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">order</span></span><a class="headerlink" href="#nipy.algorithms.interpolation.ImageInterpolator.order" title="Link to this definition">¶</a></dt>
+<dd><p>Order is read-only</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.interpolation</a><ul>
+<li><a class="reference internal" href="#module-algorithms-interpolation">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.interpolation</span></code></a></li>
+<li><a class="reference internal" href="#imageinterpolator"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageInterpolator</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.interpolation.ImageInterpolator"><code class="docutils literal notranslate"><span class="pre">ImageInterpolator</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.interpolation.ImageInterpolator.__init__"><code class="docutils literal notranslate"><span class="pre">ImageInterpolator.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.interpolation.ImageInterpolator.evaluate"><code class="docutils literal notranslate"><span class="pre">ImageInterpolator.evaluate()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.interpolation.ImageInterpolator.mode"><code class="docutils literal notranslate"><span class="pre">ImageInterpolator.mode</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.interpolation.ImageInterpolator.n_prepad_if_needed"><code class="docutils literal notranslate"><span class="pre">ImageInterpolator.n_prepad_if_needed</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.interpolation.ImageInterpolator.order"><code class="docutils literal notranslate"><span class="pre">ImageInterpolator.order</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.group.parcel_analysis.html"
+                          title="previous chapter">algorithms.group.parcel_analysis</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.kernel_smooth.html"
+                          title="next chapter">algorithms.kernel_smooth</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.interpolation.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.kernel_smooth.html" title="algorithms.kernel_smooth"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.group.parcel_analysis.html" title="algorithms.group.parcel_analysis"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

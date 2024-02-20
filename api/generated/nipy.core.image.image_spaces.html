@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="core.reference.array_coords" href="nipy.core.reference.array_coords.html" />
+    <link rel="prev" title="core.image.image_list" href="nipy.core.image.image_list.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.reference.array_coords.html" title="core.reference.array_coords"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.image.image_list.html" title="core.image.image_list"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="core-image-image-spaces">
+<h1>core.image.image_spaces<a class="headerlink" href="#core-image-image-spaces" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.core.image.image_spaces">
+<span id="module-core-image-image-spaces"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">core.image.image_spaces</span></code><a class="headerlink" href="#module-nipy.core.image.image_spaces" title="Link to this heading">¶</a></h2>
+<p>Utilities for working with Images and common neuroimaging spaces</p>
+<p>Images are very general things, and don’t know anything about the kinds of
+spaces they refer to, via their coordinate map.</p>
+<p>There are a set of common neuroimaging spaces.  When we create neuroimaging
+Images, we want to place them in neuroimaging spaces, and return information
+about common neuroimaging spaces.</p>
+<p>We do this by putting information about neuroimaging spaces in functions and
+variables in the <code class="docutils literal notranslate"><span class="pre">nipy.core.reference.spaces</span></code> module, and in this module.</p>
+<p>This keeps the specific neuroimaging spaces out of our Image object.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.api</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">vox2mni</span><span class="p">,</span> <span class="n">rollimg</span><span class="p">,</span> <span class="n">xyz_affine</span><span class="p">,</span> <span class="n">as_xyz_image</span>
+</pre></div>
+</div>
+<p>Make a standard 4D xyzt image in MNI space.</p>
+<p>First the data and affine:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">affine</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can add the TR (==2.0) to make the full 5x5 affine we need</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">vox2mni</span><span class="p">(</span><span class="n">affine</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[ 2.,  0.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  3.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  4.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  2.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  0.,  1.]])</span>
+</pre></div>
+</div>
+<p>In this case the neuroimaging ‘xyz_affine’ is just the 4x4 from the 5x5 in the image</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">xyz_affine</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="go">array([[ 2.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  3.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  4.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  1.]])</span>
+</pre></div>
+</div>
+<p>However, if we roll time first in the image array, we can’t any longer get an
+xyz_affine that makes sense in relationship to the voxel data:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img_t0</span> <span class="o">=</span> <span class="n">rollimg</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xyz_affine</span><span class="p">(</span><span class="n">img_t0</span><span class="p">)</span> 
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="gr">AxesError</span>: <span class="n">First 3 input axes must correspond to X, Y, Z</span>
+</pre></div>
+</div>
+<p>But we can fix this:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img_t0_affable</span> <span class="o">=</span> <span class="n">as_xyz_image</span><span class="p">(</span><span class="n">img_t0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xyz_affine</span><span class="p">(</span><span class="n">img_t0_affable</span><span class="p">)</span>
+<span class="go">array([[ 2.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  3.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  4.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  1.]])</span>
+</pre></div>
+</div>
+<p>It also works with nibabel images, which can only have xyz_affines:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nibabel</span> <span class="k">as</span> <span class="nn">nib</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nimg</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">affine</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xyz_affine</span><span class="p">(</span><span class="n">nimg</span><span class="p">)</span>
+<span class="go">array([[ 2.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  3.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  4.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  1.]])</span>
+</pre></div>
+</div>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.image.image_spaces.as_xyz_image">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.image.image_spaces.</span></span><span class="sig-name descname"><span class="pre">as_xyz_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name2xyz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.image.image_spaces.as_xyz_image" title="Link to this definition">¶</a></dt>
+<dd><p>Return version of <cite>img</cite> that has a valid xyz affine, or raise error</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>img</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code> instance or nibabel image</span></dt><dd><p>It has a <code class="docutils literal notranslate"><span class="pre">coordmap</span></code> attribute (<code class="docutils literal notranslate"><span class="pre">Image</span></code>) or a <code class="docutils literal notranslate"><span class="pre">get_affine</span></code> method
+(nibabel image object)</p>
+</dd>
+<dt><strong>name2xyz</strong><span class="classifier">None or mapping</span></dt><dd><p>Object such that <code class="docutils literal notranslate"><span class="pre">name2xyz[ax_name]</span></code> returns ‘x’, or ‘y’ or ‘z’ or
+raises a KeyError for a str <code class="docutils literal notranslate"><span class="pre">ax_name</span></code>.  None means use module default.
+Not used for nibabel <cite>img</cite> input.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>reo_img</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code> instance or nibabel image</span></dt><dd><p>Returns image of same type as <cite>img</cite> input. If necessary, <cite>reo_img</cite> has
+its data and coordmap changed to allow it to return an xyz affine.  If
+<cite>img</cite> is already xyz affable we return the input unchanged (<code class="docutils literal notranslate"><span class="pre">img</span> <span class="pre">is</span>
+<span class="pre">reo_img</span></code>).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>SpaceTypeError</strong><span class="classifier">if <cite>img</cite> does not have an affine coordinate map</span></dt><dd></dd>
+<dt><strong>AxesError</strong><span class="classifier">if not all of x, y, z recognized in <cite>img</cite> <code class="docutils literal notranslate"><span class="pre">coordmap</span></code> range</span></dt><dd></dd>
+<dt><strong>AffineError</strong><span class="classifier">if axes dropped from the affine contribute to x, y, z</span></dt><dd></dd>
+<dt>coordinates</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.image.image_spaces.is_xyz_affable">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.image.image_spaces.</span></span><span class="sig-name descname"><span class="pre">is_xyz_affable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name2xyz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.image.image_spaces.is_xyz_affable" title="Link to this definition">¶</a></dt>
+<dd><p>Return True if the image <cite>img</cite> has an xyz affine</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>img</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code> or nibabel <code class="docutils literal notranslate"><span class="pre">SpatialImage</span></code></span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">Image</span></code> test <code class="docutils literal notranslate"><span class="pre">img.coordmap</span></code>.  If a nibabel image, return True</p>
+</dd>
+<dt><strong>name2xyz</strong><span class="classifier">None or mapping</span></dt><dd><p>Object such that <code class="docutils literal notranslate"><span class="pre">name2xyz[ax_name]</span></code> returns ‘x’, or ‘y’ or ‘z’ or
+raises a KeyError for a str <code class="docutils literal notranslate"><span class="pre">ax_name</span></code>.  None means use module default.
+Not used for nibabel <cite>img</cite> input.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>tf</strong><span class="classifier">bool</span></dt><dd><p>True if <cite>img</cite> has an xyz affine, False otherwise</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.api</span> <span class="kn">import</span> <span class="n">vox2mni</span><span class="p">,</span> <span class="n">Image</span><span class="p">,</span> <span class="n">rollimg</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">vox2mni</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">])))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">coordmap</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;), name=&#39;voxels&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;mni-x=L-&gt;R&#39;, &#39;mni-y=P-&gt;A&#39;, &#39;mni-z=I-&gt;S&#39;, &#39;t&#39;), name=&#39;mni&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[ 2.,  0.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  3.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  4.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  5.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  0.,  1.]])</span>
+<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_xyz_affable</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">time0_img</span> <span class="o">=</span> <span class="n">rollimg</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">time0_img</span><span class="o">.</span><span class="n">coordmap</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;l&#39;, &#39;i&#39;, &#39;j&#39;, &#39;k&#39;), name=&#39;voxels&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;mni-x=L-&gt;R&#39;, &#39;mni-y=P-&gt;A&#39;, &#39;mni-z=I-&gt;S&#39;, &#39;t&#39;), name=&#39;mni&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[ 0.,  2.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  3.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  4.,  0.],</span>
+<span class="go">                 [ 5.,  0.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  0.,  1.]])</span>
+<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_xyz_affable</span><span class="p">(</span><span class="n">time0_img</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>Nibabel images always have xyz affines</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nibabel</span> <span class="k">as</span> <span class="nn">nib</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nimg</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_xyz_affable</span><span class="p">(</span><span class="n">nimg</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.image.image_spaces.make_xyz_image">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.image.image_spaces.</span></span><span class="sig-name descname"><span class="pre">make_xyz_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyz_affine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.image.image_spaces.make_xyz_image" title="Link to this definition">¶</a></dt>
+<dd><p>Create 3D+ image embedded in space named in <cite>world</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">object</span></dt><dd><p>Object returning array from <code class="docutils literal notranslate"><span class="pre">np.asarray(obj)</span></code>, and having <code class="docutils literal notranslate"><span class="pre">shape</span></code>
+attribute.  Should have at least 3 dimensions (<code class="docutils literal notranslate"><span class="pre">len(shape)</span> <span class="pre">&gt;=</span> <span class="pre">3</span></code>), and
+these three first 3 dimensions should be spatial</p>
+</dd>
+<dt><strong>xyz_affine</strong><span class="classifier">(4, 4) array-like or tuple</span></dt><dd><p>if (4, 4) array-like (the usual case), then an affine relating spatial
+dimensions in data (dimensions 0:3) to mm in XYZ space given in <cite>world</cite>.
+If a tuple, then contains two values: the (4, 4) array-like, and a
+sequence of scalings for the dimensions greater than 3.  See examples.</p>
+</dd>
+<dt><strong>world</strong><span class="classifier">str or XYZSpace or CoordSysMaker or CoordinateSystem</span></dt><dd><p>World 3D space to which affine refers.  See <code class="docutils literal notranslate"><span class="pre">spaces.get_world_cs()</span></code></p>
+</dd>
+<dt><strong>metadata</strong><span class="classifier">None or mapping, optional</span></dt><dd><p>metadata for created image.  Defaults to None, giving empty metadata.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>img</strong><span class="classifier">Image</span></dt><dd><p>image containing <cite>data</cite>, with coordmap constructed from <cite>affine</cite> and
+<cite>world</cite>, and with default voxel input coordinates.  If the data has more
+than 3 dimensions, and you didn’t specify the added zooms with a tuple
+<cite>xyz_affine</cite> parameter, the coordmap affine gets filled out with extra
+ones on the diagonal to give an (N+1, N+1) affine, with <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span>
+<span class="pre">len(data.shape)</span></code></p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">make_xyz_image</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">aff</span><span class="p">,</span> <span class="s1">&#39;mni&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span>
+<span class="go">Image(</span>
+<span class="go">  data=array([[[ 0,  1,  2,  3],</span>
+<span class="go">               [ 4,  5,  6,  7],</span>
+<span class="go">               [ 8,  9, 10, 11]],</span>
+
+<span class="go">              [[12, 13, 14, 15],</span>
+<span class="go">               [16, 17, 18, 19],</span>
+<span class="go">               [20, 21, 22, 23]]]),</span>
+<span class="go">  coordmap=AffineTransform(</span>
+<span class="go">            function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;), name=&#39;voxels&#39;, coord_dtype=float64),</span>
+<span class="go">            function_range=CoordinateSystem(coord_names=(&#39;mni-x=L-&gt;R&#39;, &#39;mni-y=P-&gt;A&#39;, &#39;mni-z=I-&gt;S&#39;), name=&#39;mni&#39;, coord_dtype=float64),</span>
+<span class="go">            affine=array([[ 4.,  0.,  0.,  0.],</span>
+<span class="go">                          [ 0.,  5.,  0.,  0.],</span>
+<span class="go">                          [ 0.,  0.,  6.,  0.],</span>
+<span class="go">                          [ 0.,  0.,  0.,  1.]])</span>
+<span class="go">         ))</span>
+</pre></div>
+</div>
+<p>Now make data 4D; we just add 1. to the diagonal for the new dimension</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data4</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">make_xyz_image</span><span class="p">(</span><span class="n">data4</span><span class="p">,</span> <span class="n">aff</span><span class="p">,</span> <span class="s1">&#39;mni&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">coordmap</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;), name=&#39;voxels&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;mni-x=L-&gt;R&#39;, &#39;mni-y=P-&gt;A&#39;, &#39;mni-z=I-&gt;S&#39;, &#39;t&#39;), name=&#39;mni&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[ 4.,  0.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  5.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  6.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  1.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  0.,  1.]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<p>We can pass in a scalar or tuple to specify scaling for the extra dimension</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">make_xyz_image</span><span class="p">(</span><span class="n">data4</span><span class="p">,</span> <span class="p">(</span><span class="n">aff</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">),</span> <span class="s1">&#39;mni&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">coordmap</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[ 4.,  0.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  5.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  6.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  2.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  0.,  1.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data5</span> <span class="o">=</span> <span class="n">data4</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">make_xyz_image</span><span class="p">(</span><span class="n">data5</span><span class="p">,</span> <span class="p">(</span><span class="n">aff</span><span class="p">,</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)),</span> <span class="s1">&#39;mni&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">coordmap</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[ 4.,  0.,  0.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  5.,  0.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  6.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  2.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  0.,  3.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  0.,  0.,  1.]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.image.image_spaces.xyz_affine">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.image.image_spaces.</span></span><span class="sig-name descname"><span class="pre">xyz_affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name2xyz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.image.image_spaces.xyz_affine" title="Link to this definition">¶</a></dt>
+<dd><p>Return xyz affine from image <cite>img</cite> if possible, or raise error</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>img</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code> instance or nibabel image</span></dt><dd><p>It has a <code class="docutils literal notranslate"><span class="pre">coordmap</span></code> or attribute <code class="docutils literal notranslate"><span class="pre">affine</span></code> or method <code class="docutils literal notranslate"><span class="pre">get_affine</span></code></p>
+</dd>
+<dt><strong>name2xyz</strong><span class="classifier">None or mapping</span></dt><dd><p>Object such that <code class="docutils literal notranslate"><span class="pre">name2xyz[ax_name]</span></code> returns ‘x’, or ‘y’ or ‘z’ or
+raises a KeyError for a str <code class="docutils literal notranslate"><span class="pre">ax_name</span></code>.  None means use module default.
+Not used for nibabel <cite>img</cite> input.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>xyz_aff</strong><span class="classifier">(4,4) array</span></dt><dd><p>voxel to X, Y, Z affine mapping</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>SpaceTypeError</strong><span class="classifier">if <cite>img</cite> does not have an affine coordinate map</span></dt><dd></dd>
+<dt><strong>AxesError</strong><span class="classifier">if not all of x, y, z recognized in <cite>img</cite> <code class="docutils literal notranslate"><span class="pre">coordmap</span></code> range</span></dt><dd></dd>
+<dt><strong>AffineError</strong><span class="classifier">if axes dropped from the affine contribute to x, y, z</span></dt><dd></dd>
+<dt>coordinates</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.api</span> <span class="kn">import</span> <span class="n">vox2mni</span><span class="p">,</span> <span class="n">Image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">vox2mni</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">])))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span><span class="o">.</span><span class="n">coordmap</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;), name=&#39;voxels&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;mni-x=L-&gt;R&#39;, &#39;mni-y=P-&gt;A&#39;, &#39;mni-z=I-&gt;S&#39;, &#39;t&#39;), name=&#39;mni&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[ 2.,  0.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  3.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  4.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  5.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  0.,  1.]])</span>
+<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xyz_affine</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="go">array([[ 2.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  3.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  4.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  1.]])</span>
+</pre></div>
+</div>
+<p>Nibabel images always have xyz affines</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nibabel</span> <span class="k">as</span> <span class="nn">nib</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nimg</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xyz_affine</span><span class="p">(</span><span class="n">nimg</span><span class="p">)</span>
+<span class="go">array([[ 2.,  0.,  0.,  0.],</span>
+<span class="go">       [ 0.,  3.,  0.,  0.],</span>
+<span class="go">       [ 0.,  0.,  4.,  0.],</span>
+<span class="go">       [ 0.,  0.,  0.,  1.]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">core.image.image_spaces</a><ul>
+<li><a class="reference internal" href="#module-nipy.core.image.image_spaces">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">core.image.image_spaces</span></code></a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.core.image.image_spaces.as_xyz_image"><code class="docutils literal notranslate"><span class="pre">as_xyz_image()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.image.image_spaces.is_xyz_affable"><code class="docutils literal notranslate"><span class="pre">is_xyz_affable()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.image.image_spaces.make_xyz_image"><code class="docutils literal notranslate"><span class="pre">make_xyz_image()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.image.image_spaces.xyz_affine"><code class="docutils literal notranslate"><span class="pre">xyz_affine()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.core.image.image_list.html"
+                          title="previous chapter">core.image.image_list</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.core.reference.array_coords.html"
+                          title="next chapter">core.reference.array_coords</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.core.image.image_spaces.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.reference.array_coords.html" title="core.reference.array_coords"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.image.image_list.html" title="core.image.image_list"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

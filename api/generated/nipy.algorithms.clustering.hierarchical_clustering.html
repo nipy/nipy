@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.clustering.imm" href="nipy.algorithms.clustering.imm.html" />
+    <link rel="prev" title="algorithms.clustering.gmm" href="nipy.algorithms.clustering.gmm.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.clustering.imm.html" title="algorithms.clustering.imm"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.clustering.gmm.html" title="algorithms.clustering.gmm"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-clustering-hierarchical-clustering">
+<h1>algorithms.clustering.hierarchical_clustering<a class="headerlink" href="#algorithms-clustering-hierarchical-clustering" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-clustering-hierarchical-clustering">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.clustering.hierarchical_clustering</span></code><a class="headerlink" href="#module-algorithms-clustering-hierarchical-clustering" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.clustering.hierarchical_clustering</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-1c565e085a440af71d0e5617b572b6a515b01c7d.png" alt="Inheritance diagram of nipy.algorithms.clustering.hierarchical_clustering" usemap="#inheritance1a5d4ec8c5" class="inheritance graphviz" /></div>
+<map id="inheritance1a5d4ec8c5" name="inheritance1a5d4ec8c5">
+<area shape="rect" id="node1" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest" target="_top" title="This is a weighted Forest structure, i.e. a tree" alt="" coords="503,5,763,27"/>
+<area shape="rect" id="node2" href="nipy.algorithms.graph.forest.html#nipy.algorithms.graph.forest.Forest" target="_top" title="Forest structure, i.e. a set of trees" alt="" coords="351,5,463,27"/>
+<area shape="rect" id="node3" href="nipy.algorithms.graph.graph.html#nipy.algorithms.graph.graph.WeightedGraph" target="_top" title="Basic weighted, directed graph class" alt="" coords="155,5,310,27"/>
+<area shape="rect" id="node4" href="nipy.algorithms.graph.graph.html#nipy.algorithms.graph.graph.Graph" target="_top" title="Basic topological (non&#45;weighted) directed Graph class" alt="" coords="5,5,114,27"/>
+</map><p id="module-nipy.algorithms.clustering.hierarchical_clustering">These routines perform some hierrachical agglomerative clustering
+of some input data. The following alternatives are proposed:
+- Distance based average-link
+- Similarity-based average-link
+- Distance based maximum-link
+- Ward’s algorithm under graph constraints
+- Ward’s algorithm without graph constraints</p>
+<p>In this latest version, the results are returned in a ‘WeightedForest’
+structure, which gives access to the clustering hierarchy, facilitates
+the plot of the result etc.</p>
+<p>For back-compatibility, <a href="#id1"><span class="problematic" id="id2">*</span></a>_segment versions of the algorithms have been
+appended, with the old API (except the qmax parameter, which now
+represents the number of wanted clusters)</p>
+<p>Author : Bertrand Thirion,Pamela Guevara, 2006-2009</p>
+</section>
+<section id="class">
+<h2>Class<a class="headerlink" href="#class" title="Link to this heading">¶</a></h2>
+</section>
+<section id="weightedforest">
+<h2><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest" title="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest"><code class="xref py py-class docutils literal notranslate"><span class="pre">WeightedForest</span></code></a><a class="headerlink" href="#weightedforest" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.clustering.hierarchical_clustering.</span></span><span class="sig-name descname"><span class="pre">WeightedForest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="nipy.algorithms.graph.forest.html#nipy.algorithms.graph.forest.Forest" title="nipy.algorithms.graph.forest.Forest"><code class="xref py py-class docutils literal notranslate"><span class="pre">Forest</span></code></a></p>
+<p>This is a weighted Forest structure, i.e. a tree
+- each node has one parent and children
+(hierarchical structure)
+- some of the nodes can be viewed as leaves, other as roots
+- the edges within a tree are associated with a weight:
++1 from child to parent
+-1 from parent to child
+- additionally, the nodes have a value, which is called ‘height’,
+especially useful from dendrograms</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>V: the number of edges of the graph</strong></dt><dd></dd>
+<dt><strong>parents=None: array of shape (V)</strong></dt><dd><p>the parents of the graph
+by default, the parents are set to range(V), i.e. each
+node is its own parent, and each node is a tree</p>
+</dd>
+<dt><strong>height=None: array of shape(V)</strong></dt><dd><p>the height of the nodes</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.adjacency">
+<span class="sig-name descname"><span class="pre">adjacency</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.adjacency" title="Link to this definition">¶</a></dt>
+<dd><p>returns the adjacency matrix of the graph as a sparse coo matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>adj: scipy.sparse matrix instance,</dt><dd><p>that encodes the adjacency matrix of self</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.all_distances">
+<span class="sig-name descname"><span class="pre">all_distances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.all_distances" title="Link to this definition">¶</a></dt>
+<dd><p>returns all the distances of the graph  as a tree</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>seed=None array of shape(nbseed)  with valuesin [0..self.V-1]</strong></dt><dd><p>set of vertices from which tehe distances are computed</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>dg: array of shape(nseed, self.V), the resulting distances</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>By convention infinite distances are given the distance np.inf</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.anti_symmeterize">
+<span class="sig-name descname"><span class="pre">anti_symmeterize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.anti_symmeterize" title="Link to this definition">¶</a></dt>
+<dd><p>anti-symmeterize self, i.e. produces the graph
+whose adjacency matrix would be the antisymmetric part of
+its current adjacency matrix</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.cc">
+<span class="sig-name descname"><span class="pre">cc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.cc" title="Link to this definition">¶</a></dt>
+<dd><p>Compte the different connected components of the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>label: array of shape(self.V), labelling of the vertices</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.check">
+<span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.check" title="Link to this definition">¶</a></dt>
+<dd><p>Check that self is indeed a forest, i.e. contains no loop</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>a boolean b=0 iff there are loops, 1  otherwise</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Slow implementation, might be rewritten in C or cython</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.check_compatible_height">
+<span class="sig-name descname"><span class="pre">check_compatible_height</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.check_compatible_height" title="Link to this definition">¶</a></dt>
+<dd><p>Check that height[parents[i]]&gt;=height[i] for all nodes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.cliques">
+<span class="sig-name descname"><span class="pre">cliques</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.cliques" title="Link to this definition">¶</a></dt>
+<dd><p>Extraction of the graphe cliques
+these are defined using replicator dynamics equations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>cliques: array of shape (self.V), type (<a href="#id3"><span class="problematic" id="id4">np.int_</span></a>)</dt><dd><p>labelling of the vertices according to the clique they belong to</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.compact_neighb">
+<span class="sig-name descname"><span class="pre">compact_neighb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.compact_neighb" title="Link to this definition">¶</a></dt>
+<dd><p>returns a compact representation of self</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>idx: array of of shape(self.V + 1):</dt><dd><p>the positions where to find the neighbors of each node
+within neighb and weights</p>
+</dd>
+<dt>neighb: array of shape(self.E), concatenated list of neighbors</dt><dd></dd>
+<dt>weights: array of shape(self.E), concatenated list of weights</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.compute_children">
+<span class="sig-name descname"><span class="pre">compute_children</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.compute_children" title="Link to this definition">¶</a></dt>
+<dd><p>Define the children of each node (stored in self.children)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.copy" title="Link to this definition">¶</a></dt>
+<dd><p>returns a copy of self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.cut_redundancies">
+<span class="sig-name descname"><span class="pre">cut_redundancies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.cut_redundancies" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a graph with redundant edges removed:
+ecah edge (ab) is present only once in the edge matrix:
+the correspondng weights are added.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>the resulting WeightedGraph</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.define_graph_attributes">
+<span class="sig-name descname"><span class="pre">define_graph_attributes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.define_graph_attributes" title="Link to this definition">¶</a></dt>
+<dd><p>define the edge and weights array</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.degrees">
+<span class="sig-name descname"><span class="pre">degrees</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.degrees" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the degree of the graph vertices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>rdegree: (array, type=int, shape=(self.V,)), the right degrees</dt><dd></dd>
+<dt>ldegree: (array, type=int, shape=(self.V,)), the left degrees</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.depth_from_leaves">
+<span class="sig-name descname"><span class="pre">depth_from_leaves</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.depth_from_leaves" title="Link to this definition">¶</a></dt>
+<dd><p>compute an index for each node: 0 for the leaves, 1 for
+their parents etc. and maximal for the roots.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>depth: array of shape (self.V): the depth values of the vertices</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.dijkstra">
+<span class="sig-name descname"><span class="pre">dijkstra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.dijkstra" title="Link to this definition">¶</a></dt>
+<dd><p>Returns all the [graph] geodesic distances starting from seed
+x</p>
+<blockquote>
+<div><dl class="simple">
+<dt>seed (int, &gt;-1, &lt;self.V) or array of shape(p)</dt><dd><p>edge(s) from which the distances are computed</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>dg: array of shape (self.V),</dt><dd><p>the graph distance dg from ant vertex to the nearest seed</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>It is mandatory that the graph weights are non-negative</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.floyd">
+<span class="sig-name descname"><span class="pre">floyd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.floyd" title="Link to this definition">¶</a></dt>
+<dd><p>Compute all the geodesic distances starting from seeds</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>seed= None: array of shape (nbseed), type np.int_</strong></dt><dd><p>vertex indexes from which the distances are computed
+if seed==None, then every edge is a seed point</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>dg array of shape (nbseed, self.V)</dt><dd><p>the graph distance dg from each seed to any vertex</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>It is mandatory that the graph weights are non-negative. The algorithm
+proceeds by repeating Dijkstra’s algo for each seed. Floyd’s algo is not
+used (O(self.V)^3 complexity…)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.from_3d_grid">
+<span class="sig-name descname"><span class="pre">from_3d_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">18</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.from_3d_grid" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the graph to be the topological neighbours graph
+of the three-dimensional coordinates set xyz,
+in the k-connectivity scheme</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>xyz: array of shape (self.V, 3) and type np.int_,</strong></dt><dd></dd>
+<dt><strong>k = 18: the number of neighbours considered. (6, 18 or 26)</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>E(int): the number of edges of self</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_E">
+<span class="sig-name descname"><span class="pre">get_E</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_E" title="Link to this definition">¶</a></dt>
+<dd><p>To get the number of edges in the graph</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_V">
+<span class="sig-name descname"><span class="pre">get_V</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_V" title="Link to this definition">¶</a></dt>
+<dd><p>To get the number of vertices in the graph</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_children">
+<span class="sig-name descname"><span class="pre">get_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_children" title="Link to this definition">¶</a></dt>
+<dd><p>Get the children of a node/each node</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>v: int, optional</strong></dt><dd><p>a node index</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>children: list of int the list of children of node v (if v is provided)</dt><dd><p>a list of lists of int, the children of all nodes otherwise</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_descendants">
+<span class="sig-name descname"><span class="pre">get_descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_self</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_descendants" title="Link to this definition">¶</a></dt>
+<dd><p>returns the nodes that are children of v as a list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>v: int, a node index</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>desc: list of int, the list of all descendant of the input node</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_edges">
+<span class="sig-name descname"><span class="pre">get_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_edges" title="Link to this definition">¶</a></dt>
+<dd><p>To get the graph’s edges</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_height">
+<span class="sig-name descname"><span class="pre">get_height</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_height" title="Link to this definition">¶</a></dt>
+<dd><p>Get the height array</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_vertices">
+<span class="sig-name descname"><span class="pre">get_vertices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_vertices" title="Link to this definition">¶</a></dt>
+<dd><p>To get the graph’s vertices (as id)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_weights">
+<span class="sig-name descname"><span class="pre">get_weights</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_weights" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.is_connected">
+<span class="sig-name descname"><span class="pre">is_connected</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.is_connected" title="Link to this definition">¶</a></dt>
+<dd><p>States whether self is connected or not</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.isleaf">
+<span class="sig-name descname"><span class="pre">isleaf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.isleaf" title="Link to this definition">¶</a></dt>
+<dd><p>Identification of the leaves of the forest</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>leaves: bool array of shape(self.V), indicator of the forest’s leaves</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.isroot">
+<span class="sig-name descname"><span class="pre">isroot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.isroot" title="Link to this definition">¶</a></dt>
+<dd><p>Returns an indicator of nodes being roots</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>roots, array of shape(self.V, bool), indicator of the forest’s roots</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.kruskal">
+<span class="sig-name descname"><span class="pre">kruskal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.kruskal" title="Link to this definition">¶</a></dt>
+<dd><p>Creates the Minimum Spanning Tree of self using Kruskal’s algo.
+efficient is self is sparse</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>K, WeightedGraph instance: the resulting MST</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If self contains several connected components, will have the same number
+k of connected components</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.leaves_of_a_subtree">
+<span class="sig-name descname"><span class="pre">leaves_of_a_subtree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.leaves_of_a_subtree" title="Link to this definition">¶</a></dt>
+<dd><p>tests whether the given nodes are the leaves of a certain subtree</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ids: array of shape (n) that takes values in [0..self.V-1]</strong></dt><dd></dd>
+<dt><strong>custom == False, boolean</strong></dt><dd><p>if custom==true the behavior of the function is more specific
+- the different connected components are considered
+as being in a same greater tree
+- when a node has more than two subbranches,
+any subset of these children is considered as a subtree</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.left_incidence">
+<span class="sig-name descname"><span class="pre">left_incidence</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.left_incidence" title="Link to this definition">¶</a></dt>
+<dd><p>Return left incidence matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>left_incid: list</dt><dd><p>the left incidence matrix of self as a list of lists: i.e. the
+list[[e.0.0, .., e.0.i(0)], .., [e.V.0, E.V.i(V)]] where e.i.j is
+the set of edge indexes so that e.i.j[0] = i</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.list_of_neighbors">
+<span class="sig-name descname"><span class="pre">list_of_neighbors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.list_of_neighbors" title="Link to this definition">¶</a></dt>
+<dd><p>returns the set of neighbors of self as a list of arrays</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.list_of_subtrees">
+<span class="sig-name descname"><span class="pre">list_of_subtrees</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.list_of_subtrees" title="Link to this definition">¶</a></dt>
+<dd><p>returns the list of all non-trivial subtrees in the graph
+Caveat: this function assumes that the vertices are sorted in a
+way such that parent[i]&gt;i for all i
+Only the leaves are listeed, not the subtrees themselves</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.main_cc">
+<span class="sig-name descname"><span class="pre">main_cc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.main_cc" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the indexes of the vertices within the main cc</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>idx: array of shape (sizeof main cc)</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.merge_simple_branches">
+<span class="sig-name descname"><span class="pre">merge_simple_branches</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.merge_simple_branches" title="Link to this definition">¶</a></dt>
+<dd><p>Return a subforest, where chained branches are collapsed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>sf, Forest instance, same as self, without any chain</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.normalize">
+<span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.normalize" title="Link to this definition">¶</a></dt>
+<dd><p>Normalize the graph according to the index c
+Normalization means that the sum of the edges values
+that go into or out each vertex must sum to 1</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>c=0 in {0, 1, 2}, optional: index that designates the way</strong></dt><dd><p>according to which D is normalized
+c == 0 =&gt; for each vertex a, sum{edge[e, 0]=a} D[e]=1
+c == 1 =&gt; for each vertex b, sum{edge[e, 1]=b} D[e]=1
+c == 2 =&gt; symmetric (‘l2’) normalization</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Note that when sum_{edge[e, .] == a } D[e] = 0, nothing is performed</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.partition">
+<span class="sig-name descname"><span class="pre">partition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.partition" title="Link to this definition">¶</a></dt>
+<dd><p>Partition the tree according to a cut criterion</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.plot" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the dendrogram associated with self
+the rank of the data in the dendogram is returned</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ax: axis handle, optional</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ax, the axis handle</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.plot_height">
+<span class="sig-name descname"><span class="pre">plot_height</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.plot_height" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the height of the non-leaves nodes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.propagate_upward">
+<span class="sig-name descname"><span class="pre">propagate_upward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.propagate_upward" title="Link to this definition">¶</a></dt>
+<dd><p>Propagation of a certain labelling from leaves to roots
+Assuming that label is a certain positive integer field
+this propagates these labels to the parents whenever
+the children nodes have coherent properties
+otherwise the parent value is unchanged</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>label: array of shape(self.V)</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>label: array of shape(self.V)</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.propagate_upward_and">
+<span class="sig-name descname"><span class="pre">propagate_upward_and</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.propagate_upward_and" title="Link to this definition">¶</a></dt>
+<dd><p>propagates from leaves to roots some binary property of the nodes
+so that prop[parents] = logical_and(prop[children])</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>prop, array of shape(self.V), the input property</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>prop, array of shape(self.V), the output property field</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.remove_edges">
+<span class="sig-name descname"><span class="pre">remove_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">valid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.remove_edges" title="Link to this definition">¶</a></dt>
+<dd><p>Removes all the edges for which valid==0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>valid</strong><span class="classifier">(self.E,) array</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.remove_trivial_edges">
+<span class="sig-name descname"><span class="pre">remove_trivial_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.remove_trivial_edges" title="Link to this definition">¶</a></dt>
+<dd><p>Removes trivial edges, i.e. edges that are (vv)-like
+self.weights and self.E are corrected accordingly</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>self.E (int): The number of edges</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.reorder_from_leaves_to_roots">
+<span class="sig-name descname"><span class="pre">reorder_from_leaves_to_roots</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.reorder_from_leaves_to_roots" title="Link to this definition">¶</a></dt>
+<dd><p>reorder the tree so that the leaves come first then their
+parents and so on, and the roots are last.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>order: array of shape(self.V)</dt><dd><p>the order of the old vertices in the reordered graph</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.right_incidence">
+<span class="sig-name descname"><span class="pre">right_incidence</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.right_incidence" title="Link to this definition">¶</a></dt>
+<dd><p>Return right incidence matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>right_incid: list</dt><dd><p>the right incidence matrix of self as a list of lists: i.e. the
+list[[e.0.0, .., e.0.i(0)], .., [e.V.0, E.V.i(V)]] where e.i.j is
+the set of edge indexes so that e.i.j[1] = i</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_edges">
+<span class="sig-name descname"><span class="pre">set_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edges</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_edges" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the graph’s edges</p>
+<p>Preconditions:</p>
+<ul class="simple">
+<li><p>edges has a correct size</p></li>
+<li><p>edges take values in [1..V]</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_euclidian">
+<span class="sig-name descname"><span class="pre">set_euclidian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_euclidian" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the weights of the graph as the distances between the
+corresponding rows of X, which represents an embedding of self</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X array of shape (self.V, edim),</strong></dt><dd><p>the coordinate matrix of the embedding</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_gaussian">
+<span class="sig-name descname"><span class="pre">set_gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_gaussian" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the weights  of the graph as a gaussian function
+of the distance  between the corresponding rows of X,
+which represents an embedding of self</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X array of shape (self.V, dim)</strong></dt><dd><p>the coordinate matrix of the embedding</p>
+</dd>
+<dt><strong>sigma=0, float: the parameter of the gaussian function</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>When sigma == 0, the following value is used: <code class="docutils literal notranslate"><span class="pre">sigma</span> <span class="pre">=</span>
+<span class="pre">sqrt(mean(||X[self.edges[:,</span> <span class="pre">0],</span> <span class="pre">:]-X[self.edges[:,</span> <span class="pre">1],</span> <span class="pre">:]||^2))</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_height">
+<span class="sig-name descname"><span class="pre">set_height</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_height" title="Link to this definition">¶</a></dt>
+<dd><p>Set the height array</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_weights">
+<span class="sig-name descname"><span class="pre">set_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_weights" title="Link to this definition">¶</a></dt>
+<dd><p>Set edge weights</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>weights: array</strong></dt><dd><p>array shape(self.V): edges weights</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.show">
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.show" title="Link to this definition">¶</a></dt>
+<dd><p>Plots the current graph in 2D</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">None or array of shape (self.V, 2)</span></dt><dd><p>a set of coordinates that can be used to embed the vertices in 2D.
+If X.shape[1]&gt;2, a svd reduces X for display. By default, the graph
+is presented on a circle</p>
+</dd>
+<dt><strong>ax: None or int, optional</strong></dt><dd><p>ax handle</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ax: axis handle</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This should be used only for small graphs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.split">
+<span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.split" title="Link to this definition">¶</a></dt>
+<dd><p>idem as partition, but a number of components are supplied instead</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.subforest">
+<span class="sig-name descname"><span class="pre">subforest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">valid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.subforest" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a subforest with the vertices for which valid &gt; 0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>valid: array of shape (self.V): indicator of the selected nodes</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>subforest: a new forest instance, with a reduced set of nodes</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The children of deleted vertices become their own parent</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.subgraph">
+<span class="sig-name descname"><span class="pre">subgraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">valid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.subgraph" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a subgraph with the vertices for which valid&gt;0
+and with the corresponding set of edges</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>valid, array of shape (self.V): nonzero for vertices to be retained</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>G, WeightedGraph instance, the desired subgraph of self</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The vertices are renumbered as [1..p] where p = sum(valid&gt;0) when
+sum(valid==0) then None is returned</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.symmeterize">
+<span class="sig-name descname"><span class="pre">symmeterize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.symmeterize" title="Link to this definition">¶</a></dt>
+<dd><p>Symmeterize self, modify edges and weights so that
+self.adjacency becomes the symmetric part of the current
+self.adjacency.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.to_coo_matrix">
+<span class="sig-name descname"><span class="pre">to_coo_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.to_coo_matrix" title="Link to this definition">¶</a></dt>
+<dd><p>Return adjacency matrix as coo sparse</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>sp: scipy.sparse matrix instance</dt><dd><p>that encodes the adjacency matrix of self</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.tree_depth">
+<span class="sig-name descname"><span class="pre">tree_depth</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.tree_depth" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the number of hierarchical levels in the tree</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.voronoi_diagram">
+<span class="sig-name descname"><span class="pre">voronoi_diagram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seeds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.voronoi_diagram" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the graph as the Voronoi diagram (VD)
+that links the seeds.
+The VD is defined using the sample points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>seeds: array of shape (self.V, dim)</strong></dt><dd></dd>
+<dt><strong>samples: array of shape (nsamples, dim)</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>By default, the weights are a Gaussian function of the distance The
+implementation is not optimal</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.voronoi_labelling">
+<span class="sig-name descname"><span class="pre">voronoi_labelling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.voronoi_labelling" title="Link to this definition">¶</a></dt>
+<dd><p>Performs a voronoi labelling of the graph</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>seed: array of shape (nseeds), type (np.int_),</strong></dt><dd><p>vertices from which the cells are built</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>labels: array of shape (self.V) the labelling of the vertices</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.average_link_graph">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.clustering.hierarchical_clustering.</span></span><span class="sig-name descname"><span class="pre">average_link_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.average_link_graph" title="Link to this definition">¶</a></dt>
+<dd><p>Agglomerative function based on a (hopefully sparse) similarity graph</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>G the input graph</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>t a weightForest structure that represents the dendrogram of the data</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.average_link_graph_segment">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.clustering.hierarchical_clustering.</span></span><span class="sig-name descname"><span class="pre">average_link_graph_segment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.average_link_graph_segment" title="Link to this definition">¶</a></dt>
+<dd><p>Agglomerative function based on a (hopefully sparse) similarity graph</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>G the input graph</strong></dt><dd></dd>
+<dt><strong>stop: float</strong></dt><dd><p>the stopping criterion</p>
+</dd>
+<dt><strong>qmax: int, optional</strong></dt><dd><p>the number of desired clusters (in the limit of the stopping criterion)</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, print diagnostic information</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>u: array of shape (G.V)</dt><dd><p>a labelling of the graph vertices according to the criterion</p>
+</dd>
+<dt>cost: array of shape (G.V (?))</dt><dd><p>the cost of each merge step during the clustering procedure</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.fusion">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.clustering.hierarchical_clustering.</span></span><span class="sig-name descname"><span class="pre">fusion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.fusion" title="Link to this definition">¶</a></dt>
+<dd><p>Modifies the graph K to merge nodes i and  j into nodes k</p>
+<p>The similarity values are weighted averaged, where pop[i] and pop[j]
+yield the relative weights.
+this is used in average_link_slow (deprecated)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.ward">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.clustering.hierarchical_clustering.</span></span><span class="sig-name descname"><span class="pre">ward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.ward" title="Link to this definition">¶</a></dt>
+<dd><p>Agglomerative function based on a topology-defining graph
+and a feature matrix.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>G</strong><span class="classifier">graph</span></dt><dd><p>the input graph (a topological graph essentially)</p>
+</dd>
+<dt><strong>feature</strong><span class="classifier">array of shape (G.V,dim_feature)</span></dt><dd><p>vectorial information related to the graph vertices</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, print diagnostic information</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>t</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">WeightedForest</span></code> instance</span></dt><dd><p>structure that represents the dendrogram</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>When G has more than 1 connected component, t is no longer a tree.  This
+case is handled cleanly now</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.ward_field_segment">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.clustering.hierarchical_clustering.</span></span><span class="sig-name descname"><span class="pre">ward_field_segment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">F</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.ward_field_segment" title="Link to this definition">¶</a></dt>
+<dd><p>Agglomerative function based on a field structure</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>F the input field (graph+feature)</strong></dt><dd></dd>
+<dt><strong>stop: float, optional</strong></dt><dd><p>the stopping crterion.  if stop==-1, then no stopping criterion is used</p>
+</dd>
+<dt><strong>qmax: int, optional</strong></dt><dd><p>the maximum number of desired clusters (in the limit of the stopping
+criterion)</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, print diagnostic information</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>u: array of shape (F.V)</dt><dd><p>labelling of the graph vertices according to the criterion</p>
+</dd>
+<dt>cost array of shape (F.V - 1)</dt><dd><p>the cost of each merge step during the clustering procedure</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>See ward_quick_segment for more information</p>
+<p>Caveat : only approximate</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.ward_quick">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.clustering.hierarchical_clustering.</span></span><span class="sig-name descname"><span class="pre">ward_quick</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.ward_quick" title="Link to this definition">¶</a></dt>
+<dd><p>Agglomerative function based on a topology-defining graph
+and a feature matrix.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>G</strong><span class="classifier">graph instance</span></dt><dd><p>topology-defining graph</p>
+</dd>
+<dt><strong>feature: array of shape (G.V,dim_feature)</strong></dt><dd><p>some vectorial information related to the graph vertices</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, print diagnostic information</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>t: weightForest instance,</dt><dd><p>that represents the dendrogram of the data</p>
+</dd>
+<dt>Notes</dt><dd></dd>
+</dl>
+<blockquote>
+<div></div></blockquote>
+<dl class="simple">
+<dt>Hopefully a quicker version</dt><dd></dd>
+<dt>A euclidean distance is used in the feature space</dt><dd></dd>
+<dt><strong>Caveat</strong><span class="classifier">only approximate</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.ward_quick_segment">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.clustering.hierarchical_clustering.</span></span><span class="sig-name descname"><span class="pre">ward_quick_segment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.ward_quick_segment" title="Link to this definition">¶</a></dt>
+<dd><p>Agglomerative function based on a topology-defining graph
+and a feature matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>G: labs.graph.WeightedGraph instance</strong></dt><dd><p>the input graph (a topological graph essentially)</p>
+</dd>
+<dt><strong>feature array of shape (G.V,dim_feature)</strong></dt><dd><p>vectorial information related to the graph vertices</p>
+</dd>
+<dt><strong>stop1</strong><span class="classifier">int or float, optional</span></dt><dd><p>the stopping crterion if stop==-1, then no stopping criterion is used</p>
+</dd>
+<dt><strong>qmax</strong><span class="classifier">int, optional</span></dt><dd><p>the maximum number of desired clusters (in the limit of the stopping
+criterion)</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, print diagnostic information</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>u: array of shape (G.V)</dt><dd><p>labelling of the graph vertices according to the criterion</p>
+</dd>
+<dt>cost: array of shape (G.V - 1)</dt><dd><p>the cost of each merge step during the clustering procedure</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Hopefully a quicker version</p>
+<p>A euclidean distance is used in the feature space</p>
+<p>Caveat : only approximate</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.clustering.hierarchical_clustering.ward_segment">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.clustering.hierarchical_clustering.</span></span><span class="sig-name descname"><span class="pre">ward_segment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.clustering.hierarchical_clustering.ward_segment" title="Link to this definition">¶</a></dt>
+<dd><p>Agglomerative function based on a topology-defining graph
+and a feature matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>G</strong><span class="classifier">graph object</span></dt><dd><p>the input graph (a topological graph essentially)</p>
+</dd>
+<dt><strong>feature</strong><span class="classifier">array of shape (G.V,dim_feature)</span></dt><dd><p>some vectorial information related to the graph vertices</p>
+</dd>
+<dt><strong>stop</strong><span class="classifier">int or float, optional</span></dt><dd><p>the stopping crterion.  if stop==-1, then no stopping criterion is used</p>
+</dd>
+<dt><strong>qmax</strong><span class="classifier">int, optional</span></dt><dd><p>the maximum number of desired clusters (in the limit of the stopping
+criterion)</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, print diagnostic information</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>u: array of shape (G.V):</dt><dd><p>a labelling of the graph vertices according to the criterion</p>
+</dd>
+<dt>cost: array of shape (G.V - 1)</dt><dd><p>the cost of each merge step during the clustering procedure</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>A euclidean distance is used in the feature space</p>
+<p>Caveat : when the number of cc in G (nbcc) is greter than qmax, u contains
+nbcc values, not qmax !</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.clustering.hierarchical_clustering</a><ul>
+<li><a class="reference internal" href="#module-algorithms-clustering-hierarchical-clustering">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.clustering.hierarchical_clustering</span></code></a></li>
+<li><a class="reference internal" href="#class">Class</a></li>
+<li><a class="reference internal" href="#weightedforest"><code class="xref py py-class docutils literal notranslate"><span class="pre">WeightedForest</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest"><code class="docutils literal notranslate"><span class="pre">WeightedForest</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.__init__"><code class="docutils literal notranslate"><span class="pre">WeightedForest.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.adjacency"><code class="docutils literal notranslate"><span class="pre">WeightedForest.adjacency()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.all_distances"><code class="docutils literal notranslate"><span class="pre">WeightedForest.all_distances()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.anti_symmeterize"><code class="docutils literal notranslate"><span class="pre">WeightedForest.anti_symmeterize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.cc"><code class="docutils literal notranslate"><span class="pre">WeightedForest.cc()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.check"><code class="docutils literal notranslate"><span class="pre">WeightedForest.check()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.check_compatible_height"><code class="docutils literal notranslate"><span class="pre">WeightedForest.check_compatible_height()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.cliques"><code class="docutils literal notranslate"><span class="pre">WeightedForest.cliques()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.compact_neighb"><code class="docutils literal notranslate"><span class="pre">WeightedForest.compact_neighb()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.compute_children"><code class="docutils literal notranslate"><span class="pre">WeightedForest.compute_children()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.copy"><code class="docutils literal notranslate"><span class="pre">WeightedForest.copy()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.cut_redundancies"><code class="docutils literal notranslate"><span class="pre">WeightedForest.cut_redundancies()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.define_graph_attributes"><code class="docutils literal notranslate"><span class="pre">WeightedForest.define_graph_attributes()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.degrees"><code class="docutils literal notranslate"><span class="pre">WeightedForest.degrees()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.depth_from_leaves"><code class="docutils literal notranslate"><span class="pre">WeightedForest.depth_from_leaves()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.dijkstra"><code class="docutils literal notranslate"><span class="pre">WeightedForest.dijkstra()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.floyd"><code class="docutils literal notranslate"><span class="pre">WeightedForest.floyd()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.from_3d_grid"><code class="docutils literal notranslate"><span class="pre">WeightedForest.from_3d_grid()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_E"><code class="docutils literal notranslate"><span class="pre">WeightedForest.get_E()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_V"><code class="docutils literal notranslate"><span class="pre">WeightedForest.get_V()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_children"><code class="docutils literal notranslate"><span class="pre">WeightedForest.get_children()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_descendants"><code class="docutils literal notranslate"><span class="pre">WeightedForest.get_descendants()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_edges"><code class="docutils literal notranslate"><span class="pre">WeightedForest.get_edges()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_height"><code class="docutils literal notranslate"><span class="pre">WeightedForest.get_height()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_vertices"><code class="docutils literal notranslate"><span class="pre">WeightedForest.get_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.get_weights"><code class="docutils literal notranslate"><span class="pre">WeightedForest.get_weights()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.is_connected"><code class="docutils literal notranslate"><span class="pre">WeightedForest.is_connected()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.isleaf"><code class="docutils literal notranslate"><span class="pre">WeightedForest.isleaf()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.isroot"><code class="docutils literal notranslate"><span class="pre">WeightedForest.isroot()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.kruskal"><code class="docutils literal notranslate"><span class="pre">WeightedForest.kruskal()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.leaves_of_a_subtree"><code class="docutils literal notranslate"><span class="pre">WeightedForest.leaves_of_a_subtree()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.left_incidence"><code class="docutils literal notranslate"><span class="pre">WeightedForest.left_incidence()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.list_of_neighbors"><code class="docutils literal notranslate"><span class="pre">WeightedForest.list_of_neighbors()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.list_of_subtrees"><code class="docutils literal notranslate"><span class="pre">WeightedForest.list_of_subtrees()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.main_cc"><code class="docutils literal notranslate"><span class="pre">WeightedForest.main_cc()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.merge_simple_branches"><code class="docutils literal notranslate"><span class="pre">WeightedForest.merge_simple_branches()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.normalize"><code class="docutils literal notranslate"><span class="pre">WeightedForest.normalize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.partition"><code class="docutils literal notranslate"><span class="pre">WeightedForest.partition()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.plot"><code class="docutils literal notranslate"><span class="pre">WeightedForest.plot()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.plot_height"><code class="docutils literal notranslate"><span class="pre">WeightedForest.plot_height()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.propagate_upward"><code class="docutils literal notranslate"><span class="pre">WeightedForest.propagate_upward()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.propagate_upward_and"><code class="docutils literal notranslate"><span class="pre">WeightedForest.propagate_upward_and()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.remove_edges"><code class="docutils literal notranslate"><span class="pre">WeightedForest.remove_edges()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.remove_trivial_edges"><code class="docutils literal notranslate"><span class="pre">WeightedForest.remove_trivial_edges()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.reorder_from_leaves_to_roots"><code class="docutils literal notranslate"><span class="pre">WeightedForest.reorder_from_leaves_to_roots()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.right_incidence"><code class="docutils literal notranslate"><span class="pre">WeightedForest.right_incidence()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_edges"><code class="docutils literal notranslate"><span class="pre">WeightedForest.set_edges()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_euclidian"><code class="docutils literal notranslate"><span class="pre">WeightedForest.set_euclidian()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_gaussian"><code class="docutils literal notranslate"><span class="pre">WeightedForest.set_gaussian()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_height"><code class="docutils literal notranslate"><span class="pre">WeightedForest.set_height()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.set_weights"><code class="docutils literal notranslate"><span class="pre">WeightedForest.set_weights()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.show"><code class="docutils literal notranslate"><span class="pre">WeightedForest.show()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.split"><code class="docutils literal notranslate"><span class="pre">WeightedForest.split()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.subforest"><code class="docutils literal notranslate"><span class="pre">WeightedForest.subforest()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.subgraph"><code class="docutils literal notranslate"><span class="pre">WeightedForest.subgraph()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.symmeterize"><code class="docutils literal notranslate"><span class="pre">WeightedForest.symmeterize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.to_coo_matrix"><code class="docutils literal notranslate"><span class="pre">WeightedForest.to_coo_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.tree_depth"><code class="docutils literal notranslate"><span class="pre">WeightedForest.tree_depth()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.voronoi_diagram"><code class="docutils literal notranslate"><span class="pre">WeightedForest.voronoi_diagram()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.WeightedForest.voronoi_labelling"><code class="docutils literal notranslate"><span class="pre">WeightedForest.voronoi_labelling()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.average_link_graph"><code class="docutils literal notranslate"><span class="pre">average_link_graph()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.average_link_graph_segment"><code class="docutils literal notranslate"><span class="pre">average_link_graph_segment()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.fusion"><code class="docutils literal notranslate"><span class="pre">fusion()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.ward"><code class="docutils literal notranslate"><span class="pre">ward()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.ward_field_segment"><code class="docutils literal notranslate"><span class="pre">ward_field_segment()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.ward_quick"><code class="docutils literal notranslate"><span class="pre">ward_quick()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.ward_quick_segment"><code class="docutils literal notranslate"><span class="pre">ward_quick_segment()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.clustering.hierarchical_clustering.ward_segment"><code class="docutils literal notranslate"><span class="pre">ward_segment()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.clustering.gmm.html"
+                          title="previous chapter">algorithms.clustering.gmm</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.clustering.imm.html"
+                          title="next chapter">algorithms.clustering.imm</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.clustering.hierarchical_clustering.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.clustering.imm.html" title="algorithms.clustering.imm"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.clustering.gmm.html" title="algorithms.clustering.gmm"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

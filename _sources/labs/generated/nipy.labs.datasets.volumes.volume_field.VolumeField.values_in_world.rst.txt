@@ -1,0 +1,6 @@
+﻿nipy.labs.datasets.volumes.volume\_field.VolumeField.values\_in\_world
+======================================================================
+
+.. currentmodule:: nipy.labs.datasets.volumes.volume_field
+
+.. automethod:: VolumeField.values_in_world

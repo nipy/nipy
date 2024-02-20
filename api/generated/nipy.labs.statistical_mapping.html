@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="labs.utils.reproducibility_measures" href="nipy.labs.utils.reproducibility_measures.html" />
+    <link rel="prev" title="labs.spatial_models.structural_bfls" href="nipy.labs.spatial_models.structural_bfls.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.utils.reproducibility_measures.html" title="labs.utils.reproducibility_measures"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.structural_bfls.html" title="labs.spatial_models.structural_bfls"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="labs-statistical-mapping">
+<h1>labs.statistical_mapping<a class="headerlink" href="#labs-statistical-mapping" title="Link to this heading">¶</a></h1>
+<section id="module-labs-statistical-mapping">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.statistical_mapping</span></code><a class="headerlink" href="#module-labs-statistical-mapping" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.labs.statistical_mapping</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-4443913590092aa4c25aab5b9863234b90a2eedb.png" alt="Inheritance diagram of nipy.labs.statistical_mapping" usemap="#inheritancee734c7eb45" class="inheritance graphviz" /></div>
+<map id="inheritancee734c7eb45" name="inheritancee734c7eb45">
+<area shape="rect" id="node1" href="#nipy.labs.statistical_mapping.LinearModel" target="_top" title="labs.statistical_mapping.LinearModel" alt="" coords="5,5,241,32"/>
+</map><span class="target" id="module-nipy.labs.statistical_mapping"></span></section>
+<section id="class">
+<h2>Class<a class="headerlink" href="#class" title="Link to this heading">¶</a></h2>
+</section>
+<section id="linearmodel">
+<h2><a class="reference internal" href="#nipy.labs.statistical_mapping.LinearModel" title="nipy.labs.statistical_mapping.LinearModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">LinearModel</span></code></a><a class="headerlink" href="#linearmodel" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.LinearModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.labs.statistical_mapping.</span></span><span class="sig-name descname"><span class="pre">LinearModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'spherical'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.statistical_mapping.LinearModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.LinearModel.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'spherical'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.statistical_mapping.LinearModel.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.LinearModel.contrast">
+<span class="sig-name descname"><span class="pre">contrast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.statistical_mapping.LinearModel.contrast" title="Link to this definition">¶</a></dt>
+<dd><p>Compute images of contrast and contrast variance.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.LinearModel.def_model">
+<span class="sig-name descname"><span class="pre">def_model</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'spherical'</span></em><a class="headerlink" href="#nipy.labs.statistical_mapping.LinearModel.def_model" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.LinearModel.def_niter">
+<span class="sig-name descname"><span class="pre">def_niter</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#nipy.labs.statistical_mapping.LinearModel.def_niter" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.LinearModel.dump">
+<span class="sig-name descname"><span class="pre">dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.statistical_mapping.LinearModel.dump" title="Link to this definition">¶</a></dt>
+<dd><p>Dump GLM fit as npz file.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.bonferroni">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.statistical_mapping.</span></span><span class="sig-name descname"><span class="pre">bonferroni</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.statistical_mapping.bonferroni" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.cluster_stats">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.statistical_mapping.</span></span><span class="sig-name descname"><span class="pre">cluster_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zimg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_th</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_control</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fpr'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_th</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nulls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.statistical_mapping.cluster_stats" title="Link to this definition">¶</a></dt>
+<dd><p>Return a list of clusters, each cluster being represented by a
+dictionary. Clusters are sorted by descending size order. Within
+each cluster, local maxima are sorted by descending depth order.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>zimg: z-score image</strong></dt><dd></dd>
+<dt><strong>mask: mask image</strong></dt><dd></dd>
+<dt><strong>height_th: cluster forming threshold</strong></dt><dd></dd>
+<dt><strong>height_control: string</strong></dt><dd><p>false positive control meaning of cluster forming
+threshold: ‘fpr’|’fdr’|’bonferroni’|’none’</p>
+</dd>
+<dt><strong>cluster_th: cluster size threshold</strong></dt><dd></dd>
+<dt><strong>null_s</strong><span class="classifier">cluster-level calibration method: None|’rft’<a href="#id1"><span class="problematic" id="id2">|</span></a>array</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This works only with three dimensional data</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.get_3d_peaks">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.statistical_mapping.</span></span><span class="sig-name descname"><span class="pre">get_3d_peaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">18</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_th</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.statistical_mapping.get_3d_peaks" title="Link to this definition">¶</a></dt>
+<dd><p>returns all the peaks of image that are with the mask
+and above the provided threshold</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>image, (3d) test image</strong></dt><dd></dd>
+<dt><strong>mask=None, (3d) mask image</strong></dt><dd><p>By default no masking is performed</p>
+</dd>
+<dt><strong>threshold=0., float, threshold value above which peaks are considered</strong></dt><dd></dd>
+<dt><strong>nn=18, int, number of neighbours of the topological spatial model</strong></dt><dd></dd>
+<dt><strong>order_th=0, int, threshold on topological order to validate the peaks</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>peaks, a list of dictionaries, where each dict has the fields:</dt><dd></dd>
+<dt>vals, map value at the peak</dt><dd></dd>
+<dt>order, topological order of the peak</dt><dd></dd>
+<dt>ijk, array of shape (1,3) grid coordinate of the peak</dt><dd></dd>
+<dt>pos, array of shape (n_maxima,3) mm coordinates (mapped by affine)</dt><dd><p>of the peaks</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.linear_model_fit">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.statistical_mapping.</span></span><span class="sig-name descname"><span class="pre">linear_model_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.statistical_mapping.linear_model_fit" title="Link to this definition">¶</a></dt>
+<dd><p>Helper function for group data analysis using arbitrary design matrix</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.onesample_test">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.statistical_mapping.</span></span><span class="sig-name descname"><span class="pre">onesample_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vardata_images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stat_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_forming_th</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.statistical_mapping.onesample_test" title="Link to this definition">¶</a></dt>
+<dd><p>Helper function for permutation-based mass univariate onesample
+group analysis.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.prepare_arrays">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.statistical_mapping.</span></span><span class="sig-name descname"><span class="pre">prepare_arrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vardata_images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_images</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.statistical_mapping.prepare_arrays" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.simulated_pvalue">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.statistical_mapping.</span></span><span class="sig-name descname"><span class="pre">simulated_pvalue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simu_t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.statistical_mapping.simulated_pvalue" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.statistical_mapping.twosample_test">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.statistical_mapping.</span></span><span class="sig-name descname"><span class="pre">twosample_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vardata_images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stat_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_forming_th</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.statistical_mapping.twosample_test" title="Link to this definition">¶</a></dt>
+<dd><p>Helper function for permutation-based mass univariate twosample group
+analysis. Labels is a binary vector (1-2). Regions more active for group
+1 than group 2 are inferred.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">labs.statistical_mapping</a><ul>
+<li><a class="reference internal" href="#module-labs-statistical-mapping">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.statistical_mapping</span></code></a></li>
+<li><a class="reference internal" href="#class">Class</a></li>
+<li><a class="reference internal" href="#linearmodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">LinearModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.LinearModel"><code class="docutils literal notranslate"><span class="pre">LinearModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.LinearModel.__init__"><code class="docutils literal notranslate"><span class="pre">LinearModel.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.LinearModel.contrast"><code class="docutils literal notranslate"><span class="pre">LinearModel.contrast()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.LinearModel.def_model"><code class="docutils literal notranslate"><span class="pre">LinearModel.def_model</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.LinearModel.def_niter"><code class="docutils literal notranslate"><span class="pre">LinearModel.def_niter</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.LinearModel.dump"><code class="docutils literal notranslate"><span class="pre">LinearModel.dump()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.bonferroni"><code class="docutils literal notranslate"><span class="pre">bonferroni()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.cluster_stats"><code class="docutils literal notranslate"><span class="pre">cluster_stats()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.get_3d_peaks"><code class="docutils literal notranslate"><span class="pre">get_3d_peaks()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.linear_model_fit"><code class="docutils literal notranslate"><span class="pre">linear_model_fit()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.onesample_test"><code class="docutils literal notranslate"><span class="pre">onesample_test()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.prepare_arrays"><code class="docutils literal notranslate"><span class="pre">prepare_arrays()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.simulated_pvalue"><code class="docutils literal notranslate"><span class="pre">simulated_pvalue()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.statistical_mapping.twosample_test"><code class="docutils literal notranslate"><span class="pre">twosample_test()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.labs.spatial_models.structural_bfls.html"
+                          title="previous chapter">labs.spatial_models.structural_bfls</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.labs.utils.reproducibility_measures.html"
+                          title="next chapter">labs.utils.reproducibility_measures</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.labs.statistical_mapping.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.utils.reproducibility_measures.html" title="labs.utils.reproducibility_measures"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.structural_bfls.html" title="labs.spatial_models.structural_bfls"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.statistics.utils" href="nipy.algorithms.statistics.utils.html" />
+    <link rel="prev" title="algorithms.statistics.onesample" href="nipy.algorithms.statistics.onesample.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.utils.html" title="algorithms.statistics.utils"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.onesample.html" title="algorithms.statistics.onesample"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-statistics-rft">
+<h1>algorithms.statistics.rft<a class="headerlink" href="#algorithms-statistics-rft" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-statistics-rft">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.rft</span></code><a class="headerlink" href="#module-algorithms-statistics-rft" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.statistics.rft</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-4348a9177485923e208df6485a4feb0470e30d2f.png" alt="Inheritance diagram of nipy.algorithms.statistics.rft" usemap="#inheritance17b0564be0" class="inheritance graphviz" /></div>
+<map id="inheritance17b0564be0" name="inheritance17b0564be0">
+<area shape="rect" id="node6" href="#nipy.algorithms.statistics.rft.ECquasi" target="_top" title="Polynomials with premultiplier" alt="" coords="219,187,349,211"/>
+<area shape="rect" id="node2" href="#nipy.algorithms.statistics.rft.ChiBarSquared" target="_top" title="statistics.rft.ChiBarSquared" alt="" coords="599,5,763,29"/>
+<area shape="rect" id="node3" href="#nipy.algorithms.statistics.rft.ChiSquared" target="_top" title="EC densities for a Chi&#45;Squared(n) random field." alt="" coords="401,5,547,29"/>
+<area shape="rect" id="node4" href="#nipy.algorithms.statistics.rft.ECcone" target="_top" title="EC approximation to supremum distribution of var==1 Gaussian process" alt="" coords="220,141,347,165"/>
+<area shape="rect" id="node7" href="#nipy.algorithms.statistics.rft.FStat" target="_top" title="EC densities for a F random field." alt="" coords="417,50,531,74"/>
+<area shape="rect" id="node8" href="#nipy.algorithms.statistics.rft.Hotelling" target="_top" title="Hotelling&#39;s T^2" alt="" coords="409,96,539,120"/>
+<area shape="rect" id="node9" href="#nipy.algorithms.statistics.rft.MultilinearForm" target="_top" title="Maximize a multivariate Gaussian form" alt="" coords="392,141,556,165"/>
+<area shape="rect" id="node10" href="#nipy.algorithms.statistics.rft.OneSidedF" target="_top" title="EC densities for one&#45;sided F statistic" alt="" coords="402,187,546,211"/>
+<area shape="rect" id="node11" href="#nipy.algorithms.statistics.rft.Roy" target="_top" title="Roy&#39;s maximum root" alt="" coords="421,232,527,256"/>
+<area shape="rect" id="node12" href="#nipy.algorithms.statistics.rft.TStat" target="_top" title="EC densities for a t random field." alt="" coords="417,278,531,302"/>
+<area shape="rect" id="node5" href="#nipy.algorithms.statistics.rft.IntrinsicVolumes" target="_top" title="Compute intrinsic volumes of products of sets" alt="" coords="5,141,176,165"/>
+<area shape="rect" id="node13" href="#nipy.algorithms.statistics.rft.fnsum" target="_top" title="statistics.rft.fnsum" alt="" coords="32,96,149,120"/>
+</map><p id="module-nipy.algorithms.statistics.rft">Random field theory routines</p>
+<p>The theoretical results for  the EC densities appearing in this module
+were partially supported by NSF grant DMS-0405970.</p>
+<dl class="simple">
+<dt>Taylor, J.E. &amp; Worsley, K.J. (2012).  “Detecting sparse cone alternatives</dt><dd><p>for Gaussian random fields, with an application to fMRI”. arXiv:1207.3840
+[math.ST] and Statistica Sinica 23 (2013): 1629-1656.</p>
+</dd>
+<dt>Taylor, J.E. &amp; Worsley, K.J. (2008). “Random fields of multivariate</dt><dd><p>test statistics, with applications to shape analysis.” arXiv:0803.1708
+[math.ST] and Annals of Statistics 36( 2008): 1-27</p>
+</dd>
+</dl>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="chibarsquared">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiBarSquared" title="nipy.algorithms.statistics.rft.ChiBarSquared"><code class="xref py py-class docutils literal notranslate"><span class="pre">ChiBarSquared</span></code></a><a class="headerlink" href="#chibarsquared" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ChiBarSquared">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">ChiBarSquared</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ChiBarSquared" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiSquared" title="nipy.algorithms.statistics.rft.ChiSquared"><code class="xref py py-class docutils literal notranslate"><span class="pre">ChiSquared</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ChiBarSquared.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ChiBarSquared.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ChiBarSquared.density">
+<span class="sig-name descname"><span class="pre">density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ChiBarSquared.density" title="Link to this definition">¶</a></dt>
+<dd><p>The EC density in dimension <cite>dim</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ChiBarSquared.integ">
+<span class="sig-name descname"><span class="pre">integ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ChiBarSquared.integ" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ChiBarSquared.pvalue">
+<span class="sig-name descname"><span class="pre">pvalue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ChiBarSquared.pvalue" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ChiBarSquared.quasi">
+<span class="sig-name descname"><span class="pre">quasi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ChiBarSquared.quasi" title="Link to this definition">¶</a></dt>
+<dd><p>(Quasi-)polynomial parts of EC density in dimension <cite>dim</cite></p>
+<ul class="simple">
+<li><p>ignoring a factor of (2pi)^{-(dim+1)/2} in front.</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="chisquared">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiSquared" title="nipy.algorithms.statistics.rft.ChiSquared"><code class="xref py py-class docutils literal notranslate"><span class="pre">ChiSquared</span></code></a><a class="headerlink" href="#chisquared" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ChiSquared">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">ChiSquared</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ChiSquared" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone" title="nipy.algorithms.statistics.rft.ECcone"><code class="xref py py-class docutils literal notranslate"><span class="pre">ECcone</span></code></a></p>
+<p>EC densities for a Chi-Squared(n) random field.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ChiSquared.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ChiSquared.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ChiSquared.density">
+<span class="sig-name descname"><span class="pre">density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ChiSquared.density" title="Link to this definition">¶</a></dt>
+<dd><p>The EC density in dimension <cite>dim</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ChiSquared.integ">
+<span class="sig-name descname"><span class="pre">integ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ChiSquared.integ" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ChiSquared.pvalue">
+<span class="sig-name descname"><span class="pre">pvalue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ChiSquared.pvalue" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ChiSquared.quasi">
+<span class="sig-name descname"><span class="pre">quasi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ChiSquared.quasi" title="Link to this definition">¶</a></dt>
+<dd><p>(Quasi-)polynomial parts of EC density in dimension <cite>dim</cite></p>
+<ul class="simple">
+<li><p>ignoring a factor of (2pi)^{-(dim+1)/2} in front.</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="eccone">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone" title="nipy.algorithms.statistics.rft.ECcone"><code class="xref py py-class docutils literal notranslate"><span class="pre">ECcone</span></code></a><a class="headerlink" href="#eccone" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECcone">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">ECcone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">product</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECcone" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.rft.IntrinsicVolumes" title="nipy.algorithms.statistics.rft.IntrinsicVolumes"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntrinsicVolumes</span></code></a></p>
+<p>EC approximation to supremum distribution of var==1 Gaussian process</p>
+<p>A class that takes the intrinsic volumes of a set and gives the EC
+approximation to the supremum distribution of a unit variance Gaussian
+process with these intrinsic volumes. This is the basic building block of
+all of the EC densities.</p>
+<p>If product is not None, then this product (an instance of IntrinsicVolumes)
+will effectively be prepended to the search region in any call, but it will
+also affect the (quasi-)polynomial part of the EC density. For instance,
+Hotelling’s T^2 random field has a sphere as product, as does Roy’s maximum
+root.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECcone.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">product</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECcone.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECcone.density">
+<span class="sig-name descname"><span class="pre">density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECcone.density" title="Link to this definition">¶</a></dt>
+<dd><p>The EC density in dimension <cite>dim</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECcone.integ">
+<span class="sig-name descname"><span class="pre">integ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECcone.integ" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECcone.pvalue">
+<span class="sig-name descname"><span class="pre">pvalue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECcone.pvalue" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECcone.quasi">
+<span class="sig-name descname"><span class="pre">quasi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECcone.quasi" title="Link to this definition">¶</a></dt>
+<dd><p>(Quasi-)polynomial parts of EC density in dimension <cite>dim</cite></p>
+<ul class="simple">
+<li><p>ignoring a factor of (2pi)^{-(dim+1)/2} in front.</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="ecquasi">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi" title="nipy.algorithms.statistics.rft.ECquasi"><code class="xref py py-class docutils literal notranslate"><span class="pre">ECquasi</span></code></a><a class="headerlink" href="#ecquasi" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">ECquasi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c_or_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exponent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">poly1d</span></code></p>
+<p>Polynomials with premultiplier</p>
+<p>A subclass of poly1d consisting of polynomials with a premultiplier of the
+form:</p>
+<p>(1 + x^2/m)^-exponent</p>
+<p>where m is a non-negative float (possibly infinity, in which case the
+function is a polynomial) and exponent is a non-negative multiple of 1/2.</p>
+<p>These arise often in the EC densities.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.algorithms.statistics.rft</span> <span class="kn">import</span> <span class="n">ECquasi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">101</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ECquasi</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="go">ECquasi(array([3, 4, 5]), m=inf, exponent=0.000000)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="o">*</span><span class="mi">3</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">4</span><span class="o">*</span><span class="mi">3</span> <span class="o">+</span> <span class="mi">5</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">ECquasi</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">exponent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">b</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">a</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">30</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c_or_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exponent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.c">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">c</span></span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.c" title="Link to this definition">¶</a></dt>
+<dd><p>The polynomial coefficients</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.change_exponent">
+<span class="sig-name descname"><span class="pre">change_exponent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_pow</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.change_exponent" title="Link to this definition">¶</a></dt>
+<dd><p>Change exponent</p>
+<p>Multiply top and bottom by an integer multiple of the
+self.denom_poly.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">ECquasi</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">20</span><span class="p">],</span> <span class="n">m</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">exponent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">101</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">change_exponent</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span>
+<span class="go">ECquasi(array([  1.11111111e-04,   1.48148148e-04,   1.07407407e-02,</span>
+<span class="go">         1.33333333e-02,   3.66666667e-01,   4.00000000e-01,</span>
+<span class="go">         5.00000000e+00,   4.00000000e+00,   2.00000000e+01]), m=30.000000, exponent=7.000000)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">b</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.coef">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">coef</span></span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.coef" title="Link to this definition">¶</a></dt>
+<dd><p>The polynomial coefficients</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.coefficients">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">coefficients</span></span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.coefficients" title="Link to this definition">¶</a></dt>
+<dd><p>The polynomial coefficients</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.coeffs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">coeffs</span></span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.coeffs" title="Link to this definition">¶</a></dt>
+<dd><p>The polynomial coefficients</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.compatible">
+<span class="sig-name descname"><span class="pre">compatible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.compatible" title="Link to this definition">¶</a></dt>
+<dd><p>Check compatibility of degrees of freedom</p>
+<p>Check whether the degrees of freedom of two instances are equal
+so that they can be multiplied together.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">ECquasi</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">20</span><span class="p">],</span> <span class="n">m</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">exponent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">101</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">change_exponent</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">ECquasi</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">20</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="o">.</span><span class="n">compatible</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.denom_poly">
+<span class="sig-name descname"><span class="pre">denom_poly</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.denom_poly" title="Link to this definition">¶</a></dt>
+<dd><p>Base of the premultiplier: (1+x^2/m).</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">ECquasi</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">20</span><span class="p">],</span> <span class="n">m</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">exponent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">denom_poly</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span>
+<span class="go">poly1d([ 0.03333333,  0.        ,  1.        ])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">c</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.</span><span class="o">/</span><span class="n">b</span><span class="o">.</span><span class="n">m</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.deriv">
+<span class="sig-name descname"><span class="pre">deriv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.deriv" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate derivative of ECquasi</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>m</strong><span class="classifier">int, optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ECquasi</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">deriv</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> 
+<span class="go">ECquasi(array([6]), m=inf, exponent=0.000000)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">ECquasi</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="n">m</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">exponent</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="o">.</span><span class="n">deriv</span><span class="p">()</span>
+<span class="go">ECquasi(array([-1.2, -2. ,  3. ,  4. ]), m=10.000000, exponent=4.000000)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.integ">
+<span class="sig-name descname"><span class="pre">integ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.integ" title="Link to this definition">¶</a></dt>
+<dd><p>Return an antiderivative (indefinite integral) of this polynomial.</p>
+<p>Refer to <cite>polyint</cite> for full documentation.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">polyint</span></code></dt><dd><p>equivalent function</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.o">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">o</span></span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.o" title="Link to this definition">¶</a></dt>
+<dd><p>The order or degree of the polynomial</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.order">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">order</span></span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.order" title="Link to this definition">¶</a></dt>
+<dd><p>The order or degree of the polynomial</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.r">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">r</span></span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.r" title="Link to this definition">¶</a></dt>
+<dd><p>The roots of the polynomial, where self(x) == 0</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.roots">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">roots</span></span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.roots" title="Link to this definition">¶</a></dt>
+<dd><p>The roots of the polynomial, where self(x) == 0</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ECquasi.variable">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">variable</span></span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ECquasi.variable" title="Link to this definition">¶</a></dt>
+<dd><p>The name of the polynomial variable</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="fstat">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.rft.FStat" title="nipy.algorithms.statistics.rft.FStat"><code class="xref py py-class docutils literal notranslate"><span class="pre">FStat</span></code></a><a class="headerlink" href="#fstat" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.FStat">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">FStat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.FStat" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone" title="nipy.algorithms.statistics.rft.ECcone"><code class="xref py py-class docutils literal notranslate"><span class="pre">ECcone</span></code></a></p>
+<p>EC densities for a F random field.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.FStat.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.FStat.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.FStat.density">
+<span class="sig-name descname"><span class="pre">density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.FStat.density" title="Link to this definition">¶</a></dt>
+<dd><p>The EC density in dimension <cite>dim</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.FStat.integ">
+<span class="sig-name descname"><span class="pre">integ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.FStat.integ" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.FStat.pvalue">
+<span class="sig-name descname"><span class="pre">pvalue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.FStat.pvalue" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.FStat.quasi">
+<span class="sig-name descname"><span class="pre">quasi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.FStat.quasi" title="Link to this definition">¶</a></dt>
+<dd><p>(Quasi-)polynomial parts of EC density in dimension <cite>dim</cite></p>
+<ul class="simple">
+<li><p>ignoring a factor of (2pi)^{-(dim+1)/2} in front.</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="hotelling">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.rft.Hotelling" title="nipy.algorithms.statistics.rft.Hotelling"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hotelling</span></code></a><a class="headerlink" href="#hotelling" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.Hotelling">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">Hotelling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.Hotelling" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone" title="nipy.algorithms.statistics.rft.ECcone"><code class="xref py py-class docutils literal notranslate"><span class="pre">ECcone</span></code></a></p>
+<p>Hotelling’s T^2</p>
+<p>Maximize an F_{1,dfd}=T_dfd^2 statistic over a sphere of dimension
+<cite>k</cite>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.Hotelling.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.Hotelling.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.Hotelling.density">
+<span class="sig-name descname"><span class="pre">density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.Hotelling.density" title="Link to this definition">¶</a></dt>
+<dd><p>The EC density in dimension <cite>dim</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.Hotelling.integ">
+<span class="sig-name descname"><span class="pre">integ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.Hotelling.integ" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.Hotelling.pvalue">
+<span class="sig-name descname"><span class="pre">pvalue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.Hotelling.pvalue" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.Hotelling.quasi">
+<span class="sig-name descname"><span class="pre">quasi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.Hotelling.quasi" title="Link to this definition">¶</a></dt>
+<dd><p>(Quasi-)polynomial parts of EC density in dimension <cite>dim</cite></p>
+<ul class="simple">
+<li><p>ignoring a factor of (2pi)^{-(dim+1)/2} in front.</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="intrinsicvolumes">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.rft.IntrinsicVolumes" title="nipy.algorithms.statistics.rft.IntrinsicVolumes"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntrinsicVolumes</span></code></a><a class="headerlink" href="#intrinsicvolumes" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.IntrinsicVolumes">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">IntrinsicVolumes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.IntrinsicVolumes" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Compute intrinsic volumes of products of sets</p>
+<p>A simple class that exists only to compute the intrinsic volumes of
+products of sets (that themselves have intrinsic volumes, of course).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.IntrinsicVolumes.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.IntrinsicVolumes.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="multilinearform">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.rft.MultilinearForm" title="nipy.algorithms.statistics.rft.MultilinearForm"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultilinearForm</span></code></a><a class="headerlink" href="#multilinearform" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.MultilinearForm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">MultilinearForm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">dims</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.MultilinearForm" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone" title="nipy.algorithms.statistics.rft.ECcone"><code class="xref py py-class docutils literal notranslate"><span class="pre">ECcone</span></code></a></p>
+<p>Maximize a multivariate Gaussian form</p>
+<p>Maximized over spheres of dimension dims. See:</p>
+<p>Kuri, S. &amp; Takemura, A. (2001).
+‘Tail probabilities of the maxima of multilinear forms and
+their applications.’ Ann. Statist. 29(2): 328-371.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.MultilinearForm.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">dims</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.MultilinearForm.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.MultilinearForm.density">
+<span class="sig-name descname"><span class="pre">density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.MultilinearForm.density" title="Link to this definition">¶</a></dt>
+<dd><p>The EC density in dimension <cite>dim</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.MultilinearForm.integ">
+<span class="sig-name descname"><span class="pre">integ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.MultilinearForm.integ" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.MultilinearForm.pvalue">
+<span class="sig-name descname"><span class="pre">pvalue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.MultilinearForm.pvalue" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.MultilinearForm.quasi">
+<span class="sig-name descname"><span class="pre">quasi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.MultilinearForm.quasi" title="Link to this definition">¶</a></dt>
+<dd><p>(Quasi-)polynomial parts of EC density in dimension <cite>dim</cite></p>
+<ul class="simple">
+<li><p>ignoring a factor of (2pi)^{-(dim+1)/2} in front.</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="onesidedf">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.rft.OneSidedF" title="nipy.algorithms.statistics.rft.OneSidedF"><code class="xref py py-class docutils literal notranslate"><span class="pre">OneSidedF</span></code></a><a class="headerlink" href="#onesidedf" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.OneSidedF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">OneSidedF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.OneSidedF" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone" title="nipy.algorithms.statistics.rft.ECcone"><code class="xref py py-class docutils literal notranslate"><span class="pre">ECcone</span></code></a></p>
+<p>EC densities for one-sided F statistic</p>
+<p>See:</p>
+<p>Worsley, K.J. &amp; Taylor, J.E. (2005). ‘Detecting fMRI activation
+allowing for unknown latency of the hemodynamic response.’
+Neuroimage, 29,649-654.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.OneSidedF.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.OneSidedF.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.OneSidedF.density">
+<span class="sig-name descname"><span class="pre">density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.OneSidedF.density" title="Link to this definition">¶</a></dt>
+<dd><p>The EC density in dimension <cite>dim</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.OneSidedF.integ">
+<span class="sig-name descname"><span class="pre">integ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.OneSidedF.integ" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.OneSidedF.pvalue">
+<span class="sig-name descname"><span class="pre">pvalue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.OneSidedF.pvalue" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.OneSidedF.quasi">
+<span class="sig-name descname"><span class="pre">quasi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.OneSidedF.quasi" title="Link to this definition">¶</a></dt>
+<dd><p>(Quasi-)polynomial parts of EC density in dimension <cite>dim</cite></p>
+<ul class="simple">
+<li><p>ignoring a factor of (2pi)^{-(dim+1)/2} in front.</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="roy">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.rft.Roy" title="nipy.algorithms.statistics.rft.Roy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Roy</span></code></a><a class="headerlink" href="#roy" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.Roy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">Roy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.Roy" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone" title="nipy.algorithms.statistics.rft.ECcone"><code class="xref py py-class docutils literal notranslate"><span class="pre">ECcone</span></code></a></p>
+<p>Roy’s maximum root</p>
+<p>Maximize an F_{dfd,dfn} statistic over a sphere of dimension k.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.Roy.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.Roy.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.Roy.density">
+<span class="sig-name descname"><span class="pre">density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.Roy.density" title="Link to this definition">¶</a></dt>
+<dd><p>The EC density in dimension <cite>dim</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.Roy.integ">
+<span class="sig-name descname"><span class="pre">integ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.Roy.integ" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.Roy.pvalue">
+<span class="sig-name descname"><span class="pre">pvalue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.Roy.pvalue" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.Roy.quasi">
+<span class="sig-name descname"><span class="pre">quasi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.Roy.quasi" title="Link to this definition">¶</a></dt>
+<dd><p>(Quasi-)polynomial parts of EC density in dimension <cite>dim</cite></p>
+<ul class="simple">
+<li><p>ignoring a factor of (2pi)^{-(dim+1)/2} in front.</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="tstat">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.rft.TStat" title="nipy.algorithms.statistics.rft.TStat"><code class="xref py py-class docutils literal notranslate"><span class="pre">TStat</span></code></a><a class="headerlink" href="#tstat" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.TStat">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">TStat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.TStat" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone" title="nipy.algorithms.statistics.rft.ECcone"><code class="xref py py-class docutils literal notranslate"><span class="pre">ECcone</span></code></a></p>
+<p>EC densities for a t random field.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.TStat.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.TStat.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.TStat.density">
+<span class="sig-name descname"><span class="pre">density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.TStat.density" title="Link to this definition">¶</a></dt>
+<dd><p>The EC density in dimension <cite>dim</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.TStat.integ">
+<span class="sig-name descname"><span class="pre">integ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.TStat.integ" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.TStat.pvalue">
+<span class="sig-name descname"><span class="pre">pvalue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.TStat.pvalue" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.TStat.quasi">
+<span class="sig-name descname"><span class="pre">quasi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.TStat.quasi" title="Link to this definition">¶</a></dt>
+<dd><p>(Quasi-)polynomial parts of EC density in dimension <cite>dim</cite></p>
+<ul class="simple">
+<li><p>ignoring a factor of (2pi)^{-(dim+1)/2} in front.</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="fnsum">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.rft.fnsum" title="nipy.algorithms.statistics.rft.fnsum"><code class="xref py py-class docutils literal notranslate"><span class="pre">fnsum</span></code></a><a class="headerlink" href="#fnsum" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.fnsum">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">fnsum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">items</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.fnsum" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.fnsum.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">items</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.fnsum.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.Q">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">Q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dfd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.Q" title="Link to this definition">¶</a></dt>
+<dd><p>Q polynomial</p>
+<p>If <cite>dfd</cite> == inf (the default), then Q(dim) is the (dim-1)-st Hermite
+polynomial:</p>
+<div class="math notranslate nohighlight">
+\[H_j(x) = (-1)^j * e^{x^2/2} * (d^j/dx^j e^{-x^2/2})\]</div>
+<p>If <cite>dfd</cite> != inf, then it is the polynomial Q defined in <a class="reference internal" href="#r1c326144b061-worsley1994" id="id1">[Worsley1994]</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dim</strong><span class="classifier">int</span></dt><dd><p>dimension of polynomial</p>
+</dd>
+<dt><strong>dfd</strong><span class="classifier">scalar</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>q_poly</strong><span class="classifier">np.poly1d instance</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<div role="list" class="citation-list">
+<div class="citation" id="r1c326144b061-worsley1994" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">Worsley1994</a><span class="fn-bracket">]</span></span>
+<p>Worsley, K.J. (1994). ‘Local maxima and the expected Euler
+characteristic of excursion sets of chi^2, F and t fields.’ Advances in
+Applied Probability, 26:13-42.</p>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.ball_search">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">ball_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.ball_search" title="Link to this definition">¶</a></dt>
+<dd><p>A ball-shaped search region of radius r.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.binomial">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">binomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.binomial" title="Link to this definition">¶</a></dt>
+<dd><p>Binomial coefficient</p>
+<blockquote>
+<div><p>n!</p>
+</div></blockquote>
+<dl class="simple">
+<dt>c =    ———</dt><dd><p>(n-k)! k!</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">float</span></dt><dd><p>n of (n, k)</p>
+</dd>
+<dt><strong>k</strong><span class="classifier">float</span></dt><dd><p>k of (n, k)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>c</strong><span class="classifier">float</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>First 3 values of 4 th row of Pascal triangle</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">binomial</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+<span class="go">[1.0, 4.0, 6.0]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.mu_ball">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">mu_ball</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.mu_ball" title="Link to this definition">¶</a></dt>
+<dd><p><cite>j`th curvature of `n</cite>-dimensional ball radius <cite>r</cite></p>
+<p>Return mu_j(B_n(r)), the j-th Lipschitz Killing curvature of the
+ball of radius r in R^n.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.mu_sphere">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">mu_sphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.mu_sphere" title="Link to this definition">¶</a></dt>
+<dd><p><cite>j`th curvature for `n</cite> dimensional sphere radius <cite>r</cite></p>
+<p>Return mu_j(S_r(R^n)), the j-th Lipschitz Killing
+curvature of the sphere of radius r in R^n.</p>
+<p>From Chapter 6 of</p>
+<p>Adler &amp; Taylor, ‘Random Fields and Geometry’. 2006.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.scale_space">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">scale_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kappa</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.scale_space" title="Link to this definition">¶</a></dt>
+<dd><p>scale space intrinsic volumes of region x interval</p>
+<p>See:</p>
+<p>Siegmund, D.O and Worsley, K.J. (1995). ‘Testing for a signal
+with unknown location and scale in a stationary Gaussian random
+field.’  Annals of Statistics, 23:608-639.</p>
+<p>and</p>
+<p>Taylor, J.E. &amp; Worsley, K.J. (2005). ‘Random fields of multivariate
+test statistics, with applications to shape analysis and fMRI.’</p>
+<p>(available on <a class="reference external" href="http://www.math.mcgill.ca/keith">http://www.math.mcgill.ca/keith</a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.spherical_search">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">spherical_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.spherical_search" title="Link to this definition">¶</a></dt>
+<dd><p>A spherical search region of radius r.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.rft.volume2ball">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.rft.</span></span><span class="sig-name descname"><span class="pre">volume2ball</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.rft.volume2ball" title="Link to this definition">¶</a></dt>
+<dd><p>Approximate volume with ball</p>
+<p>Approximate intrinsic volumes of a set with a given volume by those of a
+ball with a given dimension and equal volume.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.statistics.rft</a><ul>
+<li><a class="reference internal" href="#module-algorithms-statistics-rft">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.rft</span></code></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#chibarsquared"><code class="xref py py-class docutils literal notranslate"><span class="pre">ChiBarSquared</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiBarSquared"><code class="docutils literal notranslate"><span class="pre">ChiBarSquared</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiBarSquared.__init__"><code class="docutils literal notranslate"><span class="pre">ChiBarSquared.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiBarSquared.density"><code class="docutils literal notranslate"><span class="pre">ChiBarSquared.density()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiBarSquared.integ"><code class="docutils literal notranslate"><span class="pre">ChiBarSquared.integ()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiBarSquared.pvalue"><code class="docutils literal notranslate"><span class="pre">ChiBarSquared.pvalue()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiBarSquared.quasi"><code class="docutils literal notranslate"><span class="pre">ChiBarSquared.quasi()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chisquared"><code class="xref py py-class docutils literal notranslate"><span class="pre">ChiSquared</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiSquared"><code class="docutils literal notranslate"><span class="pre">ChiSquared</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiSquared.__init__"><code class="docutils literal notranslate"><span class="pre">ChiSquared.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiSquared.density"><code class="docutils literal notranslate"><span class="pre">ChiSquared.density()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiSquared.integ"><code class="docutils literal notranslate"><span class="pre">ChiSquared.integ()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiSquared.pvalue"><code class="docutils literal notranslate"><span class="pre">ChiSquared.pvalue()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ChiSquared.quasi"><code class="docutils literal notranslate"><span class="pre">ChiSquared.quasi()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#eccone"><code class="xref py py-class docutils literal notranslate"><span class="pre">ECcone</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone"><code class="docutils literal notranslate"><span class="pre">ECcone</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone.__init__"><code class="docutils literal notranslate"><span class="pre">ECcone.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone.density"><code class="docutils literal notranslate"><span class="pre">ECcone.density()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone.integ"><code class="docutils literal notranslate"><span class="pre">ECcone.integ()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone.pvalue"><code class="docutils literal notranslate"><span class="pre">ECcone.pvalue()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECcone.quasi"><code class="docutils literal notranslate"><span class="pre">ECcone.quasi()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ecquasi"><code class="xref py py-class docutils literal notranslate"><span class="pre">ECquasi</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi"><code class="docutils literal notranslate"><span class="pre">ECquasi</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.__init__"><code class="docutils literal notranslate"><span class="pre">ECquasi.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.c"><code class="docutils literal notranslate"><span class="pre">ECquasi.c</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.change_exponent"><code class="docutils literal notranslate"><span class="pre">ECquasi.change_exponent()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.coef"><code class="docutils literal notranslate"><span class="pre">ECquasi.coef</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.coefficients"><code class="docutils literal notranslate"><span class="pre">ECquasi.coefficients</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.coeffs"><code class="docutils literal notranslate"><span class="pre">ECquasi.coeffs</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.compatible"><code class="docutils literal notranslate"><span class="pre">ECquasi.compatible()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.denom_poly"><code class="docutils literal notranslate"><span class="pre">ECquasi.denom_poly()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.deriv"><code class="docutils literal notranslate"><span class="pre">ECquasi.deriv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.integ"><code class="docutils literal notranslate"><span class="pre">ECquasi.integ()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.o"><code class="docutils literal notranslate"><span class="pre">ECquasi.o</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.order"><code class="docutils literal notranslate"><span class="pre">ECquasi.order</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.r"><code class="docutils literal notranslate"><span class="pre">ECquasi.r</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.roots"><code class="docutils literal notranslate"><span class="pre">ECquasi.roots</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ECquasi.variable"><code class="docutils literal notranslate"><span class="pre">ECquasi.variable</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fstat"><code class="xref py py-class docutils literal notranslate"><span class="pre">FStat</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.FStat"><code class="docutils literal notranslate"><span class="pre">FStat</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.FStat.__init__"><code class="docutils literal notranslate"><span class="pre">FStat.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.FStat.density"><code class="docutils literal notranslate"><span class="pre">FStat.density()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.FStat.integ"><code class="docutils literal notranslate"><span class="pre">FStat.integ()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.FStat.pvalue"><code class="docutils literal notranslate"><span class="pre">FStat.pvalue()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.FStat.quasi"><code class="docutils literal notranslate"><span class="pre">FStat.quasi()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hotelling"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hotelling</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.Hotelling"><code class="docutils literal notranslate"><span class="pre">Hotelling</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.Hotelling.__init__"><code class="docutils literal notranslate"><span class="pre">Hotelling.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.Hotelling.density"><code class="docutils literal notranslate"><span class="pre">Hotelling.density()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.Hotelling.integ"><code class="docutils literal notranslate"><span class="pre">Hotelling.integ()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.Hotelling.pvalue"><code class="docutils literal notranslate"><span class="pre">Hotelling.pvalue()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.Hotelling.quasi"><code class="docutils literal notranslate"><span class="pre">Hotelling.quasi()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#intrinsicvolumes"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntrinsicVolumes</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.IntrinsicVolumes"><code class="docutils literal notranslate"><span class="pre">IntrinsicVolumes</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.IntrinsicVolumes.__init__"><code class="docutils literal notranslate"><span class="pre">IntrinsicVolumes.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multilinearform"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultilinearForm</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.MultilinearForm"><code class="docutils literal notranslate"><span class="pre">MultilinearForm</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.MultilinearForm.__init__"><code class="docutils literal notranslate"><span class="pre">MultilinearForm.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.MultilinearForm.density"><code class="docutils literal notranslate"><span class="pre">MultilinearForm.density()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.MultilinearForm.integ"><code class="docutils literal notranslate"><span class="pre">MultilinearForm.integ()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.MultilinearForm.pvalue"><code class="docutils literal notranslate"><span class="pre">MultilinearForm.pvalue()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.MultilinearForm.quasi"><code class="docutils literal notranslate"><span class="pre">MultilinearForm.quasi()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#onesidedf"><code class="xref py py-class docutils literal notranslate"><span class="pre">OneSidedF</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.OneSidedF"><code class="docutils literal notranslate"><span class="pre">OneSidedF</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.OneSidedF.__init__"><code class="docutils literal notranslate"><span class="pre">OneSidedF.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.OneSidedF.density"><code class="docutils literal notranslate"><span class="pre">OneSidedF.density()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.OneSidedF.integ"><code class="docutils literal notranslate"><span class="pre">OneSidedF.integ()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.OneSidedF.pvalue"><code class="docutils literal notranslate"><span class="pre">OneSidedF.pvalue()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.OneSidedF.quasi"><code class="docutils literal notranslate"><span class="pre">OneSidedF.quasi()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#roy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Roy</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.Roy"><code class="docutils literal notranslate"><span class="pre">Roy</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.Roy.__init__"><code class="docutils literal notranslate"><span class="pre">Roy.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.Roy.density"><code class="docutils literal notranslate"><span class="pre">Roy.density()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.Roy.integ"><code class="docutils literal notranslate"><span class="pre">Roy.integ()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.Roy.pvalue"><code class="docutils literal notranslate"><span class="pre">Roy.pvalue()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.Roy.quasi"><code class="docutils literal notranslate"><span class="pre">Roy.quasi()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tstat"><code class="xref py py-class docutils literal notranslate"><span class="pre">TStat</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.TStat"><code class="docutils literal notranslate"><span class="pre">TStat</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.TStat.__init__"><code class="docutils literal notranslate"><span class="pre">TStat.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.TStat.density"><code class="docutils literal notranslate"><span class="pre">TStat.density()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.TStat.integ"><code class="docutils literal notranslate"><span class="pre">TStat.integ()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.TStat.pvalue"><code class="docutils literal notranslate"><span class="pre">TStat.pvalue()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.TStat.quasi"><code class="docutils literal notranslate"><span class="pre">TStat.quasi()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fnsum"><code class="xref py py-class docutils literal notranslate"><span class="pre">fnsum</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.fnsum"><code class="docutils literal notranslate"><span class="pre">fnsum</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.fnsum.__init__"><code class="docutils literal notranslate"><span class="pre">fnsum.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.Q"><code class="docutils literal notranslate"><span class="pre">Q()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.ball_search"><code class="docutils literal notranslate"><span class="pre">ball_search()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.binomial"><code class="docutils literal notranslate"><span class="pre">binomial()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.mu_ball"><code class="docutils literal notranslate"><span class="pre">mu_ball()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.mu_sphere"><code class="docutils literal notranslate"><span class="pre">mu_sphere()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.scale_space"><code class="docutils literal notranslate"><span class="pre">scale_space()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.spherical_search"><code class="docutils literal notranslate"><span class="pre">spherical_search()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.rft.volume2ball"><code class="docutils literal notranslate"><span class="pre">volume2ball()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.onesample.html"
+                          title="previous chapter">algorithms.statistics.onesample</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.utils.html"
+                          title="next chapter">algorithms.statistics.utils</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.statistics.rft.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.utils.html" title="algorithms.statistics.utils"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.onesample.html" title="algorithms.statistics.onesample"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

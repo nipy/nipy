@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="nipy.labs.viz_tools.maps_3d.plot_map_3d" href="nipy.labs.viz_tools.maps_3d.plot_map_3d.html" />
+    <link rel="prev" title="Plotting of activation maps" href="../viz.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.viz_tools.maps_3d.plot_map_3d.html" title="nipy.labs.viz_tools.maps_3d.plot_map_3d"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../viz.html" title="Plotting of activation maps"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >NeuroSpin tools</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../viz.html" accesskey="U">Plotting of activation maps</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="nipy-labs-viz-tools-activation-maps-plot-map">
+<h1>nipy.labs.viz_tools.activation_maps.plot_map<a class="headerlink" href="#nipy-labs-viz-tools-activation-maps-plot-map" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.viz_tools.activation_maps.plot_map">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.viz_tools.activation_maps.</span></span><span class="sig-name descname"><span class="pre">plot_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_coords</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anat_affine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slicer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ortho'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_cross</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do3d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_3d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_3d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(38.5,</span> <span class="pre">70.5,</span> <span class="pre">300,</span> <span class="pre">(-2.7,</span> <span class="pre">-12,</span> <span class="pre">9.1))</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">black_bg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">imshow_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.viz_tools.activation_maps.plot_map" title="Link to this definition">¶</a></dt>
+<dd><p>Plot three cuts of a given activation map (Frontal, Axial, and Lateral)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>map</strong><span class="classifier">3D ndarray</span></dt><dd><p>The activation map, as a 3D image.</p>
+</dd>
+<dt><strong>affine</strong><span class="classifier">4x4 ndarray</span></dt><dd><p>The affine matrix going from image voxel space to MNI space.</p>
+</dd>
+<dt><strong>cut_coords: None, int, or a tuple of floats</strong></dt><dd><p>The MNI coordinates of the point where the cut is performed, in
+MNI coordinates and order.
+If slicer is ‘ortho’, this should be a 3-tuple: (x, y, z)
+For slicer == ‘x’, ‘y’, or ‘z’, then these are the
+coordinates of each cut in the corresponding direction.
+If None or an int is given, then a maximally separated sequence (
+with exactly cut_coords elements if cut_coords is not None) of
+cut coordinates along the slicer axis is computed automatically</p>
+</dd>
+<dt><strong>anat</strong><span class="classifier">3D ndarray or False, optional</span></dt><dd><p>The anatomical image to be used as a background. If None, the
+MNI152 T1 1mm template is used. If False, no anat is displayed.</p>
+</dd>
+<dt><strong>anat_affine</strong><span class="classifier">4x4 ndarray, optional</span></dt><dd><p>The affine matrix going from the anatomical image voxel space to
+MNI space. This parameter is not used when the default
+anatomical is used, but it is compulsory when using an
+explicit anatomical image.</p>
+</dd>
+<dt><strong>slicer: {‘ortho’, ‘x’, ‘y’, ‘z’}</strong></dt><dd><p>Choose the direction of the cuts. With ‘ortho’ three cuts are
+performed in orthogonal directions</p>
+</dd>
+<dt><strong>figure</strong><span class="classifier">integer or matplotlib figure, optional</span></dt><dd><p>Matplotlib figure used or its number. If None is given, a
+new figure is created.</p>
+</dd>
+<dt><strong>axes</strong><span class="classifier">matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional</span></dt><dd><p>The axes, or the coordinates, in matplotlib figure space,
+of the axes used to display the plot. If None, the complete
+figure is used.</p>
+</dd>
+<dt><strong>title</strong><span class="classifier">string, optional</span></dt><dd><p>The title displayed on the figure.</p>
+</dd>
+<dt><strong>threshold</strong><span class="classifier">a number, None, or ‘auto’</span></dt><dd><p>If None is given, the maps are not thresholded.
+If a number is given, it is used to threshold the maps:
+values below the threshold are plotted as transparent. If
+auto is given, the threshold is determined magically by
+analysis of the map.</p>
+</dd>
+<dt><strong>annotate: boolean, optional</strong></dt><dd><p>If annotate is True, positions and left/right annotation
+are added to the plot.</p>
+</dd>
+<dt><strong>draw_cross: boolean, optional</strong></dt><dd><p>If draw_cross is True, a cross is drawn on the plot to
+indicate the cut plosition.</p>
+</dd>
+<dt><strong>do3d: {True, False or ‘interactive’}, optional</strong></dt><dd><p>If True, Mayavi is used to plot a 3D view of the
+map in addition to the slicing. If ‘interactive’, the
+3D visualization is displayed in an additional interactive
+window.</p>
+</dd>
+<dt><strong>threshold_3d:</strong></dt><dd><p>The threshold to use for the 3D view (if any). Defaults to
+the same threshold as that used for the 2D view.</p>
+</dd>
+<dt><strong>view_3d: tuple,</strong></dt><dd><p>The view used to take the screenshot: azimuth, elevation,
+distance and focalpoint, see the docstring of mlab.view.</p>
+</dd>
+<dt><strong>black_bg: boolean, optional</strong></dt><dd><p>If True, the background of the image is set to be black. If
+you wish to save figures with a black background, you
+will need to pass “facecolor=’k’, edgecolor=’k’” to pyplot’s
+savefig.</p>
+</dd>
+<dt><strong>imshow_kwargs: extra keyword arguments, optional</strong></dt><dd><p>Extra keyword arguments passed to pyplot.imshow</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Arrays should be passed in numpy convention: (x, y, z)
+ordered.</p>
+<p>Use masked arrays to create transparency:</p>
+<blockquote>
+<div><p>import numpy as np
+map = np.ma.masked_less(map, 0.5)
+plot_map(map, affine)</p>
+</div></blockquote>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">nipy.labs.viz_tools.activation_maps.plot_map</a><ul>
+<li><a class="reference internal" href="#nipy.labs.viz_tools.activation_maps.plot_map"><code class="docutils literal notranslate"><span class="pre">plot_map()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../viz.html"
+                          title="previous chapter">Plotting of activation maps</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.labs.viz_tools.maps_3d.plot_map_3d.html"
+                          title="next chapter">nipy.labs.viz_tools.maps_3d.plot_map_3d</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/labs/generated/nipy.labs.viz_tools.activation_maps.plot_map.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.viz_tools.maps_3d.plot_map_3d.html" title="nipy.labs.viz_tools.maps_3d.plot_map_3d"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../viz.html" title="Plotting of activation maps"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >NeuroSpin tools</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../viz.html" >Plotting of activation maps</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

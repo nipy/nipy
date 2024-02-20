@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Repository design" href="repository_design.html" />
+    <link rel="prev" title="Image index ordering" href="image_ordering.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="repository_design.html" title="Repository design"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="image_ordering.html" title="Image index ordering"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">Code discussions</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="registration-api-design">
+<h1>Registration API Design<a class="headerlink" href="#registration-api-design" title="Link to this heading">¶</a></h1>
+<p>This contains design ideas for the end-user api when registering images in nipy.</p>
+<p>We want to provide a simple api, but with enough flexibility to allow
+users to changes various components of the pipeline.  We will also
+provide various <strong>Standard</strong> scripts that perform typical pipelines.</p>
+<p>The pluggable script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">func_img</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="n">anat_img</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="n">interpolator</span> <span class="o">=</span> <span class="n">SplineInterpolator</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">metric</span> <span class="o">=</span> <span class="n">NormalizedMutualInformation</span><span class="p">()</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">Powell</span><span class="p">()</span>
+<span class="n">strategy</span> <span class="o">=</span> <span class="n">RegistrationStrategy</span><span class="p">(</span><span class="n">interpolator</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+<span class="n">w2w</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">img_fixed</span><span class="p">,</span> <span class="n">img_moving</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To apply the transform and resample the image:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">new_img</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span><span class="n">img_moving</span><span class="p">,</span> <span class="n">w2w</span><span class="p">,</span> <span class="n">interp</span><span class="o">=</span><span class="n">interpolator</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">new_img</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">img_moving</span><span class="p">,</span> <span class="n">w2w</span><span class="o">*</span><span class="n">img_moving</span><span class="o">.</span><span class="n">coordmap</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="transform-multiplication">
+<h2>Transform Multiplication<a class="headerlink" href="#transform-multiplication" title="Link to this heading">¶</a></h2>
+<p>The multiplication order is important and coordinate systems must
+<em>make sense</em>.  The <em>output coordinates</em> of the mapping on the
+right-hand of the operator, must match the <em>input coordinates</em> of the
+mapping on the left-hand side of the operator.</p>
+<p>For example, imageA has a mapping from voxels-to-world (v2w), imageB
+has a mapping from world-to-world (w2w).  So the output of imageA,
+<em>world</em>, maps to the input of imageB, <em>world</em>.  We would compose a new
+mapping (transform) from these mappings like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">new_coordmap</span> <span class="o">=</span> <span class="n">imageB</span><span class="o">.</span><span class="n">coordmap</span> <span class="o">*</span> <span class="n">imageA</span><span class="o">.</span><span class="n">coordmap</span>
+</pre></div>
+</div>
+<p>If one tried to compose a mapping in the other order, an error should
+be raised as the code would detect a mismatch of trying to map output
+coordinates from imageB, <em>world</em> to the input coordinates of imageA,
+<em>voxels</em>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>new_coordmap = imageA.coordmap * imageB.coordmap
+raise ValueError!!!
+</pre></div>
+</div>
+<p>Note: We should consider a meaningful error message to help people
+quickly correct this mistake.</p>
+<p>One way to remember this ordering is to think of composing functions.
+If these were functions, the output of the first function to evaluate
+(imageA.coordmap) is passed as input to the second function
+(imageB.coordmap).  And therefore they must match:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">new_coordmap</span> <span class="o">=</span> <span class="n">imageB</span><span class="o">.</span><span class="n">coordmap</span><span class="p">(</span><span class="n">imageA</span><span class="o">.</span><span class="n">coordmap</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="matching-coordinate-systems">
+<h2>Matching Coordinate Systems<a class="headerlink" href="#matching-coordinate-systems" title="Link to this heading">¶</a></h2>
+<p>We need to make sure we can detect mismatched coordinate mappings.
+The CoordinateSystem class has a check for equality (__eq__ method)
+based on the axis and name attributes.  Long-term this may not be
+robust enough, but it’s a starting place.  We should write tests for
+failing cases of this, if they don’t already exists.</p>
+</section>
+<section id="coordinatemap">
+<h2>CoordinateMap<a class="headerlink" href="#coordinatemap" title="Link to this heading">¶</a></h2>
+<p>Recall the CoordinateMap defines a mapping between two coordinate
+systems, an input coordinate system and an output coordinate system.
+One example of this would be a mapping from voxel space to scanner
+space.  In a Nifti1 header we would have an affine transform to apply
+this mapping.  The <em>input coordinates</em> would be voxel space, the
+<em>output coordinates</em> would be world space, and the affine transform
+provides the mapping between them.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Registration API Design</a><ul>
+<li><a class="reference internal" href="#transform-multiplication">Transform Multiplication</a></li>
+<li><a class="reference internal" href="#matching-coordinate-systems">Matching Coordinate Systems</a></li>
+<li><a class="reference internal" href="#coordinatemap">CoordinateMap</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="image_ordering.html"
+                          title="previous chapter">Image index ordering</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="repository_design.html"
+                          title="next chapter">Repository design</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/devel/code_discussions/registration_api.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="repository_design.html" title="Repository design"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="image_ordering.html" title="Image index ordering"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" >Code discussions</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

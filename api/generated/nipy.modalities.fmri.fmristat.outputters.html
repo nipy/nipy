@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="modalities.fmri.glm" href="nipy.modalities.fmri.glm.html" />
+    <link rel="prev" title="modalities.fmri.fmristat.model" href="nipy.modalities.fmri.fmristat.model.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.glm.html" title="modalities.fmri.glm"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmristat.model.html" title="modalities.fmri.fmristat.model"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="modalities-fmri-fmristat-outputters">
+<h1>modalities.fmri.fmristat.outputters<a class="headerlink" href="#modalities-fmri-fmristat-outputters" title="Link to this heading">¶</a></h1>
+<section id="module-modalities-fmri-fmristat-outputters">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.fmristat.outputters</span></code><a class="headerlink" href="#module-modalities-fmri-fmristat-outputters" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.modalities.fmri.fmristat.outputters</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-cb814252126d7959bf16e326461b004cf9eeac27.png" alt="Inheritance diagram of nipy.modalities.fmri.fmristat.outputters" usemap="#inheritance7a05f38b18" class="inheritance graphviz" /></div>
+<map id="inheritance7a05f38b18" name="inheritance7a05f38b18">
+<area shape="rect" id="node1" href="#nipy.modalities.fmri.fmristat.outputters.RegressionOutput" target="_top" title="A class to output things in GLM passes through arrays of data." alt="" coords="16,56,252,83"/>
+<area shape="rect" id="node2" href="#nipy.modalities.fmri.fmristat.outputters.RegressionOutputList" target="_top" title="A class to output more than one thing" alt="" coords="5,5,263,32"/>
+<area shape="rect" id="node3" href="#nipy.modalities.fmri.fmristat.outputters.TOutput" target="_top" title="Output contrast related to a T contrast from a GLM pass through data." alt="" coords="311,5,489,32"/>
+</map><p id="module-nipy.modalities.fmri.fmristat.outputters">Convenience functions and classes for statistics on images.</p>
+<p>These functions and classes support the return of statistical test results from
+iterations through data.</p>
+<p>The basic container here is the RegressionOutput.  This does two basic things:</p>
+<ul class="simple">
+<li><p>via __call__, processes a result object from a regression to produce
+something, usually an array</p></li>
+<li><p>via slicing (__setitem__), it can store stuff, usually arrays.</p></li>
+</ul>
+<p>We use these by other objects (see algorithms.statistics.fmri.fmristat) slicing
+data out of images, fitting models to the data to create results objects, and
+then passing them to these here <code class="docutils literal notranslate"><span class="pre">RegressionOutput</span></code> containers via call, to get
+useful arrays, and then putting the results back into the <code class="docutils literal notranslate"><span class="pre">RegressionOutput</span></code>
+containers via slicing (__setitem__).</p>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="regressionoutput">
+<h3><a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.RegressionOutput" title="nipy.modalities.fmri.fmristat.outputters.RegressionOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">RegressionOutput</span></code></a><a class="headerlink" href="#regressionoutput" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.outputters.RegressionOutput">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.outputters.</span></span><span class="sig-name descname"><span class="pre">RegressionOutput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.outputters.RegressionOutput" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to output things in GLM passes through arrays of data.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.outputters.RegressionOutput.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.outputters.RegressionOutput.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>img</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code> instance</span></dt><dd><p>The output Image</p>
+</dd>
+<dt><strong>fn</strong><span class="classifier">callable</span></dt><dd><p>A function that is applied to a
+models.model.LikelihoodModelResults instance</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="regressionoutputlist">
+<h3><a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.RegressionOutputList" title="nipy.modalities.fmri.fmristat.outputters.RegressionOutputList"><code class="xref py py-class docutils literal notranslate"><span class="pre">RegressionOutputList</span></code></a><a class="headerlink" href="#regressionoutputlist" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.outputters.RegressionOutputList">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.outputters.</span></span><span class="sig-name descname"><span class="pre">RegressionOutputList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.outputters.RegressionOutputList" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to output more than one thing
+from a GLM pass through arrays of data.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.outputters.RegressionOutputList.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.outputters.RegressionOutputList.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize regression output list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>imgs</strong><span class="classifier">list</span></dt><dd><p>The list of output images</p>
+</dd>
+<dt><strong>fn</strong><span class="classifier">callable</span></dt><dd><p>A function that is applied to a
+models.model.LikelihoodModelResults instance</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="toutput">
+<h3><a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.TOutput" title="nipy.modalities.fmri.fmristat.outputters.TOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">TOutput</span></code></a><a class="headerlink" href="#toutput" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.outputters.TOutput">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.outputters.</span></span><span class="sig-name descname"><span class="pre">TOutput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contrast</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.outputters.TOutput" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.RegressionOutputList" title="nipy.modalities.fmri.fmristat.outputters.RegressionOutputList"><code class="xref py py-class docutils literal notranslate"><span class="pre">RegressionOutputList</span></code></a></p>
+<p>Output contrast related to a T contrast from a GLM pass through data.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.outputters.TOutput.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contrast</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.outputters.TOutput.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize regression output list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>imgs</strong><span class="classifier">list</span></dt><dd><p>The list of output images</p>
+</dd>
+<dt><strong>fn</strong><span class="classifier">callable</span></dt><dd><p>A function that is applied to a
+models.model.LikelihoodModelResults instance</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.outputters.output_AR1">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.outputters.</span></span><span class="sig-name descname"><span class="pre">output_AR1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.outputters.output_AR1" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the usual AR(1) parameter on
+the residuals from a regression.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.outputters.output_F">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.outputters.</span></span><span class="sig-name descname"><span class="pre">output_F</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contrast</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.outputters.output_F" title="Link to this definition">¶</a></dt>
+<dd><p>This convenience function outputs the results of an Fcontrast
+from a regression</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>results</strong><span class="classifier">object</span></dt><dd><p>implementing Tcontrast method</p>
+</dd>
+<dt><strong>contrast</strong><span class="classifier">array</span></dt><dd><p>contrast matrix</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>F</strong><span class="classifier">array</span></dt><dd><p>array of F values</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.outputters.output_T">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.outputters.</span></span><span class="sig-name descname"><span class="pre">output_T</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contrast</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retvals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('effect',</span> <span class="pre">'sd',</span> <span class="pre">'t')</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.outputters.output_T" title="Link to this definition">¶</a></dt>
+<dd><p>Convenience function to collect t contrast results</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>results</strong><span class="classifier">object</span></dt><dd><p>implementing Tcontrast method</p>
+</dd>
+<dt><strong>contrast</strong><span class="classifier">array</span></dt><dd><p>contrast matrix</p>
+</dd>
+<dt><strong>retvals</strong><span class="classifier">sequence, optional</span></dt><dd><p>None or more of strings ‘effect’, ‘sd’, ‘t’, where the presence of the
+string means that that output will be returned.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>res_list</strong><span class="classifier">list</span></dt><dd><p>List of results.  It will have the same length as <cite>retvals</cite> and the
+elements will be in the same order as retvals</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.fmristat.outputters.output_resid">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.fmristat.outputters.</span></span><span class="sig-name descname"><span class="pre">output_resid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.fmristat.outputters.output_resid" title="Link to this definition">¶</a></dt>
+<dd><p>This convenience function outputs the residuals
+from a regression</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">modalities.fmri.fmristat.outputters</a><ul>
+<li><a class="reference internal" href="#module-modalities-fmri-fmristat-outputters">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.fmristat.outputters</span></code></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#regressionoutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">RegressionOutput</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.RegressionOutput"><code class="docutils literal notranslate"><span class="pre">RegressionOutput</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.RegressionOutput.__init__"><code class="docutils literal notranslate"><span class="pre">RegressionOutput.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#regressionoutputlist"><code class="xref py py-class docutils literal notranslate"><span class="pre">RegressionOutputList</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.RegressionOutputList"><code class="docutils literal notranslate"><span class="pre">RegressionOutputList</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.RegressionOutputList.__init__"><code class="docutils literal notranslate"><span class="pre">RegressionOutputList.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#toutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">TOutput</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.TOutput"><code class="docutils literal notranslate"><span class="pre">TOutput</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.TOutput.__init__"><code class="docutils literal notranslate"><span class="pre">TOutput.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.output_AR1"><code class="docutils literal notranslate"><span class="pre">output_AR1()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.output_F"><code class="docutils literal notranslate"><span class="pre">output_F()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.output_T"><code class="docutils literal notranslate"><span class="pre">output_T()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.fmristat.outputters.output_resid"><code class="docutils literal notranslate"><span class="pre">output_resid()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.fmristat.model.html"
+                          title="previous chapter">modalities.fmri.fmristat.model</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.glm.html"
+                          title="next chapter">modalities.fmri.glm</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.modalities.fmri.fmristat.outputters.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.glm.html" title="modalities.fmri.glm"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmristat.model.html" title="modalities.fmri.fmristat.model"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

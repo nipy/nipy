@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Some notes on compiling on windows with Visual Studio" href="../guidelines/compiling_windows.html" />
+    <link rel="prev" title="NIPY License Information" href="../../license.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../guidelines/compiling_windows.html" title="Some notes on compiling on windows with Visual Studio"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../../license.html" title="NIPY License Information"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="some-discussion-notes-on-coordinate-maps">
+<span id="coordmap-discussion"></span><h1>Some discussion notes on coordinate maps<a class="headerlink" href="#some-discussion-notes-on-coordinate-maps" title="Link to this heading">¶</a></h1>
+<p>These notes contain some email discussion between Jonathan Taylor, Bertrand
+Thirion and Gael Varoquaux about coordinate maps, coordinate systems and
+transforms.</p>
+<p>They are a little bit rough and undigested in their current form, but they might
+be useful for background.</p>
+<p>The code and discussion below mentions ideas like <code class="docutils literal notranslate"><span class="pre">LPIImage</span></code>, <code class="docutils literal notranslate"><span class="pre">XYZImage</span></code> and
+<code class="docutils literal notranslate"><span class="pre">AffineImage</span></code>.  These were image classes that constrained their coordinate
+maps to have input and output axes in a particular order.  We eventually removed
+these in favor of automated reordering of image axes on save, and explicit
+reordering of images that needed known axis ordering.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sympy</span>
+<span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;i, j, k&#39;</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]))</span>
+<span class="n">kij</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;kij&#39;</span><span class="p">)</span>
+<span class="n">ijk_to_kij</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">ijk</span><span class="p">,</span> <span class="n">kij</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]]))</span>
+<span class="n">ijk_to_kij</span><span class="p">([</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">])</span>
+<span class="n">kij</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;kij&#39;</span><span class="p">)</span>
+<span class="n">ijk_to_kij</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">ijk</span><span class="p">,</span> <span class="n">kij</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]]))</span>
+<span class="n">ijk_to_kij</span><span class="p">([</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">])</span>
+<span class="n">kij_to_RAS</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">ijk_to_kij</span><span class="p">,</span> <span class="n">ijk_to_RAS</span><span class="p">)</span>
+<span class="n">kij_to_RAS</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">ijk_to_RAS</span><span class="p">,</span><span class="n">ijk_to_kij</span><span class="p">)</span>
+<span class="n">kij_to_RAS</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">ijk_to_RAS</span><span class="p">,</span><span class="n">ijk_to_kij</span><span class="o">.</span><span class="n">inverse</span><span class="p">())</span>
+<span class="n">kij_to_RAS</span>
+<span class="n">kij</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;kij&#39;</span><span class="p">)</span>
+<span class="n">ijk_to_kij</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">ijk</span><span class="p">,</span> <span class="n">kij</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]]))</span>
+<span class="c1"># Check that it does the right permutation</span>
+<span class="n">ijk_to_kij</span><span class="p">([</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">])</span>
+<span class="c1"># Yup, now let&#39;s try to make a kij_to_RAS transform</span>
+<span class="c1"># At first guess, we might try</span>
+<span class="n">kij_to_RAS</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">ijk_to_RAS</span><span class="p">,</span><span class="n">ijk_to_kij</span><span class="p">)</span>
+<span class="c1"># but we have a problem, we&#39;ve asked for a composition that doesn&#39;t make sense</span>
+<span class="n">kij_to_RAS</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">ijk_to_RAS</span><span class="p">,</span><span class="n">ijk_to_kij</span><span class="o">.</span><span class="n">inverse</span><span class="p">())</span>
+<span class="n">kij_to_RAS</span>
+<span class="c1"># check that things are working -- I should get the same value at i=20,j=30,k=40 for both mappings, only the arguments are reversed</span>
+<span class="n">ijk_to_RAS</span><span class="p">([</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">])</span>
+<span class="n">kij_to_RAS</span><span class="p">([</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+<span class="n">another_kij_to_RAS</span> <span class="o">=</span> <span class="n">ijk_to_RAS</span><span class="o">.</span><span class="n">reordered_domain</span><span class="p">(</span><span class="s1">&#39;kij&#39;</span><span class="p">)</span>
+<span class="n">another_kij_to_RAS</span><span class="p">([</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+<span class="c1"># rather than finding the permutation matrix your self</span>
+<span class="n">another_kij_to_RAS</span> <span class="o">=</span> <span class="n">ijk_to_RAS</span><span class="o">.</span><span class="n">reordered_domain</span><span class="p">(</span><span class="s1">&#39;kij&#39;</span><span class="p">)</span>
+<span class="n">another_kij_to_RAS</span><span class="p">([</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">ijk</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">xyz</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">x_start</span><span class="p">,</span> <span class="n">y_start</span><span class="p">,</span> <span class="n">z_start</span> <span class="o">=</span> <span class="p">[</span><span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;x_start&#39;</span><span class="p">,</span> <span class="s1">&#39;y_start&#39;</span><span class="p">,</span> <span class="s1">&#39;z_start&#39;</span><span class="p">]]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">x_step</span><span class="p">,</span> <span class="n">y_step</span><span class="p">,</span> <span class="n">z_step</span> <span class="o">=</span> <span class="p">[</span><span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;x_step&#39;</span><span class="p">,</span> <span class="s1">&#39;y_step&#39;</span><span class="p">,</span> <span class="s1">&#39;z_step&#39;</span><span class="p">]]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="p">[</span><span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;ijk&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">x_step</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">x_start</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="n">y_step</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">y_start</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">z_step</span><span class="p">,</span><span class="n">z_start</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">T</span>
+<span class="n">array</span><span class="p">([[</span><span class="n">x_step</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">x_start</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_step</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y_start</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">z_step</span><span class="p">,</span> <span class="n">z_start</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">A</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">ijk</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">A</span>
+<span class="n">AffineTransform</span><span class="p">(</span>
+<span class="n">function_domain</span><span class="o">=</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="n">coord_names</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;j&#39;</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
+<span class="n">function_range</span><span class="o">=</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="n">coord_names</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
+<span class="n">affine</span><span class="o">=</span><span class="n">array</span><span class="p">([[</span><span class="n">x_step</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">x_start</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_step</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y_start</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">z_step</span><span class="p">,</span> <span class="n">z_start</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">A</span><span class="p">([</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">])</span>
+<span class="n">array</span><span class="p">([</span><span class="n">x_start</span> <span class="o">+</span> <span class="n">i</span><span class="o">*</span><span class="n">x_step</span><span class="p">,</span> <span class="n">y_start</span> <span class="o">+</span> <span class="n">j</span><span class="o">*</span><span class="n">y_step</span><span class="p">,</span> <span class="n">z_start</span> <span class="o">+</span> <span class="n">k</span><span class="o">*</span><span class="n">z_step</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># this is another</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">A_kij</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">reordered_domain</span><span class="p">(</span><span class="s1">&#39;kij&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">A_kij</span>
+<span class="n">AffineTransform</span><span class="p">(</span>
+<span class="n">function_domain</span><span class="o">=</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="n">coord_names</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;j&#39;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
+<span class="n">function_range</span><span class="o">=</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="n">coord_names</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
+<span class="n">affine</span><span class="o">=</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_step</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">x_start</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y_step</span><span class="p">,</span> <span class="n">y_start</span><span class="p">],</span>
+                <span class="p">[</span><span class="n">z_step</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">z_start</span><span class="p">],</span>
+                <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">A_kij</span><span class="p">([</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+<span class="n">array</span><span class="p">([</span><span class="n">x_start</span> <span class="o">+</span> <span class="n">i</span><span class="o">*</span><span class="n">x_step</span><span class="p">,</span> <span class="n">y_start</span> <span class="o">+</span> <span class="n">j</span><span class="o">*</span><span class="n">y_step</span><span class="p">,</span> <span class="n">z_start</span> <span class="o">+</span> <span class="n">k</span><span class="o">*</span><span class="n">z_step</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+                                                                                <span class="o">&gt;&gt;&gt;</span> <span class="c1"># let&#39;s look at another reordering</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">A_kij_yzx</span> <span class="o">=</span> <span class="n">A_kij</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">(</span><span class="s1">&#39;yzx&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">A_kij_yzx</span>
+<span class="n">AffineTransform</span><span class="p">(</span>
+<span class="n">function_domain</span><span class="o">=</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="n">coord_names</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;j&#39;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
+<span class="n">function_range</span><span class="o">=</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="n">coord_names</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
+<span class="n">affine</span><span class="o">=</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y_step</span><span class="p">,</span> <span class="n">y_start</span><span class="p">],</span>
+                <span class="p">[</span><span class="n">z_step</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">z_start</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_step</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">x_start</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.00000000000000</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">A_kij_yzx</span><span class="p">([</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+<span class="n">array</span><span class="p">([</span><span class="n">y_start</span> <span class="o">+</span> <span class="n">j</span><span class="o">*</span><span class="n">y_step</span><span class="p">,</span> <span class="n">z_start</span> <span class="o">+</span> <span class="n">k</span><span class="o">*</span><span class="n">z_step</span><span class="p">,</span> <span class="n">x_start</span> <span class="o">+</span> <span class="n">i</span><span class="o">*</span><span class="n">x_step</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+
+<span class="k">class</span> <span class="nc">RASTransform</span><span class="p">(</span><span class="n">AffineTransform</span><span class="p">):</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">An AffineTransform with output, i.e. range:</span>
+
+<span class="sd">x: units of 1mm increasing from Right to Left</span>
+<span class="sd">y: units of 1mm increasing from Anterior to Posterior</span>
+<span class="sd">z:  units of 1mm increasing from Superior to Inferior</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">reorder_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;not allowed to reorder the &quot;xyz&quot; output coordinates&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">to_LPS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
+    <span class="k">return</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_domain</span><span class="p">),</span>
+                            <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_range</span><span class="p">),</span>
+                            <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">affine</span><span class="p">))</span>
+
+<span class="k">class</span> <span class="nc">LPSTransform</span><span class="p">(</span><span class="n">AffineTransform</span><span class="p">):</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">An AffineTransform with output, i.e. range:</span>
+
+<span class="sd">x: units of 1mm increasing from Left to Right</span>
+<span class="sd">y: units of 1mm increasing from Posterior to Anterior</span>
+<span class="sd">z:  units of 1mm increasing from Inferior to Superior</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">reorder_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;not allowed to reorder the &quot;xyz&quot; output coordinates&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">to_RAS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
+    <span class="k">return</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_domain</span><span class="p">),</span>
+                            <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function_range</span><span class="p">),</span>
+                            <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">affine</span><span class="p">)))</span>
+
+<span class="k">class</span> <span class="nc">NeuroImage</span><span class="p">(</span><span class="n">Image</span><span class="p">):</span>
+<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">affine</span><span class="p">,</span> <span class="n">axis_names</span><span class="p">,</span> <span class="n">world</span><span class="o">=</span><span class="s1">&#39;world-RAS&#39;</span><span class="p">):</span>
+    <span class="n">affine_transform</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;LPS&#39;</span><span class="p">:</span><span class="n">LPSTransform</span><span class="p">,</span>
+                        <span class="s1">&#39;RAS&#39;</span><span class="p">:</span><span class="n">RAITransform</span><span class="p">}[</span><span class="n">world</span><span class="p">])(</span><span class="n">axis_names</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;xyz&quot;</span><span class="p">,</span> <span class="n">affine</span><span class="p">}</span>
+    <span class="o">...</span>
+
+<span class="n">LPIImage</span> <span class="n">only</span> <span class="n">forced</span> <span class="n">it</span> <span class="n">to</span> <span class="n">be</span> <span class="n">of</span> <span class="n">one</span> <span class="nb">type</span><span class="o">.</span>
+</pre></div>
+</div>
+<section id="email-1">
+<h2>Email #1<a class="headerlink" href="#email-1" title="Link to this heading">¶</a></h2>
+<p>Excuse the long email but I started writing, and then it started looking like documentation. I will put most of it into doc/users/coordinate_map.rst.</p>
+<blockquote>
+<div><p>Also, I am not sure what this means. The image is in LPI ordering, only
+if the reference frame of the world space it is pointing to is.</p>
+</div></blockquote>
+<p>I am proposing we enforce the world space to have this frame of reference
+to be explicit so that you could tell left from right on an image after calling xyz_ordered().</p>
+<blockquote>
+<div><p>If it is
+pointing to MNI152 (or Talairach), then x=Left to Right, y=Posterior to
+Anterior, and z=Inferior to Superior. If not, you are not in MNI152.
+Moreover, according to the FSL docs, the whole ‘anatomical’ versus
+‘neurological’ mess that I hear has been a long standing problem has
+nothing to do with the target frame of reference, but only with the way
+the data is stored.</p>
+</div></blockquote>
+<p>I think the LPI designation simply specifies “x=Left to Right, y=Posterior to
+Anterior, and z=Inferior to Superior” so any MNI152 or Tailarach would be in LPI
+coordinates, that’s all I’m trying to specify with the designation “LPI”. If
+MNI152 might imply a certain voxel size, then I would prefer not to use MNI152.</p>
+<p>If there’s a better colour for the bike shed, then I’ll let someone else paint it, :)</p>
+<p>This LPI specification actually makes a difference to the
+“AffineImage/LPIImage.xyz_ordered” method. If, in the interest of being
+explicit, we would enforce the direction of x,y,z in LPI/Neuro/AffineImage, then
+the goal of having “xyz_ordered” return an image with an affine that has a
+diagonal with positive entries, as in the AffineImage specification, means that
+you might have to call</p>
+<p>affine_image.get_data()[::-1,::-1] # or some other combination of flips</p>
+<p>(i.e. you have to change how it is stored in memory).</p>
+<p>The other way to return an diagonal affine with positive entries is to flip send
+x to -x, y to -y, i.e. multiply the diagonal matrix by np.diag([-1,-1,1,1]) on
+the left. But then your AffineImage would now have “x=Right to Left, y=Anterior
+to Posterior” and we have lost the interpretation of x,y,z as LPI coordinates.</p>
+<p>By being explicit about the direction of x,y,z we know that if the affine matrix
+was diagonal and had a negative entry in the first position, then we know that
+left and right were flipped when viewed with a command like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pylab</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[:,:,</span><span class="mi">10</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Without specifying the direction of x,y,z we just don’t know.</p>
+<blockquote>
+<div><p>You can of course create a new coordinate system describing, for instance
+the scanner space, where the first coordinate is not x, and the second
+not y, … but I am not sure what this means: x, y, and z, as well as
+left or right, are just names. The only important information between two
+coordinate systems is the transform linking them.</p>
+</div></blockquote>
+<p>The sentence:</p>
+<p>“The only important information between two coordinate systems is the transform
+linking them.”</p>
+<p>has, in one form or another, often been repeated in NiPy meetings, but no one
+bothers to define the terms in this sentence.  So, I have to ask what is your
+definition of “transform” and “coordinate system”?  I have a precise definition,
+and the names are part of it.</p>
+<p>Let’s go through that sentence. Mathematically, if a transform is a function,
+then a transform knows its domain and its range so it knows the what the
+coordinate systems are. So yes, with transform defined as “function”, if I give
+you a transform between two coordinate systems (mathematical spaces of some
+kind) the only important information about it is itself.</p>
+<p>The problem is that, for a 4x4 matrix T, the python function</p>
+<p>transform_function = lambda v: np.dot(T, np.hstack([v,1])[:3]</p>
+<p>has a “duck-type” domain that knows nothing about image acquisition and a range inferred by numpy that knows nothing about LPI or MNI152.  The string “coord_sys” in AffineImage is meant to imply that its domain and range say it should be interpreted in some way, but it is not explicit in AffineImage.</p>
+<p>(Somewhere around here, I start veering off into documentation…. sorry).</p>
+<p>To me, a “coordinate system” is a basis for a vector space (sometimes you might
+want transforms between integers but ignore them for now).  It’s not even a
+description of an affine subspace of a vector space, (see e.g.
+<a class="reference external" href="http://en.wikipedia.org/wiki/Affine_transformation">http://en.wikipedia.org/wiki/Affine_transformation</a>).  To describe such an affine
+subspace, “coordinate system” would need one more piece of information, the
+“constant” or “displacement” vector of the affine subspace.</p>
+<p>Because it’s a basis, each element in the basis can be identified by a name, so
+the transform depends on the names because that’s how I determine a “coordinate
+system” and I need “coordinate systems” because they are what the domain and
+range of my “transform” are going to be. For instance, this describes the range
+“coordinate system” of a “transform” whose output is in LPI coordinates:</p>
+<p>“x” = a unit vector of length 1mm pointing in the Left to Right direction
+“y” = a unit vector of length 1mm pointing in the Posterior to Anterior direction
+“z” = a unit vector of length 1mm pointing in the Inferior to Superior direction</p>
+<p>OK, so that’s my definition of “coordinate system” and the names are an
+important part of it.</p>
+<p>Now for the “transform” which I will restrict to be “affine transform”. To me,
+this is an affine function or transformation between two vector spaces (we’re
+not even considering affine transformations between affine spaces). I bring up
+the distinction because generally affine transforms act on affine spaces rather
+than vector spaces. A vector space is an affine subspace of itself with
+“displacement” vector given by its origin, hence it is an affine space and so we
+can define affine functions on vector spaces.</p>
+<p>Because it is an affine function, the mathematical image of the domain under
+this function is an affine subspace of its range (which is a vector space). The
+“displacement” vector of this affine subspace is represented by the floats in b
+where A,b = to_matvec(T) (once I have specified a basis for the range of this
+function).</p>
+<p>Since my “affine transform” is a function between two vector spaces, it should
+have a domain that is a vector space, as well. For the “affine transform”
+associated with an Image, this domain vector space has coordinates that can be
+interpreted as array coordinates, or coordinates in a “data cube”. Depending on
+the acquisition parameters, these coordinates might have names like “phase”,
+“freq”, “slice”.</p>
+<p>Now, I can encode all this information in a tuple: (T=a 4x4 matrix of floats
+with bottom row [0,0,0,1], (‘phase’, ‘freq’, “slice”), (‘x’,’y’,’z’))</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.api</span> <span class="kn">import</span> <span class="n">CoordinateSystem</span><span class="p">,</span> <span class="n">AffineTransform</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">acquisition</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;phase&#39;</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">,</span> <span class="s1">&#39;slice&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xyz_world</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span><span class="s1">&#39;y&#39;</span><span class="p">,</span><span class="s1">&#39;z&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mf">91.095</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mf">129.51</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mf">73.25</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">AffineTransform</span><span class="p">(</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="n">acquisition</span><span class="p">),</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="n">xyz_world</span><span class="p">),</span> <span class="n">T</span><span class="p">)</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;phase&#39;, &#39;freq&#39;, &#39;slice&#39;), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[   2.   ,    0.   ,    0.   ,  -91.095],</span>
+<span class="go">                 [   0.   ,    2.   ,    0.   , -129.51 ],</span>
+<span class="go">                 [   0.   ,    0.   ,    2.   ,  -73.25 ],</span>
+<span class="go">                 [   0.   ,    0.   ,    0.   ,    1.   ]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<p>The float64 appearing above is a way of specifying that the “coordinate systems”
+are vector spaces over the real numbers, rather than, say the complex numbers.
+It is specified as an optional argument to CoordinateSystem.</p>
+<p>Compare this to the way a MINC file is described:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>jtaylo@ubuntu:~$ mincinfo data.mnc
+file: data.mnc
+image: signed__ short -32768 to 32767
+image dimensions: zspace yspace xspace
+    dimension name         length         step        start
+    --------------         ------         ----        -----
+    zspace                     84            2       -73.25
+    yspace                    114            2      -129.51
+    xspace                     92            2      -91.095
+jtaylo@ubuntu:~$
+jtaylo@ubuntu:~$ mincheader data.mnc
+netcdf data {
+dimensions:
+    zspace = 84 ;
+    yspace = 114 ;
+    xspace = 92 ;
+variables:
+    double zspace ;
+        zspace:varid = &quot;MINC standard variable&quot; ;
+        zspace:vartype = &quot;dimension____&quot; ;
+        zspace:version = &quot;MINC Version    1.0&quot; ;
+        zspace:comments = &quot;Z increases from patient inferior to superior&quot; ;
+        zspace:spacing = &quot;regular__&quot; ;
+        zspace:alignment = &quot;centre&quot; ;
+        zspace:step = 2. ;
+        zspace:start = -73.25 ;
+        zspace:units = &quot;mm&quot; ;
+    double yspace ;
+        yspace:varid = &quot;MINC standard variable&quot; ;
+        yspace:vartype = &quot;dimension____&quot; ;
+        yspace:version = &quot;MINC Version    1.0&quot; ;
+        yspace:comments = &quot;Y increases from patient posterior to anterior&quot; ;
+        yspace:spacing = &quot;regular__&quot; ;
+        yspace:alignment = &quot;centre&quot; ;
+        yspace:step = 2. ;
+        yspace:start = -129.509994506836 ;
+        yspace:units = &quot;mm&quot; ;
+    double xspace ;
+        xspace:varid = &quot;MINC standard variable&quot; ;
+        xspace:vartype = &quot;dimension____&quot; ;
+        xspace:version = &quot;MINC Version    1.0&quot; ;
+        xspace:comments = &quot;X increases from patient left to right&quot; ;
+        xspace:spacing = &quot;regular__&quot; ;
+        xspace:alignment = &quot;centre&quot; ;
+        xspace:step = 2. ;
+        xspace:start = -91.0950012207031 ;
+        xspace:units = &quot;mm&quot; ;
+    short image(zspace, yspace, xspace) ;
+        image:parent = &quot;rootvariable&quot; ;
+        image:varid = &quot;MINC standard variable&quot; ;
+        image:vartype = &quot;group________&quot; ;
+        image:version = &quot;MINC Version    1.0&quot; ;
+        image:complete = &quot;true_&quot; ;
+        image:signtype = &quot;signed__&quot; ;
+        image:valid_range = -32768., 32767. ;
+        image:image-min = &quot;---&gt;image-min&quot; ;
+        image:image-max = &quot;---&gt;image-max&quot; ;
+    int rootvariable ;
+        rootvariable:varid = &quot;MINC standard variable&quot; ;
+        rootvariable:vartype = &quot;group________&quot; ;
+        rootvariable:version = &quot;MINC Version    1.0&quot; ;
+        rootvariable:parent = &quot;&quot; ;
+        rootvariable:children = &quot;image&quot; ;
+    double image-min ;
+        image-min:varid = &quot;MINC standard variable&quot; ;
+        image-min:vartype = &quot;var_attribute&quot; ;
+        image-min:version = &quot;MINC Version    1.0&quot; ;
+        image-min:_FillValue = 0. ;
+        image-min:parent = &quot;image&quot; ;
+    double image-max ;
+        image-max:varid = &quot;MINC standard variable&quot; ;
+        image-max:vartype = &quot;var_attribute&quot; ;
+        image-max:version = &quot;MINC Version    1.0&quot; ;
+        image-max:_FillValue = 1. ;
+        image-max:parent = &quot;image&quot; ;
+data:
+
+zspace = 0 ;
+
+yspace = 0 ;
+
+xspace = 0 ;
+
+rootvariable = _ ;
+
+image-min = -50 ;
+
+image-max = 50 ;
+}
+</pre></div>
+</div>
+<p>I like the MINC description, but the one thing missing in this file is the
+ability to specify (‘phase’, ‘freq’, ‘slice’).  It may be possible to add it but
+I’m not sure, it certainly can be added by adding a string to the header.  It
+also mixes the definition of the basis with the affine transformation (look at
+the output of mincheader which says that yspace has step 2). The NIFTI-1
+standard allows limited possibilities to specify (‘phase’, ‘freq’, ‘slice’) this
+with its dim_info byte but there are pulse sequences for which these names are
+not appropriate.</p>
+<p>One might ask: why bother making a “coordinate system” for the voxels. Well,
+this is part of my definition of “affine transform”.  More importantly, it
+separates the notion of world axes (‘x’,’y’,’z’) and voxel indices
+(‘i’,’j’,’k’). There is at least one use case, slice timing, a key step in the
+fMRI pipeline, where we need to know which spatial axis is slice. One solution
+would be to just add an attribute to AffineImage called “slice_axis” but then,
+as Gael says, the possibilities for axis names are infinite, what if we want an
+attribute for “group_axis”? AffineTransform provides an easy way to specify an
+axis as “slice”:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">unknown_acquisition</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">,</span><span class="s1">&#39;j&#39;</span><span class="p">,</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="n">unknown_acquisition</span><span class="p">),</span>
+<span class="gp">... </span>                    <span class="n">CoordinateSystem</span><span class="p">(</span><span class="n">xyz_world</span><span class="p">),</span> <span class="n">T</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After some deliberation, we find out that the third axis is slice…</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="o">.</span><span class="n">renamed_domain</span><span class="p">({</span><span class="s1">&#39;k&#39;</span><span class="p">:</span><span class="s1">&#39;slice&#39;</span><span class="p">})</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;slice&#39;), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[   2.   ,    0.   ,    0.   ,  -91.095],</span>
+<span class="go">                 [   0.   ,    2.   ,    0.   , -129.51 ],</span>
+<span class="go">                 [   0.   ,    0.   ,    2.   ,  -73.25 ],</span>
+<span class="go">                 [   0.   ,    0.   ,    0.   ,    1.   ]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<p>Another question one might ask is: why bother allowing non-4x4 affine matrices
+like:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">AffineTransform</span><span class="o">.</span><span class="n">from_params</span><span class="p">(</span><span class="s1">&#39;ij&#39;</span><span class="p">,</span> <span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">7</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[2., 3., 7.],</span>
+<span class="go">                 [3., 4., 9.],</span>
+<span class="go">                 [1., 5., 3.],</span>
+<span class="go">                 [0., 0., 1.]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<p>For one, it allows very clear specification of a 2-dimensional plane (i.e. a
+2-dimensional affine subspace of some vector spce) called P, in, say, the  LPI
+“coordinate system”. Let’s say we want the plane in LPI-world corresponding to
+“j=30” for im above. (I guess that’s coronal?)</p>
+<p>Make an affine transform that maps (i,k) -&gt; (i,30,k):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">j30</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ik&#39;</span><span class="p">),</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">j30</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;k&#39;), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[  1.,   0.,   0.],</span>
+<span class="go">                 [  0.,   0.,  30.],</span>
+<span class="go">                 [  0.,   1.,   0.],</span>
+<span class="go">                 [  0.,   0.,   1.]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<p>Its dtype is np.float since we didn’t specify np.int in constructing the
+CoordinateSystems:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.api</span> <span class="kn">import</span> <span class="n">compose</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">j30_to_XYZ</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">j30</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">j30_to_XYZ</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;k&#39;), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[  2.   ,   0.   , -91.095],</span>
+<span class="go">                 [  0.   ,   0.   , -69.51 ],</span>
+<span class="go">                 [  0.   ,   2.   , -73.25 ],</span>
+<span class="go">                 [  0.   ,   0.   ,   1.   ]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<p>This could be used to resample any RAS Image on the coronal plane y=-69.51 with
+voxels of size 2mm x 2mm starting at x=-91.095 and z=-73.25. Of course, this
+doesn’t seem like a very natural slice. The module
+<a class="reference internal" href="../../api/generated/nipy.core.reference.slices.html#module-nipy.core.reference.slices" title="nipy.core.reference.slices"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nipy.core.reference.slices</span></code></a> has some convenience functions for specifying
+slices.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.reference.slices</span> <span class="kn">import</span> <span class="n">yslice</span><span class="p">,</span> <span class="n">bounding_box</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_spec</span> <span class="o">=</span> <span class="p">([</span><span class="o">-</span><span class="mi">92</span><span class="p">,</span><span class="mi">92</span><span class="p">],</span> <span class="mi">93</span><span class="p">)</span> <span class="c1"># voxels of size 2 in x, starting at -92, ending at 92</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z_spec</span> <span class="o">=</span> <span class="p">([</span><span class="o">-</span><span class="mi">70</span><span class="p">,</span><span class="mi">100</span><span class="p">],</span> <span class="mi">86</span><span class="p">)</span> <span class="c1"># voxels of size 2 in z, starting at -70, ending at 100</span>
+</pre></div>
+</div>
+<p>When specifying a <em>y</em> slice - we have to know what “y” means.  In order for “y”
+to have meaning, we need to specify the name of an output (range) space that has
+a defined “y”.  In this case we use MNI space:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y70</span> <span class="o">=</span> <span class="n">yslice</span><span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="n">x_spec</span><span class="p">,</span> <span class="n">z_spec</span><span class="p">,</span> <span class="s1">&#39;mni&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y70</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i_x&#39;, &#39;i_z&#39;), name=&#39;slice&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;mni-x=L-&gt;R&#39;, &#39;mni-y=P-&gt;A&#39;, &#39;mni-z=I-&gt;S&#39;), name=&#39;mni&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[  2.,   0., -92.],</span>
+<span class="go">                 [  0.,   0.,  70.],</span>
+<span class="go">                 [  0.,   2., -70.],</span>
+<span class="go">                 [  0.,   0.,   1.]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bounding_box</span><span class="p">(</span><span class="n">y70</span><span class="p">,</span> <span class="p">(</span><span class="n">x_spec</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">z_spec</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="go">((-92.0, 92.0), (70.0, 70.0), (-70.0, 100.0))</span>
+</pre></div>
+</div>
+<p>Maybe these aren’t things that “normal human beings” (to steal a quote from
+Gael) can use, but they’re explicit and they are tied to precise mathematical
+objects.</p>
+</section>
+<section id="email-2">
+<h2>Email #2<a class="headerlink" href="#email-2" title="Link to this heading">¶</a></h2>
+<p>I apologize again for the long emails, but I’m glad we. as a group, are having
+this discussion electronically. Usually, our discussions of CoordinateMap begin
+with Matthew standing in front of a white board with a marker and asking a
+newcomer,</p>
+<p>“Are you familiar with the notion of a transformation, say, from voxel to world?”</p>
+<p>:)</p>
+<p>Where they go after that really depends on the kind of day everyone’s having…</p>
+<p>:)</p>
+<p>These last two emails also have the advantage that most of them can go right in
+to doc/users/coordinate_map.rst.</p>
+<blockquote>
+<div><p>I agree with Gael that LPIImage is an obscure name.</p>
+</div></blockquote>
+<p>OK. I already know that people often don’t agree with names I choose, just ask
+Matthew. :)</p>
+<p>I just wanted to choose a name that is as explicit as possible. Since I’m
+neither a neuroscientist nor an MRI physicist but a statistician, I have no idea
+what it really means. I found it mentioned in this link below and John Ollinger
+mentioned LPI in another email thread</p>
+<p><a class="reference external" href="http://afni.nimh.nih.gov/afni/community/board/read.php?f=1&amp;i=9140&amp;t=9140">http://afni.nimh.nih.gov/afni/community/board/read.php?f=1&amp;i=9140&amp;t=9140</a></p>
+<p>I was suggesting we use a well-established term, apparently LPI is not
+well-established. :)</p>
+<p>Does LPS mean (left, posterior, superior)?  Doesn’t that suggest that LPI means
+(left, posterior, inferior) and RAI means (right, anterior, inferior)?  If so,
+then good, now I know what LPI means and I’m not a neuroscientist or an MRI
+physicist, :)</p>
+<p>We can call the images RASImages, or at least let’s call their AffineTransform
+RASTransforms, or we could have NeuroImages that can only have RASTransforms or
+LPSTransforms, NeuroTransform that have a property and NeuroImage raises an
+exception like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">world</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">affine_transform</span><span class="o">.</span><span class="n">function_range</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;world-RAS&#39;</span><span class="p">,</span> <span class="s1">&#39;world-LPS&#39;</span><span class="p">]</span> <span class="ow">or</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">coord_names</span> <span class="o">!=</span> <span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">)):</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;the output space must be named one of &quot;</span>
+                     <span class="s2">&quot;[&#39;world-RAS&#39;,&#39;world-LPS&#39;] and &quot;</span>
+                     <span class="s2">&quot;the axes must be (&#39;x&#39;, &#39;y&#39;, &#39;z&#39;)&quot;</span><span class="p">)</span>
+
+<span class="n">_doc</span><span class="p">[</span><span class="s1">&#39;world&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;World space, one of [&#39;world-RAS&#39;, &#39;world-LPS&#39;]. If it is &#39;world-LPS&#39;, then x increases from patient&#39;s left to right, y increases posterior to anterior, z increases superior to inferior. If it is &#39;world-RAS&#39; then x increases patient&#39;s right to left, y increases posterior to anterior, z increases superior to inferior.&quot;</span>
+</pre></div>
+</div>
+<p>I completely advocate any responsibility for deciding which acronym to choose,
+someone who can use rope can just change every lpi/LPI to ras/RAS I just want it
+explicit.  I also want some version of these phrases “x increases from patient’s
+right to left”, “y increases from posterior to anterior”, “z increases from
+superior to inferior” somewhere in a docstring for RAS/LPSTransform (see why I
+feel that “increasing vs. decreasing” is important below).</p>
+<p>I want the name and its docstring to scream at you what it represents so there
+is no discussion like on the AFNI list where users are not sure which output of
+which program (in AFNI) should be flipped (see the other emails in the thread).
+It should be a subclass of AffineTransform because it has restrictions: namely,
+its range is ‘xyz’  and “xy” can be interpreted in of two ways either RAS or
+LPS). You can represent any other version of RAS/LPS or (whatever colour your
+bike shed is, :)) with the same class, it just may have negative values on the
+diagonal. If it has some rotation applied, then it becomes pretty hard (at least
+for me) to decide if it’s RAS or LPS from the 4x4 matrix of floats. I can’t even
+tell you now when I look at the FIAC data which way left and right go unless I
+ask Matthew.</p>
+<blockquote>
+<div><p>For background, you may want to look at what Gordon Kindlmann did for
+nrrd format where you can declare the space in which your orientation
+information and other transforms should be interpreted:</p>
+<p><a class="reference external" href="http://teem.sourceforge.net/nrrd/format.html#space">http://teem.sourceforge.net/nrrd/format.html#space</a></p>
+<p>Or, if that’s too flexible for you, you could adopt a standard space.</p>
+<p>ITK chose LPS to match DICOM.</p>
+<p>For slicer, like nifti, we chose RAS</p>
+</div></blockquote>
+<p>It may be that there is well-established convention for this, but then why does
+ITK say DICOM=LPS and AFNI say DICOM=RAI?  At least MINC is explicit. I favor
+making it as precise as MINC does.</p>
+<p>That AFNI discussion I pointed to uses the pairing RAI/DICOM and LPI/SPM.  This
+discrepancy suggests there’s some disagreement between using the letters to name
+the system and whether they mean increasing or decreasing. My guess is that
+LPI=RAS based on ITK/AFNI’s identifications of LPS=DICOM=RAI. But I can’t tell
+if the acronym LPI means “x is increasing L to R, y increasing from P to A, z in
+increasing from I to S” which would be equivalent to RAS meaning “x decreasing
+from R to L, y decreasing from A to P, z is decreasing from S to I”. That is, I
+can’t tell from the acronyms which of LPI or RAS is using “increasing” and which
+is “decreasing”, i.e. they could have flipped everything so that LPI means “x is
+decreasing L to R, y is decreasing P to A, z is decreasing I to S” and RAS means
+“x is increasing R to L, y is increasing A to P, z is increasing S to I”.</p>
+<p>To add more confusion to the mix, the acronym doesn’t say if it is the patient’s
+left to right or the technician looking at him, :) For this, I’m sure there’s a
+standard answer, and it’s likely the patient, but heck, I’m just a statistician
+so I don’t know the answer.</p>
+<blockquote>
+<div><p>(every volume has an ijkToRAS affine transform).  We convert to/from LPS
+when calling ITK code, e.g., for I/O.</p>
+</div></blockquote>
+<p>How much clearer can you express “ijkToRAS” or “convert to/from LPS” than
+something like this:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mf">91.095</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mf">129.51</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mf">73.25</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ijk</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">,</span> <span class="s1">&#39;voxel&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">RAS</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="s1">&#39;world-RAS&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ijk_to_RAS</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">ijk</span><span class="p">,</span> <span class="n">RAS</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ijk_to_RAS</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;), name=&#39;voxel&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;world-RAS&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[   2.   ,    0.   ,    0.   ,  -91.095],</span>
+<span class="go">                 [   0.   ,    2.   ,    0.   , -129.51 ],</span>
+<span class="go">                 [   0.   ,    0.   ,    2.   ,  -73.25 ],</span>
+<span class="go">                 [   0.   ,    0.   ,    0.   ,    1.   ]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">LPS</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="s1">&#39;world-LPS&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">RAS_to_LPS</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">RAS</span><span class="p">,</span> <span class="n">LPS</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ijk_to_LPS</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">RAS_to_LPS</span><span class="p">,</span> <span class="n">ijk_to_RAS</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">RAS_to_LPS</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;world-RAS&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;world-LPS&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[-1.,  0.,  0.,  0.],</span>
+<span class="go">                 [ 0., -1.,  0.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  1.,  0.],</span>
+<span class="go">                 [ 0.,  0.,  0.,  1.]])</span>
+<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ijk_to_LPS</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;), name=&#39;voxel&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;world-LPS&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[  -2.   ,    0.   ,    0.   ,   91.095],</span>
+<span class="go">                 [   0.   ,   -2.   ,    0.   ,  129.51 ],</span>
+<span class="go">                 [   0.   ,    0.   ,    2.   ,  -73.25 ],</span>
+<span class="go">                 [   0.   ,    0.   ,    0.   ,    1.   ]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<p>Of course, we shouldn’t rely on the names ijk_to_RAS to know that it is an
+ijk_to_RAS transform, that’s why they’re in the AffineTransform. I don’t think
+any one wants an attribute named “ijk_to_RAS” for AffineImage/Image/LPIImage.</p>
+<p>The other problem that LPI/RAI/AffineTransform addresses is that someday you
+might want to transpose the data in your array and still have what you would
+call an “image”. AffineImage allows this explicitly because there is no
+identifier for the domain of the AffineTransform (the attribute name “coord_sys”
+implies that it refers to either the domain or the range but not both). (Even
+those who share the sentiment that “everything that is important about the
+linking between two coordinate systems is contained in the transform”
+acknowledge there are two coordinate systems :))</p>
+<p>Once you’ve transposed the array, say</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">))</span> <span class="c1"># original array</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newdata</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">transpose</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>You shouldn’t use something called “ijk_to_RAS” or “ijk_to_LPS” transform.
+Rather, you should use a “kij_to_RAS” or “kij_to_LPS” transform.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ijk</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">,</span> <span class="s1">&#39;voxel&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kij</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;kij&#39;</span><span class="p">,</span> <span class="s1">&#39;voxel&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ijk_to_kij</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">ijk</span><span class="p">,</span> <span class="n">kij</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]]))</span>
+</pre></div>
+</div>
+<p>Check that it does the right permutation</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">20.</span><span class="p">,</span> <span class="mi">40</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ijk_to_kij</span><span class="p">([</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">])</span>
+<span class="go">array([40., 10., 20.])</span>
+</pre></div>
+</div>
+<p>Yup, now let’s try to make a kij_to_RAS transform</p>
+<p>At first guess, we might try</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kij_to_RAS</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">ijk_to_RAS</span><span class="p">,</span> <span class="n">ijk_to_kij</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="gr">ValueError</span>: <span class="n">domains and ranges don&#39;t match up correctly</span>
+</pre></div>
+</div>
+<p>We have a problem, we’ve asked for a composition that doesn’t make sense.</p>
+<p>If you’re good with permutation matrices, you wouldn’t have to call “compose”
+above and you can just do matrix multiplication.  But here the name of the
+function tells you that yes, you should do the inverse: “ijk_to_kij” says that
+the range are “kij” values, but to get a “transform” for your data in “kij” it
+should have a domain that is “kij”.</p>
+<p>The call to compose raised an exception because it saw you were trying to
+compose a function with domain=”ijk” and range=”kji” with a function (on its
+left) having domain=”ijk” and range “kji”. This composition just doesn’t make
+sense so it raises an exception.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kij_to_ijk</span> <span class="o">=</span> <span class="n">ijk_to_kij</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kij_to_RAS</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">ijk_to_RAS</span><span class="p">,</span> <span class="n">kij_to_ijk</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kij_to_RAS</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;k&#39;, &#39;i&#39;, &#39;j&#39;), name=&#39;voxel&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;world-RAS&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[   0.   ,    2.   ,    0.   ,  -91.095],</span>
+<span class="go">                 [   0.   ,    0.   ,    2.   , -129.51 ],</span>
+<span class="go">                 [   2.   ,    0.   ,    0.   ,  -73.25 ],</span>
+<span class="go">                 [   0.   ,    0.   ,    0.   ,    1.   ]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ijk_to_RAS</span><span class="p">([</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">])</span>
+<span class="go">array([-71.095, -89.51 ,   6.75 ])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kij_to_RAS</span><span class="p">([</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+<span class="go">array([-71.095, -89.51 ,   6.75 ])</span>
+</pre></div>
+</div>
+<p>We also shouldn’t have to rely on the names of the AffineTransforms, i.e.
+ijk_to_RAS,  to remember what’s what (in typing this example, I mixed up kij and
+kji many times). The objects ijk_to_RAS, kij_to_RAS represent the same “affine
+transform”, as evidenced by their output above.  There are lots of
+representations of the same “affine transform”: (6=permutations of
+i,j,k)*(6=permutations of x,y,z)=36 matrices for one “affine transform”.</p>
+<p>If we throw in ambiguity about the sign in front of the output, there are
+36*(8=2^3 possible flips of the x,y,z)=288 matrices possible but there are only
+really 8 different “affine transforms”. If you force the order of the range to
+be “xyz” then there are 6*8=48 different matrices possible, again only
+specifying 8 different “affine transforms”. For AffineImage, if we were to allow
+both “LPS” and “RAS” this means two flips are allowed, namely either
+“LPS”=[-1,-1,1] or “RAS”=[1,1,1], so there are 6*2=12 possible matrices to
+represent 2 different “affine transforms”.</p>
+<p>Here’s another example that uses sympy to show what’s going on in the 4x4 matrix
+as you reorder the ‘ijk’ and the ‘RAS’. (Note that this code won’t work in
+general because I had temporarily disabled a check in CoordinateSystem that
+enforced the dtype of the array to be a builtin scalar dtype for sanity’s sake).
+To me, each of A, A_kij and A_kij_yzx below represent the same “transform”
+because if I substitute i=30, j=40, k=50 and I know the order of the ‘xyz’ in the
+output then they will all give me the same answer.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">sympy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ijk</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xyz</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_start</span><span class="p">,</span> <span class="n">y_start</span><span class="p">,</span> <span class="n">z_start</span> <span class="o">=</span> <span class="p">[</span><span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;x_start&#39;</span><span class="p">,</span> <span class="s1">&#39;y_start&#39;</span><span class="p">,</span> <span class="s1">&#39;z_start&#39;</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_step</span><span class="p">,</span> <span class="n">y_step</span><span class="p">,</span> <span class="n">z_step</span> <span class="o">=</span> <span class="p">[</span><span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;x_step&#39;</span><span class="p">,</span> <span class="s1">&#39;y_step&#39;</span><span class="p">,</span> <span class="s1">&#39;z_step&#39;</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="p">[</span><span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="s1">&#39;ijk&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">x_step</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">x_start</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="n">y_step</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">y_start</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">z_step</span><span class="p">,</span><span class="n">z_start</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">T</span>
+<span class="go">array([[x_step, 0, 0, x_start],</span>
+<span class="go">       [0, y_step, 0, y_start],</span>
+<span class="go">       [0, 0, z_step, z_start],</span>
+<span class="go">       [0, 0, 0, 1]], dtype=object)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">AffineTransform</span><span class="p">(</span><span class="n">ijk</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;), name=&#39;&#39;, coord_dtype=object),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;&#39;, coord_dtype=object),</span>
+<span class="go">   affine=array([[x_step, 0, 0, x_start],</span>
+<span class="go">                 [0, y_step, 0, y_start],</span>
+<span class="go">                 [0, 0, z_step, z_start],</span>
+<span class="go">                 [0, 0, 0, 1]], dtype=object)</span>
+<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="p">([</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">])</span> <span class="o">==</span> <span class="p">[</span><span class="n">x_start</span> <span class="o">+</span> <span class="n">i</span><span class="o">*</span><span class="n">x_step</span><span class="p">,</span> <span class="n">y_start</span> <span class="o">+</span> <span class="n">j</span><span class="o">*</span><span class="n">y_step</span><span class="p">,</span> <span class="n">z_start</span> <span class="o">+</span> <span class="n">k</span><span class="o">*</span><span class="n">z_step</span><span class="p">]</span>
+<span class="go">array([ True,  True,  True])</span>
+</pre></div>
+</div>
+<p>This is another</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">A_kij</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">reordered_domain</span><span class="p">(</span><span class="s1">&#39;kij&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A_kij</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;k&#39;, &#39;i&#39;, &#39;j&#39;), name=&#39;&#39;, coord_dtype=object),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;&#39;, coord_dtype=object),</span>
+<span class="go">   affine=array([[0, 1.0*x_step, 0, 1.0*x_start],</span>
+<span class="go">                 [0, 0, 1.0*y_step, 1.0*y_start],</span>
+<span class="go">                 [1.0*z_step, 0, 0, 1.0*z_start],</span>
+<span class="go">                 [0.0, 0.0, 0.0, 1.0]], dtype=object)</span>
+<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A_kij</span><span class="p">([</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+<span class="go">array([1.0*i*x_step + 1.0*x_start, 1.0*j*y_step + 1.0*y_start,</span>
+<span class="go">       1.0*k*z_step + 1.0*z_start], dtype=object)</span>
+</pre></div>
+</div>
+<p>Let’s look at another reordering:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">A_kij_yzx</span> <span class="o">=</span> <span class="n">A_kij</span><span class="o">.</span><span class="n">reordered_range</span><span class="p">(</span><span class="s1">&#39;yzx&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A_kij_yzx</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;k&#39;, &#39;i&#39;, &#39;j&#39;), name=&#39;&#39;, coord_dtype=object),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;y&#39;, &#39;z&#39;, &#39;x&#39;), name=&#39;&#39;, coord_dtype=object),</span>
+<span class="go">   affine=array([[0, 0, 1.0*y_step, 1.0*y_start],</span>
+<span class="go">                 [1.0*z_step, 0, 0, 1.0*z_start],</span>
+<span class="go">                 [0, 1.0*x_step, 0, 1.0*x_start],</span>
+<span class="go">                 [0, 0, 0, 1.00000000000000]], dtype=object)</span>
+<span class="go">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A_kij_yzx</span><span class="p">([</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+<span class="go">array([1.0*j*y_step + 1.0*y_start, 1.0*k*z_step + 1.0*z_start,</span>
+<span class="go">       1.0*i*x_step + 1.0*x_start], dtype=object)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">A_kij</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;k&#39;, &#39;i&#39;, &#39;j&#39;), name=&#39;&#39;, coord_dtype=object),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;x&#39;, &#39;y&#39;, &#39;z&#39;), name=&#39;&#39;, coord_dtype=object),</span>
+<span class="go">   affine=array([[0, 1.0*x_step, 0, 1.0*x_start],</span>
+<span class="go">                 [0, 0, 1.0*y_step, 1.0*y_start],</span>
+<span class="go">                 [1.0*z_step, 0, 0, 1.0*z_start],</span>
+<span class="go">                 [0.0, 0.0, 0.0, 1.0]], dtype=object)</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.reference.coordinate_map</span> <span class="kn">import</span> <span class="n">equivalent</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">equivalent</span><span class="p">(</span><span class="n">A_kij</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">equivalent</span><span class="p">(</span><span class="n">A_kij</span><span class="p">,</span> <span class="n">A_kij_yzx</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Some discussion notes on coordinate maps</a><ul>
+<li><a class="reference internal" href="#email-1">Email #1</a></li>
+<li><a class="reference internal" href="#email-2">Email #2</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../../license.html"
+                          title="previous chapter">NIPY License Information</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../guidelines/compiling_windows.html"
+                          title="next chapter">Some notes on compiling on windows with Visual Studio</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/devel/code_discussions/coordmap_notes.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../guidelines/compiling_windows.html" title="Some notes on compiling on windows with Visual Studio"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../../license.html" title="NIPY License Information"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

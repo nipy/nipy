@@ -1,0 +1,32 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+testing.decorators
+==================
+
+Module: :mod:`testing.decorators`
+---------------------------------
+.. automodule:: nipy.testing.decorators
+
+.. currentmodule:: nipy.testing.decorators
+
+Functions
+---------
+
+
+.. autofunction:: nipy.testing.decorators.if_datasource
+
+
+.. autofunction:: nipy.testing.decorators.if_example_data
+
+
+.. autofunction:: nipy.testing.decorators.if_templates
+
+
+.. autofunction:: nipy.testing.decorators.make_label_dec
+
+
+.. autofunction:: nipy.testing.decorators.needs_mpl_agg
+
+
+.. autofunction:: nipy.testing.decorators.needs_review
+

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.registration.type_check" href="nipy.algorithms.registration.type_check.html" />
+    <link rel="prev" title="algorithms.registration.similarity_measures" href="nipy.algorithms.registration.similarity_measures.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.type_check.html" title="algorithms.registration.type_check"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.similarity_measures.html" title="algorithms.registration.similarity_measures"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-registration-transform">
+<h1>algorithms.registration.transform<a class="headerlink" href="#algorithms-registration-transform" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-registration-transform">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.registration.transform</span></code><a class="headerlink" href="#module-algorithms-registration-transform" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.registration.transform</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-355844c16d4104e1d1ccd8a5d0b6f5230606405a.png" alt="Inheritance diagram of nipy.algorithms.registration.transform" usemap="#inheritance87b23de500" class="inheritance graphviz" /></div>
+<map id="inheritance87b23de500" name="inheritance87b23de500">
+<area shape="rect" id="node1" href="#nipy.algorithms.registration.transform.Transform" target="_top" title="A default transformation class" alt="" coords="5,5,213,32"/>
+</map><p id="module-nipy.algorithms.registration.transform">Generic transform class</p>
+<p>This implementation specifies an API.  We’ve done our best to avoid checking
+instances, so any class implementing this API should be valid in the places
+(like registration routines) that use transforms.  If that isn’t true, it’s a
+bug.</p>
+</section>
+<section id="transform">
+<h2><a class="reference internal" href="#nipy.algorithms.registration.transform.Transform" title="nipy.algorithms.registration.transform.Transform"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transform</span></code></a><a class="headerlink" href="#transform" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.transform.Transform">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.transform.</span></span><span class="sig-name descname"><span class="pre">Transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.transform.Transform" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A default transformation class</p>
+<p>This class specifies the tiny API.  That is, the class should implement:</p>
+<ul class="simple">
+<li><p>obj.param - the transformation exposed as a set of parameters. Changing
+param should change the transformation</p></li>
+<li><p>obj.apply(pts) - accepts (N,3) array-like of points in 3 dimensions,
+returns an (N, 3) array of transformed points</p></li>
+<li><p>obj.compose(xform) - accepts another object implementing <code class="docutils literal notranslate"><span class="pre">apply</span></code>, and
+returns a new transformation object, where the resulting transformation is
+the composition of the <code class="docutils literal notranslate"><span class="pre">obj</span></code> transform onto the <code class="docutils literal notranslate"><span class="pre">xform</span></code> transform.</p></li>
+</ul>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.transform.Transform.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.transform.Transform.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.transform.Transform.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.transform.Transform.apply" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.transform.Transform.compose">
+<span class="sig-name descname"><span class="pre">compose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.transform.Transform.compose" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.transform.Transform.param">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">param</span></span><a class="headerlink" href="#nipy.algorithms.registration.transform.Transform.param" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.registration.transform</a><ul>
+<li><a class="reference internal" href="#module-algorithms-registration-transform">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.registration.transform</span></code></a></li>
+<li><a class="reference internal" href="#transform"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transform</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.transform.Transform"><code class="docutils literal notranslate"><span class="pre">Transform</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.transform.Transform.__init__"><code class="docutils literal notranslate"><span class="pre">Transform.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.transform.Transform.apply"><code class="docutils literal notranslate"><span class="pre">Transform.apply()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.transform.Transform.compose"><code class="docutils literal notranslate"><span class="pre">Transform.compose()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.transform.Transform.param"><code class="docutils literal notranslate"><span class="pre">Transform.param</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.registration.similarity_measures.html"
+                          title="previous chapter">algorithms.registration.similarity_measures</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.registration.type_check.html"
+                          title="next chapter">algorithms.registration.type_check</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.registration.transform.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.type_check.html" title="algorithms.registration.type_check"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.similarity_measures.html" title="algorithms.registration.similarity_measures"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

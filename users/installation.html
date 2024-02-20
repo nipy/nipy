@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Geography of the Scipy world" href="scipy_orientation.html" />
+    <link rel="prev" title="A history of NIPY" href="../history.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../index.html">
+  <img src="../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="scipy_orientation.html" title="Geography of the Scipy world"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../history.html" title="A history of NIPY"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">User Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="download-and-install">
+<span id="installation"></span><h1>Download and Install<a class="headerlink" href="#download-and-install" title="Link to this heading">¶</a></h1>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">¶</a></h2>
+<ul>
+<li><p>if you don’t have it, install Python using the instructions below;</p></li>
+<li><p>if you don’t have it, install <a class="reference external" href="http://pypi.python.org/pypi/pip">Pip</a> using the instructions below;</p></li>
+<li><p>if you don’t have them, install <a class="reference external" href="http://numpy.scipy.org">NumPy</a> &gt;= 1.14 and Scipy
+&gt;= 1.0 using the instructions below;</p></li>
+<li><p>install Nipy with something like:</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>nipy
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These instructions are for Python 3.  If you are using Python 2.7, use
+<code class="docutils literal notranslate"><span class="pre">python2</span></code> instead of <code class="docutils literal notranslate"><span class="pre">python3</span></code> and <code class="docutils literal notranslate"><span class="pre">pip2</span></code> instead of <code class="docutils literal notranslate"><span class="pre">pip3</span></code>, for
+the commands below.</p>
+</div>
+</section>
+<section id="details">
+<h2>Details<a class="headerlink" href="#details" title="Link to this heading">¶</a></h2>
+<section id="install-python-pip-numpy-and-scipy">
+<h3>Install Python, Pip, Numpy and Scipy<a class="headerlink" href="#install-python-pip-numpy-and-scipy" title="Link to this heading">¶</a></h3>
+<p>First install Python 3, then install the Python package installer Pip.</p>
+<section id="install-python-3-on-linux">
+<h4>Install Python 3 on Linux<a class="headerlink" href="#install-python-3-on-linux" title="Link to this heading">¶</a></h4>
+<p>We recommend:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">-y</span> <span class="pre">python3</span> <span class="pre">python3-tk</span></code> (Debian, Ubuntu);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">dnf</span> <span class="pre">install</span> <span class="pre">-y</span> <span class="pre">python3</span> <span class="pre">python3-tkinter</span></code> (Fedora).</p></li>
+</ul>
+<p>These are the bare minimum installs.  You will almost certainly want to
+install the development tools for Python to allow you to compile other
+Python packages:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">-y</span> <span class="pre">python3-dev</span></code> (Debian, Ubuntu);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">dnf</span> <span class="pre">install</span> <span class="pre">-y</span> <span class="pre">python3-devel</span></code> (Fedora).</p></li>
+</ul>
+<p>Now <a class="reference internal" href="#install-pip"><span class="std std-ref">Install Pip on Linux or macOS</span></a>.</p>
+</section>
+<section id="install-python-3-on-macos">
+<h4>Install Python 3 on macOS<a class="headerlink" href="#install-python-3-on-macos" title="Link to this heading">¶</a></h4>
+<p>We recommend you install Python 3.5 or later using Homebrew
+(<a class="reference external" href="http://brew.sh/">http://brew.sh/</a>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>brew<span class="w"> </span>install<span class="w"> </span>python3
+</pre></div>
+</div>
+<p>Homebrew is an excellent all-round package manager for macOS that you can use
+to install many other free / open-source packages.</p>
+<p>Now <a class="reference internal" href="#install-pip"><span class="std std-ref">Install Pip on Linux or macOS</span></a>.</p>
+</section>
+<section id="install-pip-on-linux-or-macos">
+<span id="install-pip"></span><h4>Install Pip on Linux or macOS<a class="headerlink" href="#install-pip-on-linux-or-macos" title="Link to this heading">¶</a></h4>
+<p>Pip can install packages into your main system directories (a <em>system</em>
+install), or into your own user directories (a <em>user</em> install).  We strongly
+recommend <em>user</em> installs.</p>
+<p>To get ready for user installs, put the user local install <code class="docutils literal notranslate"><span class="pre">bin</span></code>
+directory on your user’s executable program <code class="docutils literal notranslate"><span class="pre">PATH</span></code>.  First find the location
+of the user <code class="docutils literal notranslate"><span class="pre">bin</span></code> directory with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import site; print(site.USER_BASE + &quot;/bin&quot;)&#39;</span>
+</pre></div>
+</div>
+<p>This will give you a result like <code class="docutils literal notranslate"><span class="pre">/home/your_username/.local/bin</span></code> (Linux) or
+<code class="docutils literal notranslate"><span class="pre">/Users/your_username/Library/Python/3.5/bin</span></code> (macOS).</p>
+<p>Use your favorite text editor to open the <code class="docutils literal notranslate"><span class="pre">~/.bashrc</span></code> file (Linux) or
+<code class="docutils literal notranslate"><span class="pre">.bash_profile</span></code> (macOSX) in your home directory.</p>
+<p>Add these lines to end of the file:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Put the path to the local bin directory into a variable</span>
+<span class="nv">py3_local_bin</span><span class="o">=</span><span class="k">$(</span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import site; print(site.USER_BASE + &quot;/bin&quot;)&#39;</span><span class="k">)</span>
+<span class="c1"># Put the directory at the front of the system PATH</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$py3_local_bin</span><span class="s2">:</span><span class="nv">$PATH</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+<p>Save the file, and restart your terminal to load the configuration from your
+<code class="docutils literal notranslate"><span class="pre">~/.bashrc</span></code> (Linux) or <code class="docutils literal notranslate"><span class="pre">~/.bash_profile</span></code> (macOS) file.  Confirm that you
+have the user install directory in your PATH, with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="nv">$PATH</span>
+</pre></div>
+</div>
+<p>Now install the Python package installer Pip into your user directories (see:
+<a class="reference external" href="https://pip.pypa.io/en/stable/installing/#installing-with-get-pip-py">install pip with get-pip.py</a>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download the get-pip.py installer</span>
+curl<span class="w"> </span>-LO<span class="w"> </span>https://bootstrap.pypa.io/get-pip.py
+<span class="c1"># Execute the installer for Python 3 and a user install</span>
+python3<span class="w"> </span>get-pip.py<span class="w"> </span>--user
+</pre></div>
+</div>
+<p>Check you have the right version of the <code class="docutils literal notranslate"><span class="pre">pip3</span></code> command with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>which<span class="w"> </span>pip3
+</pre></div>
+</div>
+<p>This should give you something like <code class="docutils literal notranslate"><span class="pre">/home/your_username/.local/bin/pip3</span></code>
+(Linux) or <code class="docutils literal notranslate"><span class="pre">/Users/your_username/Library/Python/3.5/bin</span></code> (macOS).</p>
+<p>Now <a class="reference internal" href="#install-numpy-scipy"><span class="std std-ref">Install Python 3, Pip, NumPy and Scipy on Windows</span></a>.</p>
+</section>
+<section id="install-python-3-pip-numpy-and-scipy-on-windows">
+<span id="install-numpy-scipy"></span><h4>Install Python 3, Pip, NumPy and Scipy on Windows<a class="headerlink" href="#install-python-3-pip-numpy-and-scipy-on-windows" title="Link to this heading">¶</a></h4>
+<p>It’s worth saying here that very few scientific Python developers use Windows,
+so if you’re thinking of making the switch to Linux or macOS, now you have
+another reason to do that.</p>
+<section id="option-1-anaconda">
+<h5>Option 1: Anaconda<a class="headerlink" href="#option-1-anaconda" title="Link to this heading">¶</a></h5>
+<p>If you are installing on Windows, you might want to use the Python 3 version of
+<a class="reference external" href="https://www.continuum.io/downloads">Anaconda</a>.  This is a large installer that will install many scientific
+Python packages, including NumPy and Scipy, as well as Python itself, and Pip,
+the package manager.</p>
+<p>The machinery for the Anaconda bundle is not completely open-source, and is
+owned by a company, Continuum Analytics. If you would prefer to avoid using
+the Anaconda installer, you can also use the Python standard Pip installer.</p>
+</section>
+<section id="option-2-standard-install">
+<h5>Option 2: Standard install<a class="headerlink" href="#option-2-standard-install" title="Link to this heading">¶</a></h5>
+<p>If you don’t have Python / Pip, we recommend the instructions <a class="reference external" href="http://docs.python-guide.org/en/latest/starting/install3/win">here</a> to install
+them.  You can also install Python / Pip via the Python 3 installer from the
+<a class="reference external" href="https://python.org">https://python.org</a> website.</p>
+<p>If you already have an old Python installation, you don’t have Pip, and you
+don’t want to upgrade, you will need to download and install Pip following the
+instructions at <a class="reference external" href="https://pip.pypa.io/en/stable/installing/#installing-with-get-pip-py">install pip with get-pip.py</a>.</p>
+<p>Now open a Cmd or Powershell terminal and run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>numpy<span class="w"> </span>scipy
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="install-nipy">
+<h3>Install Nipy<a class="headerlink" href="#install-nipy" title="Link to this heading">¶</a></h3>
+<p>Now you have Python and Pip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>nipy
+</pre></div>
+</div>
+<p>On Windows, macOS, and nearly all Linux versions on Intel, this will install a
+binary (<a class="reference external" href="https://pypi.python.org/pypi/wheel">Wheel</a>) package of NiPy.</p>
+</section>
+</section>
+<section id="other-packages-we-recommend">
+<h2>Other packages we recommend<a class="headerlink" href="#other-packages-we-recommend" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="http://ipython.org">IPython</a>: Interactive Python environment;</p></li>
+<li><p><a class="reference external" href="http://matplotlib.sourceforge.net">Matplotlib</a>: Python plotting library.</p></li>
+</ul>
+</section>
+<section id="building-from-latest-source-code">
+<h2>Building from latest source code<a class="headerlink" href="#building-from-latest-source-code" title="Link to this heading">¶</a></h2>
+<section id="dependencies-for-build">
+<h3>Dependencies for build<a class="headerlink" href="#dependencies-for-build" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>A C compiler: Nipy does contain a few C extensions for optimized routines.
+Therefore, you must have a compiler to build from source.  Use <a class="reference external" href="http://developer.apple.com/TOOLS/xcode">XCode</a> for
+your C compiler on macOS.  On Windows, you will need the Microsoft Visual
+C++ version corresponding to your Python version - see <a class="reference external" href="https://matthew-brett.github.io/pydagogue/python_msvc.html">using MSVC with
+Python</a>.  On
+Linux you should have the packages you need after you install the
+<code class="docutils literal notranslate"><span class="pre">python3-dev</span></code> (Debian / Ubuntu) or <code class="docutils literal notranslate"><span class="pre">python3-devel</span></code> (Fedora) packages
+using the instructions above;</p></li>
+<li><p><a class="reference external" href="http://www.cython.org/">Cython</a> 0.12.1 or later:  Cython is a language that is a fusion of Python
+and C.  It allows us to write fast code using Python and C syntax, so that
+it is easier to read and maintain than C code with the same functionality;</p></li>
+<li><p><a class="reference external" href="https://git-scm.com">Git</a> version control software: follow the instructions on the <a class="reference external" href="https://git-scm.com">main git
+website</a> to install Git on Linux, macOS or Windows.</p></li>
+</ul>
+</section>
+<section id="procedure">
+<h3>Procedure<a class="headerlink" href="#procedure" title="Link to this heading">¶</a></h3>
+<p>Please look through the <a class="reference internal" href="../devel/development_quickstart.html#development-quickstart"><span class="std std-ref">development quickstart</span></a>
+documentation.  There you will find information on building NIPY, the required
+software packages and our developer guidelines.  Then:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># install Cython</span>
+pip3<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>cython
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone the project repository</span>
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/nipy/nipy
+</pre></div>
+</div>
+<p>to get the latest development version, and:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Build the latest version in-place</span>
+<span class="nb">cd</span><span class="w"> </span>nipy
+pip3<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>--editable<span class="w"> </span>.
+</pre></div>
+</div>
+<p>to install the code in the development tree into your Python path.</p>
+</section>
+</section>
+<section id="installing-useful-data-files">
+<h2>Installing useful data files<a class="headerlink" href="#installing-useful-data-files" title="Link to this heading">¶</a></h2>
+<p>See <a class="reference internal" href="install_data.html#data-files"><span class="std std-ref">Optional data packages</span></a> for some instructions on installing data packages.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../documentation.html">Documentation</a></li>
+    <li><a href="../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Download and Install</a><ul>
+<li><a class="reference internal" href="#summary">Summary</a></li>
+<li><a class="reference internal" href="#details">Details</a><ul>
+<li><a class="reference internal" href="#install-python-pip-numpy-and-scipy">Install Python, Pip, Numpy and Scipy</a><ul>
+<li><a class="reference internal" href="#install-python-3-on-linux">Install Python 3 on Linux</a></li>
+<li><a class="reference internal" href="#install-python-3-on-macos">Install Python 3 on macOS</a></li>
+<li><a class="reference internal" href="#install-pip-on-linux-or-macos">Install Pip on Linux or macOS</a></li>
+<li><a class="reference internal" href="#install-python-3-pip-numpy-and-scipy-on-windows">Install Python 3, Pip, NumPy and Scipy on Windows</a><ul>
+<li><a class="reference internal" href="#option-1-anaconda">Option 1: Anaconda</a></li>
+<li><a class="reference internal" href="#option-2-standard-install">Option 2: Standard install</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#install-nipy">Install Nipy</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#other-packages-we-recommend">Other packages we recommend</a></li>
+<li><a class="reference internal" href="#building-from-latest-source-code">Building from latest source code</a><ul>
+<li><a class="reference internal" href="#dependencies-for-build">Dependencies for build</a></li>
+<li><a class="reference internal" href="#procedure">Procedure</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installing-useful-data-files">Installing useful data files</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../history.html"
+                          title="previous chapter">A history of NIPY</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="scipy_orientation.html"
+                          title="next chapter">Geography of the Scipy world</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/users/installation.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="scipy_orientation.html" title="Geography of the Scipy world"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../history.html" title="A history of NIPY"
+             >previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >User Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

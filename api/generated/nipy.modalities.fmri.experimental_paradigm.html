@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="modalities.fmri.fmri" href="nipy.modalities.fmri.fmri.html" />
+    <link rel="prev" title="modalities.fmri.design_matrix" href="nipy.modalities.fmri.design_matrix.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmri.html" title="modalities.fmri.fmri"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.design_matrix.html" title="modalities.fmri.design_matrix"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="modalities-fmri-experimental-paradigm">
+<h1>modalities.fmri.experimental_paradigm<a class="headerlink" href="#modalities-fmri-experimental-paradigm" title="Link to this heading">¶</a></h1>
+<section id="module-modalities-fmri-experimental-paradigm">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.experimental_paradigm</span></code><a class="headerlink" href="#module-modalities-fmri-experimental-paradigm" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.modalities.fmri.experimental_paradigm</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-01585609161cef0ff64599a9ef7dc1f211a37464.png" alt="Inheritance diagram of nipy.modalities.fmri.experimental_paradigm" usemap="#inheritance32493386b4" class="inheritance graphviz" /></div>
+<map id="inheritance32493386b4" name="inheritance32493386b4">
+<area shape="rect" id="node1" href="#nipy.modalities.fmri.experimental_paradigm.BlockParadigm" target="_top" title="Class to handle block paradigms" alt="" coords="317,5,590,32"/>
+<area shape="rect" id="node2" href="#nipy.modalities.fmri.experimental_paradigm.Paradigm" target="_top" title="Simple class to handle the experimental paradigm in one session" alt="" coords="5,31,246,57"/>
+<area shape="rect" id="node3" href="#nipy.modalities.fmri.experimental_paradigm.EventRelatedParadigm" target="_top" title="Class to handle event&#45;related paradigms" alt="" coords="294,56,613,83"/>
+</map><p id="module-nipy.modalities.fmri.experimental_paradigm">This module implements an object to deal with experimental paradigms.
+In fMRI data analysis, there are two main types of experimental
+paradigms: block and event-related paradigms. They correspond to 2
+classes EventRelatedParadigm and BlockParadigm. Both are implemented
+here, together with functions to write paradigms to csv files.</p>
+<section id="notes">
+<h3>Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h3>
+<p>Although the Paradigm object have no notion of session or acquisitions
+(they are assumed to correspond to a sequential acquisition, called
+‘session’ in SPM jargon), the .csv file used to represent paradigm may
+be multi-session, so it is assumed that the first column of a file
+yielding a paradigm is in fact a session index</p>
+<p>Author: Bertrand Thirion, 2009-2011</p>
+</section>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="blockparadigm">
+<h3><a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.BlockParadigm" title="nipy.modalities.fmri.experimental_paradigm.BlockParadigm"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockParadigm</span></code></a><a class="headerlink" href="#blockparadigm" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.experimental_paradigm.BlockParadigm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.experimental_paradigm.</span></span><span class="sig-name descname"><span class="pre">BlockParadigm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.experimental_paradigm.BlockParadigm" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.Paradigm" title="nipy.modalities.fmri.experimental_paradigm.Paradigm"><code class="xref py py-class docutils literal notranslate"><span class="pre">Paradigm</span></code></a></p>
+<p>Class to handle block paradigms</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.experimental_paradigm.BlockParadigm.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.experimental_paradigm.BlockParadigm.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>con_id: array of shape (n_events), type = string, optional</strong></dt><dd><p>id of the events (name of the experimental condition)</p>
+</dd>
+<dt><strong>onset: array of shape (n_events), type = float, optional</strong></dt><dd><p>onset time (in s.) of the events</p>
+</dd>
+<dt><strong>amplitude: array of shape (n_events), type = float, optional,</strong></dt><dd><p>amplitude of the events (if applicable)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.experimental_paradigm.BlockParadigm.write_to_csv">
+<span class="sig-name descname"><span class="pre">write_to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.experimental_paradigm.BlockParadigm.write_to_csv" title="Link to this definition">¶</a></dt>
+<dd><p>Write the paradigm to a csv file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>csv_file: string, path of the csv file</strong></dt><dd></dd>
+<dt><strong>session: string, optional, session identifier</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="eventrelatedparadigm">
+<h3><a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.EventRelatedParadigm" title="nipy.modalities.fmri.experimental_paradigm.EventRelatedParadigm"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventRelatedParadigm</span></code></a><a class="headerlink" href="#eventrelatedparadigm" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.experimental_paradigm.EventRelatedParadigm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.experimental_paradigm.</span></span><span class="sig-name descname"><span class="pre">EventRelatedParadigm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.experimental_paradigm.EventRelatedParadigm" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.Paradigm" title="nipy.modalities.fmri.experimental_paradigm.Paradigm"><code class="xref py py-class docutils literal notranslate"><span class="pre">Paradigm</span></code></a></p>
+<p>Class to handle event-related paradigms</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.experimental_paradigm.EventRelatedParadigm.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.experimental_paradigm.EventRelatedParadigm.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>con_id: array of shape (n_events), type = string, optional</strong></dt><dd><p>id of the events (name of the experimental condition)</p>
+</dd>
+<dt><strong>onset: array of shape (n_events), type = float, optional</strong></dt><dd><p>onset time (in s.) of the events</p>
+</dd>
+<dt><strong>amplitude: array of shape (n_events), type = float, optional,</strong></dt><dd><p>amplitude of the events (if applicable)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.experimental_paradigm.EventRelatedParadigm.write_to_csv">
+<span class="sig-name descname"><span class="pre">write_to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.experimental_paradigm.EventRelatedParadigm.write_to_csv" title="Link to this definition">¶</a></dt>
+<dd><p>Write the paradigm to a csv file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>csv_file: string, path of the csv file</strong></dt><dd></dd>
+<dt><strong>session: string, optional, session identifier</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="paradigm">
+<h3><a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.Paradigm" title="nipy.modalities.fmri.experimental_paradigm.Paradigm"><code class="xref py py-class docutils literal notranslate"><span class="pre">Paradigm</span></code></a><a class="headerlink" href="#paradigm" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.experimental_paradigm.Paradigm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.experimental_paradigm.</span></span><span class="sig-name descname"><span class="pre">Paradigm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.experimental_paradigm.Paradigm" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Simple class to handle the experimental paradigm in one session</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.experimental_paradigm.Paradigm.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.experimental_paradigm.Paradigm.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>con_id: array of shape (n_events), type = string, optional</strong></dt><dd><p>identifier of the events</p>
+</dd>
+<dt><strong>onset: array of shape (n_events), type = float, optional,</strong></dt><dd><p>onset time (in s.) of the events</p>
+</dd>
+<dt><strong>amplitude: array of shape (n_events), type = float, optional,</strong></dt><dd><p>amplitude of the events (if applicable)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.experimental_paradigm.Paradigm.write_to_csv">
+<span class="sig-name descname"><span class="pre">write_to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.experimental_paradigm.Paradigm.write_to_csv" title="Link to this definition">¶</a></dt>
+<dd><p>Write the paradigm to a csv file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>csv_file: string, path of the csv file</strong></dt><dd></dd>
+<dt><strong>session: string, optional, session identifier</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="function">
+<h2>Function<a class="headerlink" href="#function" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.experimental_paradigm.load_paradigm_from_csv_file">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.experimental_paradigm.</span></span><span class="sig-name descname"><span class="pre">load_paradigm_from_csv_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.experimental_paradigm.load_paradigm_from_csv_file" title="Link to this definition">¶</a></dt>
+<dd><p>Read a (.csv) paradigm file consisting of values yielding
+(occurrence time, (duration), event ID, modulation)
+and returns a paradigm instance or a dictionary of paradigm instances</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path: string,</strong></dt><dd><p>path to a .csv file that describes the paradigm</p>
+</dd>
+<dt><strong>session: string, optional, session identifier</strong></dt><dd><p>by default the output is a dictionary
+of session-level dictionaries indexed by session</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>paradigm, paradigm instance (if session is provided), or</dt><dd><p>dictionary of paradigm instances otherwise,
+the resulting session-by-session paradigm</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>It is assumed that the csv file contains the following columns:
+(session id, condition id, onset),
+plus possibly (duration) and/or (amplitude).
+If all the durations are 0, the paradigm will be handled as event-related.</p>
+<p>FIXME: would be much clearer if amplitude was put before duration in the
+.csv</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">modalities.fmri.experimental_paradigm</a><ul>
+<li><a class="reference internal" href="#module-modalities-fmri-experimental-paradigm">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.experimental_paradigm</span></code></a><ul>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#blockparadigm"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockParadigm</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.BlockParadigm"><code class="docutils literal notranslate"><span class="pre">BlockParadigm</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.BlockParadigm.__init__"><code class="docutils literal notranslate"><span class="pre">BlockParadigm.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.BlockParadigm.write_to_csv"><code class="docutils literal notranslate"><span class="pre">BlockParadigm.write_to_csv()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#eventrelatedparadigm"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventRelatedParadigm</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.EventRelatedParadigm"><code class="docutils literal notranslate"><span class="pre">EventRelatedParadigm</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.EventRelatedParadigm.__init__"><code class="docutils literal notranslate"><span class="pre">EventRelatedParadigm.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.EventRelatedParadigm.write_to_csv"><code class="docutils literal notranslate"><span class="pre">EventRelatedParadigm.write_to_csv()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#paradigm"><code class="xref py py-class docutils literal notranslate"><span class="pre">Paradigm</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.Paradigm"><code class="docutils literal notranslate"><span class="pre">Paradigm</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.Paradigm.__init__"><code class="docutils literal notranslate"><span class="pre">Paradigm.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.Paradigm.write_to_csv"><code class="docutils literal notranslate"><span class="pre">Paradigm.write_to_csv()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#function">Function</a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.experimental_paradigm.load_paradigm_from_csv_file"><code class="docutils literal notranslate"><span class="pre">load_paradigm_from_csv_file()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.design_matrix.html"
+                          title="previous chapter">modalities.fmri.design_matrix</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.fmri.html"
+                          title="next chapter">modalities.fmri.fmri</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.modalities.fmri.experimental_paradigm.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmri.html" title="modalities.fmri.fmri"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.design_matrix.html" title="modalities.fmri.design_matrix"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

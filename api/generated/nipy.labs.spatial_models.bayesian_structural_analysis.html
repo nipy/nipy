@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="labs.spatial_models.bsa_io" href="nipy.labs.spatial_models.bsa_io.html" />
+    <link rel="prev" title="labs.mask" href="nipy.labs.mask.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.bsa_io.html" title="labs.spatial_models.bsa_io"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.mask.html" title="labs.mask"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="labs-spatial-models-bayesian-structural-analysis">
+<h1>labs.spatial_models.bayesian_structural_analysis<a class="headerlink" href="#labs-spatial-models-bayesian-structural-analysis" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.labs.spatial_models.bayesian_structural_analysis">
+<span id="module-labs-spatial-models-bayesian-structural-analysis"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.spatial_models.bayesian_structural_analysis</span></code><a class="headerlink" href="#module-nipy.labs.spatial_models.bayesian_structural_analysis" title="Link to this heading">¶</a></h2>
+<p>The main routine of this package that aims at performing the
+extraction of ROIs from multisubject dataset using the localization
+and activation strength of extracted regions.</p>
+<p>This has been published in:
+- Thirion et al. High level group analysis of FMRI data based on
+Dirichlet process mixture models, IPMI 2007
+- Thirion et al.
+Accurate Definition of Brain Regions Position Through the
+Functional Landmark Approach, MICCAI 2010</p>
+<p>Author : Bertrand Thirion, 2006-2013</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.bayesian_structural_analysis.compute_landmarks">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.spatial_models.bayesian_structural_analysis.</span></span><span class="sig-name descname"><span class="pre">compute_landmarks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prevalence_pval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prevalence_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'prior'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'density'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">burnin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.bayesian_structural_analysis.compute_landmarks" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the  Bayesian Structural Activation patterns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>domain: StructuredDomain instance,</strong></dt><dd><p>Description of the spatial context of the data</p>
+</dd>
+<dt><strong>stats: array of shape (nbnodes, subjects):</strong></dt><dd><p>the multi-subject statistical maps</p>
+</dd>
+<dt><strong>sigma: float &gt; 0:</strong></dt><dd><p>expected cluster std in the common space in units of coord</p>
+</dd>
+<dt><strong>prevalence_pval: float in the [0,1] interval, optional</strong></dt><dd><p>posterior significance threshold</p>
+</dd>
+<dt><strong>prevalence_threshold: float, optional,</strong></dt><dd><p>reference threshold for the prevalence value</p>
+</dd>
+<dt><strong>threshold: float, optional,</strong></dt><dd><p>first level threshold</p>
+</dd>
+<dt><strong>smin: int, optional,</strong></dt><dd><p>minimal size of the regions to validate them</p>
+</dd>
+<dt><strong>method: {‘gauss_mixture’, ‘emp_null’, ‘gam_gauss’, ‘prior’}, optional,</strong></dt><dd><p>‘gauss_mixture’ A Gaussian Mixture Model is used
+‘emp_null’ a null mode is fitted to test
+‘gam_gauss’ a Gamma-Gaussian mixture is used
+‘prior’ a hard-coded function is used</p>
+</dd>
+<dt><strong>algorithm: string, one of [‘density’, ‘co-occurrence’], optional</strong></dt><dd><p>method used to compute the landmarks</p>
+</dd>
+<dt><strong>niter: int, optional,</strong></dt><dd><p>number of iterations of the DPMM</p>
+</dd>
+<dt><strong>burnin: int, optional,</strong></dt><dd><p>number of iterations of the DPMM</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>landmarks: Instance of sbf.LandmarkRegions or None,</dt><dd><p>Describes the ROIs found in inter-subject inference
+None if nothing can be defined</p>
+</dd>
+<dt>hrois: list of  nipy.labs.spatial_models.hroi.Nroi instances</dt><dd><p>representing individual ROIs</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">labs.spatial_models.bayesian_structural_analysis</a><ul>
+<li><a class="reference internal" href="#module-nipy.labs.spatial_models.bayesian_structural_analysis">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.spatial_models.bayesian_structural_analysis</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.bayesian_structural_analysis.compute_landmarks"><code class="docutils literal notranslate"><span class="pre">compute_landmarks()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.labs.mask.html"
+                          title="previous chapter">labs.mask</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.labs.spatial_models.bsa_io.html"
+                          title="next chapter">labs.spatial_models.bsa_io</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.labs.spatial_models.bayesian_structural_analysis.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.bsa_io.html" title="labs.spatial_models.bsa_io"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.mask.html" title="labs.mask"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.graph.field" href="nipy.algorithms.graph.field.html" />
+    <link rel="prev" title="algorithms.fwhm" href="nipy.algorithms.fwhm.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.graph.field.html" title="algorithms.graph.field"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.fwhm.html" title="algorithms.fwhm"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-graph-bipartite-graph">
+<h1>algorithms.graph.bipartite_graph<a class="headerlink" href="#algorithms-graph-bipartite-graph" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-graph-bipartite-graph">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.graph.bipartite_graph</span></code><a class="headerlink" href="#module-algorithms-graph-bipartite-graph" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.graph.bipartite_graph</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-4d956998c457b534bb2e662966b3824243dfca33.png" alt="Inheritance diagram of nipy.algorithms.graph.bipartite_graph" usemap="#inheritance822533b353" class="inheritance graphviz" /></div>
+<map id="inheritance822533b353" name="inheritance822533b353">
+<area shape="rect" id="node1" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph" target="_top" title="Bipartite graph class" alt="" coords="5,5,235,32"/>
+</map><p id="module-nipy.algorithms.graph.bipartite_graph">This module implements the BipartiteGraph class, used to represent
+weighted bipartite graph: it contains two types of vertices, say
+‘left’ and ‘right’; then edges can only exist between ‘left’ and
+‘right’ vertices. For simplicity the vertices of either side are
+labeled [1..V] and [1..W] respectively.</p>
+<p>Author: Bertrand Thirion, 2006–2011</p>
+</section>
+<section id="class">
+<h2>Class<a class="headerlink" href="#class" title="Link to this heading">¶</a></h2>
+</section>
+<section id="bipartitegraph">
+<h2><a class="reference internal" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph" title="nipy.algorithms.graph.bipartite_graph.BipartiteGraph"><code class="xref py py-class docutils literal notranslate"><span class="pre">BipartiteGraph</span></code></a><a class="headerlink" href="#bipartitegraph" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.bipartite_graph.BipartiteGraph">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.graph.bipartite_graph.</span></span><span class="sig-name descname"><span class="pre">BipartiteGraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Bipartite graph class</p>
+<p>A graph for which there are two types of nodes, such that
+edges can exist only between nodes of type 1 and type 2 (not within)
+fields of this class:
+V (int, &gt; 0) the number of type 1 vertices
+W (int, &gt; 0) the number of type 2 vertices
+E: (int) the number of edges
+edges: array of shape (self.E, 2) reprensenting pairwise neighbors
+weights, array of shape (self.E), +1/-1 for scending/descending links</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.bipartite_graph.BipartiteGraph.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Constructor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>V (int), the number of vertices of subset 1</strong></dt><dd></dd>
+<dt><strong>W (int), the number of vertices of subset 2</strong></dt><dd></dd>
+<dt><strong>edges=None: array of shape (self.E, 2)</strong></dt><dd><p>the edge array of the graph</p>
+</dd>
+<dt><strong>weights=None: array of shape (self.E)</strong></dt><dd><p>the associated weights array</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.bipartite_graph.BipartiteGraph.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph.copy" title="Link to this definition">¶</a></dt>
+<dd><p>returns a copy of self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.bipartite_graph.BipartiteGraph.set_edges">
+<span class="sig-name descname"><span class="pre">set_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edges</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph.set_edges" title="Link to this definition">¶</a></dt>
+<dd><p>Set edges to graph</p>
+<dl class="simple">
+<dt>sets self.edges=edges if</dt><dd><ol class="arabic simple">
+<li><p>edges has a correct size</p></li>
+<li><p>edges take values in [0..V-1]*[0..W-1]</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>edges: array of shape(self.E, 2): set of candidate edges</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.bipartite_graph.BipartiteGraph.set_weights">
+<span class="sig-name descname"><span class="pre">set_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph.set_weights" title="Link to this definition">¶</a></dt>
+<dd><p>Set weights <cite>weights</cite> to edges</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>weights, array of shape(self.V): edges weights</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.bipartite_graph.BipartiteGraph.subgraph_left">
+<span class="sig-name descname"><span class="pre">subgraph_left</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">valid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renumb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph.subgraph_left" title="Link to this definition">¶</a></dt>
+<dd><p>Extraction of a subgraph</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>valid, boolean array of shape self.V</strong></dt><dd></dd>
+<dt><strong>renumb, boolean: renumbering of the (left) edges</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>G</strong><span class="classifier">None or <code class="docutils literal notranslate"><span class="pre">BipartiteGraph</span></code> instance</span></dt><dd><p>A new BipartiteGraph instance with only the left vertices that are
+True.  If sum(valid)==0, None is returned</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.bipartite_graph.BipartiteGraph.subgraph_right">
+<span class="sig-name descname"><span class="pre">subgraph_right</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">valid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renumb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph.subgraph_right" title="Link to this definition">¶</a></dt>
+<dd><p>Extraction of a subgraph</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>valid</strong><span class="classifier">bool array of shape self.V</span></dt><dd></dd>
+<dt><strong>renumb</strong><span class="classifier">bool, optional</span></dt><dd><p>renumbering of the (right) edges</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>G</strong><span class="classifier">None or <code class="docutils literal notranslate"><span class="pre">BipartiteGraph</span></code> instance.</span></dt><dd><p>A new BipartiteGraph instance with only the right vertices that are
+True.  If sum(valid)==0, None is returned</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.bipartite_graph.bipartite_graph_from_adjacency">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.graph.bipartite_graph.</span></span><span class="sig-name descname"><span class="pre">bipartite_graph_from_adjacency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.bipartite_graph.bipartite_graph_from_adjacency" title="Link to this definition">¶</a></dt>
+<dd><p>Instantiates a weighted graph from a square 2D array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x: 2D array instance, the input array</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>wg: BipartiteGraph instance</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.bipartite_graph.bipartite_graph_from_coo_matrix">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.graph.bipartite_graph.</span></span><span class="sig-name descname"><span class="pre">bipartite_graph_from_coo_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.bipartite_graph.bipartite_graph_from_coo_matrix" title="Link to this definition">¶</a></dt>
+<dd><p>Instantiates a weighted graph from a (sparse) coo_matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x: scipy.sparse.coo_matrix instance, the input matrix</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>bg: BipartiteGraph instance</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.bipartite_graph.check_feature_matrices">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.graph.bipartite_graph.</span></span><span class="sig-name descname"><span class="pre">check_feature_matrices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.bipartite_graph.check_feature_matrices" title="Link to this definition">¶</a></dt>
+<dd><p>checks whether the dimensions of X and Y are consistent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X, Y arrays of shape (n1, p) and (n2, p)</strong></dt><dd></dd>
+<dt><strong>where p = common dimension of the features</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.bipartite_graph.cross_eps">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.graph.bipartite_graph.</span></span><span class="sig-name descname"><span class="pre">cross_eps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.bipartite_graph.cross_eps" title="Link to this definition">¶</a></dt>
+<dd><p>Return the eps-neighbours graph of from X to Y</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X, Y arrays of shape (n1, p) and (n2, p)</strong></dt><dd></dd>
+<dt><strong>where p = common dimension of the features</strong></dt><dd></dd>
+<dt><strong>eps=1, float: the neighbourhood size considered</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>the resulting bipartite graph instance</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>for the sake of speed it is advisable to give PCA-preprocessed matrices X
+and Y.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.graph.bipartite_graph.cross_knn">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.graph.bipartite_graph.</span></span><span class="sig-name descname"><span class="pre">cross_knn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.graph.bipartite_graph.cross_knn" title="Link to this definition">¶</a></dt>
+<dd><p>return the k-nearest-neighbours graph of from X to Y</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X, Y arrays of shape (n1, p) and (n2, p)</strong></dt><dd></dd>
+<dt><strong>where p = common dimension of the features</strong></dt><dd></dd>
+<dt><strong>eps=1, float: the neighbourhood size considered</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>BipartiteGraph instance</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>For the sake of speed it is advised to give PCA-transformed matrices X and
+Y.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.graph.bipartite_graph</a><ul>
+<li><a class="reference internal" href="#module-algorithms-graph-bipartite-graph">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.graph.bipartite_graph</span></code></a></li>
+<li><a class="reference internal" href="#class">Class</a></li>
+<li><a class="reference internal" href="#bipartitegraph"><code class="xref py py-class docutils literal notranslate"><span class="pre">BipartiteGraph</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph"><code class="docutils literal notranslate"><span class="pre">BipartiteGraph</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph.__init__"><code class="docutils literal notranslate"><span class="pre">BipartiteGraph.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph.copy"><code class="docutils literal notranslate"><span class="pre">BipartiteGraph.copy()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph.set_edges"><code class="docutils literal notranslate"><span class="pre">BipartiteGraph.set_edges()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph.set_weights"><code class="docutils literal notranslate"><span class="pre">BipartiteGraph.set_weights()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph.subgraph_left"><code class="docutils literal notranslate"><span class="pre">BipartiteGraph.subgraph_left()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.bipartite_graph.BipartiteGraph.subgraph_right"><code class="docutils literal notranslate"><span class="pre">BipartiteGraph.subgraph_right()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.graph.bipartite_graph.bipartite_graph_from_adjacency"><code class="docutils literal notranslate"><span class="pre">bipartite_graph_from_adjacency()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.bipartite_graph.bipartite_graph_from_coo_matrix"><code class="docutils literal notranslate"><span class="pre">bipartite_graph_from_coo_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.bipartite_graph.check_feature_matrices"><code class="docutils literal notranslate"><span class="pre">check_feature_matrices()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.bipartite_graph.cross_eps"><code class="docutils literal notranslate"><span class="pre">cross_eps()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.graph.bipartite_graph.cross_knn"><code class="docutils literal notranslate"><span class="pre">cross_knn()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.fwhm.html"
+                          title="previous chapter">algorithms.fwhm</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.graph.field.html"
+                          title="next chapter">algorithms.graph.field</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.graph.bipartite_graph.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.graph.field.html" title="algorithms.graph.field"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.fwhm.html" title="algorithms.fwhm"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

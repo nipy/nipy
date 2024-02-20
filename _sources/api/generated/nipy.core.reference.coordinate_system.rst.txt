@@ -1,0 +1,82 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+core.reference.coordinate_system
+================================
+
+Module: :mod:`core.reference.coordinate_system`
+-----------------------------------------------
+Inheritance diagram for ``nipy.core.reference.coordinate_system``:
+
+.. inheritance-diagram:: nipy.core.reference.coordinate_system 
+   :parts: 3
+
+.. automodule:: nipy.core.reference.coordinate_system
+
+.. currentmodule:: nipy.core.reference.coordinate_system
+
+Classes
+-------
+
+:class:`CoordSysMaker`
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CoordSysMaker
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CoordSysMakerError`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CoordSysMakerError
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CoordinateSystem`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CoordinateSystem
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CoordinateSystemError`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CoordinateSystemError
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: nipy.core.reference.coordinate_system.is_coordsys
+
+
+.. autofunction:: nipy.core.reference.coordinate_system.is_coordsys_maker
+
+
+.. autofunction:: nipy.core.reference.coordinate_system.product
+
+
+.. autofunction:: nipy.core.reference.coordinate_system.safe_dtype
+

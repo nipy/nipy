@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="The ChangeLog" href="changelog.html" />
+    <link rel="prev" title="Open Source Development" href="open_source_devel.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="changelog.html" title="The ChangeLog"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="open_source_devel.html" title="Open Source Development"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">Development Guidelines</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="a-guide-to-making-a-nipy-release">
+<span id="release-guide"></span><h1>A guide to making a nipy release<a class="headerlink" href="#a-guide-to-making-a-nipy-release" title="Link to this heading">¶</a></h1>
+<p>A guide for developers who are doing a nipy release</p>
+<section id="release-checklist">
+<span id="id1"></span><h2>Release checklist<a class="headerlink" href="#release-checklist" title="Link to this heading">¶</a></h2>
+<ul>
+<li><p>Review the open list of <a class="reference external" href="http://github.com/nipy/nipy/issues">nipy issues</a>.  Check whether there are
+outstanding issues that can be closed, and whether there are any issues that
+should delay the release.  Label them !</p></li>
+<li><p>Review and update the release notes.  Review and update the <code class="file docutils literal notranslate"><span class="pre">Changelog</span></code>
+file.  Get a partial list of contributors with something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>PREV_RELEASE=0.5.0
+git log $PREV_RELEASE.. | grep &#39;^Author&#39; | cut -d&#39; &#39; -f 2- | sort | uniq
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">0.5.0</span></code> was the last release tag name.</p>
+<p>Then manually go over <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">shortlog</span> <span class="pre">$PREV_RELEASE..</span></code> to make sure the
+release notes are as complete as possible and that every contributor was
+recognized.</p>
+</li>
+<li><p>Use the opportunity to update the <code class="docutils literal notranslate"><span class="pre">.mailmap</span></code> file if there are any
+duplicate authors listed from <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">shortlog</span> <span class="pre">-ns</span></code>.</p></li>
+<li><p>Add any new authors to the <code class="docutils literal notranslate"><span class="pre">AUTHOR</span></code> file.  Add any new entries to the
+<code class="docutils literal notranslate"><span class="pre">THANKS</span></code> file.</p></li>
+<li><p>Check the copyright years in <code class="docutils literal notranslate"><span class="pre">doc/conf.py</span></code> and <code class="docutils literal notranslate"><span class="pre">LICENSE</span></code></p></li>
+<li><p>Check the output of:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rst2html</span><span class="o">.</span><span class="n">py</span> <span class="n">README</span><span class="o">.</span><span class="n">rst</span> <span class="o">&gt;</span> <span class="o">~/</span><span class="n">tmp</span><span class="o">/</span><span class="n">readme</span><span class="o">.</span><span class="n">html</span>
+</pre></div>
+</div>
+<p>because this will be the output used by <a class="reference external" href="http://pypi.python.org">PyPI</a></p>
+</li>
+<li><p>Check the dependencies listed in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> and in
+<code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> and in <code class="docutils literal notranslate"><span class="pre">doc/users/installation.rst</span></code>.  They should at
+least match. Do they still hold?  Make sure <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> is testing
+these minimum dependencies specifically.</p></li>
+<li><p>Check the examples.  First download the example data
+by running something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install data packages.</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">nipy</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">data</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">nipy</span><span class="o">-</span><span class="n">templates</span><span class="o">-</span><span class="mf">0.3</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">nipy</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">data</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">nipy</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="mf">0.3</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+</pre></div>
+</div>
+<p>Then run the tests on the examples with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Move out of the source directory.</span>
+<span class="n">cd</span> <span class="o">..</span>
+<span class="c1"># Make log file directory.</span>
+<span class="n">mkdir</span> <span class="o">~/</span><span class="n">tmp</span><span class="o">/</span><span class="n">eg_logs</span>
+<span class="o">./</span><span class="n">nipy</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">run_log_examples</span><span class="o">.</span><span class="n">py</span> <span class="n">nipy</span><span class="o">/</span><span class="n">examples</span> <span class="o">--</span><span class="n">log</span><span class="o">-</span><span class="n">path</span><span class="o">=~/</span><span class="n">tmp</span><span class="o">/</span><span class="n">eg_logs</span>
+</pre></div>
+</div>
+<p>in a virtualenv.  Review the output in (e.g.) <code class="docutils literal notranslate"><span class="pre">~/tmp/eg_logs</span></code>. The
+output file <code class="docutils literal notranslate"><span class="pre">summary.txt</span></code> will have the pass file printout that the
+<code class="docutils literal notranslate"><span class="pre">run_log_examples.py</span></code> script puts onto stdout while running.</p>
+</li>
+<li><p>Check the documentation doctests pass:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">virtualenv</span> <span class="n">venv</span>
+<span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">doc</span><span class="o">-</span><span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+<span class="p">(</span><span class="n">cd</span> <span class="n">docs</span> <span class="o">&amp;&amp;</span> <span class="n">make</span> <span class="n">clean</span><span class="o">-</span><span class="n">doctest</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Check the doc build:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">virtualenv</span> <span class="n">venv</span>
+<span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">doc</span><span class="o">-</span><span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+<span class="p">(</span><span class="n">cd</span> <span class="n">docs</span> <span class="o">&amp;&amp;</span> <span class="n">make</span> <span class="n">html</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Build and test the Nipy wheels.  See the <a class="reference external" href="https://github.com/MacPython/nipy-wheels">wheel builder README</a> for instructions.  In summary,
+clone the wheel-building repo, edit the <code class="docutils literal notranslate"><span class="pre">.github/workflow</span></code> text files (if
+present) with the branch or commit for the release, commit and then push
+back up to github.  This will trigger a wheel build and test on macOS, Linux
+and Windows. Check the build has passed on on the Github interface at
+<a class="reference external" href="https://travis-ci.org/MacPython/nipy-wheels">https://travis-ci.org/MacPython/nipy-wheels</a>.  You’ll need commit privileges
+to the <code class="docutils literal notranslate"><span class="pre">nipy-wheels</span></code> repo; ask Matthew Brett or on the mailing list if you
+do not have them.</p></li>
+</ul>
+</section>
+<section id="doing-the-release">
+<h2>Doing the release<a class="headerlink" href="#doing-the-release" title="Link to this heading">¶</a></h2>
+<ul>
+<li><p>The release should now be ready.</p></li>
+<li><p>Edit <code class="file docutils literal notranslate"><span class="pre">nipy/__init__.py</span></code> to set <code class="docutils literal notranslate"><span class="pre">__version__</span></code> to e.g. <code class="docutils literal notranslate"><span class="pre">0.6.0</span></code>.</p>
+<p>Edit <code class="file docutils literal notranslate"><span class="pre">meson.build</span></code> to set <code class="docutils literal notranslate"><span class="pre">version</span></code> to match.</p>
+<p>Commit, then:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">source</span><span class="o">-</span><span class="n">release</span>
+</pre></div>
+</div>
+</li>
+<li><p>For the wheel build / upload, follow the <a class="reference external" href="https://github.com/MacPython/nipy-wheels">wheel builder README</a>
+instructions again.  Push.  Check the build has passed on the Github
+interface.  Now follow the instructions in the page above to download the
+built wheels to a local machine and upload to PyPI.</p></li>
+<li><p>Once everything looks good, you are ready to upload the source release to
+PyPI.  See <a href="#id5"><span class="problematic" id="id6">`setuptools intro`_</span></a>.  Make sure you have a file <code class="docutils literal notranslate"><span class="pre">\$HOME/.pypirc</span></code>,
+of form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">pypi</span><span class="p">]</span>
+<span class="n">username</span> <span class="o">=</span> <span class="n">__token__</span>
+</pre></div>
+</div>
+</li>
+<li><p>Sign and upload the source release to PyPI using <a class="reference external" href="https://pypi.python.org/pypi/twine">Twine</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gpg</span> <span class="o">--</span><span class="n">detach</span><span class="o">-</span><span class="n">sign</span> <span class="o">-</span><span class="n">a</span> <span class="n">dist</span><span class="o">/</span><span class="n">nipy</span><span class="o">*.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">twine</span> <span class="n">upload</span> <span class="n">dist</span><span class="o">/</span><span class="n">nipy</span><span class="o">*.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span><span class="o">*</span>
+</pre></div>
+</div>
+</li>
+<li><p>Tag the release with tag of form <code class="docutils literal notranslate"><span class="pre">0.6.0</span></code>. <cite>-s</cite> below makes a signed tag:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">tag</span> <span class="o">-</span><span class="n">s</span> <span class="s1">&#39;Second main release&#39;</span> <span class="mf">0.6.0</span>
+</pre></div>
+</div>
+</li>
+<li><p>Now the version number is OK, push the docs to github pages with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">upload</span><span class="o">-</span><span class="n">html</span>
+</pre></div>
+</div>
+</li>
+<li><p>Start the new series.</p>
+<p>Edit <code class="docutils literal notranslate"><span class="pre">nipy/__init__.py</span></code> and set version number to something of form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.6.1.dev1&quot;</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">0.6.0</span></code> was the previous release.</p>
+</li>
+<li><p>Push tags:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="o">--</span><span class="n">tags</span>
+</pre></div>
+</div>
+</li>
+<li><p>Announce to the mailing lists.</p></li>
+</ul>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">A guide to making a nipy release</a><ul>
+<li><a class="reference internal" href="#release-checklist">Release checklist</a></li>
+<li><a class="reference internal" href="#doing-the-release">Doing the release</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="open_source_devel.html"
+                          title="previous chapter">Open Source Development</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="changelog.html"
+                          title="next chapter">The ChangeLog</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/devel/guidelines/make_release.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="changelog.html" title="The ChangeLog"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="open_source_devel.html" title="Open Source Development"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" >Development Guidelines</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

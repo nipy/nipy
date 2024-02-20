@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+labs.spatial_models.bayesian_structural_analysis
+================================================
+
+Module: :mod:`labs.spatial_models.bayesian_structural_analysis`
+---------------------------------------------------------------
+.. automodule:: nipy.labs.spatial_models.bayesian_structural_analysis
+
+.. currentmodule:: nipy.labs.spatial_models.bayesian_structural_analysis
+
+.. autofunction:: nipy.labs.spatial_models.bayesian_structural_analysis.compute_landmarks
+

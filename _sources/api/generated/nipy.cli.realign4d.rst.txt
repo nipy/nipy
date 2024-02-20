@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+cli.realign4d
+=============
+
+Module: :mod:`cli.realign4d`
+----------------------------
+.. automodule:: nipy.cli.realign4d
+
+.. currentmodule:: nipy.cli.realign4d
+
+.. autofunction:: nipy.cli.realign4d.main
+

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="core.reference.slices" href="nipy.core.reference.slices.html" />
+    <link rel="prev" title="core.reference.coordinate_map" href="nipy.core.reference.coordinate_map.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.reference.slices.html" title="core.reference.slices"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.reference.coordinate_map.html" title="core.reference.coordinate_map"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="core-reference-coordinate-system">
+<h1>core.reference.coordinate_system<a class="headerlink" href="#core-reference-coordinate-system" title="Link to this heading">¶</a></h1>
+<section id="module-core-reference-coordinate-system">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">core.reference.coordinate_system</span></code><a class="headerlink" href="#module-core-reference-coordinate-system" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.core.reference.coordinate_system</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-18b8410843d2b209d22d7c1baa4725ddf665a632.png" alt="Inheritance diagram of nipy.core.reference.coordinate_system" usemap="#inheritance3f48cb85d6" class="inheritance graphviz" /></div>
+<map id="inheritance3f48cb85d6" name="inheritance3f48cb85d6">
+<area shape="rect" id="node1" href="#nipy.core.reference.coordinate_system.CoordSysMaker" target="_top" title="Class to create similar coordinate maps of different dimensions" alt="" coords="26,157,314,184"/>
+<area shape="rect" id="node2" href="#nipy.core.reference.coordinate_system.CoordSysMakerError" target="_top" title="reference.coordinate_system.CoordSysMakerError" alt="" coords="12,107,328,133"/>
+<area shape="rect" id="node3" href="#nipy.core.reference.coordinate_system.CoordinateSystem" target="_top" title="An ordered sequence of named coordinates of a specified dtype." alt="" coords="19,56,321,83"/>
+<area shape="rect" id="node4" href="#nipy.core.reference.coordinate_system.CoordinateSystemError" target="_top" title="reference.coordinate_system.CoordinateSystemError" alt="" coords="5,5,335,32"/>
+</map><p id="module-nipy.core.reference.coordinate_system">CoordinateSystems are used to represent the space in which the image resides.</p>
+<p>A CoordinateSystem contains named coordinates, one for each dimension
+and a coordinate dtype.  The purpose of the CoordinateSystem is to
+specify the name and order of the coordinate axes for a particular
+space.  This allows one to compare two CoordinateSystems to determine
+if they are equal.</p>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="coordsysmaker">
+<h3><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordSysMaker" title="nipy.core.reference.coordinate_system.CoordSysMaker"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordSysMaker</span></code></a><a class="headerlink" href="#coordsysmaker" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordSysMaker">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_system.</span></span><span class="sig-name descname"><span class="pre">CoordSysMaker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordSysMaker" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to create similar coordinate maps of different dimensions</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordSysMaker.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordSysMaker.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Create a coordsys maker with given axis <cite>coord_names</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coord_names</strong><span class="classifier">iterable</span></dt><dd><p>A sequence of coordinate names.</p>
+</dd>
+<dt><strong>name</strong><span class="classifier">string, optional</span></dt><dd><p>The name of the coordinate system</p>
+</dd>
+<dt><strong>coord_dtype</strong><span class="classifier">np.dtype, optional</span></dt><dd><p>The dtype of the coord_names.  This should be a built-in
+numpy scalar dtype. (default is np.float64).  The value can
+by anything that can be passed to the np.dtype constructor.
+For example <code class="docutils literal notranslate"><span class="pre">np.float64</span></code>, <code class="docutils literal notranslate"><span class="pre">np.dtype(np.float64)</span></code> or <code class="docutils literal notranslate"><span class="pre">f8</span></code>
+all result in the same <code class="docutils literal notranslate"><span class="pre">coord_dtype</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cmkr</span> <span class="o">=</span> <span class="n">CoordSysMaker</span><span class="p">(</span><span class="s1">&#39;ijk&#39;</span><span class="p">,</span> <span class="s1">&#39;a name&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">cmkr</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;), name=&#39;a name&#39;, coord_dtype=float64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">cmkr</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;), name=&#39;a name&#39;, coord_dtype=float64)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordSysMaker.coord_sys_klass">
+<span class="sig-name descname"><span class="pre">coord_sys_klass</span></span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordSysMaker.coord_sys_klass" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem" title="nipy.core.reference.coordinate_system.CoordinateSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystem</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="coordsysmakererror">
+<h3><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordSysMakerError" title="nipy.core.reference.coordinate_system.CoordSysMakerError"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordSysMakerError</span></code></a><a class="headerlink" href="#coordsysmakererror" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordSysMakerError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_system.</span></span><span class="sig-name descname"><span class="pre">CoordSysMakerError</span></span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordSysMakerError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordSysMakerError.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordSysMakerError.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordSysMakerError.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordSysMakerError.args" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordSysMakerError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordSysMakerError.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="coordinatesystem">
+<h3><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem" title="nipy.core.reference.coordinate_system.CoordinateSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystem</span></code></a><a class="headerlink" href="#coordinatesystem" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordinateSystem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_system.</span></span><span class="sig-name descname"><span class="pre">CoordinateSystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordinateSystem" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An ordered sequence of named coordinates of a specified dtype.</p>
+<p>A coordinate system is defined by the names of the coordinates,
+(attribute <code class="docutils literal notranslate"><span class="pre">coord_names</span></code>) and the numpy dtype of each coordinate
+value (attribute <code class="docutils literal notranslate"><span class="pre">coord_dtype</span></code>).  The coordinate system can also
+have a name.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;first&#39;</span><span class="p">,</span> <span class="s1">&#39;second&#39;</span><span class="p">,</span> <span class="s1">&#39;third&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s1">&#39;a coordinate system&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span><span class="o">.</span><span class="n">coord_names</span>
+<span class="go">(&#39;first&#39;, &#39;second&#39;, &#39;third&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;a coordinate system&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span><span class="o">.</span><span class="n">coord_dtype</span>
+<span class="go">dtype(&#39;float64&#39;)</span>
+</pre></div>
+</div>
+<p>The coordinate system also has a <code class="docutils literal notranslate"><span class="pre">dtype</span></code> which is the composite
+numpy dtype, made from the (<code class="docutils literal notranslate"><span class="pre">names</span></code>, <code class="docutils literal notranslate"><span class="pre">coord_dtype</span></code>).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dtype_template</span> <span class="o">=</span> <span class="p">[(</span><span class="n">name</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">cs</span><span class="o">.</span><span class="n">coord_names</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dtype_should_be</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype_template</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">dtype_should_be</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Two CoordinateSystems are equal if they have the same dtype
+and the same names and the same name.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">another_cs</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s1">&#39;not irrelevant&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span> <span class="o">==</span> <span class="n">another_cs</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">another_cs</span><span class="o">.</span><span class="n">dtype</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cs</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">another_cs</span><span class="o">.</span><span class="n">name</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordinateSystem.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordinateSystem.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Create a coordinate system with a given name and coordinate names.</p>
+<p>The CoordinateSystem has two dtype attributes:</p>
+<ol class="arabic simple">
+<li><p>self.coord_dtype is the dtype of the individual coordinate values</p></li>
+<li><p>self.dtype is the recarray dtype for the CoordinateSystem
+which combines the coord_names and the coord_dtype.  This
+functions as the description of the CoordinateSystem.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coord_names</strong><span class="classifier">iterable</span></dt><dd><p>A sequence of coordinate names.</p>
+</dd>
+<dt><strong>name</strong><span class="classifier">string, optional</span></dt><dd><p>The name of the coordinate system</p>
+</dd>
+<dt><strong>coord_dtype</strong><span class="classifier">np.dtype, optional</span></dt><dd><p>The dtype of the coord_names.  This should be a built-in
+numpy scalar dtype. (default is np.float64).  The value can
+by anything that can be passed to the np.dtype constructor.
+For example <code class="docutils literal notranslate"><span class="pre">np.float64</span></code>, <code class="docutils literal notranslate"><span class="pre">np.dtype(np.float64)</span></code> or <code class="docutils literal notranslate"><span class="pre">f8</span></code>
+all result in the same <code class="docutils literal notranslate"><span class="pre">coord_dtype</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ij&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;input&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;), name=&#39;input&#39;, coord_dtype=float64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">coord_dtype</span>
+<span class="go">dtype(&#39;float64&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordinateSystem.coord_dtype">
+<span class="sig-name descname"><span class="pre">coord_dtype</span></span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordinateSystem.coord_dtype" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordinateSystem.coord_names">
+<span class="sig-name descname"><span class="pre">coord_names</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('x',</span> <span class="pre">'y',</span> <span class="pre">'z')</span></em><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordinateSystem.coord_names" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordinateSystem.dtype">
+<span class="sig-name descname"><span class="pre">dtype</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">dtype([('x',</span> <span class="pre">'&lt;f8'),</span> <span class="pre">('y',</span> <span class="pre">'&lt;f8'),</span> <span class="pre">('z',</span> <span class="pre">'&lt;f8')])</span></em><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordinateSystem.dtype" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordinateSystem.index">
+<span class="sig-name descname"><span class="pre">index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordinateSystem.index" title="Link to this definition">¶</a></dt>
+<dd><p>Return the index of a given named coordinate.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ij&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;input&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">)</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;j&#39;</span><span class="p">)</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordinateSystem.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'world-LPI'</span></em><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordinateSystem.name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordinateSystem.ndim">
+<span class="sig-name descname"><span class="pre">ndim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordinateSystem.ndim" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordinateSystem.similar_to">
+<span class="sig-name descname"><span class="pre">similar_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordinateSystem.similar_to" title="Link to this definition">¶</a></dt>
+<dd><p>Similarity is defined by self.dtype, ignoring name</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>other</strong><span class="classifier"><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem" title="nipy.core.reference.coordinate_system.CoordinateSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystem</span></code></a></span></dt><dd><p>The object to be compared with</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>tf: bool</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="coordinatesystemerror">
+<h3><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystemError" title="nipy.core.reference.coordinate_system.CoordinateSystemError"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystemError</span></code></a><a class="headerlink" href="#coordinatesystemerror" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordinateSystemError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_system.</span></span><span class="sig-name descname"><span class="pre">CoordinateSystemError</span></span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordinateSystemError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordinateSystemError.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordinateSystemError.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordinateSystemError.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordinateSystemError.args" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.CoordinateSystemError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.CoordinateSystemError.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.is_coordsys">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_system.</span></span><span class="sig-name descname"><span class="pre">is_coordsys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.is_coordsys" title="Link to this definition">¶</a></dt>
+<dd><p>Test if <cite>obj</cite> has the CoordinateSystem API</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>obj</strong><span class="classifier">object</span></dt><dd><p>Object to test</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>tf</strong><span class="classifier">bool</span></dt><dd><p>True if <cite>obj</cite> has the coordinate system API</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_coordsys</span><span class="p">(</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">))</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_coordsys</span><span class="p">(</span><span class="n">CoordSysMaker</span><span class="p">(</span><span class="s1">&#39;ikj&#39;</span><span class="p">))</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.is_coordsys_maker">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_system.</span></span><span class="sig-name descname"><span class="pre">is_coordsys_maker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.is_coordsys_maker" title="Link to this definition">¶</a></dt>
+<dd><p>Test if <cite>obj</cite> has the CoordSysMaker API</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>obj</strong><span class="classifier">object</span></dt><dd><p>Object to test</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>tf</strong><span class="classifier">bool</span></dt><dd><p>True if <cite>obj</cite> has the coordinate system API</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_coordsys_maker</span><span class="p">(</span><span class="n">CoordSysMaker</span><span class="p">(</span><span class="s1">&#39;ikj&#39;</span><span class="p">))</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_coordsys_maker</span><span class="p">(</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;xyz&#39;</span><span class="p">))</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.product">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_system.</span></span><span class="sig-name descname"><span class="pre">product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">coord_systems</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.product" title="Link to this definition">¶</a></dt>
+<dd><p>Create the product of a sequence of CoordinateSystems.</p>
+<p>The coord_dtype of the result will be determined by <code class="docutils literal notranslate"><span class="pre">safe_dtype</span></code>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>*coord_systems</strong><span class="classifier">sequence of <a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem" title="nipy.core.reference.coordinate_system.CoordinateSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystem</span></code></a></span></dt><dd></dd>
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>Name of output coordinate system</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>product_coord_system</strong><span class="classifier"><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem" title="nipy.core.reference.coordinate_system.CoordinateSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystem</span></code></a></span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ij&#39;</span><span class="p">,</span> <span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c2</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;kl&#39;</span><span class="p">,</span> <span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex_</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c3</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ik&#39;</span><span class="p">,</span> <span class="s1">&#39;in3&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">))</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;), name=&#39;product&#39;, coord_dtype=complex128)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;another name&#39;</span><span class="p">))</span>
+<span class="go">CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;, &#39;l&#39;), name=&#39;another name&#39;, coord_dtype=complex128)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">product</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="n">c3</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">   </span><span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">coord_names must have distinct names</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.core.reference.coordinate_system.safe_dtype">
+<span class="sig-prename descclassname"><span class="pre">nipy.core.reference.coordinate_system.</span></span><span class="sig-name descname"><span class="pre">safe_dtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">dtypes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.core.reference.coordinate_system.safe_dtype" title="Link to this definition">¶</a></dt>
+<dd><p>Determine a dtype to safely cast all of the given dtypes to.</p>
+<p>Safe dtypes are valid numpy dtypes or python types which can be
+cast to numpy dtypes.  See numpy.sctypes for a list of valid
+dtypes.  Composite dtypes and string dtypes are not safe dtypes.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>dtypes</strong><span class="classifier">sequence of <code class="docutils literal notranslate"><span class="pre">np.dtype</span></code></span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>dtype</strong><span class="classifier">np.dtype</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;ij&#39;</span><span class="p">,</span> <span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c2</span> <span class="o">=</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s1">&#39;kl&#39;</span><span class="p">,</span> <span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="n">coord_dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex_</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">safe_dtype</span><span class="p">(</span><span class="n">c1</span><span class="o">.</span><span class="n">coord_dtype</span><span class="p">,</span> <span class="n">c2</span><span class="o">.</span><span class="n">coord_dtype</span><span class="p">)</span>
+<span class="go">dtype(&#39;complex128&#39;)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Strings are invalid dtypes</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">safe_dtype</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">))</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">dtype must be valid numpy dtype int, uint, float, complex or object</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Check for a valid dtype</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myarr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myarr</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">isbuiltin</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Composite dtypes are invalid</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mydtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">([(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;S32&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;age&#39;</span><span class="p">,</span> <span class="s1">&#39;i4&#39;</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myarr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">mydtype</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myarr</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">isbuiltin</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">safe_dtype</span><span class="p">(</span><span class="n">mydtype</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">TypeError</span>: <span class="n">dtype must be valid numpy dtype int, uint, float, complex or object</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">core.reference.coordinate_system</a><ul>
+<li><a class="reference internal" href="#module-core-reference-coordinate-system">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">core.reference.coordinate_system</span></code></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#coordsysmaker"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordSysMaker</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordSysMaker"><code class="docutils literal notranslate"><span class="pre">CoordSysMaker</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordSysMaker.__init__"><code class="docutils literal notranslate"><span class="pre">CoordSysMaker.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordSysMaker.coord_sys_klass"><code class="docutils literal notranslate"><span class="pre">CoordSysMaker.coord_sys_klass</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#coordsysmakererror"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordSysMakerError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordSysMakerError"><code class="docutils literal notranslate"><span class="pre">CoordSysMakerError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordSysMakerError.__init__"><code class="docutils literal notranslate"><span class="pre">CoordSysMakerError.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordSysMakerError.args"><code class="docutils literal notranslate"><span class="pre">CoordSysMakerError.args</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordSysMakerError.with_traceback"><code class="docutils literal notranslate"><span class="pre">CoordSysMakerError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#coordinatesystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystem</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem"><code class="docutils literal notranslate"><span class="pre">CoordinateSystem</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem.__init__"><code class="docutils literal notranslate"><span class="pre">CoordinateSystem.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem.coord_dtype"><code class="docutils literal notranslate"><span class="pre">CoordinateSystem.coord_dtype</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem.coord_names"><code class="docutils literal notranslate"><span class="pre">CoordinateSystem.coord_names</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem.dtype"><code class="docutils literal notranslate"><span class="pre">CoordinateSystem.dtype</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem.index"><code class="docutils literal notranslate"><span class="pre">CoordinateSystem.index()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem.name"><code class="docutils literal notranslate"><span class="pre">CoordinateSystem.name</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem.ndim"><code class="docutils literal notranslate"><span class="pre">CoordinateSystem.ndim</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystem.similar_to"><code class="docutils literal notranslate"><span class="pre">CoordinateSystem.similar_to()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#coordinatesystemerror"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoordinateSystemError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystemError"><code class="docutils literal notranslate"><span class="pre">CoordinateSystemError</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystemError.__init__"><code class="docutils literal notranslate"><span class="pre">CoordinateSystemError.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystemError.args"><code class="docutils literal notranslate"><span class="pre">CoordinateSystemError.args</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.CoordinateSystemError.with_traceback"><code class="docutils literal notranslate"><span class="pre">CoordinateSystemError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.is_coordsys"><code class="docutils literal notranslate"><span class="pre">is_coordsys()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.is_coordsys_maker"><code class="docutils literal notranslate"><span class="pre">is_coordsys_maker()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.product"><code class="docutils literal notranslate"><span class="pre">product()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.core.reference.coordinate_system.safe_dtype"><code class="docutils literal notranslate"><span class="pre">safe_dtype()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.core.reference.coordinate_map.html"
+                          title="previous chapter">core.reference.coordinate_map</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.core.reference.slices.html"
+                          title="next chapter">core.reference.slices</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.core.reference.coordinate_system.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.reference.slices.html" title="core.reference.slices"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.core.reference.coordinate_map.html" title="core.reference.coordinate_map"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

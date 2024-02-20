@@ -1,0 +1,8 @@
+<map id="inheritanceb9496eda9a" name="inheritanceb9496eda9a">
+<area shape="rect" id="node1" href="#nipy.algorithms.statistics.models.family.family.Binomial" target="_top" title="Binomial exponential family." alt="" coords="214,5,361,32"/>
+<area shape="rect" id="node2" href="#nipy.algorithms.statistics.models.family.family.Family" target="_top" title="A class to model one&#45;parameter exponential" alt="" coords="5,107,142,133"/>
+<area shape="rect" id="node3" href="#nipy.algorithms.statistics.models.family.family.Gamma" target="_top" title="Gamma exponential family." alt="" coords="216,56,359,83"/>
+<area shape="rect" id="node4" href="#nipy.algorithms.statistics.models.family.family.Gaussian" target="_top" title="Gaussian exponential family." alt="" coords="211,107,364,133"/>
+<area shape="rect" id="node5" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian" target="_top" title="InverseGaussian exponential family." alt="" coords="190,157,385,184"/>
+<area shape="rect" id="node6" href="#nipy.algorithms.statistics.models.family.family.Poisson" target="_top" title="Poisson exponential family." alt="" coords="215,208,360,235"/>
+</map>

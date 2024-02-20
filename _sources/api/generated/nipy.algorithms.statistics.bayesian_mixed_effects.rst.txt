@@ -1,0 +1,13 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+algorithms.statistics.bayesian_mixed_effects
+============================================
+
+Module: :mod:`algorithms.statistics.bayesian_mixed_effects`
+-----------------------------------------------------------
+.. automodule:: nipy.algorithms.statistics.bayesian_mixed_effects
+
+.. currentmodule:: nipy.algorithms.statistics.bayesian_mixed_effects
+
+.. autofunction:: nipy.algorithms.statistics.bayesian_mixed_effects.two_level_glm
+

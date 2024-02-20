@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="labs.spatial_models.hroi" href="nipy.labs.spatial_models.hroi.html" />
+    <link rel="prev" title="labs.spatial_models.discrete_domain" href="nipy.labs.spatial_models.discrete_domain.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.hroi.html" title="labs.spatial_models.hroi"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.discrete_domain.html" title="labs.spatial_models.discrete_domain"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="labs-spatial-models-hierarchical-parcellation">
+<h1>labs.spatial_models.hierarchical_parcellation<a class="headerlink" href="#labs-spatial-models-hierarchical-parcellation" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.labs.spatial_models.hierarchical_parcellation">
+<span id="module-labs-spatial-models-hierarchical-parcellation"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.spatial_models.hierarchical_parcellation</span></code><a class="headerlink" href="#module-nipy.labs.spatial_models.hierarchical_parcellation" title="Link to this heading">¶</a></h2>
+<p>Computation of parcellations using a hierarchical approach.
+Author: Bertrand Thirion, 2008</p>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.hierarchical_parcellation.hparcel">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.spatial_models.hierarchical_parcellation.</span></span><span class="sig-name descname"><span class="pre">hparcel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ldata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_parcel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_perm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.hierarchical_parcellation.hparcel" title="Link to this definition">¶</a></dt>
+<dd><p>Function that performs the parcellation by optimizing the
+inter-subject similarity while retaining the connectedness
+within subject and some consistency across subjects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>domain: discrete_domain.DiscreteDomain instance,</strong></dt><dd><p>yields all the spatial information on the parcelled domain</p>
+</dd>
+<dt><strong>ldata: list of (n_subj) arrays of shape (domain.size, dim)</strong></dt><dd><p>the feature data used to inform the parcellation</p>
+</dd>
+<dt><strong>nb_parcel: int,</strong></dt><dd><p>the number of parcels</p>
+</dd>
+<dt><strong>nb_perm: int, optional,</strong></dt><dd><p>the number of times the parcellation and prfx
+computation is performed on sign-swaped data</p>
+</dd>
+<dt><strong>niter: int, optional,</strong></dt><dd><p>number of iterations to obtain the convergence of the method
+information in the clustering algorithm</p>
+</dd>
+<dt><strong>mu: float, optional,</strong></dt><dd><p>relative weight of anatomical information</p>
+</dd>
+<dt><strong>dmax: float optional,</strong></dt><dd><p>radius of allowed deformations</p>
+</dd>
+<dt><strong>lamb: float optional</strong></dt><dd><p>parameter to control the relative importance of space vs function</p>
+</dd>
+<dt><strong>chunksize; int, optional</strong></dt><dd><p>number of points used in internal sub-sampling</p>
+</dd>
+<dt><strong>verbose: bool, optional,</strong></dt><dd><p>verbosity mode</p>
+</dd>
+<dt><strong>initial_mask: array of shape (domain.size, nb_subj), optional</strong></dt><dd><p>initial subject-depedent masking of the domain</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Pa: the resulting parcellation structure appended with the labelling</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.hierarchical_parcellation.perm_prfx">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.spatial_models.hierarchical_parcellation.</span></span><span class="sig-name descname"><span class="pre">perm_prfx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graphs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_parcel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ldata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_perm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.hierarchical_parcellation.perm_prfx" title="Link to this definition">¶</a></dt>
+<dd><p>caveat: assumes that the functional dimension is 1</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">labs.spatial_models.hierarchical_parcellation</a><ul>
+<li><a class="reference internal" href="#module-nipy.labs.spatial_models.hierarchical_parcellation">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.spatial_models.hierarchical_parcellation</span></code></a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.hierarchical_parcellation.hparcel"><code class="docutils literal notranslate"><span class="pre">hparcel()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.hierarchical_parcellation.perm_prfx"><code class="docutils literal notranslate"><span class="pre">perm_prfx()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.labs.spatial_models.discrete_domain.html"
+                          title="previous chapter">labs.spatial_models.discrete_domain</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.labs.spatial_models.hroi.html"
+                          title="next chapter">labs.spatial_models.hroi</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.labs.spatial_models.hierarchical_parcellation.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.hroi.html" title="labs.spatial_models.hroi"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.discrete_domain.html" title="labs.spatial_models.discrete_domain"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

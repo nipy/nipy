@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.utils.pca" href="nipy.algorithms.utils.pca.html" />
+    <link rel="prev" title="algorithms.utils.fast_distance" href="nipy.algorithms.utils.fast_distance.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.utils.pca.html" title="algorithms.utils.pca"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.utils.fast_distance.html" title="algorithms.utils.fast_distance"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-utils-matrices">
+<h1>algorithms.utils.matrices<a class="headerlink" href="#algorithms-utils-matrices" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.algorithms.utils.matrices">
+<span id="module-algorithms-utils-matrices"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.utils.matrices</span></code><a class="headerlink" href="#module-nipy.algorithms.utils.matrices" title="Link to this heading">¶</a></h2>
+<p>Utilities for working with matrices</p>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.utils.matrices.full_rank">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.utils.matrices.</span></span><span class="sig-name descname"><span class="pre">full_rank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.utils.matrices.full_rank" title="Link to this definition">¶</a></dt>
+<dd><p>Return full-rank matrix whose column span is the same as X</p>
+<p>Uses an SVD decomposition.</p>
+<p>If the rank of <cite>X</cite> is known it can be specified by <cite>r</cite> – no check is made
+to ensure that this really is the rank of X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array-like</span></dt><dd><p>2D array which may not be of full rank.</p>
+</dd>
+<dt><strong>r</strong><span class="classifier">None or int</span></dt><dd><p>Known rank of <cite>X</cite>.  r=None results in standard matrix rank calculation.
+We do not check <cite>r</cite> is really the rank of X; it is to speed up
+calculations when the rank is already known.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fX</strong><span class="classifier">array</span></dt><dd><p>Full-rank matrix with column span matching that of <cite>X</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.utils.matrices.matrix_rank">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.utils.matrices.</span></span><span class="sig-name descname"><span class="pre">matrix_rank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.utils.matrices.matrix_rank" title="Link to this definition">¶</a></dt>
+<dd><p>Return rank of matrix using SVD method</p>
+<p>Rank of the array is the number of SVD singular values of the
+array that are greater than <cite>tol</cite>.</p>
+<p>This version of matrix rank is very similar to the numpy.linalg version
+except for the use of:</p>
+<ul class="simple">
+<li><p>scipy.linalg.svd instead of numpy.linalg.svd.</p></li>
+<li><p>the MATLAB algorithm for default tolerance calculation</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">matrix_rank</span></code> appeared in numpy.linalg in December 2009, first available
+in numpy 1.5.0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>M</strong><span class="classifier">array-like</span></dt><dd><p>array of &lt;=2 dimensions</p>
+</dd>
+<dt><strong>tol</strong><span class="classifier">{None, float}</span></dt><dd><p>threshold below which SVD values are considered zero. If <cite>tol</cite>
+is None, and <cite>S</cite> is an array with singular values for <cite>M</cite>, and
+<cite>eps</cite> is the epsilon value for datatype of <cite>S</cite>, then <cite>tol</cite> set
+to <code class="docutils literal notranslate"><span class="pre">S.max()</span> <span class="pre">*</span> <span class="pre">eps</span> <span class="pre">*</span> <span class="pre">max(M.shape)</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>We check for numerical rank deficiency by using <code class="docutils literal notranslate"><span class="pre">tol=max(M.shape)</span> <span class="pre">*</span> <span class="pre">eps</span> <span class="pre">*</span>
+<span class="pre">S[0]</span></code> (where <code class="docutils literal notranslate"><span class="pre">S[0]</span></code> is the maximum singular value and thus the 2-norm of
+the matrix). This is one tolerance threshold for rank deficiency, and the
+default algorithm used by MATLAB <a href="#id8"><span class="problematic" id="id1">[#2]_</span></a>.  When floating point roundoff is the
+main concern, then “numerical rank deficiency” is a reasonable choice. In
+some cases you may prefer other definitions. The most useful measure of the
+tolerance depends on the operations you intend to use on your matrix. For
+example, if your data come from uncertain measurements with uncertainties
+greater than floating point epsilon, choosing a tolerance near that
+uncertainty may be preferable.  The tolerance may be absolute if the
+uncertainties are absolute rather than relative.</p>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<ol class="upperalpha simple" start="7">
+<li><ol class="upperalpha simple" start="8">
+<li><p>Golub and C. F. Van Loan, _Matrix <a href="#id9"><span class="problematic" id="id10">Computations_</span></a>.</p></li>
+</ol>
+</li>
+</ol>
+</aside>
+</aside>
+<p>Baltimore: Johns Hopkins University Press, 1996.
+.. [#2] <a class="reference external" href="http://www.mathworks.com/help/techdoc/ref/rank.html">http://www.mathworks.com/help/techdoc/ref/rank.html</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span> <span class="c1"># Full rank matrix</span>
+<span class="go">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">I</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span> <span class="n">I</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span> <span class="c1"># rank deficient matrix</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">I</span><span class="p">)</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)))</span> <span class="c1"># All zeros - zero rank</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">4</span><span class="p">,)))</span> <span class="c1"># 1 dimension - rank 1 unless all 0</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,)))</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matrix_rank</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span> <span class="c1"># accepts array-like</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.utils.matrices.pos_recipr">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.utils.matrices.</span></span><span class="sig-name descname"><span class="pre">pos_recipr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.utils.matrices.pos_recipr" title="Link to this definition">¶</a></dt>
+<dd><p>Return element-wise reciprocal of array, setting <a href="#id3"><span class="problematic" id="id4">`</span></a>X`&lt;=0 to 0</p>
+<p>Return the reciprocal of an array, setting all entries less than or
+equal to 0 to 0. Therefore, it presumes that X should be positive in
+general.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array-like</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>rX</strong><span class="classifier">array</span></dt><dd><p>array of same shape as <cite>X</cite>, dtype np.float64, with values set to
+1/X where X &gt; 0, 0 otherwise</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.utils.matrices.recipr0">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.utils.matrices.</span></span><span class="sig-name descname"><span class="pre">recipr0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.utils.matrices.recipr0" title="Link to this definition">¶</a></dt>
+<dd><p>Return element-wise reciprocal of array, <a href="#id5"><span class="problematic" id="id6">`</span></a>X`==0 -&gt; 0</p>
+<p>Return the reciprocal of an array, setting all entries equal to 0 as 0. It
+does not assume that X should be positive in general.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array-like</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>rX</strong><span class="classifier">array</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.utils.matrices</a><ul>
+<li><a class="reference internal" href="#module-nipy.algorithms.utils.matrices">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.utils.matrices</span></code></a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.utils.matrices.full_rank"><code class="docutils literal notranslate"><span class="pre">full_rank()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.utils.matrices.matrix_rank"><code class="docutils literal notranslate"><span class="pre">matrix_rank()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.utils.matrices.pos_recipr"><code class="docutils literal notranslate"><span class="pre">pos_recipr()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.utils.matrices.recipr0"><code class="docutils literal notranslate"><span class="pre">recipr0()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.utils.fast_distance.html"
+                          title="previous chapter">algorithms.utils.fast_distance</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.utils.pca.html"
+                          title="next chapter">algorithms.utils.pca</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.utils.matrices.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.utils.pca.html" title="algorithms.utils.pca"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.utils.fast_distance.html" title="algorithms.utils.fast_distance"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

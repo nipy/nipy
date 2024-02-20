@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Basics of the Coordinate Map" href="coordinate_map.html" />
+    <link rel="prev" title="Tutorials" href="tutorial.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../index.html">
+  <img src="../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="coordinate_map.html" title="Basics of the Coordinate Map"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorials"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >User Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="tutorial.html" accesskey="U">Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="basic-data-io">
+<h1>Basic Data IO<a class="headerlink" href="#basic-data-io" title="Link to this heading">¶</a></h1>
+<p>Accessing images using nipy:</p>
+<p>While <a class="reference external" href="http://nifti.nimh.nih.gov">Nifti</a> is the primary file format Analyze images (with associated .mat
+file), and MINC files can also be read.</p>
+<section id="load-image-from-file">
+<h2>Load Image from File<a class="headerlink" href="#load-image-from-file" title="Link to this heading">¶</a></h2>
+<p>Get a filename for an example file.  <code class="docutils literal notranslate"><span class="pre">anatfile</span></code> gives a filename for a small
+testing image in the nipy distribution:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.testing</span> <span class="kn">import</span> <span class="n">anatfile</span>
+</pre></div>
+</div>
+<p>Load the file from disk:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy</span> <span class="kn">import</span> <span class="n">load_image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myimg</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">anatfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myimg</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(33, 41, 25)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myimg</span><span class="o">.</span><span class="n">affine</span>
+<span class="go">array([[ -2.,   0.,   0.,  32.],</span>
+<span class="go">       [  0.,   2.,   0., -40.],</span>
+<span class="go">       [  0.,   0.,   2., -16.],</span>
+<span class="go">       [  0.,   0.,   0.,   1.]])</span>
+</pre></div>
+</div>
+</section>
+<section id="access-data-into-an-array">
+<h2>Access Data into an Array<a class="headerlink" href="#access-data-into-an-array" title="Link to this heading">¶</a></h2>
+<p>This allows the user to access data as a numpy array.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mydata</span> <span class="o">=</span> <span class="n">myimg</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mydata</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(33, 41, 25)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mydata</span><span class="o">.</span><span class="n">ndim</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+</section>
+<section id="save-image-to-a-file">
+<h2>Save image to a File<a class="headerlink" href="#save-image-to-a-file" title="Link to this heading">¶</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy</span> <span class="kn">import</span> <span class="n">save_image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newimg</span> <span class="o">=</span> <span class="n">save_image</span><span class="p">(</span><span class="n">myimg</span><span class="p">,</span> <span class="s1">&#39;newmyfile.nii&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="create-image-from-an-array">
+<h2>Create Image from an Array<a class="headerlink" href="#create-image-from-an-array" title="Link to this heading">¶</a></h2>
+<p>This will have a generic affine-type CoordinateMap with unit voxel sizes.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.core.api</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">vox2mni</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rawarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">43</span><span class="p">,</span><span class="mi">128</span><span class="p">,</span><span class="mi">128</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">arr_img</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">rawarray</span><span class="p">,</span> <span class="n">vox2mni</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">arr_img</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(43, 128, 128)</span>
+</pre></div>
+</div>
+</section>
+<section id="coordinate-map">
+<h2>Coordinate map<a class="headerlink" href="#coordinate-map" title="Link to this heading">¶</a></h2>
+<p>Images have a Coordinate Map.</p>
+<p>The Coordinate Map contains information defining the input (domain) and output
+(range) Coordinate Systems of the image, and the mapping between the two
+Coordinate systems.  The <em>input</em> coordinate system is the <em>voxel</em> coordinate
+system, and the <em>output</em> coordinate system is the <em>world</em> coordinate system.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">newimg</span><span class="o">.</span><span class="n">coordmap</span>
+<span class="go">AffineTransform(</span>
+<span class="go">   function_domain=CoordinateSystem(coord_names=(&#39;i&#39;, &#39;j&#39;, &#39;k&#39;), name=&#39;voxels&#39;, coord_dtype=float64),</span>
+<span class="go">   function_range=CoordinateSystem(coord_names=(&#39;aligned-x=L-&gt;R&#39;, &#39;aligned-y=P-&gt;A&#39;, &#39;aligned-z=I-&gt;S&#39;), name=&#39;aligned&#39;, coord_dtype=float64),</span>
+<span class="go">   affine=array([[ -2.,   0.,   0.,  32.],</span>
+<span class="go">                 [  0.,   2.,   0., -40.],</span>
+<span class="go">                 [  0.,   0.,   2., -16.],</span>
+<span class="go">                 [  0.,   0.,   0.,   1.]])</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="coordinate_map.html#coordinate-map"><span class="std std-ref">Basics of the Coordinate Map</span></a> for more detail.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../documentation.html">Documentation</a></li>
+    <li><a href="../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Basic Data IO</a><ul>
+<li><a class="reference internal" href="#load-image-from-file">Load Image from File</a></li>
+<li><a class="reference internal" href="#access-data-into-an-array">Access Data into an Array</a></li>
+<li><a class="reference internal" href="#save-image-to-a-file">Save image to a File</a></li>
+<li><a class="reference internal" href="#create-image-from-an-array">Create Image from an Array</a></li>
+<li><a class="reference internal" href="#coordinate-map">Coordinate map</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="tutorial.html"
+                          title="previous chapter">Tutorials</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="coordinate_map.html"
+                          title="next chapter">Basics of the Coordinate Map</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/users/basic_io.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="coordinate_map.html" title="Basics of the Coordinate Map"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorials"
+             >previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >User Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="tutorial.html" >Tutorials</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

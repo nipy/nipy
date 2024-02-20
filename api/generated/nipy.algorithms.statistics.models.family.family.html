@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.statistics.models.family.links" href="nipy.algorithms.statistics.models.family.links.html" />
+    <link rel="prev" title="algorithms.statistics.mixed_effects_stat" href="nipy.algorithms.statistics.mixed_effects_stat.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.family.links.html" title="algorithms.statistics.models.family.links"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.mixed_effects_stat.html" title="algorithms.statistics.mixed_effects_stat"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-statistics-models-family-family">
+<h1>algorithms.statistics.models.family.family<a class="headerlink" href="#algorithms-statistics-models-family-family" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-statistics-models-family-family">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.models.family.family</span></code><a class="headerlink" href="#module-algorithms-statistics-models-family-family" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.statistics.models.family.family</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-61e7dd19c0e7e793d26083b5f84c43f7cd7c5fc1.png" alt="Inheritance diagram of nipy.algorithms.statistics.models.family.family" usemap="#inheritanceb9496eda9a" class="inheritance graphviz" /></div>
+<map id="inheritanceb9496eda9a" name="inheritanceb9496eda9a">
+<area shape="rect" id="node1" href="#nipy.algorithms.statistics.models.family.family.Binomial" target="_top" title="Binomial exponential family." alt="" coords="214,5,361,32"/>
+<area shape="rect" id="node2" href="#nipy.algorithms.statistics.models.family.family.Family" target="_top" title="A class to model one&#45;parameter exponential" alt="" coords="5,107,142,133"/>
+<area shape="rect" id="node3" href="#nipy.algorithms.statistics.models.family.family.Gamma" target="_top" title="Gamma exponential family." alt="" coords="216,56,359,83"/>
+<area shape="rect" id="node4" href="#nipy.algorithms.statistics.models.family.family.Gaussian" target="_top" title="Gaussian exponential family." alt="" coords="211,107,364,133"/>
+<area shape="rect" id="node5" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian" target="_top" title="InverseGaussian exponential family." alt="" coords="190,157,385,184"/>
+<area shape="rect" id="node6" href="#nipy.algorithms.statistics.models.family.family.Poisson" target="_top" title="Poisson exponential family." alt="" coords="215,208,360,235"/>
+</map><span class="target" id="module-nipy.algorithms.statistics.models.family.family"></span></section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="binomial">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Binomial" title="nipy.algorithms.statistics.models.family.family.Binomial"><code class="xref py py-class docutils literal notranslate"><span class="pre">Binomial</span></code></a><a class="headerlink" href="#binomial" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Binomial">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.family.</span></span><span class="sig-name descname"><span class="pre">Binomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link=&lt;nipy.algorithms.statistics.models.family.links.Logit</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n=1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Binomial" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family" title="nipy.algorithms.statistics.models.family.family.Family"><code class="xref py py-class docutils literal notranslate"><span class="pre">Family</span></code></a></p>
+<p>Binomial exponential family.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>link      – a Link instance
+n         – number of trials for Binomial</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Binomial.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link=&lt;nipy.algorithms.statistics.models.family.links.Logit</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n=1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Binomial.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Binomial.deviance">
+<span class="sig-name descname"><span class="pre">deviance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Binomial.deviance" title="Link to this definition">¶</a></dt>
+<dd><p>Deviance of (Y,mu) pair. Deviance is usually defined
+as the difference</p>
+<p>DEV = (SUM_i -2 log Likelihood(Y_i,mu_i) + 2 log Likelihood(mu_i,mu_i)) / scale</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>Y     – response variable
+mu    – mean parameter
+scale – optional scale in denominator of deviance</p>
+</dd>
+<dt>OUTPUTS: dev</dt><dd><p>dev   – DEV, as described above</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Binomial.devresid">
+<span class="sig-name descname"><span class="pre">devresid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Binomial.devresid" title="Link to this definition">¶</a></dt>
+<dd><p>Binomial deviance residual</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>Y     – response variable
+mu    – mean parameter</p>
+</dd>
+<dt>OUTPUTS: resid</dt><dd><p>resid – deviance residuals</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Binomial.fitted">
+<span class="sig-name descname"><span class="pre">fitted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Binomial.fitted" title="Link to this definition">¶</a></dt>
+<dd><p>Fitted values based on linear predictors eta.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><dl class="simple">
+<dt>eta  – values of linear predictors, say,</dt><dd><p>X beta in a generalized linear model.</p>
+</dd>
+</dl>
+</dd>
+<dt>OUTPUTS: mu</dt><dd><p>mu   – link.inverse(eta), mean parameter based on eta</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Binomial.link">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">link</span></span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Binomial.link" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Binomial.links">
+<span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;nipy.algorithms.statistics.models.family.links.Logit</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;nipy.algorithms.statistics.models.family.links.CDFLink</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;nipy.algorithms.statistics.models.family.links.CDFLink</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;nipy.algorithms.statistics.models.family.links.Log</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;nipy.algorithms.statistics.models.family.links.CLogLog</span> <span class="pre">object&gt;]</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Binomial.links" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Binomial.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Binomial.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Linear predictors based on given mu values.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>mu   – mean parameter of one-parameter exponential family</p>
+</dd>
+<dt>OUTPUTS: eta</dt><dd><dl class="simple">
+<dt>eta  – link(mu), linear predictors, based on</dt><dd><p>mean parameters mu</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Binomial.tol">
+<span class="sig-name descname"><span class="pre">tol</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-05</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Binomial.tol" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Binomial.valid">
+<span class="sig-name descname"><span class="pre">valid</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[-inf,</span> <span class="pre">inf]</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Binomial.valid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Binomial.variance">
+<span class="sig-name descname"><span class="pre">variance</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;nipy.algorithms.statistics.models.family.varfuncs.Binomial</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Binomial.variance" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Binomial.weights">
+<span class="sig-name descname"><span class="pre">weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Binomial.weights" title="Link to this definition">¶</a></dt>
+<dd><p>Weights for IRLS step.</p>
+<p>w = 1 / (link’(mu)**2 * variance(mu))</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>mu  – mean parameter in exponential family</p>
+</dd>
+<dt>OUTPUTS:</dt><dd><p>w   – weights used in WLS step of GLM/GAM fit</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="family">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family" title="nipy.algorithms.statistics.models.family.family.Family"><code class="xref py py-class docutils literal notranslate"><span class="pre">Family</span></code></a><a class="headerlink" href="#family" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Family">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.family.</span></span><span class="sig-name descname"><span class="pre">Family</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Family" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to model one-parameter exponential
+families.</p>
+<dl>
+<dt>INPUTS:</dt><dd><p>link      – a Link instance
+variance  – a variance function (models means as a function</p>
+<blockquote>
+<div><p>of mean)</p>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Family.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Family.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Family.deviance">
+<span class="sig-name descname"><span class="pre">deviance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Family.deviance" title="Link to this definition">¶</a></dt>
+<dd><p>Deviance of (Y,mu) pair. Deviance is usually defined
+as the difference</p>
+<p>DEV = (SUM_i -2 log Likelihood(Y_i,mu_i) + 2 log Likelihood(mu_i,mu_i)) / scale</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>Y     – response variable
+mu    – mean parameter
+scale – optional scale in denominator of deviance</p>
+</dd>
+<dt>OUTPUTS: dev</dt><dd><p>dev   – DEV, as described above</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Family.devresid">
+<span class="sig-name descname"><span class="pre">devresid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Family.devresid" title="Link to this definition">¶</a></dt>
+<dd><p>The deviance residuals, defined as the residuals
+in the deviance.</p>
+<p>Without knowing the link, they default to Pearson residuals</p>
+<p>resid_P = (Y - mu) * sqrt(weight(mu))</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>Y     – response variable
+mu    – mean parameter</p>
+</dd>
+<dt>OUTPUTS: resid</dt><dd><p>resid – deviance residuals</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Family.fitted">
+<span class="sig-name descname"><span class="pre">fitted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Family.fitted" title="Link to this definition">¶</a></dt>
+<dd><p>Fitted values based on linear predictors eta.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><dl class="simple">
+<dt>eta  – values of linear predictors, say,</dt><dd><p>X beta in a generalized linear model.</p>
+</dd>
+</dl>
+</dd>
+<dt>OUTPUTS: mu</dt><dd><p>mu   – link.inverse(eta), mean parameter based on eta</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Family.link">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">link</span></span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Family.link" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Family.links">
+<span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Family.links" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Family.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Family.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Linear predictors based on given mu values.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>mu   – mean parameter of one-parameter exponential family</p>
+</dd>
+<dt>OUTPUTS: eta</dt><dd><dl class="simple">
+<dt>eta  – link(mu), linear predictors, based on</dt><dd><p>mean parameters mu</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Family.tol">
+<span class="sig-name descname"><span class="pre">tol</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-05</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Family.tol" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Family.valid">
+<span class="sig-name descname"><span class="pre">valid</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[-inf,</span> <span class="pre">inf]</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Family.valid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Family.weights">
+<span class="sig-name descname"><span class="pre">weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Family.weights" title="Link to this definition">¶</a></dt>
+<dd><p>Weights for IRLS step.</p>
+<p>w = 1 / (link’(mu)**2 * variance(mu))</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>mu  – mean parameter in exponential family</p>
+</dd>
+<dt>OUTPUTS:</dt><dd><p>w   – weights used in WLS step of GLM/GAM fit</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="gamma">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gamma" title="nipy.algorithms.statistics.models.family.family.Gamma"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gamma</span></code></a><a class="headerlink" href="#gamma" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gamma">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.family.</span></span><span class="sig-name descname"><span class="pre">Gamma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link=&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gamma" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family" title="nipy.algorithms.statistics.models.family.family.Family"><code class="xref py py-class docutils literal notranslate"><span class="pre">Family</span></code></a></p>
+<p>Gamma exponential family.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>link      – a Link instance</p>
+</dd>
+<dt>BUGS:</dt><dd><p>no deviance residuals?</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gamma.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link=&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gamma.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gamma.deviance">
+<span class="sig-name descname"><span class="pre">deviance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gamma.deviance" title="Link to this definition">¶</a></dt>
+<dd><p>Deviance of (Y,mu) pair. Deviance is usually defined
+as the difference</p>
+<p>DEV = (SUM_i -2 log Likelihood(Y_i,mu_i) + 2 log Likelihood(mu_i,mu_i)) / scale</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>Y     – response variable
+mu    – mean parameter
+scale – optional scale in denominator of deviance</p>
+</dd>
+<dt>OUTPUTS: dev</dt><dd><p>dev   – DEV, as described above</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gamma.devresid">
+<span class="sig-name descname"><span class="pre">devresid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gamma.devresid" title="Link to this definition">¶</a></dt>
+<dd><p>The deviance residuals, defined as the residuals
+in the deviance.</p>
+<p>Without knowing the link, they default to Pearson residuals</p>
+<p>resid_P = (Y - mu) * sqrt(weight(mu))</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>Y     – response variable
+mu    – mean parameter</p>
+</dd>
+<dt>OUTPUTS: resid</dt><dd><p>resid – deviance residuals</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gamma.fitted">
+<span class="sig-name descname"><span class="pre">fitted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gamma.fitted" title="Link to this definition">¶</a></dt>
+<dd><p>Fitted values based on linear predictors eta.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><dl class="simple">
+<dt>eta  – values of linear predictors, say,</dt><dd><p>X beta in a generalized linear model.</p>
+</dd>
+</dl>
+</dd>
+<dt>OUTPUTS: mu</dt><dd><p>mu   – link.inverse(eta), mean parameter based on eta</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gamma.link">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">link</span></span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gamma.link" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gamma.links">
+<span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;nipy.algorithms.statistics.models.family.links.Log</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;]</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gamma.links" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gamma.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gamma.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Linear predictors based on given mu values.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>mu   – mean parameter of one-parameter exponential family</p>
+</dd>
+<dt>OUTPUTS: eta</dt><dd><dl class="simple">
+<dt>eta  – link(mu), linear predictors, based on</dt><dd><p>mean parameters mu</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gamma.tol">
+<span class="sig-name descname"><span class="pre">tol</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-05</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gamma.tol" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gamma.valid">
+<span class="sig-name descname"><span class="pre">valid</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[-inf,</span> <span class="pre">inf]</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gamma.valid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gamma.variance">
+<span class="sig-name descname"><span class="pre">variance</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;nipy.algorithms.statistics.models.family.varfuncs.Power</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gamma.variance" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gamma.weights">
+<span class="sig-name descname"><span class="pre">weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gamma.weights" title="Link to this definition">¶</a></dt>
+<dd><p>Weights for IRLS step.</p>
+<p>w = 1 / (link’(mu)**2 * variance(mu))</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>mu  – mean parameter in exponential family</p>
+</dd>
+<dt>OUTPUTS:</dt><dd><p>w   – weights used in WLS step of GLM/GAM fit</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="gaussian">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gaussian" title="nipy.algorithms.statistics.models.family.family.Gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gaussian</span></code></a><a class="headerlink" href="#gaussian" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gaussian">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.family.</span></span><span class="sig-name descname"><span class="pre">Gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link=&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gaussian" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family" title="nipy.algorithms.statistics.models.family.family.Family"><code class="xref py py-class docutils literal notranslate"><span class="pre">Family</span></code></a></p>
+<p>Gaussian exponential family.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>link      – a Link instance</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gaussian.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link=&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gaussian.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gaussian.deviance">
+<span class="sig-name descname"><span class="pre">deviance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gaussian.deviance" title="Link to this definition">¶</a></dt>
+<dd><p>Deviance of (Y,mu) pair. Deviance is usually defined
+as the difference</p>
+<p>DEV = (SUM_i -2 log Likelihood(Y_i,mu_i) + 2 log Likelihood(mu_i,mu_i)) / scale</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>Y     – response variable
+mu    – mean parameter
+scale – optional scale in denominator of deviance</p>
+</dd>
+<dt>OUTPUTS: dev</dt><dd><p>dev   – DEV, as described above</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gaussian.devresid">
+<span class="sig-name descname"><span class="pre">devresid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gaussian.devresid" title="Link to this definition">¶</a></dt>
+<dd><p>Gaussian deviance residual</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>Y     – response variable
+mu    – mean parameter
+scale – optional scale in denominator (after taking sqrt)</p>
+</dd>
+<dt>OUTPUTS: resid</dt><dd><p>resid – deviance residuals</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gaussian.fitted">
+<span class="sig-name descname"><span class="pre">fitted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gaussian.fitted" title="Link to this definition">¶</a></dt>
+<dd><p>Fitted values based on linear predictors eta.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><dl class="simple">
+<dt>eta  – values of linear predictors, say,</dt><dd><p>X beta in a generalized linear model.</p>
+</dd>
+</dl>
+</dd>
+<dt>OUTPUTS: mu</dt><dd><p>mu   – link.inverse(eta), mean parameter based on eta</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gaussian.link">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">link</span></span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gaussian.link" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gaussian.links">
+<span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;nipy.algorithms.statistics.models.family.links.Log</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;]</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gaussian.links" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gaussian.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gaussian.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Linear predictors based on given mu values.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>mu   – mean parameter of one-parameter exponential family</p>
+</dd>
+<dt>OUTPUTS: eta</dt><dd><dl class="simple">
+<dt>eta  – link(mu), linear predictors, based on</dt><dd><p>mean parameters mu</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gaussian.tol">
+<span class="sig-name descname"><span class="pre">tol</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-05</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gaussian.tol" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gaussian.valid">
+<span class="sig-name descname"><span class="pre">valid</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[-inf,</span> <span class="pre">inf]</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gaussian.valid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gaussian.variance">
+<span class="sig-name descname"><span class="pre">variance</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;nipy.algorithms.statistics.models.family.varfuncs.VarianceFunction</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gaussian.variance" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Gaussian.weights">
+<span class="sig-name descname"><span class="pre">weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Gaussian.weights" title="Link to this definition">¶</a></dt>
+<dd><p>Weights for IRLS step.</p>
+<p>w = 1 / (link’(mu)**2 * variance(mu))</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>mu  – mean parameter in exponential family</p>
+</dd>
+<dt>OUTPUTS:</dt><dd><p>w   – weights used in WLS step of GLM/GAM fit</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="inversegaussian">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian" title="nipy.algorithms.statistics.models.family.family.InverseGaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">InverseGaussian</span></code></a><a class="headerlink" href="#inversegaussian" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.InverseGaussian">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.family.</span></span><span class="sig-name descname"><span class="pre">InverseGaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link=&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family" title="nipy.algorithms.statistics.models.family.family.Family"><code class="xref py py-class docutils literal notranslate"><span class="pre">Family</span></code></a></p>
+<p>InverseGaussian exponential family.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>link      – a Link instance
+n         – number of trials for Binomial</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.InverseGaussian.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link=&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.InverseGaussian.deviance">
+<span class="sig-name descname"><span class="pre">deviance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.deviance" title="Link to this definition">¶</a></dt>
+<dd><p>Deviance of (Y,mu) pair. Deviance is usually defined
+as the difference</p>
+<p>DEV = (SUM_i -2 log Likelihood(Y_i,mu_i) + 2 log Likelihood(mu_i,mu_i)) / scale</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>Y     – response variable
+mu    – mean parameter
+scale – optional scale in denominator of deviance</p>
+</dd>
+<dt>OUTPUTS: dev</dt><dd><p>dev   – DEV, as described above</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.InverseGaussian.devresid">
+<span class="sig-name descname"><span class="pre">devresid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.devresid" title="Link to this definition">¶</a></dt>
+<dd><p>The deviance residuals, defined as the residuals
+in the deviance.</p>
+<p>Without knowing the link, they default to Pearson residuals</p>
+<p>resid_P = (Y - mu) * sqrt(weight(mu))</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>Y     – response variable
+mu    – mean parameter</p>
+</dd>
+<dt>OUTPUTS: resid</dt><dd><p>resid – deviance residuals</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.InverseGaussian.fitted">
+<span class="sig-name descname"><span class="pre">fitted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.fitted" title="Link to this definition">¶</a></dt>
+<dd><p>Fitted values based on linear predictors eta.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><dl class="simple">
+<dt>eta  – values of linear predictors, say,</dt><dd><p>X beta in a generalized linear model.</p>
+</dd>
+</dl>
+</dd>
+<dt>OUTPUTS: mu</dt><dd><p>mu   – link.inverse(eta), mean parameter based on eta</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.InverseGaussian.link">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">link</span></span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.link" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.InverseGaussian.links">
+<span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;nipy.algorithms.statistics.models.family.links.Log</span> <span class="pre">object&gt;]</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.links" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.InverseGaussian.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Linear predictors based on given mu values.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>mu   – mean parameter of one-parameter exponential family</p>
+</dd>
+<dt>OUTPUTS: eta</dt><dd><dl class="simple">
+<dt>eta  – link(mu), linear predictors, based on</dt><dd><p>mean parameters mu</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.InverseGaussian.tol">
+<span class="sig-name descname"><span class="pre">tol</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-05</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.tol" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.InverseGaussian.valid">
+<span class="sig-name descname"><span class="pre">valid</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[-inf,</span> <span class="pre">inf]</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.valid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.InverseGaussian.variance">
+<span class="sig-name descname"><span class="pre">variance</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;nipy.algorithms.statistics.models.family.varfuncs.Power</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.variance" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.InverseGaussian.weights">
+<span class="sig-name descname"><span class="pre">weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.weights" title="Link to this definition">¶</a></dt>
+<dd><p>Weights for IRLS step.</p>
+<p>w = 1 / (link’(mu)**2 * variance(mu))</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>mu  – mean parameter in exponential family</p>
+</dd>
+<dt>OUTPUTS:</dt><dd><p>w   – weights used in WLS step of GLM/GAM fit</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="poisson">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Poisson" title="nipy.algorithms.statistics.models.family.family.Poisson"><code class="xref py py-class docutils literal notranslate"><span class="pre">Poisson</span></code></a><a class="headerlink" href="#poisson" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Poisson">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.family.family.</span></span><span class="sig-name descname"><span class="pre">Poisson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link=&lt;nipy.algorithms.statistics.models.family.links.Log</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Poisson" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family" title="nipy.algorithms.statistics.models.family.family.Family"><code class="xref py py-class docutils literal notranslate"><span class="pre">Family</span></code></a></p>
+<p>Poisson exponential family.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>link      – a Link instance</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Poisson.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">link=&lt;nipy.algorithms.statistics.models.family.links.Log</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Poisson.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Poisson.deviance">
+<span class="sig-name descname"><span class="pre">deviance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Poisson.deviance" title="Link to this definition">¶</a></dt>
+<dd><p>Deviance of (Y,mu) pair. Deviance is usually defined
+as the difference</p>
+<p>DEV = (SUM_i -2 log Likelihood(Y_i,mu_i) + 2 log Likelihood(mu_i,mu_i)) / scale</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>Y     – response variable
+mu    – mean parameter
+scale – optional scale in denominator of deviance</p>
+</dd>
+<dt>OUTPUTS: dev</dt><dd><p>dev   – DEV, as described above</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Poisson.devresid">
+<span class="sig-name descname"><span class="pre">devresid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Poisson.devresid" title="Link to this definition">¶</a></dt>
+<dd><p>Poisson deviance residual</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>Y     – response variable
+mu    – mean parameter</p>
+</dd>
+<dt>OUTPUTS: resid</dt><dd><p>resid – deviance residuals</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Poisson.fitted">
+<span class="sig-name descname"><span class="pre">fitted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Poisson.fitted" title="Link to this definition">¶</a></dt>
+<dd><p>Fitted values based on linear predictors eta.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><dl class="simple">
+<dt>eta  – values of linear predictors, say,</dt><dd><p>X beta in a generalized linear model.</p>
+</dd>
+</dl>
+</dd>
+<dt>OUTPUTS: mu</dt><dd><p>mu   – link.inverse(eta), mean parameter based on eta</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Poisson.link">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">link</span></span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Poisson.link" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Poisson.links">
+<span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;nipy.algorithms.statistics.models.family.links.Log</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;nipy.algorithms.statistics.models.family.links.Power</span> <span class="pre">object&gt;]</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Poisson.links" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Poisson.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Poisson.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Linear predictors based on given mu values.</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>mu   – mean parameter of one-parameter exponential family</p>
+</dd>
+<dt>OUTPUTS: eta</dt><dd><dl class="simple">
+<dt>eta  – link(mu), linear predictors, based on</dt><dd><p>mean parameters mu</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Poisson.tol">
+<span class="sig-name descname"><span class="pre">tol</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-05</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Poisson.tol" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Poisson.valid">
+<span class="sig-name descname"><span class="pre">valid</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[0,</span> <span class="pre">inf]</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Poisson.valid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Poisson.variance">
+<span class="sig-name descname"><span class="pre">variance</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;nipy.algorithms.statistics.models.family.varfuncs.Power</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Poisson.variance" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.family.family.Poisson.weights">
+<span class="sig-name descname"><span class="pre">weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.family.family.Poisson.weights" title="Link to this definition">¶</a></dt>
+<dd><p>Weights for IRLS step.</p>
+<p>w = 1 / (link’(mu)**2 * variance(mu))</p>
+<dl class="simple">
+<dt>INPUTS:</dt><dd><p>mu  – mean parameter in exponential family</p>
+</dd>
+<dt>OUTPUTS:</dt><dd><p>w   – weights used in WLS step of GLM/GAM fit</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.statistics.models.family.family</a><ul>
+<li><a class="reference internal" href="#module-algorithms-statistics-models-family-family">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.models.family.family</span></code></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#binomial"><code class="xref py py-class docutils literal notranslate"><span class="pre">Binomial</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Binomial"><code class="docutils literal notranslate"><span class="pre">Binomial</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Binomial.__init__"><code class="docutils literal notranslate"><span class="pre">Binomial.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Binomial.deviance"><code class="docutils literal notranslate"><span class="pre">Binomial.deviance()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Binomial.devresid"><code class="docutils literal notranslate"><span class="pre">Binomial.devresid()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Binomial.fitted"><code class="docutils literal notranslate"><span class="pre">Binomial.fitted()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Binomial.link"><code class="docutils literal notranslate"><span class="pre">Binomial.link</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Binomial.links"><code class="docutils literal notranslate"><span class="pre">Binomial.links</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Binomial.predict"><code class="docutils literal notranslate"><span class="pre">Binomial.predict()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Binomial.tol"><code class="docutils literal notranslate"><span class="pre">Binomial.tol</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Binomial.valid"><code class="docutils literal notranslate"><span class="pre">Binomial.valid</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Binomial.variance"><code class="docutils literal notranslate"><span class="pre">Binomial.variance</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Binomial.weights"><code class="docutils literal notranslate"><span class="pre">Binomial.weights()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#family"><code class="xref py py-class docutils literal notranslate"><span class="pre">Family</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family"><code class="docutils literal notranslate"><span class="pre">Family</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family.__init__"><code class="docutils literal notranslate"><span class="pre">Family.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family.deviance"><code class="docutils literal notranslate"><span class="pre">Family.deviance()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family.devresid"><code class="docutils literal notranslate"><span class="pre">Family.devresid()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family.fitted"><code class="docutils literal notranslate"><span class="pre">Family.fitted()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family.link"><code class="docutils literal notranslate"><span class="pre">Family.link</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family.links"><code class="docutils literal notranslate"><span class="pre">Family.links</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family.predict"><code class="docutils literal notranslate"><span class="pre">Family.predict()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family.tol"><code class="docutils literal notranslate"><span class="pre">Family.tol</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family.valid"><code class="docutils literal notranslate"><span class="pre">Family.valid</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Family.weights"><code class="docutils literal notranslate"><span class="pre">Family.weights()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#gamma"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gamma</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gamma"><code class="docutils literal notranslate"><span class="pre">Gamma</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gamma.__init__"><code class="docutils literal notranslate"><span class="pre">Gamma.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gamma.deviance"><code class="docutils literal notranslate"><span class="pre">Gamma.deviance()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gamma.devresid"><code class="docutils literal notranslate"><span class="pre">Gamma.devresid()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gamma.fitted"><code class="docutils literal notranslate"><span class="pre">Gamma.fitted()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gamma.link"><code class="docutils literal notranslate"><span class="pre">Gamma.link</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gamma.links"><code class="docutils literal notranslate"><span class="pre">Gamma.links</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gamma.predict"><code class="docutils literal notranslate"><span class="pre">Gamma.predict()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gamma.tol"><code class="docutils literal notranslate"><span class="pre">Gamma.tol</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gamma.valid"><code class="docutils literal notranslate"><span class="pre">Gamma.valid</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gamma.variance"><code class="docutils literal notranslate"><span class="pre">Gamma.variance</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gamma.weights"><code class="docutils literal notranslate"><span class="pre">Gamma.weights()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#gaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">Gaussian</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gaussian"><code class="docutils literal notranslate"><span class="pre">Gaussian</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gaussian.__init__"><code class="docutils literal notranslate"><span class="pre">Gaussian.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gaussian.deviance"><code class="docutils literal notranslate"><span class="pre">Gaussian.deviance()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gaussian.devresid"><code class="docutils literal notranslate"><span class="pre">Gaussian.devresid()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gaussian.fitted"><code class="docutils literal notranslate"><span class="pre">Gaussian.fitted()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gaussian.link"><code class="docutils literal notranslate"><span class="pre">Gaussian.link</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gaussian.links"><code class="docutils literal notranslate"><span class="pre">Gaussian.links</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gaussian.predict"><code class="docutils literal notranslate"><span class="pre">Gaussian.predict()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gaussian.tol"><code class="docutils literal notranslate"><span class="pre">Gaussian.tol</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gaussian.valid"><code class="docutils literal notranslate"><span class="pre">Gaussian.valid</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gaussian.variance"><code class="docutils literal notranslate"><span class="pre">Gaussian.variance</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Gaussian.weights"><code class="docutils literal notranslate"><span class="pre">Gaussian.weights()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#inversegaussian"><code class="xref py py-class docutils literal notranslate"><span class="pre">InverseGaussian</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian"><code class="docutils literal notranslate"><span class="pre">InverseGaussian</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.__init__"><code class="docutils literal notranslate"><span class="pre">InverseGaussian.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.deviance"><code class="docutils literal notranslate"><span class="pre">InverseGaussian.deviance()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.devresid"><code class="docutils literal notranslate"><span class="pre">InverseGaussian.devresid()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.fitted"><code class="docutils literal notranslate"><span class="pre">InverseGaussian.fitted()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.link"><code class="docutils literal notranslate"><span class="pre">InverseGaussian.link</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.links"><code class="docutils literal notranslate"><span class="pre">InverseGaussian.links</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.predict"><code class="docutils literal notranslate"><span class="pre">InverseGaussian.predict()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.tol"><code class="docutils literal notranslate"><span class="pre">InverseGaussian.tol</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.valid"><code class="docutils literal notranslate"><span class="pre">InverseGaussian.valid</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.variance"><code class="docutils literal notranslate"><span class="pre">InverseGaussian.variance</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.InverseGaussian.weights"><code class="docutils literal notranslate"><span class="pre">InverseGaussian.weights()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#poisson"><code class="xref py py-class docutils literal notranslate"><span class="pre">Poisson</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Poisson"><code class="docutils literal notranslate"><span class="pre">Poisson</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Poisson.__init__"><code class="docutils literal notranslate"><span class="pre">Poisson.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Poisson.deviance"><code class="docutils literal notranslate"><span class="pre">Poisson.deviance()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Poisson.devresid"><code class="docutils literal notranslate"><span class="pre">Poisson.devresid()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Poisson.fitted"><code class="docutils literal notranslate"><span class="pre">Poisson.fitted()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Poisson.link"><code class="docutils literal notranslate"><span class="pre">Poisson.link</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Poisson.links"><code class="docutils literal notranslate"><span class="pre">Poisson.links</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Poisson.predict"><code class="docutils literal notranslate"><span class="pre">Poisson.predict()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Poisson.tol"><code class="docutils literal notranslate"><span class="pre">Poisson.tol</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Poisson.valid"><code class="docutils literal notranslate"><span class="pre">Poisson.valid</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Poisson.variance"><code class="docutils literal notranslate"><span class="pre">Poisson.variance</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.family.family.Poisson.weights"><code class="docutils literal notranslate"><span class="pre">Poisson.weights()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.mixed_effects_stat.html"
+                          title="previous chapter">algorithms.statistics.mixed_effects_stat</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.models.family.links.html"
+                          title="next chapter">algorithms.statistics.models.family.links</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.statistics.models.family.family.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.family.links.html" title="algorithms.statistics.models.family.links"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.mixed_effects_stat.html" title="algorithms.statistics.mixed_effects_stat"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+algorithms.segmentation.brain_segmentation
+==========================================
+
+Module: :mod:`algorithms.segmentation.brain_segmentation`
+---------------------------------------------------------
+Inheritance diagram for ``nipy.algorithms.segmentation.brain_segmentation``:
+
+.. inheritance-diagram:: nipy.algorithms.segmentation.brain_segmentation 
+   :parts: 3
+
+.. automodule:: nipy.algorithms.segmentation.brain_segmentation
+
+.. currentmodule:: nipy.algorithms.segmentation.brain_segmentation
+
+:class:`BrainT1Segmentation`
+----------------------------
+
+
+.. autoclass:: BrainT1Segmentation
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__

@@ -1,0 +1,5 @@
+<map id="inheritanceb39cb322e4" name="inheritanceb39cb322e4">
+<area shape="rect" id="node1" href="#nipy.modalities.fmri.glm.Contrast" target="_top" title="The contrast class handles the estimation of statistical contrasts" alt="" coords="38,107,160,133"/>
+<area shape="rect" id="node2" href="#nipy.modalities.fmri.glm.FMRILinearModel" target="_top" title="This class is meant to handle GLMs from a higher&#45;level perspective" alt="" coords="11,56,187,83"/>
+<area shape="rect" id="node3" href="#nipy.modalities.fmri.glm.GeneralLinearModel" target="_top" title="This class handles the so&#45;called on General Linear Model" alt="" coords="5,5,193,32"/>
+</map>

@@ -1,0 +1,10 @@
+<map id="inheritance7e56675552" name="inheritance7e56675552">
+<area shape="rect" id="node1" title="This subclass of IncrementalDecoder can be used as the baseclass for an" alt="" coords="239,284,471,311"/>
+<area shape="rect" id="node2" title="An IncrementalDecoder decodes an input in multiple steps. The input can" alt="" coords="6,284,190,311"/>
+<area shape="rect" id="node3" title="This subclass of IncrementalEncoder can be used as the baseclass for an" alt="" coords="239,233,471,260"/>
+<area shape="rect" id="node4" title="An IncrementalEncoder encodes an input in multiple steps. The input can" alt="" coords="6,233,190,260"/>
+<area shape="rect" id="node5" title="Defines the interface for stateless encoders/decoders." alt="" coords="45,157,151,184"/>
+<area shape="rect" id="node6" title="Codec details when looking up the codec registry" alt="" coords="34,107,162,133"/>
+<area shape="rect" id="node8" title="StreamReaderWriter instances allow wrapping streams which" alt="" coords="5,56,191,83"/>
+<area shape="rect" id="node9" title="StreamRecoder instances translate data from one encoding to another." alt="" coords="19,5,177,32"/>
+</map>

@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.statistics.models.utils" href="nipy.algorithms.statistics.models.utils.html" />
+    <link rel="prev" title="algorithms.statistics.models.nlsmodel" href="nipy.algorithms.statistics.models.nlsmodel.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.utils.html" title="algorithms.statistics.models.utils"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.nlsmodel.html" title="algorithms.statistics.models.nlsmodel"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-statistics-models-regression">
+<h1>algorithms.statistics.models.regression<a class="headerlink" href="#algorithms-statistics-models-regression" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-statistics-models-regression">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.models.regression</span></code><a class="headerlink" href="#module-algorithms-statistics-models-regression" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.statistics.models.regression</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-1fffca7f62c1822a9e86bc405c48f3ffc4ebc327.png" alt="Inheritance diagram of nipy.algorithms.statistics.models.regression" usemap="#inheritance7534ba070d" class="inheritance graphviz" /></div>
+<map id="inheritance7534ba070d" name="inheritance7534ba070d">
+<area shape="rect" id="node1" href="nipy.algorithms.statistics.models.model.html#nipy.algorithms.statistics.models.model.LikelihoodModel" target="_top" title="models.model.LikelihoodModel" alt="" coords="238,80,387,100"/>
+<area shape="rect" id="node6" href="#nipy.algorithms.statistics.models.regression.OLSModel" target="_top" title="A simple ordinary least squares model." alt="" coords="439,80,582,100"/>
+<area shape="rect" id="node2" href="nipy.algorithms.statistics.models.model.html#nipy.algorithms.statistics.models.model.Model" target="_top" title="A (predictive) statistical model." alt="" coords="42,80,148,100"/>
+<area shape="rect" id="node3" href="nipy.algorithms.statistics.models.model.html#nipy.algorithms.statistics.models.model.LikelihoodModelResults" target="_top" title="Class to contain results from likelihood models" alt="" coords="4,42,186,62"/>
+<area shape="rect" id="node8" href="#nipy.algorithms.statistics.models.regression.RegressionResults" target="_top" title="This class summarizes the fit of a linear regression model." alt="" coords="222,42,403,62"/>
+<area shape="rect" id="node4" href="#nipy.algorithms.statistics.models.regression.AREstimator" target="_top" title="A class to estimate AR(p) coefficients from residuals" alt="" coords="18,4,172,24"/>
+<area shape="rect" id="node5" href="#nipy.algorithms.statistics.models.regression.ARModel" target="_top" title="A regression model with an AR(p) covariance structure." alt="" coords="622,42,760,62"/>
+<area shape="rect" id="node7" href="#nipy.algorithms.statistics.models.regression.GLSModel" target="_top" title="Generalized least squares model with a general covariance structure" alt="" coords="619,80,763,100"/>
+<area shape="rect" id="node9" href="#nipy.algorithms.statistics.models.regression.WLSModel" target="_top" title="A regression model with diagonal but non&#45;identity covariance structure." alt="" coords="618,117,764,137"/>
+</map><p id="module-nipy.algorithms.statistics.models.regression">This module implements some standard regression models: OLS and WLS
+models, as well as an AR(p) regression model.</p>
+<p>Models are specified with a design matrix and are fit using their
+‘fit’ method.</p>
+<p>Subclasses that have more complicated covariance matrices
+should write over the ‘whiten’ method as the fit method
+prewhitens the response by calling ‘whiten’.</p>
+<p>General reference for regression models:</p>
+<dl class="simple">
+<dt>‘Introduction to Linear Regression Analysis’, Douglas C. Montgomery,</dt><dd><p>Elizabeth A. Peck, G. Geoffrey Vining. Wiley, 2006.</p>
+</dd>
+</dl>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="arestimator">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.AREstimator" title="nipy.algorithms.statistics.models.regression.AREstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AREstimator</span></code></a><a class="headerlink" href="#arestimator" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.AREstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.regression.</span></span><span class="sig-name descname"><span class="pre">AREstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.AREstimator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to estimate AR(p) coefficients from residuals</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.AREstimator.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.AREstimator.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Bias-correcting AR estimation class</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>model</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">OSLModel</span></code> instance</span></dt><dd><p>A models.regression.OLSmodel instance,
+where <cite>model</cite> has attribute <code class="docutils literal notranslate"><span class="pre">design</span></code></p>
+</dd>
+<dt><strong>p</strong><span class="classifier">int, optional</span></dt><dd><p>Order of AR(p) noise</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="armodel">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel" title="nipy.algorithms.statistics.models.regression.ARModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ARModel</span></code></a><a class="headerlink" href="#armodel" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ARModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.regression.</span></span><span class="sig-name descname"><span class="pre">ARModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ARModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel" title="nipy.algorithms.statistics.models.regression.OLSModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OLSModel</span></code></a></p>
+<p>A regression model with an AR(p) covariance structure.</p>
+<p>In terms of a LikelihoodModel, the parameters
+are beta, the usual regression parameters,
+and sigma, a scalar nuisance parameter that
+shows up as multiplier in front of the AR(p) covariance.</p>
+<dl class="simple">
+<dt>The linear autoregressive process of order p–AR(p)–is defined as:</dt><dd><p>TODO</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.algorithms.statistics.api</span> <span class="kn">import</span> <span class="n">Term</span><span class="p">,</span> <span class="n">Formula</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rec</span><span class="o">.</span><span class="n">fromarrays</span><span class="p">(([</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">9</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">)),</span>
+<span class="gp">... </span>                         <span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">Formula</span><span class="p">([</span><span class="n">Term</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">),</span> <span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dmtx</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">design</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">return_float</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">ARModel</span><span class="p">(</span><span class="n">dmtx</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We go through the <code class="docutils literal notranslate"><span class="pre">model.iterative_fit</span></code> procedure long-hand:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">])</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;AR coefficients:&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">rho</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">rho</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">yule_walker</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">results</span><span class="o">.</span><span class="n">predicted</span><span class="p">,</span>
+<span class="gp">... </span>                             <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="gp">... </span>                             <span class="n">df</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">df_resid</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">model</span> <span class="o">=</span> <span class="n">ARModel</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">design</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span> 
+<span class="gp">...</span>
+<span class="go">AR coefficients: [ 0.  0.]</span>
+<span class="go">AR coefficients: [-0.61530877 -1.01542645]</span>
+<span class="go">AR coefficients: [-0.72660832 -1.06201457]</span>
+<span class="go">AR coefficients: [-0.7220361  -1.05365352]</span>
+<span class="go">AR coefficients: [-0.72229201 -1.05408193]</span>
+<span class="go">AR coefficients: [-0.722278   -1.05405838]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span><span class="o">.</span><span class="n">theta</span> 
+<span class="go">array([ 1.59564228, -0.58562172])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span><span class="o">.</span><span class="n">t</span><span class="p">()</span> 
+<span class="go">array([ 38.0890515 ,  -3.45429252])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">Tcontrast</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>  
+<span class="go">&lt;T contrast: effect=-0.58562172384377043, sd=0.16953449108110835,</span>
+<span class="go">t=-3.4542925165805847, df_den=5&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">Fcontrast</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>  
+<span class="go">&lt;F contrast: F=4216.810299725842, df_den=5, df_num=2&gt;</span>
+</pre></div>
+</div>
+<p>Reinitialize the model, and do the automated iterative fit</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">iterative_fit</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">],</span> <span class="n">niter</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">rho</span><span class="p">)</span>  
+<span class="go">[-0.7220361  -1.05365352]</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ARModel.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ARModel.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize AR model instance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>design</strong><span class="classifier">ndarray</span></dt><dd><p>2D array with design matrix</p>
+</dd>
+<dt><strong>rho</strong><span class="classifier">int or array-like</span></dt><dd><p>If int, gives order of model, and initializes rho to zeros.  If
+ndarray, gives initial estimate of rho. Be careful as <code class="docutils literal notranslate"><span class="pre">ARModel(X,</span>
+<span class="pre">1)</span> <span class="pre">!=</span> <span class="pre">ARModel(X,</span> <span class="pre">1.0)</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ARModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ARModel.fit" title="Link to this definition">¶</a></dt>
+<dd><p>Fit model to data <cite>Y</cite></p>
+<p>Full fit of the model including estimate of covariance matrix,
+(whitened) residuals and scale.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>Y</strong><span class="classifier">array-like</span></dt><dd><p>The dependent variable for the Least Squares problem.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fit</strong><span class="classifier">RegressionResults</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ARModel.has_intercept">
+<span class="sig-name descname"><span class="pre">has_intercept</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ARModel.has_intercept" title="Link to this definition">¶</a></dt>
+<dd><p>Check if column of 1s is in column space of design</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ARModel.information">
+<span class="sig-name descname"><span class="pre">information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ARModel.information" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the information matrix at (beta, Y, nuisance).</p>
+<p>See logL for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>beta</strong><span class="classifier">ndarray</span></dt><dd><p>The parameter estimates.  Must be of length df_model.</p>
+</dd>
+<dt><strong>nuisance</strong><span class="classifier">dict</span></dt><dd><p>A dict with key ‘sigma’, which is an estimate of sigma. If None,
+defaults to its maximum likelihood estimate (with beta fixed) as
+<code class="docutils literal notranslate"><span class="pre">sum((Y</span> <span class="pre">-</span> <span class="pre">X*beta)**2)</span> <span class="pre">/</span> <span class="pre">n</span></code> where n=Y.shape[0], X=self.design.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>info</strong><span class="classifier">array</span></dt><dd><p>The information matrix, the negative of the inverse of the Hessian
+of the of the log-likelihood function evaluated at (theta, Y,
+nuisance).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ARModel.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ARModel.initialize" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize (possibly re-initialize) a Model instance.</p>
+<p>For instance, the design matrix of a linear model may change and some
+things must be recomputed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ARModel.iterative_fit">
+<span class="sig-name descname"><span class="pre">iterative_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ARModel.iterative_fit" title="Link to this definition">¶</a></dt>
+<dd><p>Perform an iterative two-stage procedure to estimate AR(p)
+parameters and regression coefficients simultaneously.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>Y</strong><span class="classifier">ndarray</span></dt><dd><p>data to which to fit model</p>
+</dd>
+<dt><strong>niter</strong><span class="classifier">optional, int</span></dt><dd><p>the number of iterations (default 3)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ARModel.logL">
+<span class="sig-name descname"><span class="pre">logL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ARModel.logL" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the value of the loglikelihood function at beta.</p>
+<p>Given the whitened design matrix, the loglikelihood is evaluated
+at the parameter vector, beta, for the dependent variable, Y
+and the nuisance parameter, sigma.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>beta</strong><span class="classifier">ndarray</span></dt><dd><p>The parameter estimates.  Must be of length df_model.</p>
+</dd>
+<dt><strong>Y</strong><span class="classifier">ndarray</span></dt><dd><p>The dependent variable</p>
+</dd>
+<dt><strong>nuisance</strong><span class="classifier">dict, optional</span></dt><dd><p>A dict with key ‘sigma’, which is an optional estimate of sigma. If
+None, defaults to its maximum likelihood estimate (with beta fixed)
+as <code class="docutils literal notranslate"><span class="pre">sum((Y</span> <span class="pre">-</span> <span class="pre">X*beta)**2)</span> <span class="pre">/</span> <span class="pre">n</span></code>, where n=Y.shape[0], X=self.design.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>loglf</strong><span class="classifier">float</span></dt><dd><p>The value of the loglikelihood function.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The log-Likelihood Function is defined as</p>
+<div class="math notranslate nohighlight">
+\[\ell(\beta,\sigma,Y)=
+-\frac{n}{2}\log(2\pi\sigma^2) - \|Y-X\beta\|^2/(2\sigma^2)\]</div>
+<p>The parameter <span class="math notranslate nohighlight">\(\sigma\)</span> above is what is sometimes referred to as a
+nuisance parameter. That is, the likelihood is considered as a function
+of <span class="math notranslate nohighlight">\(\beta\)</span>, but to evaluate it, a value of <span class="math notranslate nohighlight">\(\sigma\)</span> is
+needed.</p>
+<p>If <span class="math notranslate nohighlight">\(\sigma\)</span> is not provided, then its maximum likelihood estimate:</p>
+<div class="math notranslate nohighlight">
+\[\hat{\sigma}(\beta) = \frac{\text{SSE}(\beta)}{n}\]</div>
+<p>is plugged in. This likelihood is now a function of only <span class="math notranslate nohighlight">\(\beta\)</span>
+and is technically referred to as a profile-likelihood.</p>
+<p class="rubric">References</p>
+<div role="list" class="citation-list">
+<div class="citation" id="r1a7418fdef27-1" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<ol class="upperalpha simple" start="23">
+<li><p>Green.  “Econometric Analysis,” 5th ed., Pearson, 2003.</p></li>
+</ol>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ARModel.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ARModel.predict" title="Link to this definition">¶</a></dt>
+<dd><p>After a model has been fit, results are (assumed to be) stored
+in self.results, which itself should have a predict method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ARModel.rank">
+<span class="sig-name descname"><span class="pre">rank</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ARModel.rank" title="Link to this definition">¶</a></dt>
+<dd><p>Compute rank of design matrix</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ARModel.score">
+<span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ARModel.score" title="Link to this definition">¶</a></dt>
+<dd><p>Gradient of the loglikelihood function at (beta, Y, nuisance).</p>
+<p>The graient of the loglikelihood function at (beta, Y, nuisance) is the
+score function.</p>
+<p>See <a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel.logL" title="nipy.algorithms.statistics.models.regression.ARModel.logL"><code class="xref py py-meth docutils literal notranslate"><span class="pre">logL()</span></code></a> for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>beta</strong><span class="classifier">ndarray</span></dt><dd><p>The parameter estimates.  Must be of length df_model.</p>
+</dd>
+<dt><strong>Y</strong><span class="classifier">ndarray</span></dt><dd><p>The dependent variable.</p>
+</dd>
+<dt><strong>nuisance</strong><span class="classifier">dict, optional</span></dt><dd><p>A dict with key ‘sigma’, which is an optional estimate of sigma. If
+None, defaults to its maximum likelihood estimate (with beta fixed)
+as <code class="docutils literal notranslate"><span class="pre">sum((Y</span> <span class="pre">-</span> <span class="pre">X*beta)**2)</span> <span class="pre">/</span> <span class="pre">n</span></code>, where n=Y.shape[0], X=self.design.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>The gradient of the loglikelihood function.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ARModel.whiten">
+<span class="sig-name descname"><span class="pre">whiten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ARModel.whiten" title="Link to this definition">¶</a></dt>
+<dd><p>Whiten a series of columns according to AR(p) covariance structure</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array-like of shape (n_features)</span></dt><dd><p>array to whiten</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>wX</strong><span class="classifier">ndarray</span></dt><dd><p>X whitened with order self.order AR</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="glsmodel">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.GLSModel" title="nipy.algorithms.statistics.models.regression.GLSModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GLSModel</span></code></a><a class="headerlink" href="#glsmodel" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.GLSModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.regression.</span></span><span class="sig-name descname"><span class="pre">GLSModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.GLSModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel" title="nipy.algorithms.statistics.models.regression.OLSModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OLSModel</span></code></a></p>
+<p>Generalized least squares model with a general covariance structure</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.GLSModel.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.GLSModel.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>design</strong><span class="classifier">array-like</span></dt><dd><p>This is your design matrix.
+Data are assumed to be column ordered with
+observations in rows.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.GLSModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.GLSModel.fit" title="Link to this definition">¶</a></dt>
+<dd><p>Fit model to data <cite>Y</cite></p>
+<p>Full fit of the model including estimate of covariance matrix,
+(whitened) residuals and scale.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>Y</strong><span class="classifier">array-like</span></dt><dd><p>The dependent variable for the Least Squares problem.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fit</strong><span class="classifier">RegressionResults</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.GLSModel.has_intercept">
+<span class="sig-name descname"><span class="pre">has_intercept</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.GLSModel.has_intercept" title="Link to this definition">¶</a></dt>
+<dd><p>Check if column of 1s is in column space of design</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.GLSModel.information">
+<span class="sig-name descname"><span class="pre">information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.GLSModel.information" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the information matrix at (beta, Y, nuisance).</p>
+<p>See logL for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>beta</strong><span class="classifier">ndarray</span></dt><dd><p>The parameter estimates.  Must be of length df_model.</p>
+</dd>
+<dt><strong>nuisance</strong><span class="classifier">dict</span></dt><dd><p>A dict with key ‘sigma’, which is an estimate of sigma. If None,
+defaults to its maximum likelihood estimate (with beta fixed) as
+<code class="docutils literal notranslate"><span class="pre">sum((Y</span> <span class="pre">-</span> <span class="pre">X*beta)**2)</span> <span class="pre">/</span> <span class="pre">n</span></code> where n=Y.shape[0], X=self.design.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>info</strong><span class="classifier">array</span></dt><dd><p>The information matrix, the negative of the inverse of the Hessian
+of the of the log-likelihood function evaluated at (theta, Y,
+nuisance).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.GLSModel.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.GLSModel.initialize" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize (possibly re-initialize) a Model instance.</p>
+<p>For instance, the design matrix of a linear model may change and some
+things must be recomputed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.GLSModel.logL">
+<span class="sig-name descname"><span class="pre">logL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.GLSModel.logL" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the value of the loglikelihood function at beta.</p>
+<p>Given the whitened design matrix, the loglikelihood is evaluated
+at the parameter vector, beta, for the dependent variable, Y
+and the nuisance parameter, sigma.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>beta</strong><span class="classifier">ndarray</span></dt><dd><p>The parameter estimates.  Must be of length df_model.</p>
+</dd>
+<dt><strong>Y</strong><span class="classifier">ndarray</span></dt><dd><p>The dependent variable</p>
+</dd>
+<dt><strong>nuisance</strong><span class="classifier">dict, optional</span></dt><dd><p>A dict with key ‘sigma’, which is an optional estimate of sigma. If
+None, defaults to its maximum likelihood estimate (with beta fixed)
+as <code class="docutils literal notranslate"><span class="pre">sum((Y</span> <span class="pre">-</span> <span class="pre">X*beta)**2)</span> <span class="pre">/</span> <span class="pre">n</span></code>, where n=Y.shape[0], X=self.design.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>loglf</strong><span class="classifier">float</span></dt><dd><p>The value of the loglikelihood function.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The log-Likelihood Function is defined as</p>
+<div class="math notranslate nohighlight">
+\[\ell(\beta,\sigma,Y)=
+-\frac{n}{2}\log(2\pi\sigma^2) - \|Y-X\beta\|^2/(2\sigma^2)\]</div>
+<p>The parameter <span class="math notranslate nohighlight">\(\sigma\)</span> above is what is sometimes referred to as a
+nuisance parameter. That is, the likelihood is considered as a function
+of <span class="math notranslate nohighlight">\(\beta\)</span>, but to evaluate it, a value of <span class="math notranslate nohighlight">\(\sigma\)</span> is
+needed.</p>
+<p>If <span class="math notranslate nohighlight">\(\sigma\)</span> is not provided, then its maximum likelihood estimate:</p>
+<div class="math notranslate nohighlight">
+\[\hat{\sigma}(\beta) = \frac{\text{SSE}(\beta)}{n}\]</div>
+<p>is plugged in. This likelihood is now a function of only <span class="math notranslate nohighlight">\(\beta\)</span>
+and is technically referred to as a profile-likelihood.</p>
+<p class="rubric">References</p>
+<div role="list" class="citation-list">
+<div class="citation" id="ra81d199733ba-1" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<ol class="upperalpha simple" start="23">
+<li><p>Green.  “Econometric Analysis,” 5th ed., Pearson, 2003.</p></li>
+</ol>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.GLSModel.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.GLSModel.predict" title="Link to this definition">¶</a></dt>
+<dd><p>After a model has been fit, results are (assumed to be) stored
+in self.results, which itself should have a predict method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.GLSModel.rank">
+<span class="sig-name descname"><span class="pre">rank</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.GLSModel.rank" title="Link to this definition">¶</a></dt>
+<dd><p>Compute rank of design matrix</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.GLSModel.score">
+<span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.GLSModel.score" title="Link to this definition">¶</a></dt>
+<dd><p>Gradient of the loglikelihood function at (beta, Y, nuisance).</p>
+<p>The graient of the loglikelihood function at (beta, Y, nuisance) is the
+score function.</p>
+<p>See <a class="reference internal" href="#nipy.algorithms.statistics.models.regression.GLSModel.logL" title="nipy.algorithms.statistics.models.regression.GLSModel.logL"><code class="xref py py-meth docutils literal notranslate"><span class="pre">logL()</span></code></a> for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>beta</strong><span class="classifier">ndarray</span></dt><dd><p>The parameter estimates.  Must be of length df_model.</p>
+</dd>
+<dt><strong>Y</strong><span class="classifier">ndarray</span></dt><dd><p>The dependent variable.</p>
+</dd>
+<dt><strong>nuisance</strong><span class="classifier">dict, optional</span></dt><dd><p>A dict with key ‘sigma’, which is an optional estimate of sigma. If
+None, defaults to its maximum likelihood estimate (with beta fixed)
+as <code class="docutils literal notranslate"><span class="pre">sum((Y</span> <span class="pre">-</span> <span class="pre">X*beta)**2)</span> <span class="pre">/</span> <span class="pre">n</span></code>, where n=Y.shape[0], X=self.design.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>The gradient of the loglikelihood function.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.GLSModel.whiten">
+<span class="sig-name descname"><span class="pre">whiten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.GLSModel.whiten" title="Link to this definition">¶</a></dt>
+<dd><p>Whiten design matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array</span></dt><dd><p>design matrix</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>wX</strong><span class="classifier">array</span></dt><dd><p>This matrix is the matrix whose pseudoinverse is ultimately
+used in estimating the coefficients. For OLSModel, it is
+does nothing. For WLSmodel, ARmodel, it pre-applies
+a square root of the covariance matrix to X.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="olsmodel">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel" title="nipy.algorithms.statistics.models.regression.OLSModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OLSModel</span></code></a><a class="headerlink" href="#olsmodel" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.OLSModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.regression.</span></span><span class="sig-name descname"><span class="pre">OLSModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.OLSModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="nipy.algorithms.statistics.models.model.html#nipy.algorithms.statistics.models.model.LikelihoodModel" title="nipy.algorithms.statistics.models.model.LikelihoodModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">LikelihoodModel</span></code></a></p>
+<p>A simple ordinary least squares model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>design</strong><span class="classifier">array-like</span></dt><dd><p>This is your design matrix.  Data are assumed to be column ordered with
+observations in rows.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.algorithms.statistics.api</span> <span class="kn">import</span> <span class="n">Term</span><span class="p">,</span> <span class="n">Formula</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rec</span><span class="o">.</span><span class="n">fromarrays</span><span class="p">(([</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">)),</span>
+<span class="gp">... </span>                         <span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">Formula</span><span class="p">([</span><span class="n">Term</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">),</span> <span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dmtx</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">design</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">return_float</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">OLSModel</span><span class="p">(</span><span class="n">dmtx</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span><span class="o">.</span><span class="n">theta</span>
+<span class="go">array([ 0.25      ,  2.14285714])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
+<span class="go">array([ 0.98019606,  1.87867287])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">Tcontrast</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>  
+<span class="go">&lt;T contrast: effect=2.14285714286, sd=1.14062281591, t=1.87867287326,</span>
+<span class="go">df_den=5&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">Fcontrast</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>  
+<span class="go">&lt;F contrast: F=19.4607843137, df_den=5, df_num=2&gt;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>design</strong><span class="classifier">ndarray</span></dt><dd><p>This is the design, or X, matrix.</p>
+</dd>
+<dt><strong>wdesign</strong><span class="classifier">ndarray</span></dt><dd><p>This is the whitened design matrix.  <cite>design</cite> == <cite>wdesign</cite> by default
+for the OLSModel, though models that inherit from the OLSModel will
+whiten the design.</p>
+</dd>
+<dt><strong>calc_beta</strong><span class="classifier">ndarray</span></dt><dd><p>This is the Moore-Penrose pseudoinverse of the whitened design matrix.</p>
+</dd>
+<dt><strong>normalized_cov_beta</strong><span class="classifier">ndarray</span></dt><dd><p><code class="docutils literal notranslate"><span class="pre">np.dot(calc_beta,</span> <span class="pre">calc_beta.T)</span></code></p>
+</dd>
+<dt><strong>df_resid</strong><span class="classifier">scalar</span></dt><dd><p>Degrees of freedom of the residuals.  Number of observations less the
+rank of the design.</p>
+</dd>
+<dt><strong>df_model</strong><span class="classifier">scalar</span></dt><dd><p>Degrees of freedome of the model.  The rank of the design.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>model.__init___(design)</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>model.logL(b=self.beta, Y)</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.OLSModel.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.OLSModel.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>design</strong><span class="classifier">array-like</span></dt><dd><p>This is your design matrix.
+Data are assumed to be column ordered with
+observations in rows.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.OLSModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.OLSModel.fit" title="Link to this definition">¶</a></dt>
+<dd><p>Fit model to data <cite>Y</cite></p>
+<p>Full fit of the model including estimate of covariance matrix,
+(whitened) residuals and scale.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>Y</strong><span class="classifier">array-like</span></dt><dd><p>The dependent variable for the Least Squares problem.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fit</strong><span class="classifier">RegressionResults</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.OLSModel.has_intercept">
+<span class="sig-name descname"><span class="pre">has_intercept</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.OLSModel.has_intercept" title="Link to this definition">¶</a></dt>
+<dd><p>Check if column of 1s is in column space of design</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.OLSModel.information">
+<span class="sig-name descname"><span class="pre">information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.OLSModel.information" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the information matrix at (beta, Y, nuisance).</p>
+<p>See logL for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>beta</strong><span class="classifier">ndarray</span></dt><dd><p>The parameter estimates.  Must be of length df_model.</p>
+</dd>
+<dt><strong>nuisance</strong><span class="classifier">dict</span></dt><dd><p>A dict with key ‘sigma’, which is an estimate of sigma. If None,
+defaults to its maximum likelihood estimate (with beta fixed) as
+<code class="docutils literal notranslate"><span class="pre">sum((Y</span> <span class="pre">-</span> <span class="pre">X*beta)**2)</span> <span class="pre">/</span> <span class="pre">n</span></code> where n=Y.shape[0], X=self.design.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>info</strong><span class="classifier">array</span></dt><dd><p>The information matrix, the negative of the inverse of the Hessian
+of the of the log-likelihood function evaluated at (theta, Y,
+nuisance).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.OLSModel.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.OLSModel.initialize" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize (possibly re-initialize) a Model instance.</p>
+<p>For instance, the design matrix of a linear model may change and some
+things must be recomputed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.OLSModel.logL">
+<span class="sig-name descname"><span class="pre">logL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.OLSModel.logL" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the value of the loglikelihood function at beta.</p>
+<p>Given the whitened design matrix, the loglikelihood is evaluated
+at the parameter vector, beta, for the dependent variable, Y
+and the nuisance parameter, sigma.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>beta</strong><span class="classifier">ndarray</span></dt><dd><p>The parameter estimates.  Must be of length df_model.</p>
+</dd>
+<dt><strong>Y</strong><span class="classifier">ndarray</span></dt><dd><p>The dependent variable</p>
+</dd>
+<dt><strong>nuisance</strong><span class="classifier">dict, optional</span></dt><dd><p>A dict with key ‘sigma’, which is an optional estimate of sigma. If
+None, defaults to its maximum likelihood estimate (with beta fixed)
+as <code class="docutils literal notranslate"><span class="pre">sum((Y</span> <span class="pre">-</span> <span class="pre">X*beta)**2)</span> <span class="pre">/</span> <span class="pre">n</span></code>, where n=Y.shape[0], X=self.design.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>loglf</strong><span class="classifier">float</span></dt><dd><p>The value of the loglikelihood function.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The log-Likelihood Function is defined as</p>
+<div class="math notranslate nohighlight">
+\[\ell(\beta,\sigma,Y)=
+-\frac{n}{2}\log(2\pi\sigma^2) - \|Y-X\beta\|^2/(2\sigma^2)\]</div>
+<p>The parameter <span class="math notranslate nohighlight">\(\sigma\)</span> above is what is sometimes referred to as a
+nuisance parameter. That is, the likelihood is considered as a function
+of <span class="math notranslate nohighlight">\(\beta\)</span>, but to evaluate it, a value of <span class="math notranslate nohighlight">\(\sigma\)</span> is
+needed.</p>
+<p>If <span class="math notranslate nohighlight">\(\sigma\)</span> is not provided, then its maximum likelihood estimate:</p>
+<div class="math notranslate nohighlight">
+\[\hat{\sigma}(\beta) = \frac{\text{SSE}(\beta)}{n}\]</div>
+<p>is plugged in. This likelihood is now a function of only <span class="math notranslate nohighlight">\(\beta\)</span>
+and is technically referred to as a profile-likelihood.</p>
+<p class="rubric">References</p>
+<div role="list" class="citation-list">
+<div class="citation" id="rffac1b84925c-1" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<ol class="upperalpha simple" start="23">
+<li><p>Green.  “Econometric Analysis,” 5th ed., Pearson, 2003.</p></li>
+</ol>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.OLSModel.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.OLSModel.predict" title="Link to this definition">¶</a></dt>
+<dd><p>After a model has been fit, results are (assumed to be) stored
+in self.results, which itself should have a predict method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.OLSModel.rank">
+<span class="sig-name descname"><span class="pre">rank</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.OLSModel.rank" title="Link to this definition">¶</a></dt>
+<dd><p>Compute rank of design matrix</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.OLSModel.score">
+<span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.OLSModel.score" title="Link to this definition">¶</a></dt>
+<dd><p>Gradient of the loglikelihood function at (beta, Y, nuisance).</p>
+<p>The graient of the loglikelihood function at (beta, Y, nuisance) is the
+score function.</p>
+<p>See <a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel.logL" title="nipy.algorithms.statistics.models.regression.OLSModel.logL"><code class="xref py py-meth docutils literal notranslate"><span class="pre">logL()</span></code></a> for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>beta</strong><span class="classifier">ndarray</span></dt><dd><p>The parameter estimates.  Must be of length df_model.</p>
+</dd>
+<dt><strong>Y</strong><span class="classifier">ndarray</span></dt><dd><p>The dependent variable.</p>
+</dd>
+<dt><strong>nuisance</strong><span class="classifier">dict, optional</span></dt><dd><p>A dict with key ‘sigma’, which is an optional estimate of sigma. If
+None, defaults to its maximum likelihood estimate (with beta fixed)
+as <code class="docutils literal notranslate"><span class="pre">sum((Y</span> <span class="pre">-</span> <span class="pre">X*beta)**2)</span> <span class="pre">/</span> <span class="pre">n</span></code>, where n=Y.shape[0], X=self.design.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>The gradient of the loglikelihood function.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.OLSModel.whiten">
+<span class="sig-name descname"><span class="pre">whiten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.OLSModel.whiten" title="Link to this definition">¶</a></dt>
+<dd><p>Whiten design matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array</span></dt><dd><p>design matrix</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>wX</strong><span class="classifier">array</span></dt><dd><p>This matrix is the matrix whose pseudoinverse is ultimately
+used in estimating the coefficients. For OLSModel, it is
+does nothing. For WLSmodel, ARmodel, it pre-applies
+a square root of the covariance matrix to X.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="regressionresults">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults" title="nipy.algorithms.statistics.models.regression.RegressionResults"><code class="xref py py-class docutils literal notranslate"><span class="pre">RegressionResults</span></code></a><a class="headerlink" href="#regressionresults" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.regression.</span></span><span class="sig-name descname"><span class="pre">RegressionResults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wresid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dispersion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="nipy.algorithms.statistics.models.model.html#nipy.algorithms.statistics.models.model.LikelihoodModelResults" title="nipy.algorithms.statistics.models.model.LikelihoodModelResults"><code class="xref py py-class docutils literal notranslate"><span class="pre">LikelihoodModelResults</span></code></a></p>
+<p>This class summarizes the fit of a linear regression model.</p>
+<p>It handles the output of contrasts, estimates of covariance, etc.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wresid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dispersion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>See LikelihoodModelResults constructor.</p>
+<p>The only difference is that the whitened Y and residual values
+are stored for a regression model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.AIC">
+<span class="sig-name descname"><span class="pre">AIC</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.AIC" title="Link to this definition">¶</a></dt>
+<dd><p>Akaike Information Criterion</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.BIC">
+<span class="sig-name descname"><span class="pre">BIC</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.BIC" title="Link to this definition">¶</a></dt>
+<dd><p>Schwarz’s Bayesian Information Criterion</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.F_overall">
+<span class="sig-name descname"><span class="pre">F_overall</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.F_overall" title="Link to this definition">¶</a></dt>
+<dd><p>Overall goodness of fit F test,
+comparing model to a model with just an intercept.
+If not an OLS model this is a pseudo-F.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.Fcontrast">
+<span class="sig-name descname"><span class="pre">Fcontrast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dispersion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invcov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.Fcontrast" title="Link to this definition">¶</a></dt>
+<dd><p>Compute an Fcontrast for a contrast matrix <cite>matrix</cite>.</p>
+<p>Here, <cite>matrix</cite> M is assumed to be non-singular. More precisely</p>
+<div class="math notranslate nohighlight">
+\[M pX pX' M'\]</div>
+<p>is assumed invertible. Here, <span class="math notranslate nohighlight">\(pX\)</span> is the generalized inverse of
+the design matrix of the model. There can be problems in non-OLS models
+where the rank of the covariance of the noise is not full.</p>
+<p>See the contrast module to see how to specify contrasts.  In particular,
+the matrices from these contrasts will always be non-singular in the
+sense above.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>matrix</strong><span class="classifier">1D array-like</span></dt><dd><p>contrast matrix</p>
+</dd>
+<dt><strong>dispersion</strong><span class="classifier">None or float, optional</span></dt><dd><p>If None, use <code class="docutils literal notranslate"><span class="pre">self.dispersion</span></code></p>
+</dd>
+<dt><strong>invcov</strong><span class="classifier">None or array, optional</span></dt><dd><p>Known inverse of variance covariance matrix.
+If None, calculate this matrix.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>f_res</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">FContrastResults</span></code> instance</span></dt><dd><p>with attributes F, df_den, df_num</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>For F contrasts, we now specify an effect and covariance</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.MSE">
+<span class="sig-name descname"><span class="pre">MSE</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.MSE" title="Link to this definition">¶</a></dt>
+<dd><p>Mean square (error)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.MSR">
+<span class="sig-name descname"><span class="pre">MSR</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.MSR" title="Link to this definition">¶</a></dt>
+<dd><p>Mean square (regression)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.MST">
+<span class="sig-name descname"><span class="pre">MST</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.MST" title="Link to this definition">¶</a></dt>
+<dd><p>Mean square (total)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.R2">
+<span class="sig-name descname"><span class="pre">R2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.R2" title="Link to this definition">¶</a></dt>
+<dd><p>Return the adjusted R^2 value for each row of the response Y.</p>
+<p class="rubric">Notes</p>
+<p>Changed to the textbook definition of R^2.</p>
+<p>See: Davidson and MacKinnon p 74</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.R2_adj">
+<span class="sig-name descname"><span class="pre">R2_adj</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.R2_adj" title="Link to this definition">¶</a></dt>
+<dd><p>Return the R^2 value for each row of the response Y.</p>
+<p class="rubric">Notes</p>
+<p>Changed to the textbook definition of R^2.</p>
+<p>See: Davidson and MacKinnon p 74</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.SSE">
+<span class="sig-name descname"><span class="pre">SSE</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.SSE" title="Link to this definition">¶</a></dt>
+<dd><p>Error sum of squares. If not from an OLS model this is “pseudo”-SSE.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.SSR">
+<span class="sig-name descname"><span class="pre">SSR</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.SSR" title="Link to this definition">¶</a></dt>
+<dd><p>Regression sum of squares</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.SST">
+<span class="sig-name descname"><span class="pre">SST</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.SST" title="Link to this definition">¶</a></dt>
+<dd><p>Total sum of squares. If not from an OLS model this is “pseudo”-SST.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.Tcontrast">
+<span class="sig-name descname"><span class="pre">Tcontrast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('t',</span> <span class="pre">'effect',</span> <span class="pre">'sd')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dispersion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.Tcontrast" title="Link to this definition">¶</a></dt>
+<dd><p>Compute a Tcontrast for a row vector <cite>matrix</cite></p>
+<p>To get the t-statistic for a single column, use the ‘t’ method.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>matrix</strong><span class="classifier">1D array-like</span></dt><dd><p>contrast matrix</p>
+</dd>
+<dt><strong>store</strong><span class="classifier">sequence, optional</span></dt><dd><p>components of t to store in results output object.  Defaults to all
+components (‘t’, ‘effect’, ‘sd’).</p>
+</dd>
+<dt><strong>dispersion</strong><span class="classifier">None or float, optional</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>res</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">TContrastResults</span></code> object</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.conf_int">
+<span class="sig-name descname"><span class="pre">conf_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dispersion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.conf_int" title="Link to this definition">¶</a></dt>
+<dd><p>The confidence interval of the specified theta estimates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>alpha</strong><span class="classifier">float, optional</span></dt><dd><p>The <cite>alpha</cite> level for the confidence interval.
+ie., <cite>alpha</cite> = .05 returns a 95% confidence interval.</p>
+</dd>
+<dt><strong>cols</strong><span class="classifier">tuple, optional</span></dt><dd><p><cite>cols</cite> specifies which confidence intervals to return</p>
+</dd>
+<dt><strong>dispersion</strong><span class="classifier">None or scalar</span></dt><dd><p>scale factor for the variance / covariance (see class docstring and
+<code class="docutils literal notranslate"><span class="pre">vcov</span></code> method docstring)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>cis</strong><span class="classifier">ndarray</span></dt><dd><p><cite>cis</cite> is shape <code class="docutils literal notranslate"><span class="pre">(len(cols),</span> <span class="pre">2)</span></code> where each row contains [lower,
+upper] for the given entry in <cite>cols</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Confidence intervals are two-tailed.
+TODO:
+tails : string, optional</p>
+<blockquote>
+<div><p><cite>tails</cite> can be “two”, “upper”, or “lower”</p>
+</div></blockquote>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">standard_normal</span> <span class="k">as</span> <span class="n">stan</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.algorithms.statistics.models.regression</span> <span class="kn">import</span> <span class="n">OLSModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">stan</span><span class="p">((</span><span class="mi">30</span><span class="p">,</span><span class="mi">1</span><span class="p">)),</span><span class="n">stan</span><span class="p">((</span><span class="mi">30</span><span class="p">,</span><span class="mi">1</span><span class="p">)),</span><span class="n">stan</span><span class="p">((</span><span class="mi">30</span><span class="p">,</span><span class="mi">1</span><span class="p">))))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">beta</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.25</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">7.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">beta</span><span class="p">)</span> <span class="o">+</span> <span class="n">stan</span><span class="p">((</span><span class="mi">30</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">OLSModel</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">confidence_intervals</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">conf_int</span><span class="p">(</span><span class="n">cols</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.logL">
+<span class="sig-name descname"><span class="pre">logL</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.logL" title="Link to this definition">¶</a></dt>
+<dd><p>The maximized log-likelihood</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.norm_resid">
+<span class="sig-name descname"><span class="pre">norm_resid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.norm_resid" title="Link to this definition">¶</a></dt>
+<dd><p>Residuals, normalized to have unit length.</p>
+<p class="rubric">Notes</p>
+<p>Is this supposed to return “standardized residuals,”
+residuals standardized
+to have mean zero and approximately unit variance?</p>
+<p>d_i = e_i / sqrt(MS_E)</p>
+<p>Where MS_E = SSE / (n - k)</p>
+<dl class="simple">
+<dt>See: Montgomery and Peck 3.2.1 p. 68</dt><dd><p>Davidson and MacKinnon 15.2 p 662</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.predicted">
+<span class="sig-name descname"><span class="pre">predicted</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.predicted" title="Link to this definition">¶</a></dt>
+<dd><p>Return linear predictor values from a design matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.resid">
+<span class="sig-name descname"><span class="pre">resid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.resid" title="Link to this definition">¶</a></dt>
+<dd><p>Residuals from the fit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.t">
+<span class="sig-name descname"><span class="pre">t</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.t" title="Link to this definition">¶</a></dt>
+<dd><p>Return the (Wald) t-statistic for a given parameter estimate.</p>
+<p>Use Tcontrast for more complicated (Wald) t-statistics.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.RegressionResults.vcov">
+<span class="sig-name descname"><span class="pre">vcov</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dispersion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.RegressionResults.vcov" title="Link to this definition">¶</a></dt>
+<dd><p>Variance/covariance matrix of linear contrast</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>matrix: (dim, self.theta.shape[0]) array, optional</strong></dt><dd><p>numerical contrast specification, where <code class="docutils literal notranslate"><span class="pre">dim</span></code> refers to the
+‘dimension’ of the contrast i.e. 1 for t contrasts, 1 or more
+for F contrasts.</p>
+</dd>
+<dt><strong>column: int, optional</strong></dt><dd><p>alternative way of specifying contrasts (column index)</p>
+</dd>
+<dt><strong>dispersion: float or (n_voxels,) array, optional</strong></dt><dd><p>value(s) for the dispersion parameters</p>
+</dd>
+<dt><strong>other: (dim, self.theta.shape[0]) array, optional</strong></dt><dd><p>alternative contrast specification (?)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>cov: (dim, dim) or (n_voxels, dim, dim) array</dt><dd><p>the estimated covariance matrix/matrices</p>
+</dd>
+<dt>Returns the variance/covariance matrix of a linear contrast of the</dt><dd></dd>
+<dt>estimates of theta, multiplied by <cite>dispersion</cite> which will often be an</dt><dd></dd>
+<dt>estimate of <cite>dispersion</cite>, like, sigma^2.</dt><dd></dd>
+<dt>The covariance of interest is either specified as a (set of) column(s)</dt><dd></dd>
+<dt>or a matrix.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="wlsmodel">
+<h3><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.WLSModel" title="nipy.algorithms.statistics.models.regression.WLSModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">WLSModel</span></code></a><a class="headerlink" href="#wlsmodel" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.WLSModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.regression.</span></span><span class="sig-name descname"><span class="pre">WLSModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.WLSModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel" title="nipy.algorithms.statistics.models.regression.OLSModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OLSModel</span></code></a></p>
+<p>A regression model with diagonal but non-identity covariance structure.</p>
+<p>The weights are presumed to be (proportional to the) inverse
+of the variance of the observations.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.algorithms.statistics.api</span> <span class="kn">import</span> <span class="n">Term</span><span class="p">,</span> <span class="n">Formula</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rec</span><span class="o">.</span><span class="n">fromarrays</span><span class="p">(([</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">)),</span>
+<span class="gp">... </span>                         <span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">Formula</span><span class="p">([</span><span class="n">Term</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">),</span> <span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dmtx</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">design</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">return_float</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">WLSModel</span><span class="p">(</span><span class="n">dmtx</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span><span class="o">.</span><span class="n">theta</span>
+<span class="go">array([ 0.0952381 ,  2.91666667])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
+<span class="go">array([ 0.35684428,  2.0652652 ])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">Tcontrast</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>  
+<span class="go">&lt;T contrast: effect=2.91666666667, sd=1.41224801095, t=2.06526519708,</span>
+<span class="go">df_den=5&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">Fcontrast</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>  
+<span class="go">&lt;F contrast: F=26.9986072423, df_den=5, df_num=2&gt;</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.WLSModel.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.WLSModel.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>design</strong><span class="classifier">array-like</span></dt><dd><p>This is your design matrix.
+Data are assumed to be column ordered with
+observations in rows.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.WLSModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.WLSModel.fit" title="Link to this definition">¶</a></dt>
+<dd><p>Fit model to data <cite>Y</cite></p>
+<p>Full fit of the model including estimate of covariance matrix,
+(whitened) residuals and scale.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>Y</strong><span class="classifier">array-like</span></dt><dd><p>The dependent variable for the Least Squares problem.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fit</strong><span class="classifier">RegressionResults</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.WLSModel.has_intercept">
+<span class="sig-name descname"><span class="pre">has_intercept</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.WLSModel.has_intercept" title="Link to this definition">¶</a></dt>
+<dd><p>Check if column of 1s is in column space of design</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.WLSModel.information">
+<span class="sig-name descname"><span class="pre">information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.WLSModel.information" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the information matrix at (beta, Y, nuisance).</p>
+<p>See logL for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>beta</strong><span class="classifier">ndarray</span></dt><dd><p>The parameter estimates.  Must be of length df_model.</p>
+</dd>
+<dt><strong>nuisance</strong><span class="classifier">dict</span></dt><dd><p>A dict with key ‘sigma’, which is an estimate of sigma. If None,
+defaults to its maximum likelihood estimate (with beta fixed) as
+<code class="docutils literal notranslate"><span class="pre">sum((Y</span> <span class="pre">-</span> <span class="pre">X*beta)**2)</span> <span class="pre">/</span> <span class="pre">n</span></code> where n=Y.shape[0], X=self.design.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>info</strong><span class="classifier">array</span></dt><dd><p>The information matrix, the negative of the inverse of the Hessian
+of the of the log-likelihood function evaluated at (theta, Y,
+nuisance).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.WLSModel.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.WLSModel.initialize" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize (possibly re-initialize) a Model instance.</p>
+<p>For instance, the design matrix of a linear model may change and some
+things must be recomputed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.WLSModel.logL">
+<span class="sig-name descname"><span class="pre">logL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.WLSModel.logL" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the value of the loglikelihood function at beta.</p>
+<p>Given the whitened design matrix, the loglikelihood is evaluated
+at the parameter vector, beta, for the dependent variable, Y
+and the nuisance parameter, sigma.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>beta</strong><span class="classifier">ndarray</span></dt><dd><p>The parameter estimates.  Must be of length df_model.</p>
+</dd>
+<dt><strong>Y</strong><span class="classifier">ndarray</span></dt><dd><p>The dependent variable</p>
+</dd>
+<dt><strong>nuisance</strong><span class="classifier">dict, optional</span></dt><dd><p>A dict with key ‘sigma’, which is an optional estimate of sigma. If
+None, defaults to its maximum likelihood estimate (with beta fixed)
+as <code class="docutils literal notranslate"><span class="pre">sum((Y</span> <span class="pre">-</span> <span class="pre">X*beta)**2)</span> <span class="pre">/</span> <span class="pre">n</span></code>, where n=Y.shape[0], X=self.design.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>loglf</strong><span class="classifier">float</span></dt><dd><p>The value of the loglikelihood function.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The log-Likelihood Function is defined as</p>
+<div class="math notranslate nohighlight">
+\[\ell(\beta,\sigma,Y)=
+-\frac{n}{2}\log(2\pi\sigma^2) - \|Y-X\beta\|^2/(2\sigma^2)\]</div>
+<p>The parameter <span class="math notranslate nohighlight">\(\sigma\)</span> above is what is sometimes referred to as a
+nuisance parameter. That is, the likelihood is considered as a function
+of <span class="math notranslate nohighlight">\(\beta\)</span>, but to evaluate it, a value of <span class="math notranslate nohighlight">\(\sigma\)</span> is
+needed.</p>
+<p>If <span class="math notranslate nohighlight">\(\sigma\)</span> is not provided, then its maximum likelihood estimate:</p>
+<div class="math notranslate nohighlight">
+\[\hat{\sigma}(\beta) = \frac{\text{SSE}(\beta)}{n}\]</div>
+<p>is plugged in. This likelihood is now a function of only <span class="math notranslate nohighlight">\(\beta\)</span>
+and is technically referred to as a profile-likelihood.</p>
+<p class="rubric">References</p>
+<div role="list" class="citation-list">
+<div class="citation" id="r38beff7571a4-1" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<ol class="upperalpha simple" start="23">
+<li><p>Green.  “Econometric Analysis,” 5th ed., Pearson, 2003.</p></li>
+</ol>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.WLSModel.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.WLSModel.predict" title="Link to this definition">¶</a></dt>
+<dd><p>After a model has been fit, results are (assumed to be) stored
+in self.results, which itself should have a predict method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.WLSModel.rank">
+<span class="sig-name descname"><span class="pre">rank</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.WLSModel.rank" title="Link to this definition">¶</a></dt>
+<dd><p>Compute rank of design matrix</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.WLSModel.score">
+<span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nuisance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.WLSModel.score" title="Link to this definition">¶</a></dt>
+<dd><p>Gradient of the loglikelihood function at (beta, Y, nuisance).</p>
+<p>The graient of the loglikelihood function at (beta, Y, nuisance) is the
+score function.</p>
+<p>See <a class="reference internal" href="#nipy.algorithms.statistics.models.regression.WLSModel.logL" title="nipy.algorithms.statistics.models.regression.WLSModel.logL"><code class="xref py py-meth docutils literal notranslate"><span class="pre">logL()</span></code></a> for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>beta</strong><span class="classifier">ndarray</span></dt><dd><p>The parameter estimates.  Must be of length df_model.</p>
+</dd>
+<dt><strong>Y</strong><span class="classifier">ndarray</span></dt><dd><p>The dependent variable.</p>
+</dd>
+<dt><strong>nuisance</strong><span class="classifier">dict, optional</span></dt><dd><p>A dict with key ‘sigma’, which is an optional estimate of sigma. If
+None, defaults to its maximum likelihood estimate (with beta fixed)
+as <code class="docutils literal notranslate"><span class="pre">sum((Y</span> <span class="pre">-</span> <span class="pre">X*beta)**2)</span> <span class="pre">/</span> <span class="pre">n</span></code>, where n=Y.shape[0], X=self.design.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>The gradient of the loglikelihood function.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.WLSModel.whiten">
+<span class="sig-name descname"><span class="pre">whiten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.WLSModel.whiten" title="Link to this definition">¶</a></dt>
+<dd><p>Whitener for WLS model, multiplies by sqrt(self.weights)</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ar_bias_correct">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.regression.</span></span><span class="sig-name descname"><span class="pre">ar_bias_correct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invM</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ar_bias_correct" title="Link to this definition">¶</a></dt>
+<dd><p>Apply bias correction in calculating AR(p) coefficients from <cite>results</cite></p>
+<p>There is a slight bias in the rho estimates on residuals due to the
+correlations induced in the residuals by fitting a linear model.  See
+<a class="reference internal" href="#rd0e092b0275a-worsley2002" id="id5">[Worsley2002]</a>.</p>
+<p>This routine implements the bias correction described in appendix A.1 of
+<a class="reference internal" href="#rd0e092b0275a-worsley2002" id="id6">[Worsley2002]</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>results</strong><span class="classifier">ndarray or results object</span></dt><dd><p>If ndarray, assume these are residuals, from a simple model.  If a
+results object, with attribute <code class="docutils literal notranslate"><span class="pre">resid</span></code>, then use these for the
+residuals. See Notes for more detail</p>
+</dd>
+<dt><strong>order</strong><span class="classifier">int</span></dt><dd><p>Order <code class="docutils literal notranslate"><span class="pre">p</span></code> of AR(p) model</p>
+</dd>
+<dt><strong>invM</strong><span class="classifier">None or array</span></dt><dd><p>Known bias correcting matrix for covariance.  If None, calculate from
+<code class="docutils literal notranslate"><span class="pre">results.model</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>rho</strong><span class="classifier">array</span></dt><dd><p>Bias-corrected AR(p) coefficients</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If <cite>results</cite> has attributes <code class="docutils literal notranslate"><span class="pre">resid</span></code> and <code class="docutils literal notranslate"><span class="pre">scale</span></code>, then assume <code class="docutils literal notranslate"><span class="pre">scale</span></code>
+has come from a fit of a potentially customized model, and we use that for
+the sum of squared residuals.  In this case we also need
+<code class="docutils literal notranslate"><span class="pre">results.df_resid</span></code>.  Otherwise we assume this is a simple Gaussian model,
+like OLS, and take the simple sum of squares of the residuals.</p>
+<p class="rubric">References</p>
+<div role="list" class="citation-list">
+<div class="citation" id="rd0e092b0275a-worsley2002" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>Worsley2002<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id5">1</a>,<a role="doc-backlink" href="#id6">2</a>)</span>
+<p>K.J. Worsley, C.H. Liao, J. Aston, V. Petre, G.H. Duncan,
+F. Morales, A.C. Evans (2002) A General Statistical Analysis for fMRI
+Data.  Neuroimage 15:1:15</p>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.ar_bias_corrector">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.regression.</span></span><span class="sig-name descname"><span class="pre">ar_bias_corrector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.ar_bias_corrector" title="Link to this definition">¶</a></dt>
+<dd><p>Return bias correcting matrix for <cite>design</cite> and AR order <cite>order</cite></p>
+<p>There is a slight bias in the rho estimates on residuals due to the
+correlations induced in the residuals by fitting a linear model.  See
+<a class="reference internal" href="#rf61dcaa400dd-worsley2002" id="id8">[Worsley2002]</a>.</p>
+<p>This routine implements the bias correction described in appendix A.1 of
+<a class="reference internal" href="#rf61dcaa400dd-worsley2002" id="id9">[Worsley2002]</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>design</strong><span class="classifier">array</span></dt><dd><p>Design matrix</p>
+</dd>
+<dt><strong>calc_beta</strong><span class="classifier">array</span></dt><dd><p>Moore-Penrose pseudoinverse of the (maybe) whitened design matrix.
+This is the matrix that, when applied to the (maybe whitened) data,
+produces the betas.</p>
+</dd>
+<dt><strong>order</strong><span class="classifier">int, optional</span></dt><dd><p>Order p of AR(p) process</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>invM</strong><span class="classifier">array</span></dt><dd><p>Matrix to bias correct estimated covariance matrix
+in calculating the AR coefficients</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<div role="list" class="citation-list">
+<div class="citation" id="rf61dcaa400dd-worsley2002" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>Worsley2002<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id8">1</a>,<a role="doc-backlink" href="#id9">2</a>)</span>
+<p>K.J. Worsley, C.H. Liao, J. Aston, V. Petre, G.H. Duncan,
+F. Morales, A.C. Evans (2002) A General Statistical Analysis for fMRI
+Data.  Neuroimage 15:1:15</p>
+</div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.isestimable">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.regression.</span></span><span class="sig-name descname"><span class="pre">isestimable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.isestimable" title="Link to this definition">¶</a></dt>
+<dd><p>True if (Q, P) contrast <cite>C</cite> is estimable for (N, P) design <cite>D</cite></p>
+<p>From an Q x P contrast matrix <cite>C</cite> and an N x P design matrix <cite>D</cite>, checks if
+the contrast <cite>C</cite> is estimable by looking at the rank of <code class="docutils literal notranslate"><span class="pre">vstack([C,D])</span></code>
+and verifying it is the same as the rank of <cite>D</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>C</strong><span class="classifier">(Q, P) array-like</span></dt><dd><p>contrast matrix. If <cite>C</cite> has is 1 dimensional assume shape (1, P)</p>
+</dd>
+<dt><strong>D: (N, P) array-like</strong></dt><dd><p>design matrix</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>tf</strong><span class="classifier">bool</span></dt><dd><p>True if the contrast <cite>C</cite> is estimable on design <cite>D</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+<span class="gp">... </span>              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="gp">... </span>              <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span><span class="o">.</span><span class="n">T</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">isestimable</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">D</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">isestimable</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">D</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.regression.yule_walker">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.regression.</span></span><span class="sig-name descname"><span class="pre">yule_walker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'unbiased'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.regression.yule_walker" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate AR(p) parameters from a sequence X using Yule-Walker equation.</p>
+<p>unbiased or maximum-likelihood estimator (mle)</p>
+<p>See, for example:</p>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Autoregressive_moving_average_model">http://en.wikipedia.org/wiki/Autoregressive_moving_average_model</a></p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">ndarray of shape(n)</span></dt><dd></dd>
+<dt><strong>order</strong><span class="classifier">int, optional</span></dt><dd><p>Order of AR process.</p>
+</dd>
+<dt><strong>method</strong><span class="classifier">str, optional</span></dt><dd><p>Method can be “unbiased” or “mle” and this determines denominator in
+estimate of autocorrelation function (ACF) at lag k. If “mle”, the
+denominator is n=X.shape[0], if “unbiased” the denominator is n-k.</p>
+</dd>
+<dt><strong>df</strong><span class="classifier">int, optional</span></dt><dd><p>Specifies the degrees of freedom. If df is supplied, then it is assumed
+the X has df degrees of freedom rather than n.</p>
+</dd>
+<dt><strong>inv</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to return the inverse of the R matrix (see code)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>rho</strong><span class="classifier">(<cite>order</cite>,) ndarray</span></dt><dd></dd>
+<dt><strong>sigma</strong><span class="classifier">int</span></dt><dd><p>standard deviation of the residuals after fit</p>
+</dd>
+<dt><strong>R_inv</strong><span class="classifier">ndarray</span></dt><dd><p>If <cite>inv</cite> is True, also return the inverse of the R matrix</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>See also
+<a class="reference external" href="http://en.wikipedia.org/wiki/AR_model#Calculation_of_the_AR_parameters">http://en.wikipedia.org/wiki/AR_model#Calculation_of_the_AR_parameters</a></p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.statistics.models.regression</a><ul>
+<li><a class="reference internal" href="#module-algorithms-statistics-models-regression">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.models.regression</span></code></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#arestimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AREstimator</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.AREstimator"><code class="docutils literal notranslate"><span class="pre">AREstimator</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.AREstimator.__init__"><code class="docutils literal notranslate"><span class="pre">AREstimator.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#armodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ARModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel"><code class="docutils literal notranslate"><span class="pre">ARModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel.__init__"><code class="docutils literal notranslate"><span class="pre">ARModel.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel.fit"><code class="docutils literal notranslate"><span class="pre">ARModel.fit()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel.has_intercept"><code class="docutils literal notranslate"><span class="pre">ARModel.has_intercept()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel.information"><code class="docutils literal notranslate"><span class="pre">ARModel.information()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel.initialize"><code class="docutils literal notranslate"><span class="pre">ARModel.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel.iterative_fit"><code class="docutils literal notranslate"><span class="pre">ARModel.iterative_fit()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel.logL"><code class="docutils literal notranslate"><span class="pre">ARModel.logL()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel.predict"><code class="docutils literal notranslate"><span class="pre">ARModel.predict()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel.rank"><code class="docutils literal notranslate"><span class="pre">ARModel.rank()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel.score"><code class="docutils literal notranslate"><span class="pre">ARModel.score()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ARModel.whiten"><code class="docutils literal notranslate"><span class="pre">ARModel.whiten()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#glsmodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GLSModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.GLSModel"><code class="docutils literal notranslate"><span class="pre">GLSModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.GLSModel.__init__"><code class="docutils literal notranslate"><span class="pre">GLSModel.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.GLSModel.fit"><code class="docutils literal notranslate"><span class="pre">GLSModel.fit()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.GLSModel.has_intercept"><code class="docutils literal notranslate"><span class="pre">GLSModel.has_intercept()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.GLSModel.information"><code class="docutils literal notranslate"><span class="pre">GLSModel.information()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.GLSModel.initialize"><code class="docutils literal notranslate"><span class="pre">GLSModel.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.GLSModel.logL"><code class="docutils literal notranslate"><span class="pre">GLSModel.logL()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.GLSModel.predict"><code class="docutils literal notranslate"><span class="pre">GLSModel.predict()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.GLSModel.rank"><code class="docutils literal notranslate"><span class="pre">GLSModel.rank()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.GLSModel.score"><code class="docutils literal notranslate"><span class="pre">GLSModel.score()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.GLSModel.whiten"><code class="docutils literal notranslate"><span class="pre">GLSModel.whiten()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#olsmodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OLSModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel"><code class="docutils literal notranslate"><span class="pre">OLSModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel.__init__"><code class="docutils literal notranslate"><span class="pre">OLSModel.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel.fit"><code class="docutils literal notranslate"><span class="pre">OLSModel.fit()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel.has_intercept"><code class="docutils literal notranslate"><span class="pre">OLSModel.has_intercept()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel.information"><code class="docutils literal notranslate"><span class="pre">OLSModel.information()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel.initialize"><code class="docutils literal notranslate"><span class="pre">OLSModel.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel.logL"><code class="docutils literal notranslate"><span class="pre">OLSModel.logL()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel.predict"><code class="docutils literal notranslate"><span class="pre">OLSModel.predict()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel.rank"><code class="docutils literal notranslate"><span class="pre">OLSModel.rank()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel.score"><code class="docutils literal notranslate"><span class="pre">OLSModel.score()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.OLSModel.whiten"><code class="docutils literal notranslate"><span class="pre">OLSModel.whiten()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#regressionresults"><code class="xref py py-class docutils literal notranslate"><span class="pre">RegressionResults</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults"><code class="docutils literal notranslate"><span class="pre">RegressionResults</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.__init__"><code class="docutils literal notranslate"><span class="pre">RegressionResults.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.AIC"><code class="docutils literal notranslate"><span class="pre">RegressionResults.AIC()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.BIC"><code class="docutils literal notranslate"><span class="pre">RegressionResults.BIC()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.F_overall"><code class="docutils literal notranslate"><span class="pre">RegressionResults.F_overall()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.Fcontrast"><code class="docutils literal notranslate"><span class="pre">RegressionResults.Fcontrast()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.MSE"><code class="docutils literal notranslate"><span class="pre">RegressionResults.MSE()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.MSR"><code class="docutils literal notranslate"><span class="pre">RegressionResults.MSR()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.MST"><code class="docutils literal notranslate"><span class="pre">RegressionResults.MST()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.R2"><code class="docutils literal notranslate"><span class="pre">RegressionResults.R2()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.R2_adj"><code class="docutils literal notranslate"><span class="pre">RegressionResults.R2_adj()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.SSE"><code class="docutils literal notranslate"><span class="pre">RegressionResults.SSE()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.SSR"><code class="docutils literal notranslate"><span class="pre">RegressionResults.SSR()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.SST"><code class="docutils literal notranslate"><span class="pre">RegressionResults.SST()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.Tcontrast"><code class="docutils literal notranslate"><span class="pre">RegressionResults.Tcontrast()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.conf_int"><code class="docutils literal notranslate"><span class="pre">RegressionResults.conf_int()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.logL"><code class="docutils literal notranslate"><span class="pre">RegressionResults.logL()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.norm_resid"><code class="docutils literal notranslate"><span class="pre">RegressionResults.norm_resid()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.predicted"><code class="docutils literal notranslate"><span class="pre">RegressionResults.predicted()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.resid"><code class="docutils literal notranslate"><span class="pre">RegressionResults.resid()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.t"><code class="docutils literal notranslate"><span class="pre">RegressionResults.t()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.RegressionResults.vcov"><code class="docutils literal notranslate"><span class="pre">RegressionResults.vcov()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#wlsmodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">WLSModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.WLSModel"><code class="docutils literal notranslate"><span class="pre">WLSModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.WLSModel.__init__"><code class="docutils literal notranslate"><span class="pre">WLSModel.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.WLSModel.fit"><code class="docutils literal notranslate"><span class="pre">WLSModel.fit()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.WLSModel.has_intercept"><code class="docutils literal notranslate"><span class="pre">WLSModel.has_intercept()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.WLSModel.information"><code class="docutils literal notranslate"><span class="pre">WLSModel.information()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.WLSModel.initialize"><code class="docutils literal notranslate"><span class="pre">WLSModel.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.WLSModel.logL"><code class="docutils literal notranslate"><span class="pre">WLSModel.logL()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.WLSModel.predict"><code class="docutils literal notranslate"><span class="pre">WLSModel.predict()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.WLSModel.rank"><code class="docutils literal notranslate"><span class="pre">WLSModel.rank()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.WLSModel.score"><code class="docutils literal notranslate"><span class="pre">WLSModel.score()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.WLSModel.whiten"><code class="docutils literal notranslate"><span class="pre">WLSModel.whiten()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ar_bias_correct"><code class="docutils literal notranslate"><span class="pre">ar_bias_correct()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.ar_bias_corrector"><code class="docutils literal notranslate"><span class="pre">ar_bias_corrector()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.isestimable"><code class="docutils literal notranslate"><span class="pre">isestimable()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.regression.yule_walker"><code class="docutils literal notranslate"><span class="pre">yule_walker()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.models.nlsmodel.html"
+                          title="previous chapter">algorithms.statistics.models.nlsmodel</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.models.utils.html"
+                          title="next chapter">algorithms.statistics.models.utils</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.statistics.models.regression.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.utils.html" title="algorithms.statistics.models.utils"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.nlsmodel.html" title="algorithms.statistics.models.nlsmodel"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

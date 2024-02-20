@@ -1,0 +1,109 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+labs.viz_tools.slicers
+======================
+
+Module: :mod:`labs.viz_tools.slicers`
+-------------------------------------
+Inheritance diagram for ``nipy.labs.viz_tools.slicers``:
+
+.. inheritance-diagram:: nipy.labs.viz_tools.slicers 
+   :parts: 3
+
+.. automodule:: nipy.labs.viz_tools.slicers
+
+.. currentmodule:: nipy.labs.viz_tools.slicers
+
+Classes
+-------
+
+:class:`BaseSlicer`
+~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: BaseSlicer
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`BaseStackedSlicer`
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: BaseStackedSlicer
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`CutAxes`
+~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: CutAxes
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`OrthoSlicer`
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: OrthoSlicer
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`XSlicer`
+~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: XSlicer
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`YSlicer`
+~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: YSlicer
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`ZSlicer`
+~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: ZSlicer
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Function
+--------
+
+
+.. autofunction:: nipy.labs.viz_tools.slicers.demo_ortho_slicer
+

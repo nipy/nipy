@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <script src="../../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Commit message codes" href="../commit_codes.html" />
+    <link rel="prev" title="Maintainer workflow" href="maintainer_workflow.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../../index.html">
+  <img src="../../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../commit_codes.html" title="Commit message codes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="maintainer_workflow.html" title="Maintainer workflow"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../index.html" >Development Guidelines</a> &#187;</li>
+          <li class="nav-item nav-item-4"><a href="index.html" accesskey="U">Working with <em>nipy</em> source code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="git-resources">
+<span id="id1"></span><h1>git resources<a class="headerlink" href="#git-resources" title="Link to this heading">¶</a></h1>
+<section id="tutorials-and-summaries">
+<h2>Tutorials and summaries<a class="headerlink" href="#tutorials-and-summaries" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://help.github.com">github help</a> has an excellent series of how-to guides.</p></li>
+<li><p>The <a class="reference external" href="https://progit.org/">pro git book</a> is a good in-depth book on git.</p></li>
+<li><p>A <a class="reference external" href="https://help.github.com/git-cheat-sheets/">git cheat sheet</a> is a page giving summaries of common commands.</p></li>
+<li><p>The <a class="reference external" href="https://schacon.github.io/git/user-manual.html">git user manual</a></p></li>
+<li><p>The <a class="reference external" href="https://schacon.github.io/git/gittutorial.html">git tutorial</a></p></li>
+<li><p>The <a class="reference external" href="https://git-scm.com/book/en/v2">git community book</a></p></li>
+<li><p><a class="reference external" href="http://gitready.com/">git ready</a> — a nice series of tutorials</p></li>
+<li><p><a class="reference external" href="http://www-cs-students.stanford.edu/~blynn/gitmagic/index.html">git magic</a> — extended introduction with intermediate detail</p></li>
+<li><p>The <a class="reference external" href="http://tom.preston-werner.com/2009/05/19/the-git-parable.html">git parable</a> is an easy read explaining the concepts behind git.</p></li>
+<li><p><a class="reference external" href="https://matthew-brett.github.io/pydagogue/foundation.html">git foundation</a> expands on the <a class="reference external" href="http://tom.preston-werner.com/2009/05/19/the-git-parable.html">git parable</a>.</p></li>
+<li><p>Fernando Perez’ git page — <a class="reference external" href="http://www.fperez.org/py4science/git.html">Fernando’s git page</a> — many
+links and tips</p></li>
+<li><p>A good but technical page on <a class="reference external" href="https://www.sbf5.com/~cduan/technical/git/">git concepts</a></p></li>
+<li><p><a class="reference external" href="https://git-scm.com/course/svn.html">git svn crash course</a>: git for those of us used to <a class="reference external" href="http://subversion.tigris.org/">subversion</a></p></li>
+</ul>
+</section>
+<section id="advanced-git-workflow">
+<h2>Advanced git workflow<a class="headerlink" href="#advanced-git-workflow" title="Link to this heading">¶</a></h2>
+<p>There are many ways of working with git; here are some posts on the
+rules of thumb that other projects have come up with:</p>
+<ul class="simple">
+<li><p>Linus Torvalds on <a class="reference external" href="https://web.archive.org/web/20090224195437/http://kerneltrap.org/Linux/Git_Management">git management</a></p></li>
+<li><p>Linus Torvalds on <a class="reference external" href="https://www.mail-archive.com/dri-devel&#64;lists.sourceforge.net/msg39091.html">linux git workflow</a> .  Summary; use the git tools
+to make the history of your edits as clean as possible; merge from
+upstream edits as little as possible in branches where you are doing
+active development.</p></li>
+</ul>
+</section>
+<section id="manual-pages-online">
+<h2>Manual pages online<a class="headerlink" href="#manual-pages-online" title="Link to this heading">¶</a></h2>
+<p>You can get these on your own machine with (e.g) <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">help</span> <span class="pre">push</span></code> or
+(same thing) <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">push</span> <span class="pre">--help</span></code>, but, for convenience, here are the
+online manual pages for some common commands:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://schacon.github.io/git/git-add.html">git add</a></p></li>
+<li><p><a class="reference external" href="https://schacon.github.io/git/git-branch.html">git branch</a></p></li>
+<li><p><a class="reference external" href="https://schacon.github.io/git/git-checkout.html">git checkout</a></p></li>
+<li><p><a class="reference external" href="https://schacon.github.io/git/git-clone.html">git clone</a></p></li>
+<li><p><a class="reference external" href="https://schacon.github.io/git/git-commit.html">git commit</a></p></li>
+<li><p><a class="reference external" href="https://schacon.github.io/git/git-config.html">git config</a></p></li>
+<li><p><a class="reference external" href="https://schacon.github.io/git/git-diff.html">git diff</a></p></li>
+<li><p><a class="reference external" href="https://schacon.github.io/git/git-log.html">git log</a></p></li>
+<li><p><a class="reference external" href="https://schacon.github.io/git/git-pull.html">git pull</a></p></li>
+<li><p><a class="reference external" href="https://schacon.github.io/git/git-push.html">git push</a></p></li>
+<li><p><a class="reference external" href="https://schacon.github.io/git/git-remote.html">git remote</a></p></li>
+<li><p><a class="reference external" href="https://schacon.github.io/git/git-status.html">git status</a></p></li>
+</ul>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../../documentation.html">Documentation</a></li>
+    <li><a href="../../index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">git resources</a><ul>
+<li><a class="reference internal" href="#tutorials-and-summaries">Tutorials and summaries</a></li>
+<li><a class="reference internal" href="#advanced-git-workflow">Advanced git workflow</a></li>
+<li><a class="reference internal" href="#manual-pages-online">Manual pages online</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="maintainer_workflow.html"
+                          title="previous chapter">Maintainer workflow</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../commit_codes.html"
+                          title="next chapter">Commit message codes</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/devel/guidelines/gitwash/git_resources.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../commit_codes.html" title="Commit message codes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="maintainer_workflow.html" title="Maintainer workflow"
+             >previous</a> |</li>
+  <li><a href="../../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../index.html" >Development Guidelines</a> &#187;</li>
+          <li class="nav-item nav-item-4"><a href="index.html" >Working with <em>nipy</em> source code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+.. _about_nipy:
+
+====
+NIPY
+====
+
+NIPY is a python project for analysis of structural and functional
+neuroimaging data.
+
+Please see our :ref:`documentation-main` and feel free to hold us to the
+high ideals of :ref:`nipy-mission`.
+
+*The NIPY team*
+
+.. We need the following toctree directive to include the documentation
+.. in the document hierarchy - see http://sphinx.pocoo.org/concepts.html
+.. toctree::
+    :hidden:
+
+    documentation
+    devel/code_discussions/coordmap_notes
+    devel/guidelines/compiling_windows
+    devel/images
+    devel/install/windows_scipy_build
+    faq/johns_bsd_pitch
+    references/brainpy_abstract
+    users/install_data
+    users/math_coordmap

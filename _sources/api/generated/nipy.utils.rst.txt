@@ -1,0 +1,27 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+utils
+=====
+
+Module: :mod:`utils`
+--------------------
+Inheritance diagram for ``nipy.utils``:
+
+.. inheritance-diagram:: nipy.utils 
+   :parts: 3
+
+.. automodule:: nipy.utils
+
+.. currentmodule:: nipy.utils
+
+:class:`VisibleDeprecationWarning`
+----------------------------------
+
+
+.. autoclass:: VisibleDeprecationWarning
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__

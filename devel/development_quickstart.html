@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Developer installs for different distributions" href="install/index.html" />
+    <link rel="prev" title="Developer Guide" href="index.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../index.html">
+  <img src="../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install/index.html" title="Developer installs for different distributions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Developer Guide"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Developer Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="development-quickstart">
+<span id="id1"></span><h1>Development quickstart<a class="headerlink" href="#development-quickstart" title="Link to this heading">¶</a></h1>
+<section id="source-code">
+<h2>Source Code<a class="headerlink" href="#source-code" title="Link to this heading">¶</a></h2>
+<p>NIPY uses <a class="reference external" href="http://github.com">github</a> for our code hosting.  For immediate access to
+the source code, see the <a class="reference external" href="http://github.com/nipy/nipy">nipy github</a> site.</p>
+</section>
+<section id="checking-out-the-latest-version">
+<h2>Checking out the latest version<a class="headerlink" href="#checking-out-the-latest-version" title="Link to this heading">¶</a></h2>
+<p>To check out the latest version of nipy you need <a class="reference external" href="https://git-scm.com">git</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">nipy</span><span class="o">/</span><span class="n">nipy</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>There are two methods to install a development version of nipy.  For
+both methods, build the extensions in place:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">--</span><span class="n">inplace</span>
+</pre></div>
+</div>
+<p>Then you can either:</p>
+<ol class="arabic simple">
+<li><p>Create a symbolic link in your <em>site-packages</em> directory to the inplace
+build of your source.  The advantage of this method is it does not require
+any modifications of your PYTHONPATH.</p></li>
+<li><p>Place the source directory in your PYTHONPATH.</p></li>
+</ol>
+<p>With either method, all of the modifications made to your source tree
+will be picked up when nipy is imported.</p>
+</section>
+<section id="getting-data-files">
+<h2>Getting data files<a class="headerlink" href="#getting-data-files" title="Link to this heading">¶</a></h2>
+<p>See <span class="xref std std-ref">data_files</span>.</p>
+</section>
+<section id="guidelines">
+<h2>Guidelines<a class="headerlink" href="#guidelines" title="Link to this heading">¶</a></h2>
+<p>We have adopted many developer guidelines in an effort to make
+development easy, and the source code readable, consistent and robust.
+Many of our guidelines are adopted from the <a class="reference external" href="http://www.scipy.org">scipy</a> / <a class="reference external" href="http://numpy.scipy.org">numpy</a> community.
+We welcome new developers to the effort, if you’re interested in
+developing code or documentation please join the <a class="reference external" href="https://mail.python.org/mailman/listinfo/neuroimaging">nipy mailing list</a>
+and introduce yourself.  If you plan to do any code development, we
+ask that you take a look at the following guidelines.  We do our best
+to follow these guidelines ourselves:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="guidelines/howto_document.html#howto-document"><span class="std std-ref">How to write documentation</span></a> : Documentation is critical.  This document
+describes the documentation style, syntax, and tools we use.</p></li>
+<li><p><a class="reference external" href="http://projects.scipy.org/scipy/numpy/wiki/CodingStyleGuidelines">Numpy/Scipy Coding Style Guidelines:</a>
+This is the coding style we strive to maintain.</p></li>
+<li><p><a class="reference internal" href="guidelines/gitwash/development_workflow.html#development-workflow"><span class="std std-ref">Development workflow</span></a> : This describes our process for version control.</p></li>
+<li><p><a class="reference internal" href="guidelines/testing.html#testing"><span class="std std-ref">Testing</span></a> : We’ve adopted a rigorous testing framework.</p></li>
+<li><p><a class="reference internal" href="guidelines/optimization.html#optimization"><span class="std std-ref">Optimization</span></a>: “premature optimization is the root of all
+evil.”</p></li>
+</ul>
+</section>
+<section id="submitting-a-patch">
+<span id="trunk-download"></span><h2>Submitting a patch<a class="headerlink" href="#submitting-a-patch" title="Link to this heading">¶</a></h2>
+<p>The preferred method to submit a patch is to create a branch of nipy on
+your machine, modify the code and make a patch or patches.  Then email
+the <a class="reference external" href="https://mail.python.org/mailman/listinfo/neuroimaging">nipy mailing list</a> and we will review your code and hopefully
+apply (merge) your patch.  See the instructions for
+<a class="reference internal" href="guidelines/gitwash/patching.html#making-patches"><span class="std std-ref">Making patches</span></a>.</p>
+<p>If you do not wish to use git and github, please feel free to
+file a bug report and submit a patch or email the
+<a class="reference external" href="https://mail.python.org/mailman/listinfo/neuroimaging">nipy mailing list</a>.</p>
+</section>
+<section id="bug-reports">
+<h2>Bug reports<a class="headerlink" href="#bug-reports" title="Link to this heading">¶</a></h2>
+<p>If you find a bug in nipy, please submit a bug report at the <a class="reference external" href="http://github.com/nipy/nipy/issues">nipy
+bugs</a> github site so that we can fix it.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../documentation.html">Documentation</a></li>
+    <li><a href="index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Development quickstart</a><ul>
+<li><a class="reference internal" href="#source-code">Source Code</a></li>
+<li><a class="reference internal" href="#checking-out-the-latest-version">Checking out the latest version</a></li>
+<li><a class="reference internal" href="#getting-data-files">Getting data files</a></li>
+<li><a class="reference internal" href="#guidelines">Guidelines</a></li>
+<li><a class="reference internal" href="#submitting-a-patch">Submitting a patch</a></li>
+<li><a class="reference internal" href="#bug-reports">Bug reports</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">Developer Guide</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="install/index.html"
+                          title="next chapter">Developer installs for different distributions</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/devel/development_quickstart.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install/index.html" title="Developer installs for different distributions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Developer Guide"
+             >previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Developer Guide</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

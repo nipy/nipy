@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.graph.bipartite_graph" href="nipy.algorithms.graph.bipartite_graph.html" />
+    <link rel="prev" title="algorithms.diagnostics.tsdiffplot" href="nipy.algorithms.diagnostics.tsdiffplot.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.graph.bipartite_graph.html" title="algorithms.graph.bipartite_graph"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.diagnostics.tsdiffplot.html" title="algorithms.diagnostics.tsdiffplot"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-fwhm">
+<h1>algorithms.fwhm<a class="headerlink" href="#algorithms-fwhm" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-fwhm">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.fwhm</span></code><a class="headerlink" href="#module-algorithms-fwhm" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.fwhm</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-66810f99d88676137c91ee1d6f78460160a553b3.png" alt="Inheritance diagram of nipy.algorithms.fwhm" usemap="#inheritance3a2c6a47be" class="inheritance graphviz" /></div>
+<map id="inheritance3a2c6a47be" name="inheritance3a2c6a47be">
+<area shape="rect" id="node1" href="#nipy.algorithms.fwhm.ReselImage" target="_top" title="algorithms.fwhm.ReselImage" alt="" coords="216,5,407,32"/>
+<area shape="rect" id="node2" href="#nipy.algorithms.fwhm.Resels" target="_top" title="The Resels class." alt="" coords="5,5,168,32"/>
+</map><p id="module-nipy.algorithms.fwhm">This module provides classes and definitions for using full width at half
+maximum (FWHM) to be used in conjunction with Gaussian Random Field Theory
+to determine resolution elements (resels).</p>
+<p>A resolution element (resel) is defined as a block of pixels of the same
+size as the FWHM of the smoothed image.</p>
+<p>There are two methods implemented to estimate (3d, or volumewise) FWHM
+based on a 4d Image:</p>
+<blockquote>
+<div><p>fastFHWM: used if the entire 4d Image is available
+iterFWHM: used when 4d Image is being filled in by slices of residuals</p>
+</div></blockquote>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="reselimage">
+<h3><a class="reference internal" href="#nipy.algorithms.fwhm.ReselImage" title="nipy.algorithms.fwhm.ReselImage"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReselImage</span></code></a><a class="headerlink" href="#reselimage" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.fwhm.ReselImage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.fwhm.</span></span><span class="sig-name descname"><span class="pre">ReselImage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.fwhm.ReselImage" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#nipy.algorithms.fwhm.Resels" title="nipy.algorithms.fwhm.Resels"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resels</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.fwhm.ReselImage.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.fwhm.ReselImage.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize resel image</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>resels</strong><span class="classifier"><cite>core.api.Image</cite></span></dt><dd><p>Image of resel per voxel values.</p>
+</dd>
+<dt><strong>fwhm</strong><span class="classifier"><cite>core.api.Image</cite></span></dt><dd><p>Image of FWHM values.</p>
+</dd>
+<dt><strong>keywords</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">dict</span></code></span></dt><dd><p>Passed as keywords arguments to <cite>core.api.Image</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.fwhm.ReselImage.fwhm2resel">
+<span class="sig-name descname"><span class="pre">fwhm2resel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fwhm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.fwhm.ReselImage.fwhm2resel" title="Link to this definition">¶</a></dt>
+<dd><p>Convert FWHM <cite>fwhm</cite> to equivalent reseels per voxel</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fwhm</strong><span class="classifier">float</span></dt><dd><p>Convert an FWHM value to an equivalent resels per voxel based on
+step sizes in self.coordmap.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>resels</strong><span class="classifier">float</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.fwhm.ReselImage.integrate">
+<span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.fwhm.ReselImage.integrate" title="Link to this definition">¶</a></dt>
+<dd><p>Integrate resels within <cite>mask</cite> (or use self.mask)</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>mask</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code></span></dt><dd><p>Optional mask over which to integrate (add) resels.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>total_resels</dt><dd><p>the resels contained in the mask</p>
+</dd>
+<dt><strong>FWHM</strong><span class="classifier">float</span></dt><dd><p>an estimate of FWHM based on the average resel per voxel</p>
+</dd>
+<dt>nvoxel: int</dt><dd><p>the number of voxels in the mask</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.fwhm.ReselImage.resel2fwhm">
+<span class="sig-name descname"><span class="pre">resel2fwhm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.fwhm.ReselImage.resel2fwhm" title="Link to this definition">¶</a></dt>
+<dd><p>Convert resels as <cite>resels</cite> to isotropic FWHM</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>resels</strong><span class="classifier">float</span></dt><dd><p>Convert a resel value to an equivalent isotropic FWHM based on
+step sizes in self.coordmap.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fwhm</strong><span class="classifier">float</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="resels">
+<h3><a class="reference internal" href="#nipy.algorithms.fwhm.Resels" title="nipy.algorithms.fwhm.Resels"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resels</span></code></a><a class="headerlink" href="#resels" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.fwhm.Resels">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.fwhm.</span></span><span class="sig-name descname"><span class="pre">Resels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clobber</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.fwhm.Resels" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The Resels class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.fwhm.Resels.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clobber</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.fwhm.Resels.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize resels class</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>coordmap</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">CoordinateMap</span></code></span></dt><dd><p>CoordinateMap over which fwhm and resels are to be estimated.
+Used in fwhm/resel conversion.</p>
+</dd>
+<dt><strong>fwhm</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code></span></dt><dd><p>Optional Image of FWHM. Used to convert
+FWHM Image to resels if FWHM is not being estimated.</p>
+</dd>
+<dt><strong>resels</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code></span></dt><dd><p>Optional Image of resels. Used to
+compute resels within a mask, for instance, if
+FWHM has already been estimated.</p>
+</dd>
+<dt><strong>mask</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code></span></dt><dd><p>Mask over which to integrate resels.</p>
+</dd>
+<dt><strong>clobber</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">bool</span></code></span></dt><dd><p>Clobber output FWHM and resel images?</p>
+</dd>
+<dt><strong>D</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">int</span></code></span></dt><dd><p>Can be 2 or 3, the dimension of the final volume.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.fwhm.Resels.fwhm2resel">
+<span class="sig-name descname"><span class="pre">fwhm2resel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fwhm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.fwhm.Resels.fwhm2resel" title="Link to this definition">¶</a></dt>
+<dd><p>Convert FWHM <cite>fwhm</cite> to equivalent reseels per voxel</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fwhm</strong><span class="classifier">float</span></dt><dd><p>Convert an FWHM value to an equivalent resels per voxel based on
+step sizes in self.coordmap.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>resels</strong><span class="classifier">float</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.fwhm.Resels.integrate">
+<span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.fwhm.Resels.integrate" title="Link to this definition">¶</a></dt>
+<dd><p>Integrate resels within <cite>mask</cite> (or use self.mask)</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>mask</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code></span></dt><dd><p>Optional mask over which to integrate (add) resels.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>total_resels</dt><dd><p>the resels contained in the mask</p>
+</dd>
+<dt><strong>FWHM</strong><span class="classifier">float</span></dt><dd><p>an estimate of FWHM based on the average resel per voxel</p>
+</dd>
+<dt>nvoxel: int</dt><dd><p>the number of voxels in the mask</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.fwhm.Resels.resel2fwhm">
+<span class="sig-name descname"><span class="pre">resel2fwhm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.fwhm.Resels.resel2fwhm" title="Link to this definition">¶</a></dt>
+<dd><p>Convert resels as <cite>resels</cite> to isotropic FWHM</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>resels</strong><span class="classifier">float</span></dt><dd><p>Convert a resel value to an equivalent isotropic FWHM based on
+step sizes in self.coordmap.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fwhm</strong><span class="classifier">float</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.fwhm</a><ul>
+<li><a class="reference internal" href="#module-algorithms-fwhm">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.fwhm</span></code></a></li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#reselimage"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReselImage</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.fwhm.ReselImage"><code class="docutils literal notranslate"><span class="pre">ReselImage</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.fwhm.ReselImage.__init__"><code class="docutils literal notranslate"><span class="pre">ReselImage.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.fwhm.ReselImage.fwhm2resel"><code class="docutils literal notranslate"><span class="pre">ReselImage.fwhm2resel()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.fwhm.ReselImage.integrate"><code class="docutils literal notranslate"><span class="pre">ReselImage.integrate()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.fwhm.ReselImage.resel2fwhm"><code class="docutils literal notranslate"><span class="pre">ReselImage.resel2fwhm()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#resels"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resels</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.fwhm.Resels"><code class="docutils literal notranslate"><span class="pre">Resels</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.fwhm.Resels.__init__"><code class="docutils literal notranslate"><span class="pre">Resels.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.fwhm.Resels.fwhm2resel"><code class="docutils literal notranslate"><span class="pre">Resels.fwhm2resel()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.fwhm.Resels.integrate"><code class="docutils literal notranslate"><span class="pre">Resels.integrate()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.fwhm.Resels.resel2fwhm"><code class="docutils literal notranslate"><span class="pre">Resels.resel2fwhm()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.diagnostics.tsdiffplot.html"
+                          title="previous chapter">algorithms.diagnostics.tsdiffplot</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.graph.bipartite_graph.html"
+                          title="next chapter">algorithms.graph.bipartite_graph</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.fwhm.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.graph.bipartite_graph.html" title="algorithms.graph.bipartite_graph"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.diagnostics.tsdiffplot.html" title="algorithms.diagnostics.tsdiffplot"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

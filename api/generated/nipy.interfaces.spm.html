@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="io.files" href="nipy.io.files.html" />
+    <link rel="prev" title="interfaces.matlab" href="nipy.interfaces.matlab.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.io.files.html" title="io.files"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.interfaces.matlab.html" title="interfaces.matlab"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="interfaces-spm">
+<h1>interfaces.spm<a class="headerlink" href="#interfaces-spm" title="Link to this heading">¶</a></h1>
+<section id="module-interfaces-spm">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">interfaces.spm</span></code><a class="headerlink" href="#module-interfaces-spm" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.interfaces.spm</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-a238713aa5467f0eac2548c61967a90d5ea4d9c8.png" alt="Inheritance diagram of nipy.interfaces.spm" usemap="#inheritance4f7fe46968" class="inheritance graphviz" /></div>
+<map id="inheritance4f7fe46968" name="inheritance4f7fe46968">
+<area shape="rect" id="node1" href="#nipy.interfaces.spm.SpmInfo" target="_top" title="interfaces.spm.SpmInfo" alt="" coords="5,5,166,32"/>
+</map><p id="module-nipy.interfaces.spm">Interfaces to SPM</p>
+</section>
+<section id="class">
+<h2>Class<a class="headerlink" href="#class" title="Link to this heading">¶</a></h2>
+</section>
+<section id="spminfo">
+<h2><a class="reference internal" href="#nipy.interfaces.spm.SpmInfo" title="nipy.interfaces.spm.SpmInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpmInfo</span></code></a><a class="headerlink" href="#spminfo" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.interfaces.spm.SpmInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.interfaces.spm.</span></span><span class="sig-name descname"><span class="pre">SpmInfo</span></span><a class="headerlink" href="#nipy.interfaces.spm.SpmInfo" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.interfaces.spm.SpmInfo.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.interfaces.spm.SpmInfo.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.interfaces.spm.SpmInfo.spm_path">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spm_path</span></span><a class="headerlink" href="#nipy.interfaces.spm.SpmInfo.spm_path" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.interfaces.spm.SpmInfo.spm_ver">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spm_ver</span></span><a class="headerlink" href="#nipy.interfaces.spm.SpmInfo.spm_ver" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.interfaces.spm.fltcols">
+<span class="sig-prename descclassname"><span class="pre">nipy.interfaces.spm.</span></span><span class="sig-name descname"><span class="pre">fltcols</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vals</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.interfaces.spm.fltcols" title="Link to this definition">¶</a></dt>
+<dd><p>Trivial little function to make 1xN float vector</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.interfaces.spm.fname_presuffix">
+<span class="sig-prename descclassname"><span class="pre">nipy.interfaces.spm.</span></span><span class="sig-name descname"><span class="pre">fname_presuffix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.interfaces.spm.fname_presuffix" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.interfaces.spm.fnames_presuffix">
+<span class="sig-prename descclassname"><span class="pre">nipy.interfaces.spm.</span></span><span class="sig-name descname"><span class="pre">fnames_presuffix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.interfaces.spm.fnames_presuffix" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.interfaces.spm.make_job">
+<span class="sig-prename descclassname"><span class="pre">nipy.interfaces.spm.</span></span><span class="sig-name descname"><span class="pre">make_job</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jobtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jobname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contents</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.interfaces.spm.make_job" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.interfaces.spm.run_jobdef">
+<span class="sig-prename descclassname"><span class="pre">nipy.interfaces.spm.</span></span><span class="sig-name descname"><span class="pre">run_jobdef</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jobdef</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.interfaces.spm.run_jobdef" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.interfaces.spm.scans_for_fname">
+<span class="sig-prename descclassname"><span class="pre">nipy.interfaces.spm.</span></span><span class="sig-name descname"><span class="pre">scans_for_fname</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.interfaces.spm.scans_for_fname" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.interfaces.spm.scans_for_fnames">
+<span class="sig-prename descclassname"><span class="pre">nipy.interfaces.spm.</span></span><span class="sig-name descname"><span class="pre">scans_for_fnames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnames</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.interfaces.spm.scans_for_fnames" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">interfaces.spm</a><ul>
+<li><a class="reference internal" href="#module-interfaces-spm">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">interfaces.spm</span></code></a></li>
+<li><a class="reference internal" href="#class">Class</a></li>
+<li><a class="reference internal" href="#spminfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpmInfo</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.interfaces.spm.SpmInfo"><code class="docutils literal notranslate"><span class="pre">SpmInfo</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.interfaces.spm.SpmInfo.__init__"><code class="docutils literal notranslate"><span class="pre">SpmInfo.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.interfaces.spm.SpmInfo.spm_path"><code class="docutils literal notranslate"><span class="pre">SpmInfo.spm_path</span></code></a></li>
+<li><a class="reference internal" href="#nipy.interfaces.spm.SpmInfo.spm_ver"><code class="docutils literal notranslate"><span class="pre">SpmInfo.spm_ver</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.interfaces.spm.fltcols"><code class="docutils literal notranslate"><span class="pre">fltcols()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.interfaces.spm.fname_presuffix"><code class="docutils literal notranslate"><span class="pre">fname_presuffix()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.interfaces.spm.fnames_presuffix"><code class="docutils literal notranslate"><span class="pre">fnames_presuffix()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.interfaces.spm.make_job"><code class="docutils literal notranslate"><span class="pre">make_job()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.interfaces.spm.run_jobdef"><code class="docutils literal notranslate"><span class="pre">run_jobdef()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.interfaces.spm.scans_for_fname"><code class="docutils literal notranslate"><span class="pre">scans_for_fname()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.interfaces.spm.scans_for_fnames"><code class="docutils literal notranslate"><span class="pre">scans_for_fnames()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.interfaces.matlab.html"
+                          title="previous chapter">interfaces.matlab</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.io.files.html"
+                          title="next chapter">io.files</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.interfaces.spm.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.io.files.html" title="io.files"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.interfaces.matlab.html" title="interfaces.matlab"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

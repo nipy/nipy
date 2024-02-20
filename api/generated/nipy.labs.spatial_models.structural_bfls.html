@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="labs.statistical_mapping" href="nipy.labs.statistical_mapping.html" />
+    <link rel="prev" title="labs.spatial_models.parcellation" href="nipy.labs.spatial_models.parcellation.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.statistical_mapping.html" title="labs.statistical_mapping"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.parcellation.html" title="labs.spatial_models.parcellation"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="labs-spatial-models-structural-bfls">
+<h1>labs.spatial_models.structural_bfls<a class="headerlink" href="#labs-spatial-models-structural-bfls" title="Link to this heading">¶</a></h1>
+<section id="module-labs-spatial-models-structural-bfls">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.spatial_models.structural_bfls</span></code><a class="headerlink" href="#module-labs-spatial-models-structural-bfls" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.labs.spatial_models.structural_bfls</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-85434480d40d9df2c3a17904bf113362750ab714.png" alt="Inheritance diagram of nipy.labs.spatial_models.structural_bfls" usemap="#inheritanceaaa97adb5e" class="inheritance graphviz" /></div>
+<map id="inheritanceaaa97adb5e" name="inheritanceaaa97adb5e">
+<area shape="rect" id="node1" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions" target="_top" title="This class is intended to represent a set of inter&#45;subject regions" alt="" coords="5,5,309,32"/>
+</map><p id="module-nipy.labs.spatial_models.structural_bfls">The main routine of this module implement the LandmarkRegions class,
+that is used to represent Regions of interest at the population level
+(in a template space).</p>
+<p>This has been used in
+Thirion et al. Structural Analysis of fMRI
+Data Revisited: Improving the Sensitivity and Reliability of fMRI
+Group Studies.  IEEE TMI 2007</p>
+<p>Author : Bertrand Thirion, 2006-2013</p>
+</section>
+<section id="landmarkregions">
+<h2><a class="reference internal" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions" title="nipy.labs.spatial_models.structural_bfls.LandmarkRegions"><code class="xref py py-class docutils literal notranslate"><span class="pre">LandmarkRegions</span></code></a><a class="headerlink" href="#landmarkregions" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.structural_bfls.LandmarkRegions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.labs.spatial_models.structural_bfls.</span></span><span class="sig-name descname"><span class="pre">LandmarkRegions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indiv_coord</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subjects</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class is intended to represent a set of inter-subject regions
+It should inherit from some abstract multiple ROI class,
+not implemented yet.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.structural_bfls.LandmarkRegions.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indiv_coord</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subjects</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Building the landmark_region</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>domain: ROI instance</strong></dt><dd><p>defines the spatial context of the SubDomains</p>
+</dd>
+<dt><strong>k: int,</strong></dt><dd><p>the number of landmark regions considered</p>
+</dd>
+<dt><strong>indiv_coord:  k-length list of arrays,</strong></dt><dd><p>coordinates of the nodes in some embedding space.</p>
+</dd>
+<dt><strong>subjects: k-length list of integers</strong></dt><dd><p>these correspond to an ROI feature:
+the subject index of individual regions</p>
+</dd>
+<dt><strong>confidence: k-length list of arrays,</strong></dt><dd><p>confidence values for the regions (0 is low, 1 is high)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.structural_bfls.LandmarkRegions.centers">
+<span class="sig-name descname"><span class="pre">centers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions.centers" title="Link to this definition">¶</a></dt>
+<dd><p>returns the average of the coordinates for each region</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.structural_bfls.LandmarkRegions.kernel_density">
+<span class="sig-name descname"><span class="pre">kernel_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions.kernel_density" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the density of a component as a kde</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>k: int (&lt;= self.k) or None</strong></dt><dd><p>component upon which the density is computed
+if None, the sum is taken over k</p>
+</dd>
+<dt><strong>coord: array of shape(n, self.dom.em_dim), optional</strong></dt><dd><p>a set of input coordinates</p>
+</dd>
+<dt><strong>sigma: float, optional</strong></dt><dd><p>kernel size</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>kde: array of shape(n)</dt><dd><p>the density sampled at the coords</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.structural_bfls.LandmarkRegions.map_label">
+<span class="sig-name descname"><span class="pre">map_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions.map_label" title="Link to this definition">¶</a></dt>
+<dd><p>Sample the set of landmark regions
+on the proposed coordinate set cs, assuming a Gaussian shape</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coord: array of shape(n,dim), optional,</strong></dt><dd><p>a set of input coordinates</p>
+</dd>
+<dt><strong>pval: float in [0,1]), optional</strong></dt><dd><p>cutoff for the CR, i.e.  highest posterior density threshold</p>
+</dd>
+<dt><strong>sigma: float, positive, optional</strong></dt><dd><p>spatial scale of the spatial model</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>label: array of shape (n): the posterior labelling</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.structural_bfls.LandmarkRegions.roi_prevalence">
+<span class="sig-name descname"><span class="pre">roi_prevalence</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions.roi_prevalence" title="Link to this definition">¶</a></dt>
+<dd><p>Return a confidence index over the different rois</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>confid: array of shape self.k</dt><dd><p>the population_prevalence</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.structural_bfls.LandmarkRegions.show">
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions.show" title="Link to this definition">¶</a></dt>
+<dd><p>function to print basic information on self</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.labs.spatial_models.structural_bfls.build_landmarks">
+<span class="sig-prename descclassname"><span class="pre">nipy.labs.spatial_models.structural_bfls.</span></span><span class="sig-name descname"><span class="pre">build_landmarks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subjects</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prevalence_pval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prevalence_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.spatial_models.structural_bfls.build_landmarks" title="Link to this definition">¶</a></dt>
+<dd><p>Given a list of hierarchical ROIs, and an associated labelling, this
+creates an Amer structure wuch groups ROIs with the same label.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>domain: discrete_domain.DiscreteDomain instance,</strong></dt><dd><p>description of the spatial context of the landmarks</p>
+</dd>
+<dt><strong>coords: array of shape(n, 3)</strong></dt><dd><p>Sets of coordinates for the different objects</p>
+</dd>
+<dt><strong>subjects: array of shape (n), dtype = np.int_</strong></dt><dd><p>indicators of the dataset the objects come from</p>
+</dd>
+<dt><strong>labels: array of shape (n), dtype = np.int_</strong></dt><dd><p>index of the landmark the object is associated with</p>
+</dd>
+<dt><strong>confidence: array of shape (n),</strong></dt><dd><p>measure of the significance of the regions</p>
+</dd>
+<dt><strong>prevalence_pval: float, optional</strong></dt><dd></dd>
+<dt><strong>prevalence_threshold: float, optional,</strong></dt><dd><p>(c) A label should be present in prevalence_threshold
+subjects with a probability&gt;prevalence_pval
+in order to be valid</p>
+</dd>
+<dt><strong>sigma: float optional,</strong></dt><dd><p>regularizing constant that defines a prior on the region extent</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>LR</strong><span class="classifier">None or structural_bfls.LR instance</span></dt><dd><p>describing a cross-subject set of ROIs. If inference yields a null
+result, LR is set to None</p>
+</dd>
+<dt>newlabel: array of shape (n)</dt><dd><p>a relabelling of the individual ROIs, similar to u,
+that discards labels that do not fulfill the condition (c)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">labs.spatial_models.structural_bfls</a><ul>
+<li><a class="reference internal" href="#module-labs-spatial-models-structural-bfls">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">labs.spatial_models.structural_bfls</span></code></a></li>
+<li><a class="reference internal" href="#landmarkregions"><code class="xref py py-class docutils literal notranslate"><span class="pre">LandmarkRegions</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions"><code class="docutils literal notranslate"><span class="pre">LandmarkRegions</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions.__init__"><code class="docutils literal notranslate"><span class="pre">LandmarkRegions.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions.centers"><code class="docutils literal notranslate"><span class="pre">LandmarkRegions.centers()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions.kernel_density"><code class="docutils literal notranslate"><span class="pre">LandmarkRegions.kernel_density()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions.map_label"><code class="docutils literal notranslate"><span class="pre">LandmarkRegions.map_label()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions.roi_prevalence"><code class="docutils literal notranslate"><span class="pre">LandmarkRegions.roi_prevalence()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.structural_bfls.LandmarkRegions.show"><code class="docutils literal notranslate"><span class="pre">LandmarkRegions.show()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#nipy.labs.spatial_models.structural_bfls.build_landmarks"><code class="docutils literal notranslate"><span class="pre">build_landmarks()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.labs.spatial_models.parcellation.html"
+                          title="previous chapter">labs.spatial_models.parcellation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.labs.statistical_mapping.html"
+                          title="next chapter">labs.statistical_mapping</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.labs.spatial_models.structural_bfls.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.statistical_mapping.html" title="labs.statistical_mapping"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.spatial_models.parcellation.html" title="labs.spatial_models.parcellation"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

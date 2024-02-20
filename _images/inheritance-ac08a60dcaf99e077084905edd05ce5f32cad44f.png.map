@@ -1,0 +1,7 @@
+<map id="inheritance54b72dce5b" name="inheritance54b72dce5b">
+<area shape="rect" id="node1" href="#nipy.algorithms.statistics.models.glm.Model" target="_top" title="models.glm.Model" alt="" coords="672,4,764,23"/>
+<area shape="rect" id="node2" href="nipy.algorithms.statistics.models.regression.html#nipy.algorithms.statistics.models.regression.WLSModel" target="_top" title="A regression model with diagonal but non&#45;identity covariance structure." alt="" coords="495,4,637,23"/>
+<area shape="rect" id="node3" href="nipy.algorithms.statistics.models.model.html#nipy.algorithms.statistics.models.model.LikelihoodModel" target="_top" title="models.model.LikelihoodModel" alt="" coords="141,4,286,23"/>
+<area shape="rect" id="node5" href="nipy.algorithms.statistics.models.regression.html#nipy.algorithms.statistics.models.regression.OLSModel" target="_top" title="A simple ordinary least squares model." alt="" coords="321,4,460,23"/>
+<area shape="rect" id="node4" href="nipy.algorithms.statistics.models.model.html#nipy.algorithms.statistics.models.model.Model" target="_top" title="A (predictive) statistical model." alt="" coords="4,4,106,23"/>
+</map>

@@ -1,0 +1,23 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+algorithms.diagnostics.commands
+===============================
+
+Module: :mod:`algorithms.diagnostics.commands`
+----------------------------------------------
+.. automodule:: nipy.algorithms.diagnostics.commands
+
+.. currentmodule:: nipy.algorithms.diagnostics.commands
+
+Functions
+---------
+
+
+.. autofunction:: nipy.algorithms.diagnostics.commands.diagnose
+
+
+.. autofunction:: nipy.algorithms.diagnostics.commands.parse_fname_axes
+
+
+.. autofunction:: nipy.algorithms.diagnostics.commands.tsdiffana
+

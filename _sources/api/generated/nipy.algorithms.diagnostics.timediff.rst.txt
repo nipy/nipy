@@ -1,0 +1,20 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+algorithms.diagnostics.timediff
+===============================
+
+Module: :mod:`algorithms.diagnostics.timediff`
+----------------------------------------------
+.. automodule:: nipy.algorithms.diagnostics.timediff
+
+.. currentmodule:: nipy.algorithms.diagnostics.timediff
+
+Functions
+---------
+
+
+.. autofunction:: nipy.algorithms.diagnostics.timediff.time_slice_diffs
+
+
+.. autofunction:: nipy.algorithms.diagnostics.timediff.time_slice_diffs_image
+

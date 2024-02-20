@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="modalities.fmri.realfuncs" href="nipy.modalities.fmri.realfuncs.html" />
+    <link rel="prev" title="modalities.fmri.hemodynamic_models" href="nipy.modalities.fmri.hemodynamic_models.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.realfuncs.html" title="modalities.fmri.realfuncs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.hemodynamic_models.html" title="modalities.fmri.hemodynamic_models"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="modalities-fmri-hrf">
+<h1>modalities.fmri.hrf<a class="headerlink" href="#modalities-fmri-hrf" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.modalities.fmri.hrf">
+<span id="module-modalities-fmri-hrf"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.hrf</span></code><a class="headerlink" href="#module-nipy.modalities.fmri.hrf" title="Link to this heading">¶</a></h2>
+<p>This module provides definitions of various hemodynamic response
+functions (hrf).</p>
+<p>In particular, it provides Gary Glover’s canonical HRF, AFNI’s default
+HRF, and a spectral HRF.</p>
+<p>The Glover HRF is based on:</p>
+<dl class="simple">
+<dt>&#64;article{glover1999deconvolution,</dt><dd><p>title={{Deconvolution of impulse response in event-related BOLD fMRI}},
+author={Glover, G.H.},
+journal={NeuroImage},
+volume={9},
+number={4},
+pages={416–429},
+year={1999},
+publisher={Orlando, FL: Academic Press, c1992-}</p>
+</dd>
+</dl>
+<p>}</p>
+<p>This parametrization is from fmristat:</p>
+<p><a class="reference external" href="http://www.math.mcgill.ca/keith/fmristat/">http://www.math.mcgill.ca/keith/fmristat/</a></p>
+<p>fmristat models the HRF as the difference of two gamma functions, <code class="docutils literal notranslate"><span class="pre">g1</span></code>
+and <code class="docutils literal notranslate"><span class="pre">g2</span></code>, each defined by the timing of the gamma function peaks
+(<code class="docutils literal notranslate"><span class="pre">pk1,</span> <span class="pre">pk2</span></code>) and the FWHMs (<code class="docutils literal notranslate"><span class="pre">width1,</span> <span class="pre">width2</span></code>):</p>
+<blockquote>
+<div><p>raw_hrf = g1(pk1, width1) - a2 * g2(pk2, width2)</p>
+</div></blockquote>
+<p>where <code class="docutils literal notranslate"><span class="pre">a2</span></code> is the scale factor for the <code class="docutils literal notranslate"><span class="pre">g2</span></code> gamma function.  The
+actual hrf is the raw hrf set to have an integral of 1.</p>
+<p>fmristat used <code class="docutils literal notranslate"><span class="pre">pk1,</span> <span class="pre">width1,</span> <span class="pre">pk2,</span> <span class="pre">width2,</span> <span class="pre">a2</span> <span class="pre">=</span> <span class="pre">(5.4</span> <span class="pre">5.2</span> <span class="pre">10.8</span> <span class="pre">7.35</span>
+<span class="pre">0.35)</span></code>.  These are parameters to match Glover’s 1 second duration
+auditory stimulus curves.  Glover wrote these as:</p>
+<blockquote>
+<div><p>y(t) = c1 * t**n1 * exp(t/t1) - a2 * c2 * t**n2 * exp(t/t2)</p>
+</div></blockquote>
+<p>with <code class="docutils literal notranslate"><span class="pre">n1,</span> <span class="pre">t1,</span> <span class="pre">n2,</span> <span class="pre">t2,</span> <span class="pre">a2</span> <span class="pre">=</span> <span class="pre">(6.0,</span> <span class="pre">0.9,</span> <span class="pre">12,</span> <span class="pre">0.9,</span> <span class="pre">0.35)</span></code>,  and <code class="docutils literal notranslate"><span class="pre">c1,</span> <span class="pre">c2</span></code> being
+<code class="docutils literal notranslate"><span class="pre">1/max(t**n1</span> <span class="pre">*</span> <span class="pre">exp(t/t1)),</span> <span class="pre">1/max(t**n2</span> <span class="pre">*</span> <span class="pre">exp(t/t2)</span></code>.  The difference between
+Glover’s expression and ours is because we (and fmristat) use the peak location
+and width to characterize the function rather than <code class="docutils literal notranslate"><span class="pre">n1,</span> <span class="pre">t1</span></code>.  The values we
+use are equivalent.  Specifically, in our formulation:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">n1</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">c1</span> <span class="o">=</span> <span class="n">gamma_params</span><span class="p">(</span><span class="mf">5.4</span><span class="p">,</span> <span class="mf">5.2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">((</span><span class="n">n1</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">t1</span><span class="p">),</span> <span class="p">(</span><span class="mf">6.0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n2</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">gamma_params</span><span class="p">(</span><span class="mf">10.8</span><span class="p">,</span> <span class="mf">7.35</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">((</span><span class="n">n2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">t2</span><span class="p">),</span> <span class="p">(</span><span class="mf">12.0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.hrf.ddspmt">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.hrf.</span></span><span class="sig-name descname"><span class="pre">ddspmt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.hrf.ddspmt" title="Link to this definition">¶</a></dt>
+<dd><p>SPM canonical HRF dispersion derivative, values for time values <cite>t</cite></p>
+<p>This is the canonical HRF dispersion derivative function as used in SPM.</p>
+<p>It is the numerical difference between the HRF sampled at time <cite>t</cite>, and
+values at <cite>t</cite> for another HRF shape with a small change in the peak
+dispersion parameter (<code class="docutils literal notranslate"><span class="pre">peak_disp</span></code> in func:<cite>spm_hrf_compat</cite>).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.hrf.dspmt">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.hrf.</span></span><span class="sig-name descname"><span class="pre">dspmt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.hrf.dspmt" title="Link to this definition">¶</a></dt>
+<dd><p>SPM canonical HRF derivative, HRF derivative values for time values <cite>t</cite></p>
+<p>This is the canonical HRF derivative function as used in SPM.</p>
+<p>It is the numerical difference of the HRF sampled at time <cite>t</cite> minus the
+values sampled at time <cite>t</cite> -1</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.hrf.gamma_expr">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.hrf.</span></span><span class="sig-name descname"><span class="pre">gamma_expr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">peak_location</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_fwhm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.hrf.gamma_expr" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.hrf.gamma_params">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.hrf.</span></span><span class="sig-name descname"><span class="pre">gamma_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">peak_location</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_fwhm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.hrf.gamma_params" title="Link to this definition">¶</a></dt>
+<dd><p>Parameters for gamma density given peak and width</p>
+<p>TODO: where does the coef come from again…. check fmristat code</p>
+<p>From a peak location and peak FWHM, determine the parameters (shape,
+scale) of a Gamma density:</p>
+<p>f(x) = coef * x**(shape-1) * exp(-x/scale)</p>
+<p>The coefficient returned ensures that the f has integral 1 over
+[0,np.inf]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>peak_location</strong><span class="classifier">float</span></dt><dd><p>Location of the peak of the Gamma density</p>
+</dd>
+<dt><strong>peak_fwhm</strong><span class="classifier">float</span></dt><dd><p>FWHM at the peak</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>shape</strong><span class="classifier">float</span></dt><dd><p>Shape parameter in the Gamma density</p>
+</dd>
+<dt><strong>scale</strong><span class="classifier">float</span></dt><dd><p>Scale parameter in the Gamma density</p>
+</dd>
+<dt><strong>coef</strong><span class="classifier">float</span></dt><dd><p>Coefficient needed to ensure the density has integral 1.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.hrf.spm_hrf_compat">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.hrf.</span></span><span class="sig-name descname"><span class="pre">spm_hrf_compat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">under_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_disp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">under_disp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_u_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.hrf.spm_hrf_compat" title="Link to this definition">¶</a></dt>
+<dd><p>SPM HRF function from sum of two gamma PDFs</p>
+<p>This function is designed to be partially compatible with SPMs <cite>spm_hrf.m</cite>
+function.</p>
+<p>The SPN HRF is a <em>peak</em> gamma PDF (with location <cite>peak_delay</cite> and dispersion
+<cite>peak_disp</cite>), minus an <em>undershoot</em> gamma PDF (with location <cite>under_delay</cite>
+and dispersion <cite>under_disp</cite>, and divided by the <cite>p_u_ratio</cite>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>t</strong><span class="classifier">array-like</span></dt><dd><p>vector of times at which to sample HRF.</p>
+</dd>
+<dt><strong>peak_delay</strong><span class="classifier">float, optional</span></dt><dd><p>delay of peak.</p>
+</dd>
+<dt><strong>under_delay</strong><span class="classifier">float, optional</span></dt><dd><p>delay of undershoot.</p>
+</dd>
+<dt><strong>peak_disp</strong><span class="classifier">float, optional</span></dt><dd><p>width (dispersion) of peak.</p>
+</dd>
+<dt><strong>under_disp</strong><span class="classifier">float, optional</span></dt><dd><p>width (dispersion) of undershoot.</p>
+</dd>
+<dt><strong>p_u_ratio</strong><span class="classifier">float, optional</span></dt><dd><p>peak to undershoot ratio.  Undershoot divided by this value before
+subtracting from peak.</p>
+</dd>
+<dt><strong>normalize</strong><span class="classifier">{True, False}, optional</span></dt><dd><p>If True, divide HRF values by their sum before returning.  SPM does this
+by default.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>hrf</strong><span class="classifier">array</span></dt><dd><p>vector length <code class="docutils literal notranslate"><span class="pre">len(t)</span></code> of samples from HRF at times <cite>t</cite>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>See <code class="docutils literal notranslate"><span class="pre">spm_hrf.m</span></code> in the SPM distribution.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.hrf.spmt">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.hrf.</span></span><span class="sig-name descname"><span class="pre">spmt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.hrf.spmt" title="Link to this definition">¶</a></dt>
+<dd><p>SPM canonical HRF, HRF values for time values <cite>t</cite></p>
+<p>This is the canonical HRF function as used in SPM</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">modalities.fmri.hrf</a><ul>
+<li><a class="reference internal" href="#module-nipy.modalities.fmri.hrf">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.hrf</span></code></a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.hrf.ddspmt"><code class="docutils literal notranslate"><span class="pre">ddspmt()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.hrf.dspmt"><code class="docutils literal notranslate"><span class="pre">dspmt()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.hrf.gamma_expr"><code class="docutils literal notranslate"><span class="pre">gamma_expr()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.hrf.gamma_params"><code class="docutils literal notranslate"><span class="pre">gamma_params()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.hrf.spm_hrf_compat"><code class="docutils literal notranslate"><span class="pre">spm_hrf_compat()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.hrf.spmt"><code class="docutils literal notranslate"><span class="pre">spmt()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.hemodynamic_models.html"
+                          title="previous chapter">modalities.fmri.hemodynamic_models</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.realfuncs.html"
+                          title="next chapter">modalities.fmri.realfuncs</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.modalities.fmri.hrf.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.realfuncs.html" title="modalities.fmri.realfuncs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.hemodynamic_models.html" title="modalities.fmri.hemodynamic_models"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

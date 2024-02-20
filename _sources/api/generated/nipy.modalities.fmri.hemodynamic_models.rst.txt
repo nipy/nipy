@@ -1,0 +1,32 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+modalities.fmri.hemodynamic_models
+==================================
+
+Module: :mod:`modalities.fmri.hemodynamic_models`
+-------------------------------------------------
+.. automodule:: nipy.modalities.fmri.hemodynamic_models
+
+.. currentmodule:: nipy.modalities.fmri.hemodynamic_models
+
+Functions
+---------
+
+
+.. autofunction:: nipy.modalities.fmri.hemodynamic_models.compute_regressor
+
+
+.. autofunction:: nipy.modalities.fmri.hemodynamic_models.glover_hrf
+
+
+.. autofunction:: nipy.modalities.fmri.hemodynamic_models.glover_time_derivative
+
+
+.. autofunction:: nipy.modalities.fmri.hemodynamic_models.spm_dispersion_derivative
+
+
+.. autofunction:: nipy.modalities.fmri.hemodynamic_models.spm_hrf
+
+
+.. autofunction:: nipy.modalities.fmri.hemodynamic_models.spm_time_derivative
+

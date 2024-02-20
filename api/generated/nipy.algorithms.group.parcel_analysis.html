@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.interpolation" href="nipy.algorithms.interpolation.html" />
+    <link rel="prev" title="algorithms.graph.graph" href="nipy.algorithms.graph.graph.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.interpolation.html" title="algorithms.interpolation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.graph.graph.html" title="algorithms.graph.graph"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-group-parcel-analysis">
+<h1>algorithms.group.parcel_analysis<a class="headerlink" href="#algorithms-group-parcel-analysis" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-group-parcel-analysis">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.group.parcel_analysis</span></code><a class="headerlink" href="#module-algorithms-group-parcel-analysis" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.group.parcel_analysis</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-4fb42afe80bc5a89c94ada814d927f43c279045f.png" alt="Inheritance diagram of nipy.algorithms.group.parcel_analysis" usemap="#inheritancef8e0cf5d6c" class="inheritance graphviz" /></div>
+<map id="inheritancef8e0cf5d6c" name="inheritancef8e0cf5d6c">
+<area shape="rect" id="node1" href="#nipy.algorithms.group.parcel_analysis.ParcelAnalysis" target="_top" title="group.parcel_analysis.ParcelAnalysis" alt="" coords="5,5,244,32"/>
+</map><p id="module-nipy.algorithms.group.parcel_analysis">Parcel-based group analysis of multi-subject image data.</p>
+<p>Routines implementing Bayesian inference on group-level effects
+assumed to be constant within given brain parcels. The model accounts
+for both estimation errors and localization uncertainty in reference
+space of first-level images.</p>
+<p>See:</p>
+<p>Keller, Merlin et al (2008). Dealing with Spatial Normalization Errors
+in fMRI Group Inference using Hierarchical Modeling. <em>Statistica
+Sinica</em>; 18(4).</p>
+<p>Keller, Merlin et al (2009). Anatomically Informed Bayesian Model
+Selection for fMRI Group Data Analysis. <em>In MICCAI’09, Lecture Notes
+in Computer Science</em>; 5762:450–457.</p>
+<p>Roche, Alexis (2012). OHBM’12 talk, slides at:
+<a class="reference external" href="https://sites.google.com/site/alexisroche/slides/Talk_Beijing12.pdf">https://sites.google.com/site/alexisroche/slides/Talk_Beijing12.pdf</a></p>
+</section>
+<section id="parcelanalysis">
+<h2><a class="reference internal" href="#nipy.algorithms.group.parcel_analysis.ParcelAnalysis" title="nipy.algorithms.group.parcel_analysis.ParcelAnalysis"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParcelAnalysis</span></code></a><a class="headerlink" href="#parcelanalysis" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.group.parcel_analysis.ParcelAnalysis">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.group.parcel_analysis.</span></span><span class="sig-name descname"><span class="pre">ParcelAnalysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con_imgs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parcel_img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parcel_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msk_img</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vcon_imgs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cvect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_smoothed_images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.group.parcel_analysis.ParcelAnalysis" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.group.parcel_analysis.ParcelAnalysis.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con_imgs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parcel_img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parcel_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msk_img</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vcon_imgs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cvect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_smoothed_images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.group.parcel_analysis.ParcelAnalysis.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Bayesian parcel-based analysis.</p>
+<p>Given a sequence of independent images registered to a common
+space (for instance, a set of contrast images from a
+first-level fMRI analysis), perform a second-level analysis
+assuming constant effects throughout parcels defined from a
+given label image in reference space. Specifically, a model of
+the following form is assumed:</p>
+<p>Y = X * beta + variability,</p>
+<p>where Y denotes the input image sequence, X is a design
+matrix, and beta are parcel-wise parameter vectors. The
+algorithm computes the Bayesian posterior probability of beta
+in each parcel using an expectation propagation scheme.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>con_imgs: sequence of nipy-like images</strong></dt><dd><p>Images input to the group analysis.</p>
+</dd>
+<dt><strong>parcel_img: nipy-like image</strong></dt><dd><p>Label image where each label codes for a parcel.</p>
+</dd>
+<dt><strong>parcel_info: sequence of arrays, optional</strong></dt><dd><p>A sequence of two arrays with same length equal to the
+number of distinct parcels consistently with the
+<cite>parcel_img</cite> argument. The first array gives parcel names
+and the second, parcel values, i.e., corresponding
+intensities in the associated parcel image. By default,
+parcel values are taken as
+<cite>np.unique(parcel_img.get_fdata())</cite> and parcel names are
+these values converted to strings.</p>
+</dd>
+<dt><strong>msk_img: nipy-like image, optional</strong></dt><dd><p>Binary mask to restrict analysis. By default, analysis is
+carried out on all parcels with nonzero value.</p>
+</dd>
+<dt><strong>vcon_imgs: sequence of nipy-like images, optional</strong></dt><dd><p>First-level variance estimates corresponding to
+<cite>con_imgs</cite>. This is useful if the input images are
+“noisy”. By default, first-level variances are assumed to be
+zero.</p>
+</dd>
+<dt><strong>design_matrix: array, optional</strong></dt><dd><p>If None, a one-sample analysis model is used. Otherwise, an
+array with shape (n, p) where <cite>n</cite> matches the number of
+input scans, and <cite>p</cite> is the number of regressors.</p>
+</dd>
+<dt><strong>cvect: array, optional</strong></dt><dd><p>Contrast vector of interest. The method makes an inference
+on the contrast defined as the dot product cvect’<a href="#id1"><span class="problematic" id="id2">*</span></a>beta,
+where beta are the unknown parcel-wise effects. If None,
+<cite>cvect</cite> is assumed to be np.array((1,)). However, the
+<cite>cvect</cite> argument is mandatory if <cite>design_matrix</cite> is
+provided.</p>
+</dd>
+<dt><strong>fwhm: float, optional</strong></dt><dd><p>A parameter that represents the localization uncertainty in
+reference space in terms of the full width at half maximum
+of an isotropic Gaussian kernel.</p>
+</dd>
+<dt><strong>smooth_method: str, optional</strong></dt><dd><p>One of ‘default’ and ‘spm’. Setting <cite>smooth_method=spm</cite>
+results in simply smoothing the input images using a
+Gaussian kernel, while the default method involves more
+complex smoothing in order to propagate spatial uncertainty
+into the inference process.</p>
+</dd>
+<dt><strong>res_path: str, optional</strong></dt><dd><p>An existing path to write output images. If None, no output
+is written.</p>
+</dd>
+<dt><strong>write_smoothed_images: bool, optional</strong></dt><dd><p>Specify whether smoothed images computed throughout the
+inference process are to be written on disk in <cite>res_path</cite>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.group.parcel_analysis.ParcelAnalysis.dump_results">
+<span class="sig-name descname"><span class="pre">dump_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.group.parcel_analysis.ParcelAnalysis.dump_results" title="Link to this definition">¶</a></dt>
+<dd><p>Save parcel analysis information in NPZ file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.group.parcel_analysis.ParcelAnalysis.parcel_maps">
+<span class="sig-name descname"><span class="pre">parcel_maps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full_res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.group.parcel_analysis.ParcelAnalysis.parcel_maps" title="Link to this definition">¶</a></dt>
+<dd><p>Compute parcel-based posterior contrast means and positive
+contrast probabilities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>full_res: boolean</strong></dt><dd><p>If True, the output images will be at the same resolution as
+the parcel image. Otherwise, resolution will match the
+first-level images.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>pmap_mu_img: nipy image</dt><dd><p>Image of posterior contrast means for each parcel.</p>
+</dd>
+<dt>pmap_prob_img: nipy image</dt><dd><p>Corresponding image of posterior probabilities of positive
+contrast.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.group.parcel_analysis.ParcelAnalysis.t_map">
+<span class="sig-name descname"><span class="pre">t_map</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.group.parcel_analysis.ParcelAnalysis.t_map" title="Link to this definition">¶</a></dt>
+<dd><p>Compute voxel-wise t-statistic map. This map is different from
+what you would get from an SPM-style mass univariate analysis
+because the method accounts for both spatial uncertainty in
+reference space and possibly errors on first-level inputs (if
+variance images are provided).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>tmap_img: nipy image</dt><dd><p>t-statistic map.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.group.parcel_analysis.parcel_analysis">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.group.parcel_analysis.</span></span><span class="sig-name descname"><span class="pre">parcel_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con_imgs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parcel_img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msk_img</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vcon_imgs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cvect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.group.parcel_analysis.parcel_analysis" title="Link to this definition">¶</a></dt>
+<dd><p>Helper function for Bayesian parcel-based analysis.</p>
+<p>Given a sequence of independent images registered to a common
+space (for instance, a set of contrast images from a first-level
+fMRI analysis), perform a second-level analysis assuming constant
+effects throughout parcels defined from a given label image in
+reference space. Specifically, a model of the following form is
+assumed:</p>
+<p>Y = X * beta + variability,</p>
+<p>where Y denotes the input image sequence, X is a design matrix,
+and beta are parcel-wise parameter vectors. The algorithm computes
+the Bayesian posterior probability of cvect’<a href="#id3"><span class="problematic" id="id4">*</span></a>beta, where cvect is
+a given contrast vector, in each parcel using an expectation
+propagation scheme.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>con_imgs: sequence of nipy-like images</strong></dt><dd><p>Images input to the group analysis.</p>
+</dd>
+<dt><strong>parcel_img: nipy-like image</strong></dt><dd><p>Label image where each label codes for a parcel.</p>
+</dd>
+<dt><strong>msk_img: nipy-like image, optional</strong></dt><dd><p>Binary mask to restrict analysis. By default, analysis is
+carried out on all parcels with nonzero value.</p>
+</dd>
+<dt><strong>vcon_imgs: sequence of nipy-like images, optional</strong></dt><dd><p>First-level variance estimates corresponding to <cite>con_imgs</cite>. This
+is useful if the input images are “noisy”. By default,
+first-level variances are assumed to be zero.</p>
+</dd>
+<dt><strong>design_matrix: array, optional</strong></dt><dd><p>If None, a one-sample analysis model is used. Otherwise, an
+array with shape (n, p) where <cite>n</cite> matches the number of input
+scans, and <cite>p</cite> is the number of regressors.</p>
+</dd>
+<dt><strong>cvect: array, optional</strong></dt><dd><p>Contrast vector of interest. The method makes an inference on
+the contrast defined as the dot product cvect’<a href="#id5"><span class="problematic" id="id6">*</span></a>beta, where beta
+are the unknown parcel-wise effects. If None, <cite>cvect</cite> is assumed
+to be np.array((1,)). However, the <cite>cvect</cite> argument is mandatory
+if <cite>design_matrix</cite> is provided.</p>
+</dd>
+<dt><strong>fwhm: float, optional</strong></dt><dd><p>A parameter that represents the localization uncertainty in
+reference space in terms of the full width at half maximum of an
+isotropic Gaussian kernel.</p>
+</dd>
+<dt><strong>smooth_method: str, optional</strong></dt><dd><p>One of ‘default’ and ‘spm’. Setting <cite>smooth_method=spm</cite> results
+in simply smoothing the input images using a Gaussian kernel,
+while the default method involves more complex smoothing in
+order to propagate spatial uncertainty into the inference
+process.</p>
+</dd>
+<dt><strong>res_path: str, optional</strong></dt><dd><p>An existing path to write output images. If None, no output is
+written.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>pmap_mu_img: nipy image</dt><dd><p>Image of posterior contrast means for each parcel.</p>
+</dd>
+<dt>pmap_prob_img: nipy image</dt><dd><p>Corresponding image of posterior probabilities of positive
+contrast.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.group.parcel_analysis</a><ul>
+<li><a class="reference internal" href="#module-algorithms-group-parcel-analysis">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.group.parcel_analysis</span></code></a></li>
+<li><a class="reference internal" href="#parcelanalysis"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParcelAnalysis</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.group.parcel_analysis.ParcelAnalysis"><code class="docutils literal notranslate"><span class="pre">ParcelAnalysis</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.group.parcel_analysis.ParcelAnalysis.__init__"><code class="docutils literal notranslate"><span class="pre">ParcelAnalysis.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.group.parcel_analysis.ParcelAnalysis.dump_results"><code class="docutils literal notranslate"><span class="pre">ParcelAnalysis.dump_results()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.group.parcel_analysis.ParcelAnalysis.parcel_maps"><code class="docutils literal notranslate"><span class="pre">ParcelAnalysis.parcel_maps()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.group.parcel_analysis.ParcelAnalysis.t_map"><code class="docutils literal notranslate"><span class="pre">ParcelAnalysis.t_map()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#nipy.algorithms.group.parcel_analysis.parcel_analysis"><code class="docutils literal notranslate"><span class="pre">parcel_analysis()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.graph.graph.html"
+                          title="previous chapter">algorithms.graph.graph</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.interpolation.html"
+                          title="next chapter">algorithms.interpolation</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.group.parcel_analysis.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.interpolation.html" title="algorithms.interpolation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.graph.graph.html" title="algorithms.graph.graph"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

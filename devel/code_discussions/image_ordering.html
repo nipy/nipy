@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Registration API Design" href="registration_api.html" />
+    <link rel="prev" title="Understanding voxel and real world mappings" href="understanding_affines.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="registration_api.html" title="Registration API Design"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="understanding_affines.html" title="Understanding voxel and real world mappings"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">Code discussions</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="image-index-ordering">
+<span id="image-ordering"></span><h1>Image index ordering<a class="headerlink" href="#image-index-ordering" title="Link to this heading">¶</a></h1>
+<section id="background">
+<h2>Background<a class="headerlink" href="#background" title="Link to this heading">¶</a></h2>
+<p>In general, images - and in particular NIfTI format images, are
+ordered in memory with the X dimension changing fastest, and the Z
+dimension changing slowest.</p>
+<p>Numpy has two different ways of indexing arrays in memory, C and
+fortran.  With C index ordering, the first index into an array indexes
+the slowest changing dimension, and the last indexes the fastest
+changing dimension.  With fortran ordering, the first index refers to
+the fastest changing dimension - X in the case of the image mentioned
+above.</p>
+<p>C is the default index ordering for arrays in Numpy.</p>
+<p>For example, let’s imagine that we have a binary block of 3D image
+data, in standard NIfTI / Analyze format, with the X dimension
+changing fastest, called <cite>my.img</cite>, containing Float32 data.  Then we
+memory map it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">img_arr</span> <span class="o">=</span> <span class="n">memmap</span><span class="p">(</span><span class="s1">&#39;my.img&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When we index this new array, the first index indexes the Z dimension,
+and the third indexes X.  For example, if I want a voxel X=3, Y=10,
+Z=20 (zero-based), I have to get this from the array with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">img_arr</span><span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="the-problem">
+<h2>The problem<a class="headerlink" href="#the-problem" title="Link to this heading">¶</a></h2>
+<p>Most potential users of NiPy are likely to have experience of using
+image arrays in Matlab and SPM.  Matlab uses Fortran index ordering.
+For fortran, the first index is the fastest changing, and the last is
+the slowest-changing. For example, here is how to get voxel X=3, Y=10,
+Z=20 (zero-based) using SPM in Matlab:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">img_arr</span> <span class="o">=</span> <span class="n">spm_read_vols</span><span class="p">(</span><span class="n">spm_vol</span><span class="p">(</span><span class="s1">&#39;my.img&#39;</span><span class="p">));</span>
+<span class="n">img_arr</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>  <span class="o">%</span> <span class="n">matlab</span> <span class="n">indexing</span> <span class="ow">is</span> <span class="n">one</span><span class="o">-</span><span class="n">based</span>
+</pre></div>
+</div>
+<p>This ordering fits better with the way that we talk about coordinates
+in functional imaging, as we invariably use XYZ ordered coordinates in
+papers.  It is possible to do the same in numpy, by specifying that
+the image should have fortran index ordering:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">img_arr</span> <span class="o">=</span> <span class="n">memmap</span><span class="p">(</span><span class="s1">&#39;my.img&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+<span class="n">img_arr</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="native-fortran-or-c-indexing-for-images">
+<h2>Native fortran or C indexing for images<a class="headerlink" href="#native-fortran-or-c-indexing-for-images" title="Link to this heading">¶</a></h2>
+<p>We could change the default ordering of image arrays to fortran, in
+order to allow XYZ index ordering.  So, change the access to the image
+array in the image class so that, to get the voxel at X=3, Y=10, Z=20
+(zero-based):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">img</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="s1">&#39;my.img&#39;</span><span class="p">)</span>
+<span class="n">img</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>instead of the current situation, which requires:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">img</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="s1">&#39;my.img&#39;</span><span class="p">)</span>
+<span class="n">img</span><span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+</pre></div>
+</div>
+<section id="for-and-against-fortran-ordering">
+<h3>For and against fortran ordering<a class="headerlink" href="#for-and-against-fortran-ordering" title="Link to this heading">¶</a></h3>
+<p>For:</p>
+<ul class="simple">
+<li><p>Fortran index ordering is more intuitive for functional imaging
+because of conventional XYZ ordering of spatial coordinates, and
+Fortran index ordering in packages such as Matlab</p></li>
+<li><p>Indexing into a raw array is fast, and common in lower-level
+applications, so it would be useful to implement the more intuitive
+XYZ ordering at this level rather than via interpolators (see below)</p></li>
+<li><p>Standardizing to one index ordering (XYZ) would mean users would not
+have to think about the arrangement of the image in memory</p></li>
+</ul>
+<p>Against:</p>
+<ul class="simple">
+<li><p>C index ordering is more familiar to C users</p></li>
+<li><p>C index ordering is the default in numpy</p></li>
+<li><p>XYZ ordering can be implemented by wrapping by an interpolator</p></li>
+</ul>
+<p>Note that there is no performance penalty for either array ordering,
+as this is dealt with internally by NumPy.  For example, imagine the
+following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">50</span><span class="p">))</span> <span class="c1"># Indexing is C by default</span>
+<span class="n">arr2</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="c1"># Now it is fortran</span>
+<span class="c1"># There should be no effective difference in speed for the next two lines</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># get first row of data - most discontiguous memory</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">arr2</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># gets same data, again most discontiguous memory</span>
+</pre></div>
+</div>
+</section>
+<section id="potential-problems-for-fortran-ordering">
+<h3>Potential problems for fortran ordering<a class="headerlink" href="#potential-problems-for-fortran-ordering" title="Link to this heading">¶</a></h3>
+<section id="clash-between-default-ordering-of-numpy-arrays-and-nipy-images">
+<h4>Clash between default ordering of numpy arrays and nipy images<a class="headerlink" href="#clash-between-default-ordering-of-numpy-arrays-and-nipy-images" title="Link to this heading">¶</a></h4>
+<p>C index ordering is the default in numpy, and using fortran ordering
+for images might be confusing in some circumstances.  Consider for
+example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">img_obj</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="s1">&#39;my.img&#39;</span><span class="p">)</span> <span class="c1"># Where the Image class has been changed to implement Fortran ordering</span>
+<span class="n">first_z_slice</span> <span class="o">=</span> <span class="n">img_obj</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># returns a Z slice</span>
+
+<span class="n">img_arr</span> <span class="o">=</span> <span class="n">memmap</span><span class="p">(</span><span class="s1">&#39;my.img&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">)</span> <span class="c1"># C ordering, the numpy default</span>
+<span class="n">img_obj</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">img_arr</span><span class="p">)</span> <span class="c1"># this call may not be correct</span>
+<span class="n">first_z_slice</span> <span class="o">=</span> <span class="n">img_obj</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># in fact returns an X slice</span>
+</pre></div>
+</div>
+<p>I suppose that we could check that arrays are fortran index ordered in
+the Image __init__ routine.</p>
+</section>
+</section>
+</section>
+<section id="an-alternative-proposal-xyz-ordering-of-output-coordinates">
+<h2>An alternative proposal - XYZ ordering of output coordinates<a class="headerlink" href="#an-alternative-proposal-xyz-ordering-of-output-coordinates" title="Link to this heading">¶</a></h2>
+<p>JT: Another thought, that is a compromise between the XYZ coordinates
+and Fortran ordering.</p>
+<p>To me, having worked mostly with C-type arrays, when I index an array
+I think in C terms. But, the Image objects have the “warp” attached to
+them, which describes the output coordinates. We could insist that the
+output coordinates are XYZT (or make this an option). So, for
+instance, if the 4x4 transform was the identity, the following two
+calls would give something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="o">&gt;&gt;&gt;</span> <span class="n">interp</span> <span class="o">=</span> <span class="n">interpolator</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+ <span class="o">&gt;&gt;&gt;</span> <span class="n">img</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="n">interp</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="kc">True</span>
+</pre></div>
+</div>
+<p>This way, users would be sure in the interpolator of the order of the
+coordinates, but users who want access to the array would know that
+they would be using the array order on disk…</p>
+<p>I see that a lot of users will want to think of the first coordinate
+as “x”, but depending on the sampling the [0] slice of img may be the
+leftmost or the rightmost. To find out which is which, users will have
+to look at the 4x4 transform (or equivalently the start and the
+step). So just knowing the first array coordinate is the “x”
+coordinate still misses some information, all of which is contained in
+the transform.</p>
+<p>MB replied:</p>
+<p>I agree that the output coordinates are very important - and I think
+we all agree that this should be XYZ(T)?</p>
+<p>For the raw array indices - it is very common for people to want to do
+things to the raw image array - the quickstart examples containing a
+few - and you usually don’t care about which end of X is left in that
+situation, only which spatial etc dimension the index refers to.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Image index ordering</a><ul>
+<li><a class="reference internal" href="#background">Background</a></li>
+<li><a class="reference internal" href="#the-problem">The problem</a></li>
+<li><a class="reference internal" href="#native-fortran-or-c-indexing-for-images">Native fortran or C indexing for images</a><ul>
+<li><a class="reference internal" href="#for-and-against-fortran-ordering">For and against fortran ordering</a></li>
+<li><a class="reference internal" href="#potential-problems-for-fortran-ordering">Potential problems for fortran ordering</a><ul>
+<li><a class="reference internal" href="#clash-between-default-ordering-of-numpy-arrays-and-nipy-images">Clash between default ordering of numpy arrays and nipy images</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#an-alternative-proposal-xyz-ordering-of-output-coordinates">An alternative proposal - XYZ ordering of output coordinates</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="understanding_affines.html"
+                          title="previous chapter">Understanding voxel and real world mappings</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="registration_api.html"
+                          title="next chapter">Registration API Design</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/devel/code_discussions/image_ordering.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="registration_api.html" title="Registration API Design"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="understanding_affines.html" title="Understanding voxel and real world mappings"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >Developer Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" >Code discussions</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

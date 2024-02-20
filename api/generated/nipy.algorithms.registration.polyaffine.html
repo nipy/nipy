@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.registration.resample" href="nipy.algorithms.registration.resample.html" />
+    <link rel="prev" title="algorithms.registration.optimizer" href="nipy.algorithms.registration.optimizer.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.resample.html" title="algorithms.registration.resample"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.optimizer.html" title="algorithms.registration.optimizer"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-registration-polyaffine">
+<h1>algorithms.registration.polyaffine<a class="headerlink" href="#algorithms-registration-polyaffine" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-registration-polyaffine">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.registration.polyaffine</span></code><a class="headerlink" href="#module-algorithms-registration-polyaffine" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.registration.polyaffine</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-ea2d15bc5099ee4f49a5bb768f73777f282e5618.png" alt="Inheritance diagram of nipy.algorithms.registration.polyaffine" usemap="#inheritancef87ded03ae" class="inheritance graphviz" /></div>
+<map id="inheritancef87ded03ae" name="inheritancef87ded03ae">
+<area shape="rect" id="node1" href="#nipy.algorithms.registration.polyaffine.PolyAffine" target="_top" title="registration.polyaffine.PolyAffine" alt="" coords="261,5,468,32"/>
+<area shape="rect" id="node2" href="nipy.algorithms.registration.transform.html#nipy.algorithms.registration.transform.Transform" target="_top" title="A default transformation class" alt="" coords="5,5,213,32"/>
+</map><span class="target" id="module-nipy.algorithms.registration.polyaffine"></span></section>
+<section id="polyaffine">
+<h2><a class="reference internal" href="#nipy.algorithms.registration.polyaffine.PolyAffine" title="nipy.algorithms.registration.polyaffine.PolyAffine"><code class="xref py py-class docutils literal notranslate"><span class="pre">PolyAffine</span></code></a><a class="headerlink" href="#polyaffine" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.polyaffine.PolyAffine">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.registration.polyaffine.</span></span><span class="sig-name descname"><span class="pre">PolyAffine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">centers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">glob_affine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.polyaffine.PolyAffine" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="nipy.algorithms.registration.transform.html#nipy.algorithms.registration.transform.Transform" title="nipy.algorithms.registration.transform.Transform"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transform</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.polyaffine.PolyAffine.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">centers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">glob_affine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.polyaffine.PolyAffine.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>centers: N times 3 array</p>
+<p>We are given a set of affine transforms T_i with centers x_i,
+all in homogeneous coordinates. The polyaffine transform is
+defined, up to a right composition with a global affine, as:</p>
+<p>T(x) = sum_i w_i(x) T_i x</p>
+<p>where w_i(x) = g(x-x_i)/Z(x) are normalized Gaussian weights
+that sum up to one for every x.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.polyaffine.PolyAffine.affine">
+<span class="sig-name descname"><span class="pre">affine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.polyaffine.PolyAffine.affine" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.polyaffine.PolyAffine.affines">
+<span class="sig-name descname"><span class="pre">affines</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.polyaffine.PolyAffine.affines" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.polyaffine.PolyAffine.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.polyaffine.PolyAffine.apply" title="Link to this definition">¶</a></dt>
+<dd><p>xyz is an (N, 3) array</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.polyaffine.PolyAffine.compose">
+<span class="sig-name descname"><span class="pre">compose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.polyaffine.PolyAffine.compose" title="Link to this definition">¶</a></dt>
+<dd><p>Compose this transform onto another</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>other</strong><span class="classifier">Transform</span></dt><dd><p>transform that we compose onto</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>composed_transform</strong><span class="classifier">Transform</span></dt><dd><p>a transform implementing the composition of self on <cite>other</cite></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.polyaffine.PolyAffine.left_compose">
+<span class="sig-name descname"><span class="pre">left_compose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.registration.polyaffine.PolyAffine.left_compose" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="nipy.algorithms.registration.polyaffine.PolyAffine.param">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">param</span></span><a class="headerlink" href="#nipy.algorithms.registration.polyaffine.PolyAffine.param" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.registration.polyaffine</a><ul>
+<li><a class="reference internal" href="#module-algorithms-registration-polyaffine">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.registration.polyaffine</span></code></a></li>
+<li><a class="reference internal" href="#polyaffine"><code class="xref py py-class docutils literal notranslate"><span class="pre">PolyAffine</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.polyaffine.PolyAffine"><code class="docutils literal notranslate"><span class="pre">PolyAffine</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.registration.polyaffine.PolyAffine.__init__"><code class="docutils literal notranslate"><span class="pre">PolyAffine.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.polyaffine.PolyAffine.affine"><code class="docutils literal notranslate"><span class="pre">PolyAffine.affine()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.polyaffine.PolyAffine.affines"><code class="docutils literal notranslate"><span class="pre">PolyAffine.affines()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.polyaffine.PolyAffine.apply"><code class="docutils literal notranslate"><span class="pre">PolyAffine.apply()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.polyaffine.PolyAffine.compose"><code class="docutils literal notranslate"><span class="pre">PolyAffine.compose()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.polyaffine.PolyAffine.left_compose"><code class="docutils literal notranslate"><span class="pre">PolyAffine.left_compose()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.registration.polyaffine.PolyAffine.param"><code class="docutils literal notranslate"><span class="pre">PolyAffine.param</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.registration.optimizer.html"
+                          title="previous chapter">algorithms.registration.optimizer</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.registration.resample.html"
+                          title="next chapter">algorithms.registration.resample</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.registration.polyaffine.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.resample.html" title="algorithms.registration.resample"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.registration.optimizer.html" title="algorithms.registration.optimizer"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

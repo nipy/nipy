@@ -1,0 +1,20 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+algorithms.registration.type_check
+==================================
+
+Module: :mod:`algorithms.registration.type_check`
+-------------------------------------------------
+.. automodule:: nipy.algorithms.registration.type_check
+
+.. currentmodule:: nipy.algorithms.registration.type_check
+
+Functions
+---------
+
+
+.. autofunction:: nipy.algorithms.registration.type_check.check_type
+
+
+.. autofunction:: nipy.algorithms.registration.type_check.check_type_and_shape
+

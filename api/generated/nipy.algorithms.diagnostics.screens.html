@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.diagnostics.timediff" href="nipy.algorithms.diagnostics.timediff.html" />
+    <link rel="prev" title="algorithms.diagnostics.commands" href="nipy.algorithms.diagnostics.commands.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.diagnostics.timediff.html" title="algorithms.diagnostics.timediff"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.diagnostics.commands.html" title="algorithms.diagnostics.commands"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-diagnostics-screens">
+<h1>algorithms.diagnostics.screens<a class="headerlink" href="#algorithms-diagnostics-screens" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.algorithms.diagnostics.screens">
+<span id="module-algorithms-diagnostics-screens"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.diagnostics.screens</span></code><a class="headerlink" href="#module-nipy.algorithms.diagnostics.screens" title="Link to this heading">¶</a></h2>
+<p>Diagnostic 4d image screen</p>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.diagnostics.screens.screen">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.diagnostics.screens.</span></span><span class="sig-name descname"><span class="pre">screen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img4d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncomp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.diagnostics.screens.screen" title="Link to this definition">¶</a></dt>
+<dd><p>Diagnostic screen for 4d FMRI image</p>
+<p>Includes PCA, tsdiffana and mean, std, min, max images.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>img4d</strong><span class="classifier"><code class="docutils literal notranslate"><span class="pre">Image</span></code></span></dt><dd><p>4d image file</p>
+</dd>
+<dt><strong>ncomp</strong><span class="classifier">int, optional</span></dt><dd><p>number of component images to return.  Default is 10</p>
+</dd>
+<dt><strong>time_axis</strong><span class="classifier">str or int, optional</span></dt><dd><p>Axis over which to do PCA, time difference analysis. Defaults to <cite>t</cite></p>
+</dd>
+<dt><strong>slice_axis</strong><span class="classifier">None or str or int, optional</span></dt><dd><p>Name or index of input axis over which to do slice analysis for time
+difference analysis.  If None, look for input axis <code class="docutils literal notranslate"><span class="pre">slice</span></code>.  At the
+moment we then assume slice is the last non-time axis, but this last
+guess we will remove in future versions of nipy. The default will then
+be ‘slice’ and you’ll get an error if there is no axis named ‘slice’.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>screen</strong><span class="classifier">dict</span></dt><dd><p>with keys:</p>
+<ul class="simple">
+<li><p>mean : mean image (all summaries are over last dimension)</p></li>
+<li><p>std : standard deviation image</p></li>
+<li><p>max : image of max</p></li>
+<li><p>min : min</p></li>
+<li><p>pca : 4D image of PCA component images</p></li>
+<li><p>pca_res : dict of results from PCA</p></li>
+<li><p>ts_res : dict of results from tsdiffana</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nipy</span> <span class="k">as</span> <span class="nn">ni</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.testing</span> <span class="kn">import</span> <span class="n">funcfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load_image</span><span class="p">(</span><span class="n">funcfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">screen_res</span> <span class="o">=</span> <span class="n">screen</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">screen_res</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">screen_res</span><span class="p">[</span><span class="s1">&#39;pca&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span>
+<span class="go">4</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.diagnostics.screens.write_screen_res">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.diagnostics.screens.</span></span><span class="sig-name descname"><span class="pre">write_screen_res</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_img_ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.nii'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pcnt_var_thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.diagnostics.screens.write_screen_res" title="Link to this definition">¶</a></dt>
+<dd><p>Write results from <code class="docutils literal notranslate"><span class="pre">screen</span></code> to disk as images</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">dict</span></dt><dd><p>output from <code class="docutils literal notranslate"><span class="pre">screen</span></code> function</p>
+</dd>
+<dt><strong>out_path</strong><span class="classifier">str</span></dt><dd><p>directory to which to write output images</p>
+</dd>
+<dt><strong>out_root</strong><span class="classifier">str</span></dt><dd><p>part of filename between image-specific prefix and image-specific
+extension to use for writing images</p>
+</dd>
+<dt><strong>out_img_ext</strong><span class="classifier">str, optional</span></dt><dd><p>extension (identifying image type) to which to write volume
+images.  Default is ‘.nii’</p>
+</dd>
+<dt><strong>pcnt_var_thresh</strong><span class="classifier">float, optional</span></dt><dd><p>threshold below which we do not plot percent variance explained
+by components; default is 0.1.  This removes the long tail from
+percent variance plots.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.diagnostics.screens</a><ul>
+<li><a class="reference internal" href="#module-nipy.algorithms.diagnostics.screens">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.diagnostics.screens</span></code></a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.diagnostics.screens.screen"><code class="docutils literal notranslate"><span class="pre">screen()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.diagnostics.screens.write_screen_res"><code class="docutils literal notranslate"><span class="pre">write_screen_res()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.diagnostics.commands.html"
+                          title="previous chapter">algorithms.diagnostics.commands</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.diagnostics.timediff.html"
+                          title="next chapter">algorithms.diagnostics.timediff</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.diagnostics.screens.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.diagnostics.timediff.html" title="algorithms.diagnostics.timediff"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.diagnostics.commands.html" title="algorithms.diagnostics.commands"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

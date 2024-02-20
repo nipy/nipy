@@ -1,0 +1,23 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+algorithms.registration.scripting
+=================================
+
+Module: :mod:`algorithms.registration.scripting`
+------------------------------------------------
+.. automodule:: nipy.algorithms.registration.scripting
+
+.. currentmodule:: nipy.algorithms.registration.scripting
+
+Functions
+---------
+
+
+.. autofunction:: nipy.algorithms.registration.scripting.aff2euler
+
+
+.. autofunction:: nipy.algorithms.registration.scripting.aff2rot_zooms
+
+
+.. autofunction:: nipy.algorithms.registration.scripting.space_time_realign
+

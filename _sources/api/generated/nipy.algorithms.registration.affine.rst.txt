@@ -1,0 +1,118 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+algorithms.registration.affine
+==============================
+
+Module: :mod:`algorithms.registration.affine`
+---------------------------------------------
+Inheritance diagram for ``nipy.algorithms.registration.affine``:
+
+.. inheritance-diagram:: nipy.algorithms.registration.affine 
+   :parts: 3
+
+.. automodule:: nipy.algorithms.registration.affine
+
+.. currentmodule:: nipy.algorithms.registration.affine
+
+Classes
+-------
+
+:class:`Affine`
+~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Affine
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Affine2D`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Affine2D
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Rigid`
+~~~~~~~~~~~~~~
+
+
+.. autoclass:: Rigid
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Rigid2D`
+~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Rigid2D
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Similarity`
+~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Similarity
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`Similarity2D`
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Similarity2D
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Functions
+---------
+
+
+.. autofunction:: nipy.algorithms.registration.affine.inverse_affine
+
+
+.. autofunction:: nipy.algorithms.registration.affine.preconditioner
+
+
+.. autofunction:: nipy.algorithms.registration.affine.rotation_mat2vec
+
+
+.. autofunction:: nipy.algorithms.registration.affine.rotation_vec2mat
+
+
+.. autofunction:: nipy.algorithms.registration.affine.slices2aff
+
+
+.. autofunction:: nipy.algorithms.registration.affine.subgrid_affine
+
+
+.. autofunction:: nipy.algorithms.registration.affine.threshold
+
+
+.. autofunction:: nipy.algorithms.registration.affine.to_matrix44
+

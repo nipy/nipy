@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="modalities.fmri.hemodynamic_models" href="nipy.modalities.fmri.hemodynamic_models.html" />
+    <link rel="prev" title="modalities.fmri.fmristat.outputters" href="nipy.modalities.fmri.fmristat.outputters.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.hemodynamic_models.html" title="modalities.fmri.hemodynamic_models"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmristat.outputters.html" title="modalities.fmri.fmristat.outputters"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="modalities-fmri-glm">
+<h1>modalities.fmri.glm<a class="headerlink" href="#modalities-fmri-glm" title="Link to this heading">¶</a></h1>
+<section id="module-modalities-fmri-glm">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.glm</span></code><a class="headerlink" href="#module-modalities-fmri-glm" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.modalities.fmri.glm</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-bad6518e28dcbc81fcb4e5f30b075cc6f30c0379.png" alt="Inheritance diagram of nipy.modalities.fmri.glm" usemap="#inheritanceb39cb322e4" class="inheritance graphviz" /></div>
+<map id="inheritanceb39cb322e4" name="inheritanceb39cb322e4">
+<area shape="rect" id="node1" href="#nipy.modalities.fmri.glm.Contrast" target="_top" title="The contrast class handles the estimation of statistical contrasts" alt="" coords="38,107,160,133"/>
+<area shape="rect" id="node2" href="#nipy.modalities.fmri.glm.FMRILinearModel" target="_top" title="This class is meant to handle GLMs from a higher&#45;level perspective" alt="" coords="11,56,187,83"/>
+<area shape="rect" id="node3" href="#nipy.modalities.fmri.glm.GeneralLinearModel" target="_top" title="This class handles the so&#45;called on General Linear Model" alt="" coords="5,5,193,32"/>
+</map><p id="module-nipy.modalities.fmri.glm">This module presents an interface to use the glm implemented in
+nipy.algorithms.statistics.models.regression.</p>
+<p>It contains the GLM and contrast classes that are meant to be the main objects
+of fMRI data analyses.</p>
+<p>It is important to note that the GLM is meant as a one-session General Linear
+Model. But inference can be performed on multiple sessions by computing fixed
+effects on contrasts</p>
+<section id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h3>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nipy.modalities.fmri.glm</span> <span class="kn">import</span> <span class="n">GeneralLinearModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">9</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">GeneralLinearModel</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z_vals</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">contrast</span><span class="p">(</span><span class="n">cval</span><span class="p">)</span><span class="o">.</span><span class="n">z_score</span><span class="p">()</span> <span class="c1"># z-transformed statistics</span>
+</pre></div>
+</div>
+<p>Example of fixed effects statistics across two contrasts</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cval_</span> <span class="o">=</span> <span class="n">cval</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">cval_</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z_ffx</span> <span class="o">=</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">contrast</span><span class="p">(</span><span class="n">cval</span><span class="p">)</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">contrast</span><span class="p">(</span><span class="n">cval_</span><span class="p">))</span><span class="o">.</span><span class="n">z_score</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<section id="contrast">
+<h3><a class="reference internal" href="#nipy.modalities.fmri.glm.Contrast" title="nipy.modalities.fmri.glm.Contrast"><code class="xref py py-class docutils literal notranslate"><span class="pre">Contrast</span></code></a><a class="headerlink" href="#contrast" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.Contrast">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.glm.</span></span><span class="sig-name descname"><span class="pre">Contrast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">effect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contrast_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tiny</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dofmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000000.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.Contrast" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The contrast class handles the estimation of statistical contrasts
+on a given model: student (t), Fisher (F), conjunction (tmin-conjunction).
+The important feature is that it supports addition,
+thus opening the possibility of fixed-effects models.</p>
+<p>The current implementation is meant to be simple,
+and could be enhanced in the future on the computational side
+(high-dimensional F contrasts may lead to memory breakage).</p>
+<p class="rubric">Notes</p>
+<p>The ‘tmin-conjunction’ test is the valid conjunction test discussed in:
+Nichols T, Brett M, Andersson J, Wager T, Poline JB. Valid conjunction
+inference with the minimum statistic. Neuroimage. 2005 Apr 15;25(3):653-60.
+This test gives the p-value of the z-values under the conjunction null,
+i.e. the union of the null hypotheses for all terms.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.Contrast.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">effect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contrast_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tiny</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dofmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000000.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.Contrast.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>effect: array of shape (contrast_dim, n_voxels)</strong></dt><dd><p>the effects related to the contrast</p>
+</dd>
+<dt><strong>variance: array of shape (contrast_dim, contrast_dim, n_voxels)</strong></dt><dd><p>the associated variance estimate</p>
+</dd>
+<dt><strong>dof: scalar, the degrees of freedom</strong></dt><dd></dd>
+<dt><strong>contrast_type: string to be chosen among ‘t’ and ‘F’</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.Contrast.p_value">
+<span class="sig-name descname"><span class="pre">p_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">baseline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.Contrast.p_value" title="Link to this definition">¶</a></dt>
+<dd><p>Return a parametric estimate of the p-value associated
+with the null hypothesis: (H0) ‘contrast equals baseline’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>baseline: float, optional</strong></dt><dd><p>Baseline value for the test statistic</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The value of 0.5 is used where the stat is not defined</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.Contrast.stat">
+<span class="sig-name descname"><span class="pre">stat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">baseline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.Contrast.stat" title="Link to this definition">¶</a></dt>
+<dd><p>Return the decision statistic associated with the test of the
+null hypothesis: (H0) ‘contrast equals baseline’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>baseline: float, optional,</strong></dt><dd><p>Baseline value for the test statistic</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.Contrast.z_score">
+<span class="sig-name descname"><span class="pre">z_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">baseline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.Contrast.z_score" title="Link to this definition">¶</a></dt>
+<dd><p>Return a parametric estimation of the z-score associated
+with the null hypothesis: (H0) ‘contrast equals baseline’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>baseline: float, optional</strong></dt><dd><p>Baseline value for the test statistic</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The value of 0 is used where the stat is not defined</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="fmrilinearmodel">
+<h3><a class="reference internal" href="#nipy.modalities.fmri.glm.FMRILinearModel" title="nipy.modalities.fmri.glm.FMRILinearModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">FMRILinearModel</span></code></a><a class="headerlink" href="#fmrilinearmodel" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.FMRILinearModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.glm.</span></span><span class="sig-name descname"><span class="pre">FMRILinearModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmri_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design_matrices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'compute'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.FMRILinearModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class is meant to handle GLMs from a higher-level perspective
+i.e. by taking images as input and output</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.FMRILinearModel.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmri_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design_matrices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'compute'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.FMRILinearModel.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Load the data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fmri_data</strong><span class="classifier">Image or str or sequence of Images / str</span></dt><dd><p>fmri images / paths of the (4D) fmri images</p>
+</dd>
+<dt><strong>design_matrices</strong><span class="classifier">arrays or str or sequence of arrays / str</span></dt><dd><p>design matrix arrays / paths of .npz files</p>
+</dd>
+<dt><strong>mask</strong><span class="classifier">str or Image or None, optional</span></dt><dd><p>string can be ‘compute’ or a path to an image
+image is an input (assumed binary) mask image(s),
+if ‘compute’, the mask is computed
+if None, no masking will be applied</p>
+</dd>
+<dt><strong>m, M, threshold: float, optional</strong></dt><dd><p>parameters of the masking procedure.  Should be within [0, 1]</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The only computation done here is mask computation (if required)</p>
+<p class="rubric">Examples</p>
+<p>We need the example data package for this example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nipy.utils</span> <span class="kn">import</span> <span class="n">example_data</span>
+<span class="kn">from</span> <span class="nn">nipy.modalities.fmri.glm</span> <span class="kn">import</span> <span class="n">FMRILinearModel</span>
+<span class="n">fmri_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">example_data</span><span class="o">.</span><span class="n">get_filename</span><span class="p">(</span><span class="s1">&#39;fiac&#39;</span><span class="p">,</span> <span class="s1">&#39;fiac0&#39;</span><span class="p">,</span> <span class="n">run</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;run1.nii.gz&#39;</span><span class="p">,</span> <span class="s1">&#39;run2.nii.gz&#39;</span><span class="p">]]</span>
+<span class="n">design_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">example_data</span><span class="o">.</span><span class="n">get_filename</span><span class="p">(</span><span class="s1">&#39;fiac&#39;</span><span class="p">,</span> <span class="s1">&#39;fiac0&#39;</span><span class="p">,</span> <span class="n">run</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;run1_design.npz&#39;</span><span class="p">,</span> <span class="s1">&#39;run2_design.npz&#39;</span><span class="p">]]</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">example_data</span><span class="o">.</span><span class="n">get_filename</span><span class="p">(</span><span class="s1">&#39;fiac&#39;</span><span class="p">,</span> <span class="s1">&#39;fiac0&#39;</span><span class="p">,</span> <span class="s1">&#39;mask.nii.gz&#39;</span><span class="p">)</span>
+<span class="n">multi_session_model</span> <span class="o">=</span> <span class="n">FMRILinearModel</span><span class="p">(</span><span class="n">fmri_files</span><span class="p">,</span>
+                                      <span class="n">design_files</span><span class="p">,</span>
+                                      <span class="n">mask</span><span class="p">)</span>
+<span class="n">multi_session_model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="n">z_image</span><span class="p">,</span> <span class="o">=</span> <span class="n">multi_session_model</span><span class="o">.</span><span class="n">contrast</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">13</span><span class="p">)[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># The number of voxels with p &lt; 0.001 given by ...</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">z_image</span><span class="o">.</span><span class="n">get_fdata</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">3.09</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.FMRILinearModel.contrast">
+<span class="sig-name descname"><span class="pre">contrast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contrasts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">con_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contrast_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_stat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_effects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_variance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.FMRILinearModel.contrast" title="Link to this definition">¶</a></dt>
+<dd><p>Estimation of a contrast as fixed effects on all sessions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>contrasts</strong><span class="classifier">array or list of arrays of shape (n_col) or (n_dim, n_col)</span></dt><dd><p>where <code class="docutils literal notranslate"><span class="pre">n_col</span></code> is the number of columns of the design matrix,
+numerical definition of the contrast (one array per run)</p>
+</dd>
+<dt><strong>con_id</strong><span class="classifier">str, optional</span></dt><dd><p>name of the contrast</p>
+</dd>
+<dt><strong>contrast_type</strong><span class="classifier">{‘t’, ‘F’, ‘tmin-conjunction’}, optional</span></dt><dd><p>type of the contrast</p>
+</dd>
+<dt><strong>output_z</strong><span class="classifier">bool, optional</span></dt><dd><p>Return or not the corresponding z-stat image</p>
+</dd>
+<dt><strong>output_stat</strong><span class="classifier">bool, optional</span></dt><dd><p>Return or not the base (t/F) stat image</p>
+</dd>
+<dt><strong>output_effects</strong><span class="classifier">bool, optional</span></dt><dd><p>Return or not the corresponding effect image</p>
+</dd>
+<dt><strong>output_variance</strong><span class="classifier">bool, optional</span></dt><dd><p>Return or not the corresponding variance image</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>output_images</strong><span class="classifier">list of nibabel images</span></dt><dd><p>The required output images, in the following order:
+z image, stat(t/F) image, effects image, variance image</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.FMRILinearModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">do_scaling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ar1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.FMRILinearModel.fit" title="Link to this definition">¶</a></dt>
+<dd><p>Load the data, mask the data, scale the data, fit the GLM</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>do_scaling</strong><span class="classifier">bool, optional</span></dt><dd><p>if True, the data should be scaled as percent of voxel mean</p>
+</dd>
+<dt><strong>model</strong><span class="classifier">string, optional,</span></dt><dd><p>the kind of glm (‘ols’ or ‘ar1’) you want to fit to the data</p>
+</dd>
+<dt><strong>steps</strong><span class="classifier">int, optional</span></dt><dd><p>in case of an ar1, discretization of the ar1 parameter</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="generallinearmodel">
+<h3><a class="reference internal" href="#nipy.modalities.fmri.glm.GeneralLinearModel" title="nipy.modalities.fmri.glm.GeneralLinearModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralLinearModel</span></code></a><a class="headerlink" href="#generallinearmodel" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.GeneralLinearModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.glm.</span></span><span class="sig-name descname"><span class="pre">GeneralLinearModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.GeneralLinearModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class handles the so-called on General Linear Model</p>
+<p>Most of what it does in the fit() and contrast() methods
+fit() performs the standard two-step (‘ols’ then ‘ar1’) GLM fitting
+contrast() returns a contrast instance, yileding statistics and p-values.
+The link between fit() and contrast is done vis the two class members:</p>
+<dl class="simple">
+<dt>glm_results<span class="classifier">dictionary of nipy.algorithms.statistics.models.</span></dt><dd><p>regression.RegressionResults instances,
+describing results of a GLM fit</p>
+</dd>
+<dt>labels<span class="classifier">array of shape(n_voxels),</span></dt><dd><p>labels that associate each voxel with a results key</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.GeneralLinearModel.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.GeneralLinearModel.__init__" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array of shape (n_time_points, n_regressors)</span></dt><dd><p>the design matrix</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.GeneralLinearModel.contrast">
+<span class="sig-name descname"><span class="pre">contrast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contrast_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.GeneralLinearModel.contrast" title="Link to this definition">¶</a></dt>
+<dd><p>Specify and estimate a linear contrast</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>con_val</strong><span class="classifier">numpy.ndarray of shape (p) or (q, p)</span></dt><dd><p>where q = number of contrast vectors and p = number of regressors</p>
+</dd>
+<dt><strong>contrast_type</strong><span class="classifier">{None, ‘t’, ‘F’ or ‘tmin-conjunction’}, optional</span></dt><dd><p>type of the contrast.  If None, then defaults to ‘t’ for 1D
+<cite>con_val</cite> and ‘F’ for 2D <cite>con_val</cite></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>con: Contrast instance</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.GeneralLinearModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ols'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.GeneralLinearModel.fit" title="Link to this definition">¶</a></dt>
+<dd><p>GLM fitting of a dataset using ‘ols’ regression or the two-pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>Y</strong><span class="classifier">array of shape(n_time_points, n_samples)</span></dt><dd><p>the fMRI data</p>
+</dd>
+<dt><strong>model</strong><span class="classifier">{‘ar1’, ‘ols’}, optional</span></dt><dd><p>the temporal variance model. Defaults to ‘ols’</p>
+</dd>
+<dt><strong>steps</strong><span class="classifier">int, optional</span></dt><dd><p>Maximum number of discrete steps for the AR(1) coef histogram</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.GeneralLinearModel.get_beta">
+<span class="sig-name descname"><span class="pre">get_beta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.GeneralLinearModel.get_beta" title="Link to this definition">¶</a></dt>
+<dd><p>Accessor for the best linear unbiased estimated of model parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>column_index: int or array-like of int or None, optional</strong></dt><dd><p>The indexed of the columns to be returned.  if None (default
+behaviour), the whole vector is returned</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>beta: array of shape (n_voxels, n_columns)</dt><dd><p>the beta</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.GeneralLinearModel.get_logL">
+<span class="sig-name descname"><span class="pre">get_logL</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.GeneralLinearModel.get_logL" title="Link to this definition">¶</a></dt>
+<dd><p>Accessor for the log-likelihood of the model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>logL: array of shape (n_voxels,)</dt><dd><p>the sum of square error per voxel</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.GeneralLinearModel.get_mse">
+<span class="sig-name descname"><span class="pre">get_mse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.GeneralLinearModel.get_mse" title="Link to this definition">¶</a></dt>
+<dd><p>Accessor for the mean squared error of the model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>mse: array of shape (n_voxels)</dt><dd><p>the sum of square error per voxel</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="function">
+<h2>Function<a class="headerlink" href="#function" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.modalities.fmri.glm.data_scaling">
+<span class="sig-prename descclassname"><span class="pre">nipy.modalities.fmri.glm.</span></span><span class="sig-name descname"><span class="pre">data_scaling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.modalities.fmri.glm.data_scaling" title="Link to this definition">¶</a></dt>
+<dd><p>Scaling of the data to have percent of baseline change columnwise</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>Y: array of shape(n_time_points, n_voxels)</strong></dt><dd><p>the input data</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Y: array of shape (n_time_points, n_voxels),</dt><dd><p>the data after mean-scaling, de-meaning and multiplication by 100</p>
+</dd>
+<dt><strong>mean</strong><span class="classifier">array of shape (n_voxels,)</span></dt><dd><p>the data mean</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">modalities.fmri.glm</a><ul>
+<li><a class="reference internal" href="#module-modalities-fmri-glm">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">modalities.fmri.glm</span></code></a><ul>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#contrast"><code class="xref py py-class docutils literal notranslate"><span class="pre">Contrast</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.Contrast"><code class="docutils literal notranslate"><span class="pre">Contrast</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.Contrast.__init__"><code class="docutils literal notranslate"><span class="pre">Contrast.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.Contrast.p_value"><code class="docutils literal notranslate"><span class="pre">Contrast.p_value()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.Contrast.stat"><code class="docutils literal notranslate"><span class="pre">Contrast.stat()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.Contrast.z_score"><code class="docutils literal notranslate"><span class="pre">Contrast.z_score()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fmrilinearmodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">FMRILinearModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.FMRILinearModel"><code class="docutils literal notranslate"><span class="pre">FMRILinearModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.FMRILinearModel.__init__"><code class="docutils literal notranslate"><span class="pre">FMRILinearModel.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.FMRILinearModel.contrast"><code class="docutils literal notranslate"><span class="pre">FMRILinearModel.contrast()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.FMRILinearModel.fit"><code class="docutils literal notranslate"><span class="pre">FMRILinearModel.fit()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#generallinearmodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralLinearModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.GeneralLinearModel"><code class="docutils literal notranslate"><span class="pre">GeneralLinearModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.GeneralLinearModel.__init__"><code class="docutils literal notranslate"><span class="pre">GeneralLinearModel.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.GeneralLinearModel.contrast"><code class="docutils literal notranslate"><span class="pre">GeneralLinearModel.contrast()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.GeneralLinearModel.fit"><code class="docutils literal notranslate"><span class="pre">GeneralLinearModel.fit()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.GeneralLinearModel.get_beta"><code class="docutils literal notranslate"><span class="pre">GeneralLinearModel.get_beta()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.GeneralLinearModel.get_logL"><code class="docutils literal notranslate"><span class="pre">GeneralLinearModel.get_logL()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.GeneralLinearModel.get_mse"><code class="docutils literal notranslate"><span class="pre">GeneralLinearModel.get_mse()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#function">Function</a><ul>
+<li><a class="reference internal" href="#nipy.modalities.fmri.glm.data_scaling"><code class="docutils literal notranslate"><span class="pre">data_scaling()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.fmristat.outputters.html"
+                          title="previous chapter">modalities.fmri.fmristat.outputters</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.modalities.fmri.hemodynamic_models.html"
+                          title="next chapter">modalities.fmri.hemodynamic_models</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.modalities.fmri.glm.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.hemodynamic_models.html" title="modalities.fmri.hemodynamic_models"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.modalities.fmri.fmristat.outputters.html" title="modalities.fmri.fmristat.outputters"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

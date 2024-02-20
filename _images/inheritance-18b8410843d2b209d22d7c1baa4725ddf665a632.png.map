@@ -1,0 +1,6 @@
+<map id="inheritance3f48cb85d6" name="inheritance3f48cb85d6">
+<area shape="rect" id="node1" href="#nipy.core.reference.coordinate_system.CoordSysMaker" target="_top" title="Class to create similar coordinate maps of different dimensions" alt="" coords="26,157,314,184"/>
+<area shape="rect" id="node2" href="#nipy.core.reference.coordinate_system.CoordSysMakerError" target="_top" title="reference.coordinate_system.CoordSysMakerError" alt="" coords="12,107,328,133"/>
+<area shape="rect" id="node3" href="#nipy.core.reference.coordinate_system.CoordinateSystem" target="_top" title="An ordered sequence of named coordinates of a specified dtype." alt="" coords="19,56,321,83"/>
+<area shape="rect" id="node4" href="#nipy.core.reference.coordinate_system.CoordinateSystemError" target="_top" title="reference.coordinate_system.CoordinateSystemError" alt="" coords="5,5,335,32"/>
+</map>

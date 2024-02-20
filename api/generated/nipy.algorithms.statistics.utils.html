@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.utils.fast_distance" href="nipy.algorithms.utils.fast_distance.html" />
+    <link rel="prev" title="algorithms.statistics.rft" href="nipy.algorithms.statistics.rft.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.utils.fast_distance.html" title="algorithms.utils.fast_distance"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.rft.html" title="algorithms.statistics.rft"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-statistics-utils">
+<h1>algorithms.statistics.utils<a class="headerlink" href="#algorithms-statistics-utils" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.algorithms.statistics.utils">
+<span id="module-algorithms-statistics-utils"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.utils</span></code><a class="headerlink" href="#module-nipy.algorithms.statistics.utils" title="Link to this heading">¶</a></h2>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.utils.check_cast_bin8">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.utils.</span></span><span class="sig-name descname"><span class="pre">check_cast_bin8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.utils.check_cast_bin8" title="Link to this definition">¶</a></dt>
+<dd><p>Return binary array <cite>arr</cite> as uint8 type, or raise if not binary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>arr</strong><span class="classifier">array-like</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>bin8_arr</strong><span class="classifier">uint8 array</span></dt><dd><p><cite>bin8_arr</cite> has same shape as <cite>arr</cite>, is of dtype <code class="docutils literal notranslate"><span class="pre">np.uint8</span></code>, with
+values 0 and 1 only.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>When the array is not binary.  Specifically, raise if, for any element
+<code class="docutils literal notranslate"><span class="pre">e</span></code>, <code class="docutils literal notranslate"><span class="pre">e</span> <span class="pre">!=</span> <span class="pre">(e</span> <span class="pre">!=</span> <span class="pre">0)</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.utils.complex">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.utils.</span></span><span class="sig-name descname"><span class="pre">complex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maximal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[(0,</span> <span class="pre">3,</span> <span class="pre">2,</span> <span class="pre">7),</span> <span class="pre">(0,</span> <span class="pre">6,</span> <span class="pre">2,</span> <span class="pre">7),</span> <span class="pre">(0,</span> <span class="pre">7,</span> <span class="pre">5,</span> <span class="pre">4),</span> <span class="pre">(0,</span> <span class="pre">7,</span> <span class="pre">5,</span> <span class="pre">1),</span> <span class="pre">(0,</span> <span class="pre">7,</span> <span class="pre">4,</span> <span class="pre">6),</span> <span class="pre">(0,</span> <span class="pre">3,</span> <span class="pre">1,</span> <span class="pre">7)]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.utils.complex" title="Link to this definition">¶</a></dt>
+<dd><p>Faces from simplices</p>
+<p>Take a list of maximal simplices (by default a triangulation of a
+cube into 6 tetrahedra) and computes all faces</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>maximal</strong><span class="classifier">sequence of sequences, optional</span></dt><dd><p>Default is triangulation of cube into tetrahedra</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>faces</strong><span class="classifier">dict</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.utils.cube_with_strides_center">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.utils.</span></span><span class="sig-name descname"><span class="pre">cube_with_strides_center</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[4,</span> <span class="pre">2,</span> <span class="pre">1]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.utils.cube_with_strides_center" title="Link to this definition">¶</a></dt>
+<dd><p>Cube in an array of voxels with a given center and strides.</p>
+<p>This triangulates a cube with vertices [center[i] + 1].</p>
+<p>The dimension of the cube is determined by len(center)
+which should agree with len(center).</p>
+<p>The allowable dimensions are [1,2,3].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>center</strong><span class="classifier">(d,) sequence of int, optional</span></dt><dd><p>Default is [0, 0, 0]</p>
+</dd>
+<dt><strong>strides</strong><span class="classifier">(d,) sequence of int, optional</span></dt><dd><p>Default is [4, 2, 1].  These are the strides given by
+<code class="docutils literal notranslate"><span class="pre">np.ones((2,2,2),</span> <span class="pre">np.bool_).strides</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>complex</strong><span class="classifier">dict</span></dt><dd><p>A dictionary with integer keys representing a simplicial
+complex. The vertices of the simplicial complex are the indices
+of the corners of the cube in a ‘flattened’ array with specified
+strides.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.utils.decompose2d">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.utils.</span></span><span class="sig-name descname"><span class="pre">decompose2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.utils.decompose2d" title="Link to this definition">¶</a></dt>
+<dd><p>Return all (dim-1)-dimensional simplices in a triangulation
+of a square of a given shape. The vertices in the triangulation
+are indices in a ‘flattened’ array of the specified shape.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.utils.decompose3d">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.utils.</span></span><span class="sig-name descname"><span class="pre">decompose3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.utils.decompose3d" title="Link to this definition">¶</a></dt>
+<dd><p>Return all (dim-1)-dimensional simplices in a triangulation
+of a cube of a given shape. The vertices in the triangulation
+are indices in a ‘flattened’ array of the specified shape.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.utils.join_complexes">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.utils.</span></span><span class="sig-name descname"><span class="pre">join_complexes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">complexes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.utils.join_complexes" title="Link to this definition">¶</a></dt>
+<dd><p>Join a sequence of simplicial complexes.</p>
+<p>Returns the union of all the particular faces.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.utils.multiple_fast_inv">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.utils.</span></span><span class="sig-name descname"><span class="pre">multiple_fast_inv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.utils.multiple_fast_inv" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverse of a set of arrays in-place</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>a: array_like of shape (n_samples, M, M)</strong></dt><dd><p>Set of square matrices to be inverted. <cite>a</cite> is changed in place.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>a: ndarray shape (n_samples, M, M)</dt><dd><p>The input array <cite>a</cite>, overwritten with the inverses of the original 2D
+arrays in <code class="docutils literal notranslate"><span class="pre">a[0],</span> <span class="pre">a[1],</span> <span class="pre">...</span></code>.  Thus <code class="docutils literal notranslate"><span class="pre">a[0]</span></code> replaced with
+<code class="docutils literal notranslate"><span class="pre">inv(a[0])</span></code> etc.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>LinAlgError</dt><dd><p>If <cite>a</cite> is singular.</p>
+</dd>
+<dt>ValueError</dt><dd><p>If <cite>a</cite> is not square, or not 2-dimensional.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function is copied from scipy.linalg.inv, but with some customizations
+for speed-up from operating on multiple arrays.  It also has some
+conditionals to work with different scipy versions.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.utils.multiple_mahalanobis">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.utils.</span></span><span class="sig-name descname"><span class="pre">multiple_mahalanobis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">effect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariance</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.utils.multiple_mahalanobis" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the squared Mahalanobis distance for a given set of samples</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>effect: array of shape (n_features, n_samples),</strong></dt><dd><p>Each column represents a vector to be evaluated</p>
+</dd>
+<dt><strong>covariance: array of shape (n_features, n_features, n_samples),</strong></dt><dd><p>Corresponding covariance models stacked along the last axis</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>sqd: array of shape (n_samples,)</dt><dd><p>the squared distances (one per sample)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.utils.test_EC2">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.utils.</span></span><span class="sig-name descname"><span class="pre">test_EC2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.utils.test_EC2" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.utils.test_EC3">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.utils.</span></span><span class="sig-name descname"><span class="pre">test_EC3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.utils.test_EC3" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.utils.z_score">
+<span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.utils.</span></span><span class="sig-name descname"><span class="pre">z_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pvalue</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.utils.z_score" title="Link to this definition">¶</a></dt>
+<dd><p>Return the z-score corresponding to a given p-value.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.statistics.utils</a><ul>
+<li><a class="reference internal" href="#module-nipy.algorithms.statistics.utils">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.utils</span></code></a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.utils.check_cast_bin8"><code class="docutils literal notranslate"><span class="pre">check_cast_bin8()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.utils.complex"><code class="docutils literal notranslate"><span class="pre">complex()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.utils.cube_with_strides_center"><code class="docutils literal notranslate"><span class="pre">cube_with_strides_center()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.utils.decompose2d"><code class="docutils literal notranslate"><span class="pre">decompose2d()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.utils.decompose3d"><code class="docutils literal notranslate"><span class="pre">decompose3d()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.utils.join_complexes"><code class="docutils literal notranslate"><span class="pre">join_complexes()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.utils.multiple_fast_inv"><code class="docutils literal notranslate"><span class="pre">multiple_fast_inv()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.utils.multiple_mahalanobis"><code class="docutils literal notranslate"><span class="pre">multiple_mahalanobis()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.utils.test_EC2"><code class="docutils literal notranslate"><span class="pre">test_EC2()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.utils.test_EC3"><code class="docutils literal notranslate"><span class="pre">test_EC3()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.utils.z_score"><code class="docutils literal notranslate"><span class="pre">z_score()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.rft.html"
+                          title="previous chapter">algorithms.statistics.rft</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.utils.fast_distance.html"
+                          title="next chapter">algorithms.utils.fast_distance</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.statistics.utils.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.utils.fast_distance.html" title="algorithms.utils.fast_distance"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.rft.html" title="algorithms.statistics.rft"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

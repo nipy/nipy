@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="algorithms.statistics.models.regression" href="nipy.algorithms.statistics.models.regression.html" />
+    <link rel="prev" title="algorithms.statistics.models.model" href="nipy.algorithms.statistics.models.model.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.regression.html" title="algorithms.statistics.models.regression"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.model.html" title="algorithms.statistics.models.model"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="algorithms-statistics-models-nlsmodel">
+<h1>algorithms.statistics.models.nlsmodel<a class="headerlink" href="#algorithms-statistics-models-nlsmodel" title="Link to this heading">¶</a></h1>
+<section id="module-algorithms-statistics-models-nlsmodel">
+<h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.models.nlsmodel</span></code><a class="headerlink" href="#module-algorithms-statistics-models-nlsmodel" title="Link to this heading">¶</a></h2>
+<p>Inheritance diagram for <code class="docutils literal notranslate"><span class="pre">nipy.algorithms.statistics.models.nlsmodel</span></code>:</p>
+<div class="graphviz"><img src="../../_images/inheritance-42e457ac5808d217ad2ae0b55ef19276cd25803f.png" alt="Inheritance diagram of nipy.algorithms.statistics.models.nlsmodel" usemap="#inheritancee18b6c9c2f" class="inheritance graphviz" /></div>
+<map id="inheritancee18b6c9c2f" name="inheritancee18b6c9c2f">
+<area shape="rect" id="node1" href="nipy.algorithms.statistics.models.model.html#nipy.algorithms.statistics.models.model.Model" target="_top" title="A (predictive) statistical model." alt="" coords="5,5,147,32"/>
+<area shape="rect" id="node2" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel" target="_top" title="Class representing a simple nonlinear least squares model." alt="" coords="195,5,379,32"/>
+</map><p id="module-nipy.algorithms.statistics.models.nlsmodel">Non-linear least squares model</p>
+</section>
+<section id="nlsmodel">
+<h2><a class="reference internal" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel" title="nipy.algorithms.statistics.models.nlsmodel.NLSModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">NLSModel</span></code></a><a class="headerlink" href="#nlsmodel" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.nlsmodel.NLSModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nipy.algorithms.statistics.models.nlsmodel.</span></span><span class="sig-name descname"><span class="pre">NLSModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="nipy.algorithms.statistics.models.model.html#nipy.algorithms.statistics.models.model.Model" title="nipy.algorithms.statistics.models.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a></p>
+<p>Class representing a simple nonlinear least squares model.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.nlsmodel.NLSModel.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">design</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize non-linear model instance</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>Y</strong><span class="classifier">ndarray</span></dt><dd><p>the data in the NLS model</p>
+</dd>
+<dt><strong>design</strong><span class="classifier">ndarray</span></dt><dd><p>the design matrix, X</p>
+</dd>
+<dt><strong>f</strong><span class="classifier">callable</span></dt><dd><p>the map between the (linear parameters (in the design matrix) and
+the nonlinear parameters (theta)) and the predicted data. <cite>f</cite>
+accepts the design matrix and the parameters (theta) as input, and
+returns the predicted data at that design.</p>
+</dd>
+<dt><strong>grad</strong><span class="classifier">callable</span></dt><dd><p>the gradient of f, this should be a function of an nxp design
+matrix X and qx1 vector theta that returns an nxq matrix
+df_i/dtheta_j where:</p>
+<div class="math notranslate nohighlight">
+\[f_i(theta) = f(X[i], theta)\]</div>
+<p>is the nonlinear response function for the i-th instance in
+the model.</p>
+</dd>
+<dt><strong>theta</strong><span class="classifier">array</span></dt><dd><p>parameters</p>
+</dd>
+<dt><strong>niter</strong><span class="classifier">int</span></dt><dd><p>number of iterations</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.nlsmodel.NLSModel.SSE">
+<span class="sig-name descname"><span class="pre">SSE</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.SSE" title="Link to this definition">¶</a></dt>
+<dd><p>Sum of squares error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>sse: float</dt><dd><p>sum of squared residuals</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.nlsmodel.NLSModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.fit" title="Link to this definition">¶</a></dt>
+<dd><p>Fit a model to data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.nlsmodel.NLSModel.getZ">
+<span class="sig-name descname"><span class="pre">getZ</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.getZ" title="Link to this definition">¶</a></dt>
+<dd><p>Set Z into <cite>self</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.nlsmodel.NLSModel.getomega">
+<span class="sig-name descname"><span class="pre">getomega</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.getomega" title="Link to this definition">¶</a></dt>
+<dd><p>Set omega into <cite>self</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.nlsmodel.NLSModel.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.initialize" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize (possibly re-initialize) a Model instance.</p>
+<p>For instance, the design matrix of a linear model may change and some
+things must be recomputed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.algorithms.statistics.models.nlsmodel.NLSModel.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">design</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Get predicted values for <cite>design</cite> or <code class="docutils literal notranslate"><span class="pre">self.design</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>design</strong><span class="classifier">None or array, optional</span></dt><dd><p>design at which to predict data.  If None (the default) then use the
+initial <code class="docutils literal notranslate"><span class="pre">self.design</span></code></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>y_predicted</strong><span class="classifier">array</span></dt><dd><p>predicted data at given (or initial) design</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">algorithms.statistics.models.nlsmodel</a><ul>
+<li><a class="reference internal" href="#module-algorithms-statistics-models-nlsmodel">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">algorithms.statistics.models.nlsmodel</span></code></a></li>
+<li><a class="reference internal" href="#nlsmodel"><code class="xref py py-class docutils literal notranslate"><span class="pre">NLSModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel"><code class="docutils literal notranslate"><span class="pre">NLSModel</span></code></a><ul>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.__init__"><code class="docutils literal notranslate"><span class="pre">NLSModel.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.SSE"><code class="docutils literal notranslate"><span class="pre">NLSModel.SSE()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.fit"><code class="docutils literal notranslate"><span class="pre">NLSModel.fit()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.getZ"><code class="docutils literal notranslate"><span class="pre">NLSModel.getZ()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.getomega"><code class="docutils literal notranslate"><span class="pre">NLSModel.getomega()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.initialize"><code class="docutils literal notranslate"><span class="pre">NLSModel.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.algorithms.statistics.models.nlsmodel.NLSModel.predict"><code class="docutils literal notranslate"><span class="pre">NLSModel.predict()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.models.model.html"
+                          title="previous chapter">algorithms.statistics.models.model</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.algorithms.statistics.models.regression.html"
+                          title="next chapter">algorithms.statistics.models.regression</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.algorithms.statistics.models.nlsmodel.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.regression.html" title="algorithms.statistics.models.regression"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.algorithms.statistics.models.model.html" title="algorithms.statistics.models.model"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

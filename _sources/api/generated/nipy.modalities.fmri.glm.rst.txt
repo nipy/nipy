@@ -1,0 +1,61 @@
+.. AUTO-GENERATED FILE -- DO NOT EDIT!
+
+modalities.fmri.glm
+===================
+
+Module: :mod:`modalities.fmri.glm`
+----------------------------------
+Inheritance diagram for ``nipy.modalities.fmri.glm``:
+
+.. inheritance-diagram:: nipy.modalities.fmri.glm 
+   :parts: 3
+
+.. automodule:: nipy.modalities.fmri.glm
+
+.. currentmodule:: nipy.modalities.fmri.glm
+
+Classes
+-------
+
+:class:`Contrast`
+~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: Contrast
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`FMRILinearModel`
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: FMRILinearModel
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+:class:`GeneralLinearModel`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autoclass:: GeneralLinearModel
+  :members:
+  :undoc-members:
+  :show-inheritance:
+  :inherited-members:
+
+  .. automethod:: __init__
+
+Function
+--------
+
+
+.. autofunction:: nipy.modalities.fmri.glm.data_scaling
+

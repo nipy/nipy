@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API" href="../api/index.html" />
+    <link rel="prev" title="Licensing" href="licensing.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../index.html">
+  <img src="../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../api/index.html" title="API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="licensing.html" title="Licensing"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">FAQ</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="documentation-faq">
+<span id="id1"></span><h1>Documentation FAQ<a class="headerlink" href="#documentation-faq" title="Link to this heading">¶</a></h1>
+<section id="installing-graphviz-on-osx">
+<span id="id2"></span><h2>Installing graphviz on OSX<a class="headerlink" href="#installing-graphviz-on-osx" title="Link to this heading">¶</a></h2>
+<p>The easiest way I found to do this was using <a class="reference external" href="http://www.macports.org/">MacPorts</a>, all other
+methods caused python exceptions when attempting to write out the pngs
+in the inheritance_diagram.py functions.  Just do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">port</span> <span class="n">install</span> <span class="n">graphviz</span>
+</pre></div>
+</div>
+<p>And make sure your macports directory (<code class="docutils literal notranslate"><span class="pre">/opt/local/bin</span></code>) is in your PATH.</p>
+</section>
+<section id="error-writing-output-on-osx">
+<h2>Error writing output on OSX<a class="headerlink" href="#error-writing-output-on-osx" title="Link to this heading">¶</a></h2>
+<p>If you are getting an error during the <strong>writing output…</strong> phase of
+the documentation build you may have a problem with your <a class="reference external" href="http://www.graphviz.org/">graphviz</a>
+install.  The error may look something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">**</span><span class="n">writing</span> <span class="n">output</span><span class="o">...**</span> <span class="n">about</span> <span class="n">api</span><span class="o">/</span><span class="n">generated</span><span class="o">/</span><span class="n">gen</span>
+  <span class="n">api</span><span class="o">/</span><span class="n">generated</span><span class="o">/</span><span class="n">nipy</span>
+  <span class="n">api</span><span class="o">/</span><span class="n">generated</span><span class="o">/</span><span class="n">nipy</span><span class="o">.</span><span class="n">algorithms</span><span class="o">.</span><span class="n">fwhm</span> <span class="n">Format</span><span class="p">:</span> <span class="s2">&quot;png&quot;</span> <span class="ow">not</span>
+  <span class="n">recognized</span><span class="o">.</span> <span class="n">Use</span> <span class="n">one</span> <span class="n">of</span><span class="p">:</span> <span class="n">canon</span> <span class="n">cmap</span> <span class="n">cmapx</span> <span class="n">cmapx_np</span> <span class="n">dia</span> <span class="n">dot</span> <span class="n">eps</span> <span class="n">fig</span>
+  <span class="n">hpgl</span> <span class="n">imap</span> <span class="n">imap_np</span> <span class="n">ismap</span> <span class="n">mif</span> <span class="n">mp</span> <span class="n">pcl</span> <span class="n">pic</span> <span class="n">plain</span> <span class="n">plain</span><span class="o">-</span><span class="n">ext</span> <span class="n">ps</span> <span class="n">ps2</span> <span class="n">svg</span>
+  <span class="n">svgz</span> <span class="n">tk</span> <span class="n">vml</span> <span class="n">vmlz</span> <span class="n">vtx</span> <span class="n">xdot</span>
+
+<span class="o">...</span>
+
+<span class="ne">Exception</span> <span class="n">occurred</span><span class="p">:</span>
+
+<span class="n">File</span> <span class="s2">&quot;/Users/cburns/src/nipy-repo/trunk-dev/doc/sphinxext/</span>
+<span class="n">inheritance_diagram</span><span class="o">.</span><span class="n">py</span><span class="s2">&quot;, line 238, in generate_dot</span>
+  <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_node_options</span><span class="p">(</span><span class="n">this_node_options</span><span class="p">)))</span>
+
+<span class="ne">IOError</span><span class="p">:</span> <span class="p">[</span><span class="n">Errno</span> <span class="mi">32</span><span class="p">]</span> <span class="n">Broken</span> <span class="n">pipe</span>
+</pre></div>
+</div>
+<p>Try installing graphviz using <a class="reference external" href="http://www.macports.org/">MacPorts</a>.  See the
+<a class="reference internal" href="#installing-graphviz-on-osx"><span class="std std-ref">Installing graphviz on OSX</span></a> for instructions.</p>
+</section>
+<section id="sphinx-and-rest-gotchas">
+<h2>Sphinx and reST gotchas<a class="headerlink" href="#sphinx-and-rest-gotchas" title="Link to this heading">¶</a></h2>
+<section id="docstrings">
+<h3>Docstrings<a class="headerlink" href="#docstrings" title="Link to this heading">¶</a></h3>
+<p><a class="reference external" href="http://sphinx.pocoo.org/">Sphinx</a> and <a class="reference external" href="http://docutils.sourceforge.net/rst.html">reST</a> can be very picky about whitespace.  For example, in
+the docstring below the <em>Parameters</em> section will render correctly,
+where the <em>Returns</em> section will not.  By correctly I mean Sphinx will
+insert a link to the CoordinateSystem class in place of the
+cross-reference <em>:class:`CoordinateSystem`</em>.  The <em>Returns</em> section
+will be rendered exactly as shown below with the <em>:class:</em> identifier
+and the backticks around CoordinateSystem.  This section fails because
+of the missing whitespace between <code class="docutils literal notranslate"><span class="pre">product_coord_system</span></code> and the
+colon <code class="docutils literal notranslate"><span class="pre">:</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Parameters
+----------
+coord_systems : sequence of :class:`CoordinateSystem`
+
+Returns
+-------
+product_coord_system: :class:`CoordinateSystem`
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../documentation.html">Documentation</a></li>
+    <li><a href="../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Documentation FAQ</a><ul>
+<li><a class="reference internal" href="#installing-graphviz-on-osx">Installing graphviz on OSX</a></li>
+<li><a class="reference internal" href="#error-writing-output-on-osx">Error writing output on OSX</a></li>
+<li><a class="reference internal" href="#sphinx-and-rest-gotchas">Sphinx and reST gotchas</a><ul>
+<li><a class="reference internal" href="#docstrings">Docstrings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="licensing.html"
+                          title="previous chapter">Licensing</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../api/index.html"
+                          title="next chapter">API</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/faq/documentation_faq.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../api/index.html" title="API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="licensing.html" title="Licensing"
+             >previous</a> |</li>
+  <li><a href="../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >FAQ</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

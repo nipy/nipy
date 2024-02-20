@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="nipy.labs.datasets.volumes.volume_field.VolumeField.composed_with_transform" href="nipy.labs.datasets.volumes.volume_field.VolumeField.composed_with_transform.html" />
+    <link rel="prev" title="Volumetric data structures" href="../datasets.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.datasets.volumes.volume_field.VolumeField.composed_with_transform.html" title="nipy.labs.datasets.volumes.volume_field.VolumeField.composed_with_transform"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../datasets.html" title="Volumetric data structures"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >NeuroSpin tools</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../datasets.html" accesskey="U">Volumetric data structures</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="nipy-labs-datasets-volumes-volume-field-volumefield-values-in-world">
+<h1>nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world<a class="headerlink" href="#nipy-labs-datasets-volumes-volume-field-volumefield-values-in-world" title="Link to this heading">¶</a></h1>
+<dl class="py method">
+<dt class="sig sig-object py" id="nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world">
+<span class="sig-prename descclassname"><span class="pre">VolumeField.</span></span><span class="sig-name descname"><span class="pre">values_in_world</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world" title="Link to this definition">¶</a></dt>
+<dd><p>Return the values of the data at the world-space positions given by
+x, y, z</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">number or ndarray</span></dt><dd><p>x positions in world space, in other words millimeters</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">number or ndarray</span></dt><dd><p>y positions in world space, in other words millimeters.
+The shape of y should match the shape of x</p>
+</dd>
+<dt><strong>z</strong><span class="classifier">number or ndarray</span></dt><dd><p>z positions in world space, in other words millimeters.
+The shape of z should match the shape of x</p>
+</dd>
+<dt><strong>interpolation</strong><span class="classifier">None, ‘continuous’ or ‘nearest’, optional</span></dt><dd><p>Interpolation type used when calculating values in
+different word spaces. If None, the image’s interpolation
+logic is used.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>values</strong><span class="classifier">number or ndarray</span></dt><dd><p>Data values interpolated at the given world position.
+This is a number or an ndarray, depending on the shape of
+the input coordinate.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world</a><ul>
+<li><a class="reference internal" href="#nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world"><code class="docutils literal notranslate"><span class="pre">VolumeField.values_in_world()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../datasets.html"
+                          title="previous chapter">Volumetric data structures</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.labs.datasets.volumes.volume_field.VolumeField.composed_with_transform.html"
+                          title="next chapter">nipy.labs.datasets.volumes.volume_field.VolumeField.composed_with_transform</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/labs/generated/nipy.labs.datasets.volumes.volume_field.VolumeField.values_in_world.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.labs.datasets.volumes.volume_field.VolumeField.composed_with_transform.html" title="nipy.labs.datasets.volumes.volume_field.VolumeField.composed_with_transform"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../datasets.html" title="Volumetric data structures"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >NeuroSpin tools</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../datasets.html" >Volumetric data structures</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

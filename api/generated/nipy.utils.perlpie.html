@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Neuroimaging in Python &#8212; NIPY Documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nipy.css?v=b92af819" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=0073ef5f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="utils.utilities" href="nipy.utils.utilities.html" />
+    <link rel="prev" title="utils.arrays" href="nipy.utils.arrays.html" />
+  <meta name="keywords" content="nipy, neuroimaging, python, neuroscience, time
+				 series">
+
+  </head><body>
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+ <a href="../../index.html">
+  <img src="../../_static/reggie2.png" alt="NIPY logo"  border="0" />
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.utils.utilities.html" title="utils.utilities"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nipy.utils.arrays.html" title="utils.arrays"
+             accesskey="P">previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="utils-perlpie">
+<h1>utils.perlpie<a class="headerlink" href="#utils-perlpie" title="Link to this heading">¶</a></h1>
+<section id="module-nipy.utils.perlpie">
+<span id="module-utils-perlpie"></span><h2>Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">utils.perlpie</span></code><a class="headerlink" href="#module-nipy.utils.perlpie" title="Link to this heading">¶</a></h2>
+<p>Perform a global search and replace on the current directory <em>recursively</em>.</p>
+<p>This a small python wrapper around the <cite>perl -p -i -e</cite> functionality.
+I <strong>strongly recommend</strong> running <cite>perlpie</cite> on files under source
+control.  In this way it’s easy to track your changes and if you
+discover your regular expression was wrong you can easily revert.  I
+also recommend using <cite>grin</cite> to test your regular expressions before
+running <cite>perlpie</cite>.</p>
+<section id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>regex<span class="classifier">regular expression</span></dt><dd><p>Regular expression matching the string you want to replace</p>
+</dd>
+<dt>newstring<span class="classifier">string</span></dt><dd><p>The string you would like to replace the oldstring with.  Note
+this is not a regular expression but the exact string. One
+exception to this rule is the at symbol <cite>&#64;</cite>.  This has special
+meaning in perl, so you need an escape character for this.  See
+Examples below.</p>
+</dd>
+</dl>
+</section>
+<section id="requires">
+<h3>Requires<a class="headerlink" href="#requires" title="Link to this heading">¶</a></h3>
+<p>perl : The underlying language we’re using to perform the search and replace.</p>
+<p><a class="reference external" href="http://pypi.python.org/pypi/grin/">grin</a> : Grin is a tool written
+by Robert Kern to wrap <cite>grep</cite> and <cite>find</cite> with python and easier
+command line options.</p>
+</section>
+<section id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h3>
+<p>Replace all occurrences of foo with bar:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perlpie</span> <span class="n">foo</span> <span class="n">bar</span>
+</pre></div>
+</div>
+<p>Replace numpy.testing with nipy’s testing framework:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perlpie</span> <span class="s1">&#39;from\s+numpy\.testing.*&#39;</span> <span class="s1">&#39;from nipy.testing import *&#39;</span>
+</pre></div>
+</div>
+<p>Replace all &#64;slow decorators in my code with &#64;dec.super_slow.  Here we
+have to escape the &#64; symbol which has special meaning in perl:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perlpie</span> <span class="s1">&#39;\@slow&#39;</span> <span class="s1">&#39;\@dec.super_slow&#39;</span>
+</pre></div>
+</div>
+<p>Remove all occurrences of importing make_doctest_suite:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">perlpie</span> <span class="s1">&#39;from\snipy\.utils\.testutils.*make_doctest_suite&#39;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.utils.perlpie.check_deps">
+<span class="sig-prename descclassname"><span class="pre">nipy.utils.perlpie.</span></span><span class="sig-name descname"><span class="pre">check_deps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.utils.perlpie.check_deps" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.utils.perlpie.main">
+<span class="sig-prename descclassname"><span class="pre">nipy.utils.perlpie.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nipy.utils.perlpie.main" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.utils.perlpie.perl_dash_pie">
+<span class="sig-prename descclassname"><span class="pre">nipy.utils.perlpie.</span></span><span class="sig-name descname"><span class="pre">perl_dash_pie</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">oldstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.utils.perlpie.perl_dash_pie" title="Link to this definition">¶</a></dt>
+<dd><p>Use perl to replace the oldstr with the newstr.</p>
+<p class="rubric">Examples</p>
+<p># To replace all occurrences of ‘import numpy as N’ with ‘import numpy as np’
+from nipy.utils import perlpie
+perlpie.perl_dash_pie(r’imports+numpys+ass+N’, ‘import numpy as np’)
+grind | xargs perl -pi -e ‘s/imports+numpys+ass+N/import numpy as np/g’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="nipy.utils.perlpie.print_extended_help">
+<span class="sig-prename descclassname"><span class="pre">nipy.utils.perlpie.</span></span><span class="sig-name descname"><span class="pre">print_extended_help</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">option</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nipy.utils.perlpie.print_extended_help" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Site Navigation </h4>
+  <ul>
+    <li><a href="../../documentation.html">Documentation</a></li>
+    <li><a href="../../devel/index.html">Development</a></li>
+  </ul>
+
+<h4> NIPY Community </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://nipy.org/">Community Home</a></li>
+    <li><a class="reference external"
+	href="http://nipy.org/project-directory">NIPY Projects</a></li>
+    <li><a class="reference external"
+	href="https://mail.python.org/mailman/listinfo/neuroimaging">Mailing List</a></li>
+    <li><a class="reference external"
+	href="license.html">License</a></li>
+  </ul>
+
+<h4> Github repo </h4>
+  <ul class="simple">
+    <li><a class="reference external"
+	href="http://github.com/nipy/nipy/">Nipy Github</a></li>
+  </ul>
+
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">utils.perlpie</a><ul>
+<li><a class="reference internal" href="#module-nipy.utils.perlpie">Module: <code class="xref py py-mod docutils literal notranslate"><span class="pre">utils.perlpie</span></code></a><ul>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#requires">Requires</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#nipy.utils.perlpie.check_deps"><code class="docutils literal notranslate"><span class="pre">check_deps()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.utils.perlpie.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.utils.perlpie.perl_dash_pie"><code class="docutils literal notranslate"><span class="pre">perl_dash_pie()</span></code></a></li>
+<li><a class="reference internal" href="#nipy.utils.perlpie.print_extended_help"><code class="docutils literal notranslate"><span class="pre">print_extended_help()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="nipy.utils.arrays.html"
+                          title="previous chapter">utils.arrays</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="nipy.utils.utilities.html"
+                          title="next chapter">utils.utilities</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/api/generated/nipy.utils.perlpie.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nipy.utils.utilities.html" title="utils.utilities"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nipy.utils.arrays.html" title="utils.arrays"
+             >previous</a> |</li>
+  <li><a href="../../index.html">NIPY home</a> |&nbsp;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../documentation.html" >NIPY documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >API</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Neuroimaging in Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2005-2023, Neuroimaging in Python team.
+      Last updated on Feb 20, 2024.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>
