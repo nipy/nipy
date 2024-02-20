@@ -18,16 +18,20 @@ Data package installation as an administrator
 
 The installation procedure, for now, is very basic.  For example, let us
 say that you need the 'nipy-templates' package at
-http://nipy.org/data-packages/nipy-templates-0.2.tar.gz
+http://nipy.org/data-packages/nipy-templates-0.3.tar.gz
 . You simply download this archive, unpack it, and then run the standard
 ``python setup.py install`` on it.  On a unix system this might look
 like::
 
    # curl -L flag to follow redirect; can also use wget
-   curl -OL http://nipy.org/data-packages/nipy-templates-0.2.tar.gz
-   tar zxvf nipy-templates-0.2.tar.gz
-   cd nipy-templates-0.2
+   curl -OL http://nipy.org/data-packages/nipy-templates-0.3.tar.gz
+   tar zxvf nipy-templates-0.3.tar.gz
+   cd nipy-templates-0.3
    sudo python setup.py install
+
+Or you may want the `nipy-data` package, in which case::
+
+   curl -OL http://nipy.org/data-packages/nipy-data-0.3.tar.gz
 
 On windows, download the file, extract the archive to a folder using the
 GUI, and then, using the windows shell or similar::
@@ -63,25 +67,25 @@ things from Windows powershell.
   directory.  You can do this via the GUI, or on the command line (in Unix)::
 
     cd ~/Downloads
-    curl -OL http://nipy.org/data-packages/nipy-templates-0.2.tar.gz
-    curl -OL http://nipy.org/data-packages/nipy-data-0.2.tar.gz
+    curl -OL http://nipy.org/data-packages/nipy-templates-0.3.tar.gz
+    curl -OL http://nipy.org/data-packages/nipy-data-0.3.tar.gz
 
 * Unpack both of these::
 
-    tar zxvf nipy-data-0.2.tar.gz
-    tar zxvf nipy-templates-0.2.tar.gz
+    tar zxvf nipy-data-0.3.tar.gz
+    tar zxvf nipy-templates-0.3.tar.gz
 
 * After you have unpacked the templates, you will have a directory called
-  something like ``nipy-templates-0.2``.  In that directory you should see a
+  something like ``nipy-templates-0.3``.  In that directory you should see a
   subdirectory called ``templates``.  Copy / move / link the ``templates``
   subdirectory into ``<nipy-user>/nipy``, so you now have a directory
   ``<nipy-user>/nipy/templates``.  From unpacking the data, you should also
-  have a directory like ``nipy-data-0.2`` with a subdirectory ``data``.  Copy
+  have a directory like ``nipy-data-0.3`` with a subdirectory ``data``.  Copy
   / move / link that ``data`` directory into ``<nipy-user>/nipy`` as well.
   For example::
 
-    cp -r nipy-data-0.2/data ~/.nipy/nipy
-    cp -r nipy-templates-0.2/templates ~/.nipy/nipy
+    cp -r nipy-data-0.3/data ~/.nipy/nipy
+    cp -r nipy-templates-0.3/templates ~/.nipy/nipy
 
 * Check whether that worked.  Run the following command from the shell::
 
@@ -110,7 +114,7 @@ On unix
 
 For example, say you installed with::
 
-   cd nipy-templates-0.2
+   cd nipy-templates-0.3
    python setup.py install --prefix=/home/my-user/some-dir
 
 Then you may want to do make a file ``~/.nipy/config.ini`` with the
@@ -124,7 +128,7 @@ On windows
 
 Say you installed with (windows shell)::
 
-   cd nipy-templates-0.2
+   cd nipy-templates-0.3
    python setup.py install --prefix=c:\some\path
 
 Then first, find out your home directory::
