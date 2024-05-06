@@ -85,12 +85,16 @@ static void _ngb_integrate(double* res,
 {
   npy_intp xn, yn, zn, pos, ngb_idx, k, kk;
   const int* buf_ngb;
-  const double* ppm_data = (double*)PyArray_DATA(ppm);
+  /* Since PyArray_DATA() and PyArray_DIMS() are simple accessors, it is OK to
+   * cast away const as long as we treat the results as const.
+   */
+  const double* ppm_data = PyArray_DATA((PyArrayObject*) ppm);
+  const npy_intp* dim_ppm = PyArray_DIMS((PyArrayObject*) ppm);
   double *buf, *buf_ppm, *q, *buf_U;
-  npy_intp K = PyArray_DIMS(ppm)[3];
-  npy_intp u2 = PyArray_DIMS(ppm)[2]*K;
-  npy_intp u1 = PyArray_DIMS(ppm)[1]*u2;
-  npy_intp posmax = PyArray_DIMS(ppm)[0]*u1 - K;
+  npy_intp K = dim_ppm[3];
+  npy_intp u2 = dim_ppm[2]*K;
+  npy_intp u1 = dim_ppm[1]*u2;
+  npy_intp posmax = dim_ppm[0]*u1 - K;
 
   /*  Re-initialize output array */
   memset((void*)res, 0, K*sizeof(double));
@@ -134,8 +138,11 @@ void ve_step(PyArrayObject* ppm,
   npy_intp K = PyArray_DIMS(ppm)[3];
   npy_intp u2 = PyArray_DIMS(ppm)[2]*K;
   npy_intp u1 = PyArray_DIMS(ppm)[1]*u2;
-  const double* ref_data = (double*)PyArray_DATA(ref);
-  const double* U_data = (double*)PyArray_DATA(U);
+  /* Since PyArray_DATA() is a simple accessor, it is OK to cast away const as
+   * long as we treat the result as const.
+   */
+  const double* ref_data = PyArray_DATA((PyArrayObject*) ref);
+  const double* U_data = PyArray_DATA((PyArrayObject*) U);
   npy_intp* xyz;
   int* ngb;
 
@@ -143,7 +150,7 @@ void ve_step(PyArrayObject* ppm,
   ngb = _select_neighborhood_system(ngb_size);
 
   /* Pointer to the data array */
-  ppm_data = (double*)PyArray_DATA(ppm);
+  ppm_data = PyArray_DATA(ppm);
 
   /* Allocate auxiliary vectors */
   p = (double*)calloc(K, sizeof(double));
@@ -208,15 +215,21 @@ PyArrayObject* make_edges(const PyArrayObject* idx,
 			  int ngb_size)
 {
   int* ngb = _select_neighborhood_system(ngb_size);
-  PyArrayIterObject* iter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)idx);
   int* buf_ngb;
   npy_intp xi, yi, zi, xj, yj, zj;
-  npy_intp u2 = PyArray_DIMS(idx)[2];
-  npy_intp u1 = PyArray_DIMS(idx)[1]*u2;
-  npy_intp u0 = PyArray_DIMS(idx)[0]*u1;
+  /* Since PyArray_DIMS() is a simple accessor, it is OK to cast away const as
+   * long as we treat the result as const. Similarly, we can convert idx to a
+   * non-const PyObject for iteration purposes as long as we treat any pointer
+   * values obtained via the iterator as const.
+   */
+  PyArrayIterObject* iter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)idx);
+  const npy_intp* dim_idx = PyArray_DIMS((PyArrayObject*) idx);
+  npy_intp u2 = dim_idx[2];
+  npy_intp u1 = dim_idx[1]*u2;
+  npy_intp u0 = dim_idx[0]*u1;
   npy_intp mask_size = 0, n_edges = 0;
   npy_intp idx_i;
-  npy_intp *buf_idx;
+  const npy_intp* buf_idx;
   npy_intp *edges_data, *buf_edges;
   npy_intp ngb_idx;
   npy_intp pos;
@@ -225,7 +238,7 @@ PyArrayObject* make_edges(const PyArrayObject* idx,
 
   /* First loop over the input array to determine the mask size */
   while(iter->index < iter->size) {
-    buf_idx = (npy_intp*)PyArray_ITER_DATA(iter);
+    buf_idx = PyArray_ITER_DATA(iter);
     if (*buf_idx >= 0)
       mask_size ++;
     PyArray_ITER_NEXT(iter);
@@ -244,7 +257,7 @@ PyArrayObject* make_edges(const PyArrayObject* idx,
     xi = iter->coordinates[0];
     yi = iter->coordinates[1];
     zi = iter->coordinates[2];
-    buf_idx = (npy_intp*)PyArray_ITER_DATA(iter);
+    buf_idx = PyArray_ITER_DATA(iter);
     idx_i = *buf_idx;
 
     /* Loop over neighbors if current point is within the mask */
@@ -261,7 +274,10 @@ PyArrayObject* make_edges(const PyArrayObject* idx,
 	/* Store edge if neighbor is within the mask */
 	if ((pos < 0) || (pos >= u0))
 	  continue;
-	buf_idx = (npy_intp*)PyArray_DATA(idx) + pos;
+	/* Since PyArray_DATA() is a simple accessor, it is OK to cast away
+	 * const as long as we treat the result as const.
+         */
+	buf_idx = PyArray_DATA((PyArrayObject*) idx) + pos;
 	if (*buf_idx < 0)
 	  continue;
 	buf_edges[0] = idx_i;
@@ -314,20 +330,27 @@ double interaction_energy(PyArrayObject* ppm,
   npy_intp K = PyArray_DIMS(ppm)[3];
   npy_intp u2 = PyArray_DIMS(ppm)[2]*K;
   npy_intp u1 = PyArray_DIMS(ppm)[1]*u2;
-  npy_intp* xyz;
-  const double* U_data = (double*)PyArray_DATA(U);
+  const npy_intp* xyz;
+  /* Since PyArray_DATA() is a simple accessor, it is OK to cast away const as
+   * long as we treat the result as const.
+   */
+  const double* U_data = PyArray_DATA((PyArrayObject*) U);
   int* ngb;
 
   /* Neighborhood system */
   ngb = _select_neighborhood_system(ngb_size);
 
   /* Pointer to ppm array */
-  ppm_data = (double*)PyArray_DATA(ppm);
+  ppm_data = PyArray_DATA(ppm);
 
   /* Allocate auxiliary vector */
   p = (double*)calloc(K, sizeof(double));
 
   /* Loop over points */
+
+  /* We can convert idx to a non-const PyObject for iteration purposes as long
+   * as we treat any pointer values obtained via the iterator as const.
+   */
   iter = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)XYZ, &axis);
   while(iter->index < iter->size) {
 

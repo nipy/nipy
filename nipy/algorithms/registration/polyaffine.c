@@ -6,7 +6,7 @@
 #define TINY 1e-200
 
 
-static double _gaussian(double* xyz, double* center, double* sigma)
+static double _gaussian(const double* xyz, const double* center, const double* sigma)
 {
   double aux, d2 = 0.0;
   int i;
@@ -64,14 +64,19 @@ void apply_polyaffine(PyArrayObject* XYZ,
 
   PyArrayIterObject *iter_xyz, *iter_centers, *iter_affines;
   int axis = 1;
-  double *xyz, *center, *affine, *sigma;
+  double *xyz, *center, *affine;
+  const double* sigma;
   double w, W;
   double mat[12], t_xyz[3];
   size_t bytes_mat = 12*sizeof(double);
   size_t bytes_xyz = 3*sizeof(double);
 
   /* Initialize arrays and iterators */
-  sigma = PyArray_DATA(Sigma);
+
+  /* Since PyArray_DATA() is a simple accessor, it is OK to cast away const as
+   * long as we treat the result as const.
+   */
+  sigma = PyArray_DATA((PyArrayObject*) Sigma);
   iter_xyz = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)XYZ, &axis);
   iter_centers = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)Centers, &axis);
   iter_affines = (PyArrayIterObject*)PyArray_IterAllButAxis((PyObject*)Affines, &axis);
