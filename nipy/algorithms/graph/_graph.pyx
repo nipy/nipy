@@ -1,7 +1,6 @@
 cimport numpy as cnp
 cimport cython
 ctypedef cnp.float64_t DOUBLE
-ctypedef cnp.int_t INT
 ctypedef cnp.intp_t INT
 
 
