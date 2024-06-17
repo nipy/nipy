@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 
+from nipy.utils import SCTYPES
 from nipy.io.api import load_image
 from nipy.testing import (
     assert_almost_equal,
@@ -169,9 +170,9 @@ def test_PCAMask(data):
         assert_almost_equal(p['pcnt_var'].sum(), 100.)
     # Any reasonable datatype for mask
     for dt in ([np.bool_] +
-               np.sctypes['int'] +
-               np.sctypes['uint'] +
-               np.sctypes['float']):
+               SCTYPES['int'] +
+               SCTYPES['uint'] +
+               SCTYPES['float']):
         p = pca(arr4d, -1, mask3d.astype(dt), ncomp=ncomp)
         assert p['basis_vectors'].shape == (data['nimages'], ntotal)
         assert p['basis_projections'].shape == mask3d.shape + (ncomp,)

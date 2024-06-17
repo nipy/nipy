@@ -123,14 +123,14 @@ from sympy.utilities.lambdify import implemented_function, lambdify
 from nipy.algorithms.utils.matrices import full_rank, matrix_rank
 
 # Legacy repr printing from numpy.
-from nipy.utils import VisibleDeprecationWarning, _NoValue
+from nipy.utils import VisibleDeprecationWarning, _NoValue, deprecate_with_doc
 
 
 def _to_str(s):
     return s.decode('latin1') if isinstance(s, bytes) else str(s)
 
 
-@np.deprecate(message = "Please use sympy.Dummy instead of this function")
+@deprecate_with_doc("please use sympy.Dummy instead")
 def make_dummy(name):
     """ Make dummy variable of given name
 

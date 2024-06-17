@@ -5,6 +5,7 @@
 import numpy as np
 
 import nipy
+from ...utils import deprecate_with_doc
 
 from .timediff import time_slice_diffs
 
@@ -76,7 +77,7 @@ def plot_tsdiffs(results, axes=None):
     return axes
 
 
-@np.deprecate_with_doc('Please see docstring for alternative code')
+@deprecate_with_doc('please see docstring for alternative code')
 def plot_tsdiffs_image(img, axes=None, show=True):
     ''' Plot time series diagnostics for image
 

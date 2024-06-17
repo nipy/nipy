@@ -5,6 +5,8 @@
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_equal
 
+from nipy.utils import SCTYPES
+
 from .. import (
     c_types,
     copy_vector,
@@ -35,12 +37,12 @@ def random_shape(size):
 #
 
 def test_type_conversions_to_fff():
-    # use np.sctypes for testing numpy types, np.typeDict.values
+    # use SCTYPES for testing numpy types, np.typeDict.values
     # contains a lot of duplicates.  There are 140 values in
     # np.typeDict, but only 21 unique numpy types.  But only 11 fff
     # types in c_types.
-    for type_key in np.sctypes:
-        for npy_t in np.sctypes[type_key]:
+    for type_key in SCTYPES:
+        for npy_t in SCTYPES[type_key]:
             t, nbytes = fff_type(np.dtype(npy_t))
             if t != 'unknown type':
                 assert nbytes == np.dtype(npy_t).itemsize
