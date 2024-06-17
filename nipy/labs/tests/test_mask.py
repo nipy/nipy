@@ -106,7 +106,7 @@ def test_series_from_mask(in_tmp_path):
             assert proj.sum() == 9/np.abs(affine[axis, axis])
 
     # Check that NaNs in the data do not propagate
-    data[10, 10, 10] = np.NaN
+    data[10, 10, 10] = np.nan
     img = nib.Nifti1Image(data, affine)
     nib.save(img, 'testing.nii')
     series, header = series_from_mask('testing.nii', mask, smooth=9)
