@@ -47,7 +47,7 @@ void fff_vector_fetch_using_NumPy(fff_vector* y, const char* x, npy_intp stride,
   PyArrayObject* X = (PyArrayObject*) PyArray_New(&PyArray_Type, 1, dim, type, strides,
 						  (void*)x, itemsize, NPY_BEHAVED, NULL);
   PyArrayObject* Y = (PyArrayObject*) PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, (void*)y->data);
-  PyArray_CastTo(Y, X);
+  PyArray_CopyInto(Y, X);
   Py_XDECREF(Y);
   Py_XDECREF(X);
   return;
@@ -215,7 +215,7 @@ fff_matrix* fff_matrix_fromPyArray(const PyArrayObject* x)
     dim[1] = dim1;
 
     xd = (PyArrayObject*) PyArray_SimpleNewFromData(2, dim, NPY_DOUBLE, (void*)y->data);
-    PyArray_CastTo(xd, (PyArrayObject*)x);
+    PyArray_CopyInto(xd, (PyArrayObject*)x);
     Py_XDECREF(xd);
   }
 
