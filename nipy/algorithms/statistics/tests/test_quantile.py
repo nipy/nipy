@@ -1,12 +1,15 @@
+""" Test quartile functions
+"""
 
 import numpy as np
 from numpy import median as np_median
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from scipy.stats import scoreatpercentile as sp_percentile
 
+from nipy.utils import SCTYPES
 from .._quantile import _median, _quantile
 
-NUMERIC_TYPES = sum([np.sctypes[t]
+NUMERIC_TYPES = sum([SCTYPES[t]
                      for t in ('int', 'uint', 'float', 'complex')],
                     [])
 
