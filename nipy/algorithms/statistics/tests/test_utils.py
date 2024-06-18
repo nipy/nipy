@@ -10,8 +10,8 @@ from numpy.testing import (
 from scipy.stats import norm
 
 from nipy.utils import SCTYPES
-from ..utils import (check_cast_bin8, multiple_fast_inv, multiple_mahalanobis,
-                     z_score)
+
+from ..utils import check_cast_bin8, multiple_fast_inv, multiple_mahalanobis, z_score
 
 
 def test_z_score():

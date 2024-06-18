@@ -3,13 +3,13 @@
 import numpy as np
 import pytest
 
-from nipy.utils import SCTYPES
 from nipy.io.api import load_image
 from nipy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,
     funcfile,
 )
+from nipy.utils import SCTYPES
 
 from ..pca import pca
 
