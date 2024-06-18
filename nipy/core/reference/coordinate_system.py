@@ -334,7 +334,7 @@ def safe_dtype(*dtypes):
     Examples
     --------
     >>> c1 = CoordinateSystem('ij', 'input', coord_dtype=np.float32)
-    >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex_)
+    >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex128)
     >>> safe_dtype(c1.coord_dtype, c2.coord_dtype)
     dtype('complex128')
 
@@ -385,7 +385,7 @@ def product(*coord_systems, **kwargs):
     Examples
     --------
     >>> c1 = CoordinateSystem('ij', 'input', coord_dtype=np.float32)
-    >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex_)
+    >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex128)
     >>> c3 = CoordinateSystem('ik', 'in3')
 
     >>> print(product(c1, c2))
