@@ -7,6 +7,7 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 from scipy.stats import scoreatpercentile as sp_percentile
 
 from nipy.utils import SCTYPES
+
 from .._quantile import _median, _quantile
 
 NUMERIC_TYPES = sum([SCTYPES[t]

@@ -17,7 +17,6 @@ covariance matrix.
 import numpy as np
 import numpy.linalg as npl
 
-from ...utils import SCTYPES
 from ...core.image.image import rollimg
 from ...core.reference.coordinate_map import (
     AxisError,
@@ -25,6 +24,7 @@ from ...core.reference.coordinate_map import (
     io_axis_indices,
     orth_axes,
 )
+from ...utils import SCTYPES
 
 
 def pca(data, axis=0, mask=None, ncomp=None, standardize=True,

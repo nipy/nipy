@@ -11,7 +11,6 @@ import functools
 import warnings
 
 import numpy as np
-
 from nibabel.data import DataError, datasource_or_bomber, make_datasource
 
 # Module level datasource instances for convenience

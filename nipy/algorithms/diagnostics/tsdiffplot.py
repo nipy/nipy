@@ -5,8 +5,8 @@
 import numpy as np
 
 import nipy
-from ...utils import deprecate_with_doc
 
+from ...utils import deprecate_with_doc
 from .timediff import time_slice_diffs
 
 
