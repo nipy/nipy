@@ -29,7 +29,8 @@ like::
    cd nipy-templates-0.3
    sudo python setup.py install
 
-Or you may want the `nipy-data` package, in which case::
+This is for the `nipy-templates` package; there is also a `nipy-data` package,
+for which the equivalent would be:
 
    curl -OL http://nipy.org/data-packages/nipy-data-0.3.tar.gz
 
