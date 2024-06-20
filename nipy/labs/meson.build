@@ -6,8 +6,10 @@ python_sources = [
   'mask.py',
   'statistical_mapping.py',
   'viz3d.py',
-  'viz.py'
+  'viz.py',
+  'conftest.py'
 ]
+
 py.install_sources(
   python_sources,
   pure: false,
