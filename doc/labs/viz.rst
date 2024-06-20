@@ -37,6 +37,7 @@ An example
     # Color an asymmetric rectangle around Broca area:
     x, y, z = -52, 10, 22
     x_map, y_map, z_map = coord_transform(x, y, z, mni_sform_inv)
+    x_map, y_map, z_map = int(x_map), int(y_map), int(z_map)
     map = np.zeros((182, 218, 182))
     map[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
 
