@@ -9,7 +9,7 @@ from warnings import catch_warnings, simplefilter
 import numpy as np
 import pytest
 import sympy
-from numpy.core.records import fromrecords
+from numpy.rec import fromrecords
 from numpy.testing import assert_almost_equal, assert_array_equal
 from sympy.utilities.lambdify import implemented_function
 

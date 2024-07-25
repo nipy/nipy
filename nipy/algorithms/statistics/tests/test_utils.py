@@ -9,6 +9,8 @@ from numpy.testing import (
 )
 from scipy.stats import norm
 
+from nipy.utils import SCTYPES
+
 from ..utils import check_cast_bin8, multiple_fast_inv, multiple_mahalanobis, z_score
 
 
@@ -59,13 +61,13 @@ def assert_equal_bin8(actual, expected):
 
 def test_check_cast_bin8():
     # Function to return np.uint8 array with check whether array is binary.
-    for in_dtype in np.sctypes['int'] + np.sctypes['uint']:
+    for in_dtype in SCTYPES['int'] + SCTYPES['uint']:
         assert_equal_bin8(np.array([0, 1, 1, 1], in_dtype), [0, 1, 1, 1])
         assert_equal_bin8(np.array([[0, 1], [1, 1]], in_dtype),
                           [[0, 1], [1, 1]])
         pytest.raises(ValueError, check_cast_bin8,
                       np.array([0, 1, 2], dtype=in_dtype))
-    for in_dtype in np.sctypes['float']:
+    for in_dtype in SCTYPES['float']:
         assert_equal_bin8(np.array([0, 1, 1, -0], np.float64), [0, 1, 1, 0])
         assert_equal_bin8(np.array([[0, 1], [1, -0]], np.float64),
                           [[0, 1], [1, 0]])
