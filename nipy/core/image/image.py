@@ -13,10 +13,10 @@
 
 import warnings
 from copy import copy
+from functools import cached_property
 from itertools import chain
 
 import numpy as np
-from nibabel.onetime import auto_attr
 
 # Legacy repr printing from numpy.
 from ..reference.array_coords import ArrayCoordMap
@@ -79,27 +79,27 @@ class Image:
                                np.diag([3,5,7,1]))
     _doc['coordmap'] = "Affine transform mapping from axes coordinates to reference coordinates."
 
-    @auto_attr
+    @cached_property
     def shape(self):
         return self._data.shape
     _doc['shape'] = "Shape of data array."
 
-    @auto_attr
+    @cached_property
     def ndim(self):
         return len(self._data.shape)
     _doc['ndim'] = "Number of data dimensions."
 
-    @auto_attr
+    @cached_property
     def reference(self):
         return self.coordmap.function_range
     _doc['reference'] = "Reference coordinate system."
 
-    @auto_attr
+    @cached_property
     def axes(self):
         return self.coordmap.function_domain
     _doc['axes'] = "Axes of image."
 
-    @auto_attr
+    @cached_property
     def affine(self):
         if hasattr(self.coordmap, "affine"):
             return self.coordmap.affine
