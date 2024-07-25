@@ -21,11 +21,11 @@ General reference for regression models:
 __docformat__ = 'restructuredtext en'
 
 import warnings
+from functools import cached_property
 
 import numpy as np
 import numpy.linalg as npl
 import scipy.linalg as spl
-from nibabel.onetime import auto_attr
 from scipy import stats
 
 from nipy.algorithms.utils.matrices import matrix_rank, pos_recipr
@@ -256,7 +256,7 @@ class OLSModel(LikelihoodModel):
         """
         return X
 
-    @auto_attr
+    @cached_property
     def has_intercept(self):
         """
         Check if column of 1s is in column space of design
@@ -268,7 +268,7 @@ class OLSModel(LikelihoodModel):
             return True
         return False
 
-    @auto_attr
+    @cached_property
     def rank(self):
         """ Compute rank of design matrix
         """
@@ -709,14 +709,14 @@ class RegressionResults(LikelihoodModelResults):
         self.wY = wY
         self.wresid = wresid
 
-    @auto_attr
+    @cached_property
     def resid(self):
         """
         Residuals from the fit.
         """
         return self.Y - self.predicted
 
-    @auto_attr
+    @cached_property
     def norm_resid(self):
         """
         Residuals, normalized to have unit length.
@@ -736,7 +736,7 @@ class RegressionResults(LikelihoodModelResults):
         """
         return self.resid * pos_recipr(np.sqrt(self.dispersion))
 
-    @auto_attr
+    @cached_property
     def predicted(self):
         """ Return linear predictor values from a design matrix.
         """
@@ -745,7 +745,7 @@ class RegressionResults(LikelihoodModelResults):
         X = self.model.design
         return np.dot(X, beta)
 
-    @auto_attr
+    @cached_property
     def R2_adj(self):
         """Return the R^2 value for each row of the response Y.
 
@@ -762,7 +762,7 @@ class RegressionResults(LikelihoodModelResults):
         d *= ((self.df_total - 1.) / self.df_resid)
         return 1 - d
 
-    @auto_attr
+    @cached_property
     def R2(self):
         """
         Return the adjusted R^2 value for each row of the response Y.
@@ -776,7 +776,7 @@ class RegressionResults(LikelihoodModelResults):
         d = self.SSE / self.SST
         return 1 - d
 
-    @auto_attr
+    @cached_property
     def SST(self):
         """Total sum of squares. If not from an OLS model this is "pseudo"-SST.
         """
@@ -785,34 +785,34 @@ class RegressionResults(LikelihoodModelResults):
                           "SST inappropriate")
         return ((self.wY - self.wY.mean(0)) ** 2).sum(0)
 
-    @auto_attr
+    @cached_property
     def SSE(self):
         """Error sum of squares. If not from an OLS model this is "pseudo"-SSE.
         """
         return (self.wresid ** 2).sum(0)
 
-    @auto_attr
+    @cached_property
     def SSR(self):
         """ Regression sum of squares """
         return self.SST - self.SSE
 
-    @auto_attr
+    @cached_property
     def MSR(self):
         """ Mean square (regression)"""
         return self.SSR / (self.df_model - 1)
 
-    @auto_attr
+    @cached_property
     def MSE(self):
         """ Mean square (error) """
         return self.SSE / self.df_resid
 
-    @auto_attr
+    @cached_property
     def MST(self):
         """ Mean square (total)
         """
         return self.SST / (self.df_total - 1)
 
-    @auto_attr
+    @cached_property
     def F_overall(self):
         """ Overall goodness of fit F test,
         comparing model to a model with just an intercept.
