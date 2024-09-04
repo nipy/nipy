@@ -956,8 +956,8 @@ def test_dtype_cmap_inverses():
     # Check that we can make functional inverses of AffineTransforms, and
     # CoordinateMap versions of AffineTransforms
     arr_p1 = np.eye(4)[:, [0, 2, 1, 3]]
-    in_list = [0, 1, 2]
-    out_list = [0, 2, 1]
+    in_list = [0, 1., 2.]
+    out_list = [0, 2., 1.]
     for dt in _SYMPY_SAFE_DTYPES:
         in_cs = CoordinateSystem('ijk', coord_dtype=dt)
         out_cs = CoordinateSystem('xyz', coord_dtype=dt)
@@ -975,7 +975,7 @@ def test_dtype_cmap_inverses():
         except:
             1/0
         res = r_cmap(out_coord)
-        assert_array_equal(res, coord)
+        assert_array_equal(res, np.asarray(coord, dtype=exp_i_dt))
         assert res.dtype == exp_i_dt
         # Default behavior is preserve_type=False
         r_cmap = cmap.inverse(preserve_dtype=False)
@@ -991,7 +991,7 @@ def test_dtype_cmap_inverses():
         cm_cmap = _as_coordinate_map(cmap)
         assert_array_equal(cm_cmap(coord), out_list)
         rcm_cmap = cm_cmap.inverse()
-        assert_array_equal(rcm_cmap(coord), out_list)
+        assert_array_equal(rcm_cmap(coord), np.asarray(out_list, dtype=dt))
         res = rcm_cmap(out_coord)
         assert_array_equal(res, coord)
         assert res.dtype == dt

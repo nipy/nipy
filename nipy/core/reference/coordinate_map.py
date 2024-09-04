@@ -558,10 +558,11 @@ class AffineTransform:
                              'affine matrix shape')
         # Test that it is actually an affine mapping in homogeneous
         # form
-        bottom_row = np.array([0]*self.ndims[0] + [1])
+        bottom_row = np.array([0]*self.ndims[0] + [1.], dtype=dtype)
         if not np.all(affine[-1] == bottom_row):
             raise ValueError('the homogeneous transform should have bottom=' + \
-                             f'row {repr(bottom_row)}')
+                             f'row {repr(bottom_row)}' + ' but it has bottom=' \
+                             + f'row {repr(affine[-1])}')
         self.affine = affine
 
     ###################################################################
