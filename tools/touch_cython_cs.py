@@ -12,6 +12,7 @@ import sys
 from os.path import isfile, splitext
 from os.path import join as pjoin
 
+
 def touch(fname, times=None, ns=None, dir_fd=None):
     with os.open(fname, os.O_APPEND, dir_fd=dir_fd) as f:
         os.utime(f.fileno() if os.utime in os.supports_fd else fname,
