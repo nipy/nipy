@@ -12,16 +12,10 @@ import sys
 from os.path import isfile, splitext
 from os.path import join as pjoin
 
-# From http://stackoverflow.com/questions/1158076/implement-touch-using-python
-if sys.version_info[0] >= 3:
-    def touch(fname, times=None, ns=None, dir_fd=None):
-        with os.open(fname, os.O_APPEND, dir_fd=dir_fd) as f:
-            os.utime(f.fileno() if os.utime in os.supports_fd else fname,
-                times=times, ns=ns, dir_fd=dir_fd)
-else:
-    def touch(fname, times=None):
-        with file(fname, 'a'):
-            os.utime(fname, times)
+def touch(fname, times=None, ns=None, dir_fd=None):
+    with os.open(fname, os.O_APPEND, dir_fd=dir_fd) as f:
+        os.utime(f.fileno() if os.utime in os.supports_fd else fname,
+            times=times, ns=ns, dir_fd=dir_fd)
 
 
 def main():
