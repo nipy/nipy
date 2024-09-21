@@ -184,7 +184,7 @@ class VolumeImg(VolumeGrid):
         shape = [int(s) for s in shape]
         if not len(shape) == 3:
             raise ValueError('The shape specified should be the shape '
-                'the 3D grid, and thus of length 3. {} was specified'.format(shape) )
+                f'the 3D grid, and thus of length 3. {shape} was specified' )
         interpolation_order = self._get_interpolation_order(interpolation)
         if np.all(affine == self.affine):
             # Small trick to be more numericaly stable

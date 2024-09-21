@@ -1144,7 +1144,7 @@ class FmriRealign4d(Realign4d):
                 else:
                     tr = 2 * slice_times[0]
                 warnings.warn('No `tr` entered. Assuming regular acquisition'
-                              ' with tr={:f}'.format(tr))
+                              f' with tr={tr:f}')
         # case where slice_time is None
         else:
             # assume regular slice acquisition, therefore tr is

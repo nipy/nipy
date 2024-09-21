@@ -200,9 +200,9 @@ class CoordinateMap:
 
     def __setattr__(self, key, value):
         if key in self.__dict__:
-            raise AttributeError('the value of {} has already been '
+            raise AttributeError(f'the value of {key} has already been '
                                  'set and all attributes are '
-                                 'read-only'.format(key))
+                                 'read-only')
         object.__setattr__(self, key, value)
 
     ###################################################################
@@ -2019,13 +2019,13 @@ def input_axis_index(coordmap, axis_id, fix0=True):
             return in_no
         out2in = axmap(coordmap, 'out2in', fix0=fix0)
         if not out2in[axis_id] == in_no:
-            raise AxisError('Name "{}" present in input and output but '
-                            'they do not appear to match'.format(axis_id))
+            raise AxisError(f'Name "{axis_id}" present in input and output but '
+                            'they do not appear to match')
         return in_no
     in_no = axmap(coordmap, 'out2in', fix0=fix0)[axis_id]
     if in_no is None:
-        raise AxisError('Name "{}" present in output but this output axis '
-                        'does not have the best match with any input axis'.format(axis_id))
+        raise AxisError(f'Name "{axis_id}" present in output but this output axis '
+                        'does not have the best match with any input axis')
     return in_no
 
 

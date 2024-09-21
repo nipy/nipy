@@ -70,7 +70,7 @@ def main():
             print(f"Failed to import '{name}': {e}")
             continue
 
-        fn = os.path.join(path, '{}.rst'.format(name))
+        fn = os.path.join(path, f'{name}.rst')
 
         if os.path.exists(fn):
             # skip
