@@ -366,7 +366,7 @@ class HistogramRegistration:
                 Tv.param = tc
                 print(Tv.optimizable)
                 print(str(self.similarity) + f' = {self._eval(Tv)}')
-                print('')
+                print()
 
         # Switching to the appropriate optimizer
         if VERBOSE:
