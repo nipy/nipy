@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Scipy variant of Cython command
 
 Cython, as applied to single pyx file.

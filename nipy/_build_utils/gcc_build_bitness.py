@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Detect bitness (32 or 64) of Mingw-w64 gcc build target on Windows.
 """
 
