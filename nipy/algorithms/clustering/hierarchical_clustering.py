@@ -630,8 +630,8 @@ def ward_quick(G, feature, verbose=False):
 
     Caveat : only approximate
     """
-    warn('Function ward_quick from ' +
-         'nipy.algorithms.clustering.hierrachical_clustering ' +
+    warn('Function ward_quick from '
+         'nipy.algorithms.clustering.hierrachical_clustering '
          'deprecated, will be removed',
          FutureWarning,
          stacklevel=2)
@@ -904,8 +904,8 @@ def ward(G, feature, verbose=False):
     When G has more than 1 connected component, t is no longer a tree.  This
     case is handled cleanly now
     """
-    warn('Function ward from ' +
-         'nipy.algorithms.clustering.hierrachical_clustering ' +
+    warn('Function ward from '
+         'nipy.algorithms.clustering.hierrachical_clustering '
          'deprecated, will be removed',
          FutureWarning,
          stacklevel=2)

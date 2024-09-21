@@ -756,7 +756,7 @@ class RegressionResults(LikelihoodModelResults):
         See: Davidson and MacKinnon p 74
         """
         if not self.model.has_intercept:
-            warnings.warn("model does not have intercept term, " +\
+            warnings.warn("model does not have intercept term, "
                           "SST inappropriate")
         d = 1. - self.R2
         d *= ((self.df_total - 1.) / self.df_resid)
@@ -781,7 +781,7 @@ class RegressionResults(LikelihoodModelResults):
         """Total sum of squares. If not from an OLS model this is "pseudo"-SST.
         """
         if not self.model.has_intercept:
-            warnings.warn("model does not have intercept term, " +\
+            warnings.warn("model does not have intercept term, "
                           "SST inappropriate")
         return ((self.wY - self.wY.mean(0)) ** 2).sum(0)
 

@@ -19,8 +19,7 @@ from ..mask import intersect_masks
 from .discrete_domain import grid_domain_from_image
 from .mroi import SubDomains
 
-warn('Module nipy.labs.spatial_models.parcel_io' +
-     'deprecated, will be removed',
+warn('Module nipy.labs.spatial_models.parcel_io deprecated, will be removed',
      FutureWarning,
      stacklevel=2)
 

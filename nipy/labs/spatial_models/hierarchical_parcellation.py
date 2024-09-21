@@ -17,8 +17,8 @@ from nipy.algorithms.graph.graph import wgraph_from_coo_matrix
 
 from .parcellation import MultiSubjectParcellation
 
-warn('Module nipy.labs.spatial_models.hierarchical_parcellation' +
-     'deprecated, will be removed',
+warn('Module nipy.labs.spatial_models.hierarchical_parcellation deprecated, '
+     'will be removed',
      FutureWarning,
      stacklevel=2)
 

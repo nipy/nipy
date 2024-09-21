@@ -74,8 +74,8 @@ class CoordinateSystem:
     dtype = np.dtype([('x', np.float64),
                       ('y', np.float64),
                       ('z', np.float64)])
-    _doc['dtype'] = 'The composite dtype of the CoordinateSystem, ' + \
-                    'expresses the fact that there are three numbers, the' + \
+    _doc['dtype'] = 'The composite dtype of the CoordinateSystem, ' \
+                    'expresses the fact that there are three numbers, the ' \
                     'first one corresponds to "x" and the second to "y".'
 
     def __init__(self, coord_names, name='', coord_dtype=np.float64):

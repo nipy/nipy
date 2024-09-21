@@ -145,7 +145,7 @@ class CoordinateMap:
     _doc['function_range'] = 'The range of the function, a CoordinateSystem.'
 
     inverse_function = np.log
-    _doc['inverse_function'] = 'The inverse function from function_range' + \
+    _doc['inverse_function'] = 'The inverse function from function_range ' \
                                'to function_domain, if supplied.'
 
     ndims = (1,1)
@@ -502,15 +502,15 @@ class AffineTransform:
 
     _doc = {}
     affine = np.diag([3,4,5,1])
-    _doc['affine'] = 'The matrix representing an affine transformation ' + \
+    _doc['affine'] = 'The matrix representing an affine transformation ' \
                        'homogeneous form.'
 
     function_domain = CoordinateSystem('x')
-    _doc['function_domain'] = 'The domain of the affine transformation, ' + \
+    _doc['function_domain'] = 'The domain of the affine transformation, ' \
                               'a CoordinateSystem.'
 
     function_range = CoordinateSystem('y')
-    _doc['function_range'] = 'The range of the affine transformation, ' + \
+    _doc['function_range'] = 'The range of the affine transformation, ' \
                              'a CoordinateSystem.'
 
     ndims = (3,3)
@@ -560,8 +560,8 @@ class AffineTransform:
         # form
         bottom_row = np.array([0]*self.ndims[0] + [1])
         if not np.all(affine[-1] == bottom_row):
-            raise ValueError('the homogeneous transform should have bottom=' + \
-                             f'row {repr(bottom_row)}')
+            raise ValueError('the homogeneous transform should have bottom='
+                             f'row {bottom_row!r}')
         self.affine = affine
 
     ###################################################################
@@ -1113,7 +1113,7 @@ def product(*cmaps, **kwargs):
     if allaffine:
         return _product_affines(*cmaps, **kwargs)
     else:
-        warnings.warn("product of non-affine CoordinateMaps is less robust than"+
+        warnings.warn("product of non-affine CoordinateMaps is less robust than "
                       "the AffineTransform")
         return _product_cmaps(*[_as_coordinate_map(cmap) for cmap in cmaps],
                               **kwargs)
