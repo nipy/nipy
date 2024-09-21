@@ -423,9 +423,9 @@ class CoordinateMap:
 
     def __repr__(self):
         if self.inverse_function is None:
-            return f"CoordinateMap(\n   function_domain={self.function_domain},\n   function_range={self.function_range},\n   function={repr(self.function)}\n  )"
+            return f"CoordinateMap(\n   function_domain={self.function_domain},\n   function_range={self.function_range},\n   function={self.function!r}\n  )"
         else:
-            return f"CoordinateMap(\n   function_domain={self.function_domain},\n   function_range={self.function_range},\n   function={repr(self.function)},\n   inverse_function={repr(self.inverse_function)}\n  )"
+            return f"CoordinateMap(\n   function_domain={self.function_domain},\n   function_range={self.function_range},\n   function={self.function!r},\n   inverse_function={self.inverse_function!r}\n  )"
 
 
     def _checkfunction(self):
@@ -1370,7 +1370,7 @@ def renamed_domain(mapping, newnames, name=''):
 
     for key in list(newnames):
         if key not in mapping.function_domain.coord_names:
-            raise ValueError(f'no domain coordinate named {str(key)}')
+            raise ValueError(f'no domain coordinate named {key}')
 
     new_coord_names = []
     for n in mapping.function_domain.coord_names:
@@ -1434,7 +1434,7 @@ def renamed_range(mapping, newnames):
 
     for key in list(newnames):
         if key not in mapping.function_range.coord_names:
-            raise ValueError(f'no range coordinate named {str(key)}')
+            raise ValueError(f'no range coordinate named {key}')
 
     new_coord_names = []
     for n in mapping.function_range.coord_names:

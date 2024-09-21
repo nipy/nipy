@@ -343,7 +343,7 @@ class ECquasi(np.poly1d):
             m = repr(self.m)
         else:
             m = f'{self.m:f}'
-        return f"ECquasi({repr(self.coeffs)}, m={m}, exponent={self.exponent:f})"
+        return f"ECquasi({self.coeffs!r}, m={m}, exponent={self.exponent:f})"
 
     __str__ = __repr__
     __rsub__ = __sub__

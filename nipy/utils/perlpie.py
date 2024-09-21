@@ -96,7 +96,7 @@ def perl_dash_pie(oldstr, newstr, dry_run=None):
         Error while executing perl_dash_pie command:
         {cmd}
         Error:
-        {str(err)}
+        {err}
         """
         raise Exception(msg)
 
