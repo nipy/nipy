@@ -186,12 +186,10 @@ def time_slice_diffs_image(img, time_axis='t', slice_axis='slice'):
     img_class = img.__class__
     time_in_ax, time_out_ax = io_axis_indices(img.coordmap, time_axis)
     if None in (time_in_ax, time_out_ax):
-        raise AxisError('Cannot identify matching input output axes with "%s"'
-                        % time_axis)
+        raise AxisError('Cannot identify matching input output axes with "{}"'.format(time_axis))
     slice_in_ax, slice_out_ax = io_axis_indices(img.coordmap, slice_axis)
     if None in (slice_in_ax, slice_out_ax):
-        raise AxisError('Cannot identify matching input output axes with "%s"'
-                        % slice_axis)
+        raise AxisError('Cannot identify matching input output axes with "{}"'.format(slice_axis))
     vol_coordmap = drop_io_dim(img.coordmap, time_axis)
     results = time_slice_diffs(img.get_fdata(), time_in_ax, slice_in_ax)
     for key in ('slice_diff2_max_vol', 'diff2_mean_vol'):

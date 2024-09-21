@@ -217,7 +217,7 @@ class ApiDocWriter:
 
         # Make a shorter version of the uri that omits the package name for
         # titles
-        uri_short = re.sub(r'^%s\.' % self.package_name,'',uri)
+        uri_short = re.sub(r'^{}\.'.format(self.package_name),'',uri)
 
         ad = '.. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n'
 

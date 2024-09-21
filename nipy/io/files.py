@@ -146,8 +146,7 @@ def save(img, filename, dtype_from='data'):
         try:
             ana_img = nib.Spm2AnalyzeImage.from_image(ni_img)
         except HeaderDataError:
-            raise HeaderDataError('SPM analyze does not support datatype %s' %
-                                  ni_img.get_data_dtype())
+            raise HeaderDataError('SPM analyze does not support datatype {}'.format(ni_img.get_data_dtype()))
         ana_img.to_filename(filename)
     else:
         raise ValueError(f'Sorry, we cannot yet save as format "{ftype}"')

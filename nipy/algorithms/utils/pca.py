@@ -335,14 +335,14 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
     if None in (in_ax, out_ax):
         raise AxisError(f'Cannot identify matching input output axes with "{axis}"')
     if not orth_axes(in_ax, out_ax, img.coordmap.affine):
-        raise AxisError('Input and output axes found from "%s" not orthogonal '
-                        'to rest of affine' % axis)
+        raise AxisError('Input and output axes found from "{}" not orthogonal '
+                        'to rest of affine'.format(axis))
     # Roll the chosen axis to input position zero
     work_img = rollimg(img, axis)
     if mask is not None:
         if not mask.coordmap.similar_to(drop_io_dim(img.coordmap, axis)):
             raise ValueError("Mask should have matching coordmap to `img` "
-                             "coordmap with dropped axis %s" % axis)
+                             "coordmap with dropped axis {}".format(axis))
     data = work_img.get_fdata()
     if mask is not None:
         mask_data = mask.get_fdata()

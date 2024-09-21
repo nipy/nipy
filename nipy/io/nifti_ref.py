@@ -433,14 +433,14 @@ def _find_time_like(coordmap, fix0):
                 corr_in = out2in[same_time_out]
                 if corr_out is None:
                     if corr_in is not None:
-                        raise NiftiError("Axis type '%s' found in input and "
+                        raise NiftiError("Axis type '{}' found in input and "
                                          "output but they do not appear to "
-                                         "match" % name)
+                                         "match".format(name))
                     return (in_ax, None, name)
                 if corr_out != same_time_out:
-                    raise NiftiError("Axis type '%s' found in input and "
+                    raise NiftiError("Axis type '{}' found in input and "
                                      "output but they do not appear to "
-                                     "match" % name)
+                                     "match".format(name))
                 return (in_ax, corr_out, name)
             # Name not in output, but is there another time-like name at this
             # output position?
@@ -567,9 +567,9 @@ def nifti2nipy(ni_img):
     # Add to mm scaling, with warning
     space_units, time_like_units = hdr.get_xyzt_units()
     if space_units in ('micron', 'meter'):
-        warnings.warn('"%s" space scaling in NIFTI ``xyt_units field; '
+        warnings.warn('"{}" space scaling in NIFTI ``xyt_units field; '
                       'applying scaling to affine, but this may not be what '
-                      'you want' % space_units, UserWarning)
+                      'you want'.format(space_units), UserWarning)
         if space_units == 'micron':
             affine[:3] /= 1000.
         elif space_units == 'meter':
