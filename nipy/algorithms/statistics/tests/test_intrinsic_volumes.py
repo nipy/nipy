@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
-from itertools import combinations
+from itertools import chain, combinations
 
 import numpy as np
 import numpy.linalg as npl
@@ -11,6 +11,8 @@ from numpy.testing import assert_almost_equal, assert_array_equal
 from nipy.utils import SCTYPES
 
 from .. import intvol
+import functools
+import operator
 
 
 def symnormal(p=10):
@@ -192,7 +194,7 @@ def test_ec():
         assert_almost_equal(f(box1), 1)
         # While we're here, test we can use different dtypes, and that values
         # other than 0 or 1 raise an error.
-        for dtt in sum([SCTYPES[t] for t in ('int', 'uint', 'float')], []):
+        for dtt in chain.from_iterable(SCTYPES[t] for t in ('int', 'uint', 'float')):
             box1_again = box1.copy().astype(dtt)
             assert_almost_equal(f(box1_again), 1)
             box1_again[(10,) * i] = 2

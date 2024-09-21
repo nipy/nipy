@@ -1,6 +1,8 @@
 """ Test quartile functions
 """
 
+from itertools import chain
+
 import numpy as np
 from numpy import median as np_median
 from numpy.testing import assert_array_almost_equal, assert_array_equal
@@ -9,10 +11,14 @@ from scipy.stats import scoreatpercentile as sp_percentile
 from nipy.utils import SCTYPES
 
 from .._quantile import _median, _quantile
+import functools
+import operator
 
-NUMERIC_TYPES = sum([SCTYPES[t]
-                     for t in ('int', 'uint', 'float', 'complex')],
-                    [])
+NUMERIC_TYPES = list(
+    chain.from_iterable(
+        SCTYPES[t] for t in ("int", "uint", "float", "complex")
+    )
+)
 
 
 def another_percentile(arr, pct, axis):
