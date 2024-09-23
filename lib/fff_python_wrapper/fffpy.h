@@ -32,14 +32,12 @@
    dso. (import_array() asks the pointer value to the python process)
 */
 /*
- * deal with differences in macro return result between Python 2 and 3
- * http://mail.scipy.org/pipermail/numpy-discussion/2010-December/054350.html
+ * IMP_OUT used to be a placeholder for selectin fffpy_import_array
+ * output type depending on the Python version, 2 or 3.  Contemporary
+ * numpy versions (>=2) dictate the return type of import_array, which
+ * is currently a void* (return NULL).
  */
-#if PY_MAJOR_VERSION >= 3
-typedef int IMP_OUT;
-#else
-typedef void IMP_OUT;
-#endif
+typedef void* IMP_OUT;
 
 extern IMP_OUT fffpy_import_array(void);
 
