@@ -17,7 +17,7 @@ classifiers = ["Development Status :: 3 - Alpha",
                "Programming Language :: Python :: 3.12",
                "Topic :: Scientific/Engineering"]
 dependencies = [
-    'numpy>=1.22',
+    'numpy>=1.22,<2',
     'scipy>=1.8',
     'nibabel>=3.2',
     'sympy>=1.9',
@@ -67,7 +67,7 @@ requires = [
   # From Numpy 1.25, Numpy is always backwards compatible for any given Python
   # version.  See:
   # https://numpy.org/doc/stable/release/1.25.0-notes.html#compiling-against-the-numpy-c-api-is-now-backwards-compatible-by-default
-  "numpy>=1.25; python_version > '3.8'",
+  "numpy>=1.25,<2; python_version > '3.8'",
   # SPEC0-minimum as of Dec 23, 2023
   "numpy==1.22; python_version <= '3.8'",
 ]
