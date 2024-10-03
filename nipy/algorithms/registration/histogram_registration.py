@@ -14,7 +14,7 @@ from .chain_transform import ChainTransform
 from .optimizer import configure_optimizer
 from .similarity_measures import similarity_measures as _sms
 
-MAX_INT = np.iinfo(np.int_).max
+MAX_INTC = np.iinfo(np.intc).max
 
 # Module globals
 VERBOSE = True  # enables online print statements
@@ -310,7 +310,7 @@ class HistogramRegistration:
         trans_vox_coords = Tv.apply(self._vox_coords)
         interp = self._interp
         if self._interp < 0:
-            interp = -self.rng.integers(MAX_INT)
+            interp = -self.rng.integers(MAX_INTC)
         _joint_histogram(self._joint_hist,
                          self._from_data.flat,  # array iterator
                          self._to_data,
