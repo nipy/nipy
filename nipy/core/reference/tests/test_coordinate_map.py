@@ -34,8 +34,11 @@ from ..coordinate_system import CoordinateSystem, CoordinateSystemError, CoordSy
 CS = CoordinateSystem
 
 import pytest
-from numpy.testing import (assert_almost_equal, assert_array_equal,
-                           assert_array_almost_equal)
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 
 # Dtypes for testing coordinate map creation / processing
 _SYMPY_SAFE_DTYPES = (SCTYPES['int'] + SCTYPES['uint'] +
