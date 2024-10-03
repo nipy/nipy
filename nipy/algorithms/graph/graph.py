@@ -347,7 +347,7 @@ def knn(X, k=1):
 
     Notes
     -----
-    The knn system is symmeterized: if (ab) is one of the edges then (ba) is
+    The knn system is symmetrized: if (ab) is one of the edges then (ba) is
     also included
     """
     from ..utils.fast_distance import euclidean_distance
