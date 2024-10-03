@@ -9,7 +9,6 @@ from warnings import catch_warnings, simplefilter
 import numpy as np
 import pytest
 import sympy
-from numpy.rec import fromrecords
 from numpy.testing import assert_almost_equal, assert_array_equal
 from sympy.utilities.lambdify import implemented_function
 
@@ -219,6 +218,7 @@ def test_make_recarray():
     # Test make_array
     # From list / sequence
     # 2D case
+    fromrecords = np.rec.fromrecords
     data_2d = [(3, 4), (4, 6), (7, 9)]
     m = F.make_recarray(data_2d, 'wv', [np.float64, np.int_])
     assert_starr_equal(m, fromrecords(
