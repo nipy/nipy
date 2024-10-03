@@ -523,13 +523,11 @@ fffpy_multi_iterator* fffpy_multi_iterator_new(int narr, int axis, ...)
 
   /* Create new instance */
   thisone = (fffpy_multi_iterator*)malloc(sizeof(fffpy_multi_iterator));
-  /* Size of PyArrayMultiIterObject no longer guaranteed.
+  /* Static size of PyArrayMultiIterObject.
    *
-   * Add arbitrary overhead to allow for this.
-   *
-   * https://github.com/numpy/numpy/issues/26765#issuecomment-2189047480
+   * https://github.com/numpy/numpy/issues/26765#issuecomment-2391737671
    */
-  multi = PyArray_malloc(sizeof(PyArrayMultiIterObject) * 2);
+  multi = PyArray_malloc(PyArrayMultiIter_Type.tp_basicsize);
   vector = (fff_vector**)malloc(narr*sizeof(fff_vector*));
 
   /* Initialize the PyArrayMultiIterObject instance from the variadic arguments */
