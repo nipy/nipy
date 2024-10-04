@@ -9,11 +9,7 @@
    because PyArray_API is defined static, in order not to share that symbol
    within the dso. (import_array() asks the pointer value to the python process)
 */
-/*
- * deal with differences in macro return result between Python 2 and 3
- * http://mail.scipy.org/pipermail/numpy-discussion/2010-December/054350.html
- */
-IMP_OUT fffpy_import_array(void) {
+void* fffpy_import_array(void) {
   import_array();
 }
 
@@ -47,7 +43,7 @@ void fff_vector_fetch_using_NumPy(fff_vector* y, const char* x, npy_intp stride,
   PyArrayObject* X = (PyArrayObject*) PyArray_New(&PyArray_Type, 1, dim, type, strides,
 						  (void*)x, itemsize, NPY_BEHAVED, NULL);
   PyArrayObject* Y = (PyArrayObject*) PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, (void*)y->data);
-  PyArray_CastTo(Y, X);
+  PyArray_CopyInto(Y, X);
   Py_XDECREF(Y);
   Py_XDECREF(X);
   return;
@@ -215,7 +211,7 @@ fff_matrix* fff_matrix_fromPyArray(const PyArrayObject* x)
     dim[1] = dim1;
 
     xd = (PyArrayObject*) PyArray_SimpleNewFromData(2, dim, NPY_DOUBLE, (void*)y->data);
-    PyArray_CastTo(xd, (PyArrayObject*)x);
+    PyArray_CopyInto(xd, (PyArrayObject*)x);
     Py_XDECREF(xd);
   }
 
@@ -527,7 +523,11 @@ fffpy_multi_iterator* fffpy_multi_iterator_new(int narr, int axis, ...)
 
   /* Create new instance */
   thisone = (fffpy_multi_iterator*)malloc(sizeof(fffpy_multi_iterator));
-  multi = PyArray_malloc(sizeof(PyArrayMultiIterObject));
+  /* Static size of PyArrayMultiIterObject.
+   *
+   * https://github.com/numpy/numpy/issues/26765#issuecomment-2391737671
+   */
+  multi = PyArray_malloc(PyArrayMultiIter_Type.tp_basicsize);
   vector = (fff_vector**)malloc(narr*sizeof(fff_vector*));
 
   /* Initialize the PyArrayMultiIterObject instance from the variadic arguments */

@@ -31,15 +31,8 @@
    static, in order not to share that symbol within the
    dso. (import_array() asks the pointer value to the python process)
 */
-/*
- * IMP_OUT used to be a placeholder for selectin fffpy_import_array
- * output type depending on the Python version, 2 or 3.  Contemporary
- * numpy versions (>=2) dictate the return type of import_array, which
- * is currently a void* (return NULL).
- */
-typedef void* IMP_OUT;
 
-extern IMP_OUT fffpy_import_array(void);
+extern void* fffpy_import_array(void);
 
 /*!
   \brief Convert \c PyArrayObject to \c fff_vector

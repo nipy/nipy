@@ -51,7 +51,7 @@ class WeightedForest(Forest):
     parents: array of shape (self.V) the parent array
     edges: array of shape (self.E,2) reprensenting pairwise neighbors
     weights, array of shape (self.E), +1/-1 for scending/descending links
-    children: list of arrays that represents the childs of any node
+    children: list of arrays that represents the children of any node
     height: array of shape(self.V)
     """
 

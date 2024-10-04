@@ -6,6 +6,8 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
+from nipy.utils import SCTYPES
+
 from ..coordinate_system import (
     CoordinateSystem,
     CoordinateSystemError,
@@ -60,7 +62,7 @@ def test_unique_coord_names():
 
 def test_dtypes():
     # invalid dtypes
-    dtypes = np.sctypes['others']
+    dtypes = SCTYPES['others']
     dtypes.remove(object)
     for dt in dtypes:
         pytest.raises(ValueError, CoordinateSystem, 'ijk', 'test', dt)
@@ -68,7 +70,7 @@ def test_dtypes():
     dtype = np.dtype([('field1', '<f8'), ('field2', '<i4')])
     pytest.raises(ValueError, CoordinateSystem, 'ijk', 'test', dtype)
     # valid dtypes
-    dtypes = (np.sctypes['int'] + np.sctypes['float'] + np.sctypes['complex'] +
+    dtypes = (SCTYPES['int'] + SCTYPES['float'] + SCTYPES['complex'] +
               [object])
     for dt in dtypes:
         cs = CoordinateSystem('ij', coord_dtype=dt)
@@ -184,10 +186,10 @@ def test_safe_dtype():
     pytest.raises(TypeError, safe_dtype, str, np.float64)
     pytest.raises(TypeError, safe_dtype, [('x', 'f8')])
     valid_dtypes = []
-    valid_dtypes.extend(np.sctypes['complex'])
-    valid_dtypes.extend(np.sctypes['float'])
-    valid_dtypes.extend(np.sctypes['int'])
-    valid_dtypes.extend(np.sctypes['uint'])
+    valid_dtypes.extend(SCTYPES['complex'])
+    valid_dtypes.extend(SCTYPES['float'])
+    valid_dtypes.extend(SCTYPES['int'])
+    valid_dtypes.extend(SCTYPES['uint'])
     for dt in valid_dtypes:
         sdt = safe_dtype(dt)
         assert sdt == dt
