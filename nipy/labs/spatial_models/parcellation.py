@@ -15,8 +15,7 @@ from warnings import warn
 
 import numpy as np
 
-warn('Module nipy.labs.spatial_models.parcellation deprecated, ' +
-     'will be removed',
+warn('Module nipy.labs.spatial_models.parcellation deprecated, will be removed',
      FutureWarning,
      stacklevel=2)
 

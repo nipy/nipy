@@ -9,8 +9,8 @@ from warnings import warn
 
 import numpy as np
 
-warn('Module nipy.algorithms.clustering.von_mises_fisher_mixture' +
-     'deprecated, will be removed',
+warn('Module nipy.algorithms.clustering.von_mises_fisher_mixture deprecated, '
+     'will be removed',
      FutureWarning,
      stacklevel=2)
 

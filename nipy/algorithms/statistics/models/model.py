@@ -190,7 +190,7 @@ class LikelihoodModelResults:
         or a matrix.
         """
         if self.cov is None:
-            raise ValueError('need covariance of parameters for computing' +\
+            raise ValueError('need covariance of parameters for computing '
                              '(unnormalized) covariances')
 
         if dispersion is None:
