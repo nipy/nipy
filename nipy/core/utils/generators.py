@@ -182,7 +182,7 @@ def slice_generator(data, axis=0):
     slice_template = [slice(0, s) for s in data.shape]
 
     for n in range(nmax):
-        slices = slice_template[:]
+        slices = slice_template.copy()
         for (a, div, mod) in zip(axis, divs, mods):
             x = int(n / div % mod)
             slices[a] = x

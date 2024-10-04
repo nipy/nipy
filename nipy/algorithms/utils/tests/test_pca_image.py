@@ -302,7 +302,7 @@ def test_other_axes(data_dict):
         assert_almost_equal(pos_dp['basis_vectors'], pos_p[bv_key])
         assert_almost_equal(pos_dp['basis_projections'], img_bps.get_fdata())
         # And we've replaced the expected axis
-        exp_coords = in_coords[:]
+        exp_coords = in_coords.copy()
         exp_coords[exp_coords.index(axis_name)] = 'PCA components'
         assert img_bps.axes.coord_names == tuple(exp_coords)
     # If the affine is not diagonal, we'll get an error
@@ -323,6 +323,6 @@ def test_other_axes(data_dict):
         pytest.raises(AxisError, pca_image, nd_img, axis_name)
     for axis_name in 'kt':
         p = pca_image(img, axis_name, ncomp=ncomp)
-        exp_coords = in_coords[:]
+        exp_coords = in_coords.copy()
         exp_coords[exp_coords.index(axis_name)] = 'PCA components'
         assert p['basis_projections'].axes.coord_names == tuple(exp_coords)
