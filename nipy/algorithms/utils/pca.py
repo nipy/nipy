@@ -24,6 +24,7 @@ from ...core.reference.coordinate_map import (
     io_axis_indices,
     orth_axes,
 )
+from ...utils import SCTYPES
 
 
 def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
@@ -204,8 +205,8 @@ def _get_covariance(data, UX, rmse_scales_func, mask):
     C = np.zeros((rank, rank))
     # nan_to_num only for floating point masks
     if mask is not None:
-        nan_to_num = mask.dtype.type in (np.sctypes['float'] +
-                                         np.sctypes['complex'])
+        nan_to_num = mask.dtype.type in (SCTYPES['float'] +
+                                         SCTYPES['complex'])
     # loop over next dimension to save memory
     if data.ndim == 2:
         # If we have 2D data, just do the covariance all in one shot, by using

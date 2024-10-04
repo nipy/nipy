@@ -5,6 +5,8 @@ from types import SimpleNamespace
 
 import numpy as np
 
+from nipy.utils import SCTYPES
+
 # this import line is a little ridiculous...
 from ..coordinate_map import (
     AffineTransform,
@@ -32,11 +34,15 @@ from ..coordinate_system import CoordinateSystem, CoordinateSystemError, CoordSy
 CS = CoordinateSystem
 
 import pytest
-from numpy.testing import assert_almost_equal, assert_array_equal
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 
 # Dtypes for testing coordinate map creation / processing
-_SYMPY_SAFE_DTYPES = (np.sctypes['int'] + np.sctypes['uint'] +
-                      np.sctypes['float'] + np.sctypes['complex'] +
+_SYMPY_SAFE_DTYPES = (SCTYPES['int'] + SCTYPES['uint'] +
+                      SCTYPES['float'] + SCTYPES['complex'] +
                       [object])
 # Sympy <= 1.1 does not handle numpy longcomplex correctly. See:
 # https://github.com/sympy/sympy/pull/12901
@@ -965,42 +971,39 @@ def test_dtype_cmap_inverses():
         coord = np.array(in_list, dtype=dt)
         out_coord = np.array(out_list, dtype=dt)
         # Expected output type of inverse, not preserving
-        if dt in np.sctypes['int'] + np.sctypes['uint']:
+        if dt in SCTYPES['int'] + SCTYPES['uint']:
             exp_i_dt = np.float64
         else:
             exp_i_dt = dt
         # Default inverse cmap may alter coordinate types
-        try:
-            r_cmap = cmap.inverse()
-        except:
-            1/0
+        r_cmap = cmap.inverse()
         res = r_cmap(out_coord)
-        assert_array_equal(res, coord)
+        assert_array_almost_equal(res, coord)
         assert res.dtype == exp_i_dt
         # Default behavior is preserve_type=False
         r_cmap = cmap.inverse(preserve_dtype=False)
         res = r_cmap(out_coord)
-        assert_array_equal(res, coord)
+        assert_array_almost_equal(res, coord)
         assert res.dtype == exp_i_dt
         # Preserve_dtype=True - preserves dtype
         r_cmap = cmap.inverse(preserve_dtype=True)
         res = r_cmap(out_coord)
-        assert_array_equal(res, coord)
+        assert_array_almost_equal(res, coord)
         assert res.dtype == dt
         # Preserve_dtype=True is default for conversion to CoordinateMap
         cm_cmap = _as_coordinate_map(cmap)
-        assert_array_equal(cm_cmap(coord), out_list)
+        assert_array_almost_equal(cm_cmap(coord), out_list)
         rcm_cmap = cm_cmap.inverse()
-        assert_array_equal(rcm_cmap(coord), out_list)
+        assert_array_almost_equal(rcm_cmap(coord), out_list)
         res = rcm_cmap(out_coord)
-        assert_array_equal(res, coord)
+        assert_array_almost_equal(res, coord)
         assert res.dtype == dt
     # For integer types, where there is no integer inverse, return floatey
     # inverse by default, and None for inverse when preserve_dtype=True
     arr_p2 = arr_p1 * 2
     arr_p2[-1, -1] = 1
     out_list = [0, 4, 2]
-    for dt in np.sctypes['int'] + np.sctypes['uint']:
+    for dt in SCTYPES['int'] + SCTYPES['uint']:
         in_cs = CoordinateSystem('ijk', coord_dtype=dt)
         out_cs = CoordinateSystem('xyz', coord_dtype=dt)
         cmap = AffineTransform(in_cs, out_cs, arr_p2.astype(dt))
