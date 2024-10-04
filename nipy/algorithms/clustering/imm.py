@@ -258,7 +258,7 @@ class IMM(BGMM):
             z[train] = self.reduce(z[train])
             self.update(x[train], z[train])
 
-            # draw the membership for the left-out datas
+            # draw the membership for the left-out data
             alike = self.likelihood(x[test], plike[test])
             slike[test] = alike.sum(1)
             # standard + likelihood under the prior

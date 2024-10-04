@@ -7,6 +7,10 @@ These are modules that we (broadly-speaking) wrote; packages that other people
 wrote, that we ship, go in the nipy.externals tree.
 """
 
+import functools
+import warnings
+
+import numpy as np
 from nibabel.data import DataError, datasource_or_bomber, make_datasource
 
 # Module level datasource instances for convenience
@@ -48,3 +52,28 @@ class _NoValue:
     This class may be used as the default value assigned to a deprecated
     keyword in order to check if it has been given a user defined value.
     """
+
+
+# Numpy sctypes (np.sctypes removed in Numpy 2.0).
+SCTYPES = {'int': [np.int8, np.int16, np.int32, np.int64],
+           'uint': [np.uint8, np.uint16, np.uint32, np.uint64],
+           'float': [np.float16, np.float32, np.float64],
+           'complex': [np.complex64, np.complex128],
+           'others': [bool, object, bytes, str, np.void]}
+
+
+def deprecate_with_doc(msg):
+    # Adapted from: https://stackoverflow.com/a/30253848/1939576
+
+    def dep(func):
+
+        @functools.wraps(func)
+        def new_func(*args, **kwargs):
+            warnings.warn(
+                f"{func.__name__} deprecated, {msg}",
+                category=DeprecationWarning, stacklevel=2)
+            return func(*args, **kwargs)
+
+        return new_func
+
+    return dep

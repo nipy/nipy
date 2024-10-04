@@ -18,6 +18,8 @@ from itertools import chain
 
 import numpy as np
 
+from ...utils import deprecate_with_doc
+
 # Legacy repr printing from numpy.
 from ..reference.array_coords import ArrayCoordMap
 
@@ -581,7 +583,7 @@ def fromarray(data, innames, outnames):
     return Image(data, coordmap)
 
 
-@np.deprecate_with_doc('Please use rollimg instead')
+@deprecate_with_doc('please use rollimg instead')
 def rollaxis(img, axis, inverse=False):
     """ Roll `axis` backwards, until it lies in the first position.
 

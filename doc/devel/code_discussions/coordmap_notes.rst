@@ -495,8 +495,10 @@ AffineTransform(
                  [  0.,   0.,   1.]])
 )
 
->>> bounding_box(y70, (x_spec[1], z_spec[1]))
-((-92.0, 92.0), (70.0, 70.0), (-70.0, 100.0))
+>>> x_lims, y_lims, z_lims = bounding_box(y70, (x_spec[1], z_spec[1]))
+>>> assert np.all(x_lims == (-92, 92))
+>>> assert np.all(y_lims == (70, 70))
+>>> assert np.all(z_lims == (-70, 100))
 
 Maybe these aren't things that "normal human beings" (to steal a quote from
 Gael) can use, but they're explicit and they are tied to precise mathematical

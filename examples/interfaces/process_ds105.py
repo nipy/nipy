@@ -58,7 +58,7 @@ STUDY_DEF = {
 
 
 def _sorted_prefer_nii(file_list):
-    """ Strip any filanames ending nii.gz if matching .nii filename in list
+    """ Strip any filenames ending nii.gz if matching .nii filename in list
     """
     preferred = []
     for fname in file_list:

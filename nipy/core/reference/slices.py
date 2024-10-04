@@ -192,8 +192,7 @@ def zslice(z, x_spec, y_spec, world):
 
 def bounding_box(coordmap, shape):
     """
-    Determine a valid bounding box from a CoordinateMap
-    and a shape.
+    Determine valid bounding box from CoordinateMap and shape.
 
     Parameters
     ----------

@@ -455,7 +455,7 @@ def EC3d(mask):
                         l0 = l0 - m
 
     # fpmask has the same sum as mask, but with predictable dtype
-    return l0 + fpmask.sum()
+    return l0 + fpmask.sum().astype(int)
 
 
 def Lips3d(coords, mask):
@@ -690,7 +690,7 @@ def Lips3d(coords, mask):
                         l0 = l0 - m
 
     # fpmask has the same sum as mask, but with predictable dtype
-    l0 += fpmask.sum()
+    l0 += fpmask.sum().astype(int)
     return np.array([l0, l1, l2, l3])
 
 
@@ -898,7 +898,7 @@ def Lips2d(coords, mask):
                     l0 = l0 - m
 
     # fpmask has the same sum as mask, but with predictable dtype
-    l0 += fpmask.sum()
+    l0 += fpmask.sum().astype(int)
     return np.array([l0,l1,l2])
 
 
@@ -944,12 +944,12 @@ def EC2d(mask):
         np.ndarray[np.intp_t, ndim=2] d2
         np.ndarray[np.intp_t, ndim=2] d3
         # scalars
-        np.uint8_t m
+        np.uint64_t m
         np.npy_intp i, j, k, l, s0, s1, ds2, ds3, index
         np.ndarray[np.intp_t, ndim=1] strides
         np.npy_intp ss0, ss1 # strides
         np.npy_intp v0, v1 # vertices
-        long l0 = 0
+        np.npy_intp l0 = 0
 
     mask = check_cast_bin8(mask)
 
@@ -999,7 +999,7 @@ def EC2d(mask):
                     l0 = l0 - m
 
     # fpmask has the same sum as mask, but with predictable dtype
-    l0 += fpmask.sum()
+    l0 += fpmask.sum().astype(int)
     return l0
 
 
@@ -1082,7 +1082,7 @@ def Lips1d(coords, mask):
             l0 = l0 - m
 
     # mask_c has the same sum as mask, but with predictable dtype
-    l0 += mask_c.sum()
+    l0 += mask_c.sum().astype(int)
     return np.array([l0, l1])
 
 
@@ -1137,5 +1137,5 @@ def EC1d(mask):
             l0 = l0 - m
 
     # mask_c has the same sum as mask, but with predictable dtype
-    l0 += mask_c.sum()
+    l0 += mask_c.sum().astype(int)
     return l0

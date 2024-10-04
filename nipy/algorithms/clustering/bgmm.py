@@ -38,7 +38,7 @@ def detsh(H):
     Parameters
     ----------
     H array of shape(n,n)
-      the input matrix, assumed symmmetric and positive
+      the input matrix, assumed symmetric and positive
 
     Returns
     -------
@@ -222,8 +222,8 @@ def multinomial(probabilities):
     Parameters
     ----------
     probabilities: array of shape (nelements, nclasses):
-                likelihood of each element belongin to each class
-                each row is assumedt to sum to 1
+                likelihood of each element belonging to each class
+                each row is assumed to sum to 1
                 One sample is draw from each row, resulting in
 
     Returns
