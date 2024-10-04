@@ -293,7 +293,7 @@ def compute_mask_sessions(session_images, m=0.2, M=0.9, cc=1, threshold=0.5,
         The mean image
     """
     mask, mean = None, None
-    for index, session in enumerate(session_images):
+    for session in session_images:
         if hasattr(session, 'get_fdata'):
             mean = session.get_fdata()
             if mean.ndim > 3:
