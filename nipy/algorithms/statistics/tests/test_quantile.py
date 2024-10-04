@@ -1,6 +1,8 @@
 """ Test quartile functions
 """
 
+import functools
+import operator
 from itertools import chain
 
 import numpy as np
@@ -11,8 +13,6 @@ from scipy.stats import scoreatpercentile as sp_percentile
 from nipy.utils import SCTYPES
 
 from .._quantile import _median, _quantile
-import functools
-import operator
 
 NUMERIC_TYPES = list(
     chain.from_iterable(

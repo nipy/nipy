@@ -1,6 +1,8 @@
 """ Testing arrays module
 """
 
+import functools
+import operator
 from itertools import chain
 
 import numpy as np
@@ -10,8 +12,6 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 from nipy.utils import SCTYPES
 
 from ..arrays import strides_from
-import functools
-import operator
 
 
 def test_strides_from():
