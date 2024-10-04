@@ -102,8 +102,8 @@ class Transform:
         second_mapping = transform.mapping
         if first_mapping is not None and second_mapping is not None:
             def new_mapping(x, y, z):
-                """ Coordinate mapping from {} to {}.
-                """.format(self.input_space, transform.output_space)
+                f""" Coordinate mapping from {self.input_space} to {transform.output_space}.
+                """
                 return second_mapping(*first_mapping(x, y, z))
         else:
             new_mapping = None
@@ -113,8 +113,8 @@ class Transform:
         if ( first_inverse_mapping is not None
              and second_inverse_mapping is not None):
             def new_inverse_mapping(x, y, z):
-                """ Coordinate mapping from {} to {}.
-                """.format(transform.output_space, self.input_space)
+                f""" Coordinate mapping from {transform.output_space} to {self.input_space}.
+                """
                 return first_inverse_mapping(*second_inverse_mapping(x, y, z))
         else:
             new_inverse_mapping = None
@@ -153,8 +153,8 @@ class Transform:
         """
         if not transform.input_space == self.output_space:
             raise CompositionError("The input space of the "
-                "second transform ({}) does not match the input space "
-                "of first transform ({})".format(transform.input_space, self.output_space)
+                f"second transform ({transform.input_space}) does not match the input space "
+                f"of first transform ({self.output_space})"
                 )
 
 

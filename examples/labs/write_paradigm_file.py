@@ -45,11 +45,7 @@ cid = np.array([condition_ids[i] for i in trial_type[trial_type < 10]])
 sess = np.zeros(np.size(time)).astype('int8')
 pdata = np.vstack((sess, cid, time)).T
 csvfile = 'localizer_paradigm.csv'
-# Opening files for CSV writing differs between Python 2 and 3
-if sys.version_info[0] >= 3: # Python 3
-    fid = open(csvfile, "w", newline = '')
-else: # Python 2
-    fid = open(csvfile, "wb")
+fid = open(csvfile, "w", newline = '')
 writer = csv.writer(fid, delimiter=' ')
 for row in pdata:
     writer.writerow(row)

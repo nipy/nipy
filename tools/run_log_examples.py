@@ -93,7 +93,7 @@ class PyProcLogger(ProcLogger):
         Prepend some matplotlib setup to suppress figures
         """
         if len(args) != 0:
-            raise ValueError("Cannot use args with {8}".format(self.__class__))
+            raise ValueError(f"Cannot use args with {self.__class__}")
         return(f"""{PYTHON} -c "import matplotlib as mpl; mpl.use('agg'); """
                f"""exec(open('{cmd}', 'rt').read())" """)
 

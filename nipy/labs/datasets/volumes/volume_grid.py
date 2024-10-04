@@ -126,8 +126,7 @@ class VolumeGrid(VolumeData):
         shape = [int(s) for s in shape]
         if not len(shape) == 3:
             raise ValueError('The shape specified should be the shape '
-                'the 3D grid, and thus of length 3. %s was specified'
-                % shape )
+                f'the 3D grid, and thus of length 3. {shape} was specified' )
         x, y, z = np.indices(shape)
         x, y, z = apply_affine(x, y, z, affine)
         values = self.values_in_world(x, y, z)

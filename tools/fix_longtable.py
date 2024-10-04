@@ -10,7 +10,7 @@ lt_LL = re.compile(
 
 def replacer(match):
     args =  '|' + 'l|' * len(match.groups()[0])
-    return "longtable}{%s}" % args
+    return f"longtable}}{{{args}}}"
 
 
 if len(sys.argv) != 2:

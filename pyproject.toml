@@ -94,7 +94,6 @@ select = [
     'SIM101',
     'SIM109',
     'SIM110',
-    'SIM111',
     'SIM118',
     'SIM2'
 ]
