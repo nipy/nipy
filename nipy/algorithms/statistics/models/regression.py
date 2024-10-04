@@ -264,9 +264,7 @@ class OLSModel(LikelihoodModel):
         o = np.ones(self.design.shape[0])
         obeta = np.dot(self.calc_beta, o)
         ohat = np.dot(self.wdesign, obeta)
-        if np.allclose(ohat, o):
-            return True
-        return False
+        return np.allclose(ohat, o)
 
     @cached_property
     def rank(self):
@@ -872,6 +870,4 @@ def isestimable(C, D):
     if C.shape[1] != D.shape[1]:
         raise ValueError('Contrast should have %d columns' % D.shape[1])
     new = np.vstack([C, D])
-    if matrix_rank(new) != matrix_rank(D):
-        return False
-    return True
+    return matrix_rank(new) == matrix_rank(D)
