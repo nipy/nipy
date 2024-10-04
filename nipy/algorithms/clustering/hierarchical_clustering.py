@@ -221,10 +221,8 @@ class WeightedForest(Forest):
         way such that parent[i]>i for all i
         Only the leaves are listeed, not the subtrees themselves
         """
-        lst = []
+        lst = [np.array([], np.int_) for i in range(self.V)]
         n = np.sum(self.isleaf())
-        for i in range(self.V):
-            lst.append(np.array([], np.int_))
         for i in range(n):
             lst[i] = np.array([i], np.int_)
         for i in range(self.V - 1):

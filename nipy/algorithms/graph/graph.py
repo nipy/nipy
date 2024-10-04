@@ -1221,9 +1221,7 @@ x
             list[[e.0.0, .., e.0.i(0)], .., [e.V.0, E.V.i(V)]] where e.i.j is
             the set of edge indexes so that e.i.j[0] = i
         """
-        linc = []
-        for i in range(self.V):
-            linc.append([])
+        linc = [[] for i in range(self.V)]
         for e in range(self.E):
             i = self.edges[e, 0]
             a = linc[i]
@@ -1240,9 +1238,7 @@ x
             list[[e.0.0, .., e.0.i(0)], .., [e.V.0, E.V.i(V)]] where e.i.j is
             the set of edge indexes so that e.i.j[1] = i
         """
-        rinc = []
-        for i in range(self.V):
-            rinc.append([])
+        rinc = [[] for i in range(self.V)]
         for e in range(self.E):
             i = self.edges[e, 1]
             a = rinc[i]

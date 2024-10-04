@@ -105,9 +105,7 @@ def full_rank(X, r=None):
     V, D, U = spl.svd(X, full_matrices=0)
     order = np.argsort(D)
     order = order[::-1]
-    value = []
-    for i in range(r):
-        value.append(V[:,order[i]])
+    value = [V[:,order[i]] for i in range(r)]
     return np.asarray(np.transpose(value)).astype(np.float64)
 
 

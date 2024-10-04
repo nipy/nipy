@@ -128,10 +128,11 @@ def get_cluster_position_from_thresholded_map(stat_map, domain, thr=3.0,
     coord = thresholded_domain.get_coord()
 
     # get the barycenters
-    baryc = []
-    for i in range(label.max() + 1):
-        if np.sum(label == i) >= csize:
-            baryc.append(np.mean(coord[label == i], 0))
+    baryc = [
+        np.mean(coord[label == i], 0)
+        for i in range(label.max() + 1)
+        if np.sum(label == i) >= csize
+    ]
 
     if len(baryc) == 0:
         return None

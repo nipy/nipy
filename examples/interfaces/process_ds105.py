@@ -308,10 +308,7 @@ def process_subject(ddef, study_def, ana_def):
 
 
 def get_subjects(data_path, subj_ids, study_def, ana_def):
-    ddefs = []
-    for subj_id in subj_ids:
-        ddefs.append(get_fdata(data_path, subj_id))
-    return ddefs
+    return [get_fdata(data_path, subj_id) for subj_id in subj_ids]
 
 
 def main():

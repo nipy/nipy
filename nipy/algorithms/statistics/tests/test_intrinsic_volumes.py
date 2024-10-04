@@ -28,9 +28,7 @@ def randorth(p=10):
 
 def box(shape, edges):
     data = np.zeros(shape)
-    sl = []
-    for i in range(len(shape)):
-        sl.append(slice(edges[i][0], edges[i][1],1))
+    sl = [slice(edges[i][0], edges[i][1],1) for i in range(len(shape))]
     data[tuple(sl)] = 1
     return data.astype(np.int_)
 
