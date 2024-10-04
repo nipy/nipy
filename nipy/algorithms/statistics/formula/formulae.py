@@ -1061,7 +1061,7 @@ class Factor(Formula):
         """
         if level not in self.levels:
             raise ValueError('level not found')
-        return self[f"{self.name}_{str(level)}"]
+        return self[f"{self.name}_{level}"]
 
     def _getmaineffect(self, ref=-1):
         v = list(self._terms.copy())

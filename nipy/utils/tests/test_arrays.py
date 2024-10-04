@@ -1,6 +1,8 @@
 """ Testing arrays module
 """
 
+from itertools import chain
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
@@ -13,7 +15,7 @@ from ..arrays import strides_from
 def test_strides_from():
     for shape in ((3,), (2,3), (2,3,4), (5,4,3,2)):
         for order in 'FC':
-            for dtype in sum(SCTYPES.values(), []):
+            for dtype in chain.from_iterable(SCTYPES.values()):
                 if dtype is bytes:
                     dtype = 'S3'
                 elif dtype is str:
