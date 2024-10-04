@@ -8,7 +8,7 @@ from subprocess import run
 
 def main():
     res = run(['gcc', '-v'], check=True, text=True, capture_output=True)
-    target = re.search(r'^Target: (.*)$', res.stderr, flags=re.M).groups()[0]
+    target = re.search(r'^Target: (.*)$', res.stderr, flags=re.MULTILINE).groups()[0]
     if target.startswith('i686'):
         print('32')
     elif target.startswith('x86_64'):
