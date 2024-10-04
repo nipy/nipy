@@ -719,10 +719,10 @@ x
         weights: array of shape(self.E), concatenated list of weights
         """
         order = np.argsort(self.edges[:, 0] * float(self.V) + self.edges[:, 1])
-        neighb = self.edges[order, 1].astype(np.int_)
+        neighb = self.edges[order, 1].astype(np.intp)
         weights = self.weights[order]
         degree, _ = self.degrees()
-        idx = np.hstack((0, np.cumsum(degree))).astype(np.int_)
+        idx = np.hstack((0, np.cumsum(degree))).astype(np.intp)
         return idx, neighb, weights
 
     def floyd(self, seed=None):
