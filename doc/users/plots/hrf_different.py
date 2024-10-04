@@ -16,8 +16,8 @@ afni = hrf.afni(T)
 
 ta = [0,4,8,12,16]; tb = [2,6,10,14,18]
 ba = 1; bb = -2
-na = ba * sum([glover.subs(T, T - t) for t in ta])
-nb = bb * sum([afni.subs(T, T - t) for t in tb])
+na = ba * sum(glover.subs(T, T - t) for t in ta)
+nb = bb * sum(afni.subs(T, T - t) for t in tb)
 
 nav = lambdify_t(na)
 nbv = lambdify_t(nb)

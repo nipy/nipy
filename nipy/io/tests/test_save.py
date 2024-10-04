@@ -85,7 +85,7 @@ def test_save3(in_tmp_path):
     data = tmp.get_fdata().copy()
     img2 = api.Image(data, tmp.coordmap, tmp.metadata)
     del tmp
-    assert tuple([img.shape[l] for l in [3,2,1,0]]) == img2.shape
+    assert tuple(img.shape[l] for l in [3,2,1,0]) == img2.shape
     a = np.transpose(img.get_fdata(), [3,2,1,0])
     assert not np.allclose(img.affine, img2.affine)
     assert np.allclose(a, img2.get_fdata())

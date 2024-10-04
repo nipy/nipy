@@ -14,8 +14,8 @@ tb = [2, 6, 10, 14, 18]
 ba = Symbol('ba')
 bb = Symbol('bb')
 t = Symbol('t')
-fa = sum([Heaviside(t - _t) for _t in ta]) * ba
-fb = sum([Heaviside(t - _t) for _t in tb]) * bb
+fa = sum(Heaviside(t - _t) for _t in ta) * ba
+fb = sum(Heaviside(t - _t) for _t in tb) * bb
 N = fa + fb
 
 Nn = N.subs(ba, 1)
