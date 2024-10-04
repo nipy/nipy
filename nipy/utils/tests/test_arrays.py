@@ -1,8 +1,6 @@
 """ Testing arrays module
 """
 
-import functools
-import operator
 from itertools import chain
 
 import numpy as np

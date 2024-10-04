@@ -1,8 +1,6 @@
 """ Test quartile functions
 """
 
-import functools
-import operator
 from itertools import chain
 
 import numpy as np
