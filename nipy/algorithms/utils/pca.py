@@ -24,6 +24,7 @@ from ...core.reference.coordinate_map import (
     io_axis_indices,
     orth_axes,
 )
+from ...utils import SCTYPES
 
 
 def pca(data, axis=0, mask=None, ncomp=None, standardize=True,
@@ -204,8 +205,8 @@ def _get_covariance(data, UX, rmse_scales_func, mask):
     C = np.zeros((rank, rank))
     # nan_to_num only for floating point masks
     if mask is not None:
-        nan_to_num = mask.dtype.type in (np.sctypes['float'] +
-                                         np.sctypes['complex'])
+        nan_to_num = mask.dtype.type in (SCTYPES['float'] +
+                                         SCTYPES['complex'])
     # loop over next dimension to save memory
     if data.ndim == 2:
         # If we have 2D data, just do the covariance all in one shot, by using
@@ -334,14 +335,14 @@ def pca_image(img, axis='t', mask=None, ncomp=None, standardize=True,
     if None in (in_ax, out_ax):
         raise AxisError(f'Cannot identify matching input output axes with "{axis}"')
     if not orth_axes(in_ax, out_ax, img.coordmap.affine):
-        raise AxisError('Input and output axes found from "%s" not orthogonal '
-                        'to rest of affine' % axis)
+        raise AxisError(f'Input and output axes found from "{axis}" not orthogonal '
+                        'to rest of affine')
     # Roll the chosen axis to input position zero
     work_img = rollimg(img, axis)
     if mask is not None:
         if not mask.coordmap.similar_to(drop_io_dim(img.coordmap, axis)):
             raise ValueError("Mask should have matching coordmap to `img` "
-                             "coordmap with dropped axis %s" % axis)
+                             f"coordmap with dropped axis {axis}")
     data = work_img.get_fdata()
     if mask is not None:
         mask_data = mask.get_fdata()

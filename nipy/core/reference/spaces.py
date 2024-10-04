@@ -299,7 +299,7 @@ def get_world_cs(world_id, ndim=3, extras='tuvw', spaces=None):
     if is_coordsys_maker(world_id):
         return world_id(ndim)
     raise ValueError('Expecting CoordinateSystem, CoordSysMaker, '
-                     'XYZSpace, or str, got %s' % world_id)
+                     f'XYZSpace, or str, got {world_id}')
 
 
 class SpaceError(Exception):

@@ -170,8 +170,8 @@ We resample the 'subject' image to the 'atlas image
 True
 >>> normalized_subject_im.coordmap == atlas_im.coordmap
 True
->>> np.all(normalized_subject_im.affine == atlas_im.affine)
-True
+>>> # Normalized image now has atlas affine.
+>>> assert np.all(normalized_subject_im.affine == atlas_im.affine)
 
 ***********************
 Mathematical definition

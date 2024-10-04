@@ -14,7 +14,7 @@ from .chain_transform import ChainTransform
 from .optimizer import configure_optimizer
 from .similarity_measures import similarity_measures as _sms
 
-MAX_INT = np.iinfo(np.int_).max
+MAX_INTC = np.iinfo(np.intc).max
 
 # Module globals
 VERBOSE = True  # enables online print statements
@@ -41,7 +41,8 @@ class HistogramRegistration:
                  from_bins=256, to_bins=None,
                  from_mask=None, to_mask=None,
                  similarity='crl1', interp='pv',
-                 smooth=0, renormalize=False, dist=None):
+                 smooth=0, renormalize=False, dist=None,
+                 rng=None):
         """
         Creates a new histogram registration object.
 
@@ -77,6 +78,8 @@ class HistogramRegistration:
          Standard deviation in millimeters of an isotropic Gaussian
          kernel used to smooth the `To` image. If 0, no smoothing is
          applied.
+        rng : None :class:`numpy.random.Generator`
+         Random number generator.
         """
         # Function assumes xyx_affine for inputs
         from_img = as_xyz_image(from_img)
@@ -125,6 +128,7 @@ class HistogramRegistration:
         # Set default registration parameters
         self._set_interp(interp)
         self._set_similarity(similarity, renormalize=renormalize, dist=dist)
+        self.rng = np.random.default_rng() if rng is None else rng
 
     def _get_interp(self):
         return list(interp_methods.keys())[\
@@ -306,7 +310,7 @@ class HistogramRegistration:
         trans_vox_coords = Tv.apply(self._vox_coords)
         interp = self._interp
         if self._interp < 0:
-            interp = - np.random.randint(MAX_INT)
+            interp = -self.rng.integers(MAX_INTC)
         _joint_histogram(self._joint_hist,
                          self._from_data.flat,  # array iterator
                          self._to_data,

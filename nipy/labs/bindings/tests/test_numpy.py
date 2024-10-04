@@ -5,6 +5,8 @@
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_equal
 
+from nipy.utils import SCTYPES
+
 from .. import (
     c_types,
     copy_vector,
@@ -35,12 +37,12 @@ def random_shape(size):
 #
 
 def test_type_conversions_to_fff():
-    # use np.sctypes for testing numpy types, np.typeDict.values
+    # use SCTYPES for testing numpy types, np.typeDict.values
     # contains a lot of duplicates.  There are 140 values in
     # np.typeDict, but only 21 unique numpy types.  But only 11 fff
     # types in c_types.
-    for type_key in np.sctypes:
-        for npy_t in np.sctypes[type_key]:
+    for type_key in SCTYPES:
+        for npy_t in SCTYPES[type_key]:
             t, nbytes = fff_type(np.dtype(npy_t))
             if t != 'unknown type':
                 assert nbytes == np.dtype(npy_t).itemsize
@@ -69,6 +71,7 @@ def test_copy_vector_contiguous():
     x = (1000*np.random.rand(int(1e6))).astype('int32')
     _test_copy_vector(x)
 
+
 def test_copy_vector_strided():
     x0 = (1000*np.random.rand(int(2e6))).astype('int32')
     x = x0[::2]
@@ -91,18 +94,22 @@ def _test_pass_vector(x):
     assert_array_equal(y, x)
 
 
+def _rs1():
+    return random_shape(1)[0]
+
+
 def test_pass_vector():
-    x = np.random.rand(int(random_shape(1)))-.5
+    x = np.random.rand(_rs1()) - .5
     _test_pass_vector(x)
 
 
 def test_pass_vector_int32():
-    x = (1000*(np.random.rand(int(random_shape(1)))-.5)).astype('int32')
+    x = (1000*(np.random.rand(_rs1()) - .5)).astype('int32')
     _test_pass_vector(x)
 
 
 def test_pass_vector_uint8():
-    x = (256*(np.random.rand(int(random_shape(1))))).astype('uint8')
+    x = (256*(np.random.rand(_rs1()))).astype('uint8')
     _test_pass_vector(x)
 
 

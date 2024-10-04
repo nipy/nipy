@@ -182,8 +182,7 @@ def dim_cmap(cmap, factor=.3, to_white=True):
     """ Dim a colormap to white, or to black.
     """
     assert factor >= 0 and factor <=1, ValueError(
-            'Dimming factor must be larger than 0 and smaller than 1, %s was passed.'
-                                                        % factor)
+            f'Dimming factor must be larger than 0 and smaller than 1, {factor} was passed.')
     if to_white:
         dimmer = lambda c: 1 - factor*(1-c)
     else:

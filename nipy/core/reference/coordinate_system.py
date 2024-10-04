@@ -15,6 +15,8 @@ __docformat__ = 'restructuredtext'
 
 import numpy as np
 
+from ...utils import SCTYPES
+
 
 class CoordinateSystemError(Exception):
     pass
@@ -115,8 +117,8 @@ class CoordinateSystem:
         if len(set(coord_names)) != len(coord_names):
             raise ValueError('coord_names must have distinct names')
         # verify that the dtype is coord_dtype for sanity
-        sctypes = (np.sctypes['int'] + np.sctypes['float'] +
-                   np.sctypes['complex'] + np.sctypes['uint'] + [object])
+        sctypes = (SCTYPES['int'] + SCTYPES['float'] +
+                   SCTYPES['complex'] + SCTYPES['uint'] + [object])
         coord_dtype = np.dtype(coord_dtype)
         if coord_dtype not in sctypes:
             raise ValueError(f'Coordinate dtype should be one of {sctypes}')
@@ -332,7 +334,7 @@ def safe_dtype(*dtypes):
     Examples
     --------
     >>> c1 = CoordinateSystem('ij', 'input', coord_dtype=np.float32)
-    >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex_)
+    >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex128)
     >>> safe_dtype(c1.coord_dtype, c2.coord_dtype)
     dtype('complex128')
 
@@ -383,7 +385,7 @@ def product(*coord_systems, **kwargs):
     Examples
     --------
     >>> c1 = CoordinateSystem('ij', 'input', coord_dtype=np.float32)
-    >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex_)
+    >>> c2 = CoordinateSystem('kl', 'input', coord_dtype=np.complex128)
     >>> c3 = CoordinateSystem('ik', 'in3')
 
     >>> print(product(c1, c2))

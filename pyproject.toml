@@ -94,7 +94,6 @@ select = [
     'SIM101',
     'SIM109',
     'SIM110',
-    'SIM111',
     'SIM118',
     'SIM2'
 ]
@@ -105,10 +104,15 @@ package = 'nipy'
 [tool.spin.commands]
 Build = [
     'spin.cmds.meson.build',
-    'spin.cmds.meson.test'
+    'spin.cmds.meson.test',
+    'spin.cmds.pip.install'
 ]
 Environments = [
     'spin.cmds.meson.ipython',
     'spin.cmds.meson.python',
     'spin.cmds.meson.run'
+]
+Debug = [
+    'spin.cmds.meson.gdb',
+    'spin.cmds.meson.lldb'
 ]

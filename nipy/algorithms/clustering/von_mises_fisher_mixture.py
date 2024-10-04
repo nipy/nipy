@@ -60,7 +60,7 @@ class VonMisesMixture:
 
         Returns
         -------
-        like: array of shape(n, self.k), with non-neagtive values
+        like: array of shape(n, self.k), with non-negative values
               the density
         """
         n = x.shape[0]
@@ -84,7 +84,7 @@ class VonMisesMixture:
 
         Returns
         -------
-        like: array of shape(n, self.k), with non-neagtive values
+        like: array of shape(n, self.k), with non-negative values
               the density
         """
         return np.exp(self.log_density_per_component(x))
