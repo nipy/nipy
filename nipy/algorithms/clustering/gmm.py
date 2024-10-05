@@ -827,7 +827,7 @@ class GMM:
         bins = max(10, int((x.max() - x.min()) / step))
         xmin = 1.1 * x.min() - 0.1 * x.max()
         xmax = 1.1 * x.max() - 0.1 * x.min()
-        h, c = np.histogram(x, bins, [xmin, xmax], normed=True)
+        h, c = np.histogram(x, bins, [xmin, xmax], density=True)
 
         # Make code robust to new and old behavior of np.histogram
         c = c[:len(h)]
