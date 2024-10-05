@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from nipy.labs.viz import plot_map, mni_sform, coord_transform
+from nipy.labs.viz import coord_transform, mni_sform, plot_map
 
 
 def test_example():
@@ -13,8 +13,8 @@ def test_example():
     mni_sform_inv = np.linalg.inv(mni_sform)
     # Color an asymmetric rectangle around Broca area:
     x, y, z = -52, 10, 22
-    x_map, y_map, z_map = [int(coord) for coord in coord_transform(x, y, z,
-                                                                   mni_sform_inv)]
+    x_map, y_map, z_map = (int(coord) for coord in coord_transform(x, y, z,
+                                                                   mni_sform_inv))
     map = np.zeros((182, 218, 182))
     map[x_map-30:x_map+30, y_map-3:y_map+3, z_map-10:z_map+10] = 1
 
