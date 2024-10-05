@@ -36,6 +36,19 @@ Abbreviated authors are:
 * JM - Jarrod Millman
 * SvdW - Stéfan van der Walt
 
+* 0.6.1 (Saturday 5 October 2024)
+
+  Compatibility release for Numpy 2.0
+
+  * Port code for Numpy 2.0 compatibility (MB)
+  * Update for test precision on Sympy 1.13 (MB)
+  * Clean up consts and casts in C code (BB)
+  * Refactoring to functools.cached_property, style and CI updates (CM)
+  * CI and automated style check updates (Dimitri Papadopoulos Orfanos)
+  * Fix for Viz example (Nicholas Tolley)
+  * Add spin tooling for working with repository checkout (SvdW)
+  * Fix shebangs for some development scripts (Étienne Mollier)
+
 * 0.6.0 (Thursday 21 December 2023)
 
   Bugfix, refactoring and compatibility release.
