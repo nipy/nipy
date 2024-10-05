@@ -65,7 +65,7 @@ master_doc = 'index'
 
 # copyright = ':ref:`2005-2018, Neuroimaging in Python team.
 # <nipy-software-license>`'
-copyright = '2005-2023, Neuroimaging in Python team'
+copyright = '2005-2024, Neuroimaging in Python team'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
