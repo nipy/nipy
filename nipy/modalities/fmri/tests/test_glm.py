@@ -37,7 +37,7 @@ def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
 def generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
     fmri_data = []
     design_matrices = []
-    for i, shape in enumerate(shapes):
+    for shape in shapes:
         data = 100 + np.random.randn(*shape)
         data[0] -= 10
         fmri_data.append(Nifti1Image(data, affine))

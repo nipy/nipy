@@ -216,7 +216,7 @@ def _get_covariance(data, UX, rmse_scales_func, mask):
         # If we have more then 2D, then we iterate over slices in the second
         # dimension, in order to save memory
         slices = [slice(i,i+1) for i in range(data.shape[1])]
-    for i, s_slice in enumerate(slices):
+    for s_slice in slices:
         Y = data[:,s_slice].reshape((n_pts, -1))
         # project data into required space
         YX = np.dot(UX, Y)
