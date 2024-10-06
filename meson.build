@@ -3,9 +3,9 @@ project(
   'c',
   # Update also in __init__.py
   # For development.
-  # version: '0.6.2.dev1',
+  version: '0.6.2.dev1',
   # For release.
-  version: '0.6.1',
+  # version: '0.6.1',
   license: 'BSD-3',
   meson_version: '>= 1.1.1',
   default_options: [

@@ -7,9 +7,9 @@ import os
 
 # When updating here, also update meson.build file.
 # Form for development.
-# __version__ = "0.6.2.dev1"
+__version__ = "0.6.2.dev1"
 # Form for release.
-__version__ = "0.6.1"
+# __version__ = "0.6.1"
 
 
 def _test_local_install():
