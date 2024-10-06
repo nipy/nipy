@@ -302,11 +302,10 @@ def getparams(expression):
         expression = expression.reshape((np.prod(expression.shape),))
     for term in expression:
         atoms = atoms.union(sympy.sympify(term).atoms())
-    params = []
-    for atom in atoms:
-        if isinstance(atom, sympy.Symbol) and not is_term(atom):
-            params.append(atom)
-    params.sort(key=default_sort_key)
+    params = sorted((atom
+                     for atom in atoms
+                     if isinstance(atom, sympy.Symbol) and not is_term(atom)),
+                    key=default_sort_key)
     return params
 
 
@@ -330,11 +329,8 @@ def getterms(expression):
         expression = expression.reshape((np.prod(expression.shape),))
     for e in expression:
         atoms = atoms.union(e.atoms())
-    terms = []
-    for atom in atoms:
-        if is_term(atom):
-            terms.append(atom)
-    terms.sort(key=default_sort_key)
+    terms = sorted((atom for atom in atoms if is_term(atom)),
+                   key=default_sort_key)
     return terms
 
 

@@ -85,9 +85,7 @@ data = """0.0      1      1      1
 #
 # http://www-stat.stanford.edu/~jtaylo/courses/stats191/data/kidney.table
 
-D = []
-for row in StringIO(data):
-    D.append([float(val) for val in row.split()])
+D = [[float(val) for val in row.split()] for row in StringIO(data)]
 D = make_recarray(D, ['Days', 'Duration', 'Weight', 'ID'])
 
 # Create the categorical regressors, known as Factors

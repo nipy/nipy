@@ -345,10 +345,10 @@ def nipy2nifti(img, data_dtype=None, strict=None, fix0=True):
     # Use list() to get .index method for python < 2.6
     input_names = list(coordmap.function_domain.coord_names)
     spatial_names = input_names[:3]
-    dim_infos = []
-    for fps in 'freq', 'phase', 'slice':
-        dim_infos.append(
-            spatial_names.index(fps) if fps in spatial_names else None)
+    dim_infos = [
+        spatial_names.index(fps) if fps in spatial_names else None
+        for fps in ('freq', 'phase', 'slice')
+    ]
     hdr.set_dim_info(*dim_infos)
     # Set units without knowing time
     hdr.set_xyzt_units(xyz='mm')

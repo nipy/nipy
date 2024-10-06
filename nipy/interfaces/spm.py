@@ -97,7 +97,4 @@ def fname_presuffix(fname, prefix='', suffix='', use_ext=True):
 
 
 def fnames_presuffix(fnames, prefix='', suffix=''):
-    f2 = []
-    for fname in fnames:
-        f2.append(fname_presuffix(fname, prefix, suffix))
-    return f2
+    return [fname_presuffix(fname, prefix, suffix) for fname in fnames]

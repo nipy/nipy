@@ -848,8 +848,7 @@ class GMM:
                      fontsize=12)
 
         legend = ['data']
-        for k in range(self.k):
-            legend.append('component %d' % (k + 1))
+        legend.extend(f'component {k}' for k in range(1, self.k + 1))
         l = ax.legend(tuple(legend))
         for t in l.get_texts():
             t.set_fontsize(12)

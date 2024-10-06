@@ -131,9 +131,7 @@ def _make_drift(drift_model, frametimes, order=1, hfcut=128.):
         drift = _blank_drift(frametimes)
     else:
         raise NotImplementedError(f"Unknown drift model {drift_model!r}")
-    names = []
-    for k in range(drift.shape[1] - 1):
-        names.append('drift_%d' % (k + 1))
+    names = [f'drift_{k}' for k in range(1, drift.shape[1])]
     names.append('constant')
     return drift, names
 

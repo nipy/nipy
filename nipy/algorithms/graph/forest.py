@@ -155,9 +155,7 @@ class Forest(WeightedGraph):
         else:
             desc = [v]
             for w in self.children[v]:
-                temp = self.get_descendants(w)
-                for q in temp:
-                    desc.append(q)
+                desc.extend(self.get_descendants(w))
         desc.sort()
         if exclude_self and v in desc:
             desc = [i for i in desc if i != v]
