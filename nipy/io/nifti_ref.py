@@ -580,7 +580,7 @@ def nifti2nipy(ni_img):
     if ndim == 3:
         return Image(data, cmap3, {'header': hdr})
     space_units, time_like_units = hdr.get_xyzt_units()
-    units_info = TIME_LIKE_UNITS.get(time_like_units, None)
+    units_info = TIME_LIKE_UNITS.get(time_like_units)
     n_ns = ndim - 3
     ns_zooms = list(hdr.get_zooms()[3:])
     ns_trans = [0] * n_ns

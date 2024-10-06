@@ -42,7 +42,7 @@ def test_unscaled_data(in_tmp_path):
         header = get_header(img_back)
         dao = get_dataobj(img_back)
         slope = header['scl_slope']
-        inter = (0. if 'scl_inter' not in header else header['scl_inter'])
+        inter = (header.get('scl_inter', 0.0))
         if np.isnan(slope):
             slope, inter = dao.slope, dao.inter
         data_back = np.array(dao)
