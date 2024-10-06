@@ -183,7 +183,7 @@ class ArrayCoordMap:
         are 'array' coordinates.
 
         """
-        slices = tuple([slice(0,s,1) for s in shape])
+        slices = tuple(slice(0,s,1) for s in shape)
         return Grid(coordmap)[slices]
 
     def __repr__(self):

@@ -218,7 +218,7 @@ def cube_with_strides_center(center=[0,0,0],
     for m in maximal:
         nm = [vertices[j] for j in m]
         mm.append(nm)
-    maximal = [tuple([vertices[j] for j in m]) for m in maximal]
+    maximal = [tuple(vertices[j] for j in m) for m in maximal]
     return complex(maximal)
 
 

@@ -53,17 +53,17 @@ def test_6():
     img = make_surrogate_data()
     clusters, info = cluster_stats(img, img, height_th=.05,
                                    height_control='fdr', cluster_th=0, nulls={})
-    print(len(clusters), sum([c['size'] for c in clusters]))
+    print(len(clusters), sum(c['size'] for c in clusters))
     assert len(clusters)==4
 
 def test7():
     img = make_surrogate_data()
     clusters, info = cluster_stats(img, img, height_th=3., height_control='None', cluster_th=0, nulls={})
-    nstv = sum([c['size'] for c in clusters])
+    nstv = sum(c['size'] for c in clusters)
     assert nstv==36
 
 def test_8():
     img = make_surrogate_data()
     clusters, info = cluster_stats(img, img, height_th=.001, height_control='fpr', cluster_th=0, nulls={})
-    nstv = sum([c['size'] for c in clusters])
+    nstv = sum(c['size'] for c in clusters)
     assert nstv==36

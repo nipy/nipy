@@ -222,4 +222,4 @@ def bounding_box(coordmap, shape):
     ((2.0, 31.0), (4.0, 121.0), (6.0, 101.0))
     """
     e = ArrayCoordMap.from_shape(coordmap, shape)
-    return tuple([(r.min(), r.max()) for r in e.transposed_values])
+    return tuple((r.min(), r.max()) for r in e.transposed_values)

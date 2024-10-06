@@ -166,8 +166,8 @@ def test_glm_ar():
     mulm, n, p, q = ar1_glm()
     assert len(mulm.labels_) == n
     assert len(mulm.results_) > 1
-    tmp = sum([mulm.results_[key].theta.shape[1]
-               for key in mulm.results_])
+    tmp = sum(mulm.results_[key].theta.shape[1]
+               for key in mulm.results_)
     assert tmp == n
 
 

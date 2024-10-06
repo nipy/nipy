@@ -203,7 +203,7 @@ def test_set_fov():
     R = HistogramRegistration(I, J)
     R.set_fov(npoints=np.prod(I.shape))
     assert R._from_data.shape == I.shape
-    half_shape = tuple([I.shape[i] / 2 for i in range(3)])
+    half_shape = tuple(I.shape[i] / 2 for i in range(3))
     R.set_fov(spacing=(2, 2, 2))
     assert R._from_data.shape == half_shape
     R.set_fov(corner=half_shape)
