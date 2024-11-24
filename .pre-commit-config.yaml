@@ -2,7 +2,7 @@
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: f71fa2c1f9cf5cb705f73dffe4b21f7c61470ba9 # v4.4.0
+    rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b # v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -13,15 +13,15 @@ repos:
         args: [--allow-multiple-documents]
       - id: check-added-large-files
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: fc260393cc4ec09f8fc0a5ba4437f481c8b55dc1 # frozen: v3.0.3
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: 1463d990e0801964764a375260dca598513f3be5 # frozen: v3.3.3
     hooks:
       - id: prettier
         files: \.(md|rst|toml|yml|yaml)
         args: [--prose-wrap=preserve]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: ef9b09598d53bbcde9cd388ac73a145e67537b44 # frozen: v0.6.6
+    rev: 8b76f04e7e5a9cd259e9d1db7799599355f97cdf # frozen: v0.8.2
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
