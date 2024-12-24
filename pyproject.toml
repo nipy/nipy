@@ -98,6 +98,9 @@ select = [
     'SIM118',
     'SIM2'
 ]
+ignore = [
+    'UP031'
+]
 
 [tool.spin]
 package = 'nipy'
