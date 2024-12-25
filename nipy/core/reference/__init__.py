@@ -42,5 +42,8 @@ __docformat__ = 'restructuredtext'
 
 from . import coordinate_map, coordinate_system, slices
 
-__all__ = ["coordinate_system", "coordinate_map",
-           "slices"]
+__all__ = [
+           "coordinate_map",
+           "coordinate_system",
+           "slices",
+]
