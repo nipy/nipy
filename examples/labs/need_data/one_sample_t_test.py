@@ -82,6 +82,6 @@ plot_map(z_map.get_fdata(), z_map.affine,
          vmax=vmax,
          threshold=3.,
          black_bg=True)
-plt.savefig(path.join(write_dir, f'one_sample_z_map.png'))
+plt.savefig(path.join(write_dir, 'one_sample_z_map.png'))
 plt.show()
 print(f"Wrote all the results in directory {write_dir}")
