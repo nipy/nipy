@@ -216,7 +216,7 @@ def main():
                      out_path,
                      cp_globs=(pjoin('gitwash', '*'),),
                      rep_globs=('*.rst',),
-                     renames=(('\.rst$', options.source_suffix),))
+                     renames=((r'\.rst$', options.source_suffix),))
         make_link_targets(project_name,
                           options.main_gh_user,
                           options.repo_name,

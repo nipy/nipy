@@ -41,7 +41,7 @@ class ApiDocWriter:
                  package_skip_patterns=None,
                  module_skip_patterns=None,
                  ):
-        ''' Initialize package for parsing
+        r''' Initialize package for parsing
 
         Parameters
         ----------
@@ -312,7 +312,7 @@ class ApiDocWriter:
         return True
 
     def discover_modules(self):
-        ''' Return module sequence discovered from ``self.package_name``
+        r''' Return module sequence discovered from ``self.package_name``
 
 
         Parameters
