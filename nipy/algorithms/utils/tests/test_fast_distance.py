@@ -18,7 +18,7 @@ def test_euclidean_1():
     ED = ed(X, Y)
     ref = np.zeros((nx, ny))
     for i in range(nx):
-    	ref[i] = np.sqrt(np.sum((Y - X[i])**2, 1))
+        ref[i] = np.sqrt(np.sum((Y - X[i])**2, 1))
 
     assert_almost_equal(ED, ref)
 
@@ -31,6 +31,6 @@ def test_euclidean_2():
     ED = ed(X)
     ref = np.zeros((nx, nx))
     for i in range(nx):
-    	ref[i] = np.sqrt(np.sum((X - X[i])**2, 1))
+        ref[i] = np.sqrt(np.sum((X - X[i])**2, 1))
 
     assert_almost_equal(ED, ref)
