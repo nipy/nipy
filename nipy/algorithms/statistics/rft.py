@@ -221,7 +221,7 @@ class ECquasi(np.poly1d):
         False
         >>>
         """
-        if self.m != other.m:
+        if self.m != other.m:  # noqa: SIM103
             #raise ValueError, 'quasi polynomials are not compatible, m disagrees'
             return False
         return True
