@@ -130,7 +130,7 @@ def test_step_function():
     lam = lambdify(t, s)
     assert_array_equal(lam(tval), [0, 4, 4, 2, 2, 1])
     # Name default
-    assert not re.match(r'step\d+\(t\)$', str(s)) is None
+    assert re.match(r'step\d+\(t\)$', str(s)) is not None
     # Name reloaded
     s = step_function([0,4,5],[4,2,1], name='goodie_goodie_yum_yum')
     assert str(s) == 'goodie_goodie_yum_yum(t)'
@@ -147,7 +147,7 @@ def test_blocks():
     assert_array_equal(lam(tval), [0, 3, 0, 5])
     # Check what happens with names
     # Default is from step function
-    assert not re.match(r'step\d+\(t\)$', str(b)) is None
+    assert re.match(r'step\d+\(t\)$', str(b)) is not None
     # Can pass in another
     b = blocks(on_off, name='funky_chicken')
     assert str(b) == 'funky_chicken(t)'

@@ -55,7 +55,7 @@ def test_basic_nipy2nifti():
     ni_img = nipy2nifti(fimg)
     new_hdr = get_header(ni_img)
     # header copied on the way through
-    assert not hdr is new_hdr
+    assert hdr is not new_hdr
     # Check information preserved
     assert hdr['slice_duration'] == new_hdr['slice_duration']
     assert_array_equal(data, ni_img.get_fdata())
