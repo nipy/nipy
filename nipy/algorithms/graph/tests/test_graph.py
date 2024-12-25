@@ -350,7 +350,7 @@ def test_voronoi():
     """
     a = np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6])
     b = np.array([1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 0, 0, 1])
-    d = np.array([1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2]);
+    d = np.array([1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     edges = np.transpose(np.vstack((a, b)))
     G = WeightedGraph(7, edges,d)
     G.symmeterize()
@@ -364,7 +364,7 @@ def test_voronoi2():
     """
     a = np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6])
     b = np.array([1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 0, 0, 1])
-    d = np.array([1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2]);
+    d = np.array([1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     edges = np.vstack((a, b)).T
     G = WeightedGraph(7, edges,d)
     G.symmeterize()
@@ -378,7 +378,7 @@ def test_voronoi3():
     """
     a = np.array([0, 1, 2, 5, 6])
     b = np.array([1, 2, 3, 6, 0])
-    d = np.array([1, 1, 1, 1, 1]);
+    d = np.array([1, 1, 1, 1, 1])
     edges = np.vstack((a, b)).T
     G = WeightedGraph(7, edges,d)
     G.symmeterize()
