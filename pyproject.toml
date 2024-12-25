@@ -84,22 +84,41 @@ nipy_diagnose = 'nipy.cli.diagnose:main'
 line-length = 88
 
 [tool.ruff.lint]
-select = [
+extend-select = [
     'I',
     'UP',
     'C4',
-    'E713',
     'PIE',
-    'PGH003',
+    'PGH',
     'PLR0402',
-    'SIM101',
-    'SIM109',
-    'SIM110',
-    'SIM118',
-    'SIM2'
+    'SIM',
+    'PERF',
+    'RUF'
 ]
 ignore = [
-    'UP031'
+    'F401',
+    'F402',
+    'F403',
+    'F821',
+    'F841',
+    'E402',
+    'E712',
+    'E721',
+    'E722',
+    'E731',
+    'E741',
+    'E742',
+    'UP031',
+    'SIM102',
+    'SIM105',
+    'SIM108',
+    'SIM114',
+    'SIM115',
+    'SIM300',
+    'PERF203',
+    'RUF005',
+    'RUF012',
+    'RUF015'
 ]
 
 [tool.spin]
