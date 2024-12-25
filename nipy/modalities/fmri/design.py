@@ -422,9 +422,11 @@ def stack_designs(*pairs):
     contrasts = {}
     for p in pairs:
         if isinstance(p, np.ndarray):
-            new_X = p; new_con = {}
+            new_X = p
+            new_con = {}
         elif len(p) == 1:  # Length one sequence
-            new_X = p[0]; new_con = {}
+            new_X = p[0]
+            new_con = {}
         else:  # Length 2 sequence
             new_X, new_con = p
         X, contrasts = stack2designs(X, new_X, contrasts, new_con)

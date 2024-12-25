@@ -26,7 +26,9 @@ Let's check that indeed this is a parametrization of that surface
 """
 
 def implicit(vals):
-    x = vals[:,0]; y = vals[:,1]; z = vals[:,2]
+    x = vals[:,0]
+    y = vals[:,1]
+    z = vals[:,2]
     return x**2-y**2*z**2+z**3
 
 surface_param = CoordinateMap(uv, xyz, parametric_mapping)

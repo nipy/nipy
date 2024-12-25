@@ -25,10 +25,10 @@ c11 = utils.events([3, 7, 10], f=h1) # Condition 1, run 1
 # The events utility returns a formula in terms of 't' - general time
 c11 = c11.subs(t, t1) # Now make it in terms of time in run 1
 # Same for conditions 2 and 3
-c21 = utils.events([1, 3, 9], f=h1); c21 = c21.subs(t, t1)
-c31 = utils.events([2, 4, 8], f=h1); c31 = c31.subs(t, t1)
+c21 = utils.events([1, 3, 9], f=h1).subs(t, t1)
+c31 = utils.events([2, 4, 8], f=h1).subs(t, t1)
 # Add also a Fourier basis set for drift with frequencies 0.3, 0.5, 0.7
-d1 = utils.fourier_basis([0.3, 0.5, 0.7]); d1 = d1.subs(t, t1)
+d1 = utils.fourier_basis([0.3, 0.5, 0.7]).subs(t, t1)
 
 # Here's our formula for run 1 signal terms of time in run 1 (t1)
 f1 = Formula([c11,c21,c31]) + d1
@@ -36,10 +36,10 @@ f1 = Formula([c11,c21,c31]) + d1
 # run 2
 t2 = Term('t2') # Time within run 2
 # Conditions 1 through 3 in run 2
-c12 = utils.events([3.3, 7, 10], f=h2); c12 = c12.subs(t, t2)
-c22 = utils.events([1, 3.2, 9], f=h2); c22 = c22.subs(t, t2)
-c32 = utils.events([2, 4.2, 8], f=h2); c32 = c32.subs(t, t2)
-d2 = utils.fourier_basis([0.3, 0.5, 0.7]); d2 = d2.subs(t, t2)
+c12 = utils.events([3.3, 7, 10], f=h2).subs(t, t2)
+c22 = utils.events([1, 3.2, 9], f=h2).subs(t, t2)
+c32 = utils.events([2, 4.2, 8], f=h2).subs(t, t2)
+d2 = utils.fourier_basis([0.3, 0.5, 0.7]).subs(t, t2)
 
 # Formula for run 2 signal in terms of time in run 2 (t2)
 f2 = Formula([c12, c22, c32]) + d2

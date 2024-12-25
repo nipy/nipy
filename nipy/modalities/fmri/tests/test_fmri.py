@@ -39,7 +39,8 @@ def test_iter():
     for i, d in axis0_generator(img.get_fdata()):
         j += 1
         assert d.shape == exp_shape
-        del(i); gc.collect()
+        del(i)
+        gc.collect()
     assert j == img_shape[1]
 
 

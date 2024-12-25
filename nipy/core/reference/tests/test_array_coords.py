@@ -25,8 +25,12 @@ def test_array_coord_map():
     # lost dimension, with all zeros, except for the translation in the
     # now-removed dimension, encoding the position of that particular
     # slice
-    xz = 1.1; yz = 2.3; zz = 3.5
-    xt = 10.0; yt = 11; zt = 12
+    xz = 1.1
+    yz = 2.3
+    zz = 3.5
+    xt = 10.0
+    yt = 11
+    zt = 12
     aff = np.diag([xz, yz, zz, 1])
     aff[:3,3] = [xt, yt, zt]
     shape = (2,3,4)

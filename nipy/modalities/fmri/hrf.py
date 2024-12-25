@@ -135,7 +135,9 @@ dglovert = lambdify_t(_dgexpr)
 # Symbolic function
 dglover = implemented_function('dglover', dglovert)
 
-del(_gexpr); del(_dpos); del(_dgexpr)
+del(_gexpr)
+del(_dpos)
+del(_dgexpr)
 
 # AFNI's HRF
 _aexpr = sympy.Piecewise((T, T >= 0), (0, True))**8.6 * sympy.exp(-T/0.547)

@@ -12,8 +12,11 @@ import numpy as np
 import pylab
 from sympy import Piecewise, Symbol, lambdify
 
-ta = [0,4,8,12,16]; tb = [2,6,10,14,18]
-ba = Symbol('ba'); bb = Symbol('bb'); t = Symbol('t')
+ta = [0,4,8,12,16]
+tb = [2,6,10,14,18]
+ba = Symbol('ba')
+bb = Symbol('bb')
+t = Symbol('t')
 fa = sum(Piecewise((0, (t<_t)), ((t-_t)/0.5, (t<_t+0.5)), (1, (t >= _t+0.5))) for _t in ta)*ba
 fb = sum(Piecewise((0, (t<_t)), ((t-_t)/0.5, (t<_t+0.5)), (1, (t >= _t+0.5))) for _t in tb)*bb
 N = fa+fb

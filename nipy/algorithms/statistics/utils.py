@@ -384,13 +384,17 @@ def test_EC3(shape):
     ec = 0
 
     for t in decompose3d(shape, dim=4):
-        ec -= 1; ts += 1
+        ec -= 1
+        ts += 1
     for f in decompose3d(shape, dim=3):
-        ec += 1; fs += 1
+        ec += 1
+        fs += 1
     for e in decompose3d(shape, dim=2):
-        ec -= 1; es += 1
+        ec -= 1
+        es += 1
     for v in decompose3d(shape, dim=1):
-        ec += 1; vs += 1
+        ec += 1
+        vs += 1
     return ts, fs, es, vs, ec
 
 # Tell testing framework not to run this as a test
@@ -405,11 +409,14 @@ def test_EC2(shape):
     ec = 0
 
     for f in decompose2d(shape, dim=3):
-        ec += 1; fs += 1
+        ec += 1
+        fs += 1
     for e in decompose2d(shape, dim=2):
-        ec -= 1; es += 1
+        ec -= 1
+        es += 1
     for v in decompose2d(shape, dim=1):
-        ec += 1; vs += 1
+        ec += 1
+        vs += 1
     return fs, es, vs, ec
 
 # Tell testing framework not to run this as a test
