@@ -162,8 +162,10 @@ def _maximally_separated_subset(x, k):
     """
 
     # base cases
-    if k < 1: raise ValueError("k = %i < 1 is senseless." % k)
-    if k == 1: return [x[len(x) // 2]]
+    if k < 1:
+        raise ValueError("k = %i < 1 is senseless." % k)
+    if k == 1:
+        return [x[len(x) // 2]]
 
     # would-be maximally separated subset of k (not showing the terminal nodes)
     msss = list(range(1, len(x) - 1))

@@ -42,7 +42,8 @@ def test2():
     detZ = np.linalg.det(Z)
     if detZ < 0:
         W = -Z
-    else: W = Z
+    else:
+        W = Z
     f = np.fabs(detZ)**(1/3.)
     SL_Z = MG.SLR(W/f, 'xyz')
 

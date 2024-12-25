@@ -1030,12 +1030,12 @@ def test_subtype_equalities():
     out_cs = CoordinateSystem('xyz')
     f = lambda x : x + 1
     cmap = CoordinateMap(in_cs, out_cs, f)
-    class CM2(CoordinateMap): pass
+    class CM2(CoordinateMap): ...
     cmap2 = CM2(in_cs, out_cs, f)
     assert cmap == cmap2
     assert cmap2 == cmap
     cmap = AffineTransform(in_cs, out_cs, np.eye(4))
-    class AT2(AffineTransform): pass
+    class AT2(AffineTransform): ...
     cmap2 = AT2(in_cs, out_cs, np.eye(4))
     assert cmap == cmap2
     assert cmap2 == cmap

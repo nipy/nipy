@@ -94,7 +94,7 @@ def test_parse_fname_axes(in_tmp_path):
         assert slice_axis == 'j'
 
 
-class Args: pass
+class Args: ...
 
 
 def check_axes(axes, img_shape, time_axis, slice_axis):
