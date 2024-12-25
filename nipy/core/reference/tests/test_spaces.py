@@ -115,7 +115,7 @@ def test_known_space():
         cs = sp.to_coordsys_maker()(3)
         assert known_space(cs) == sp
     cs = CS('xyz')
-    assert known_space(cs) == None
+    assert known_space(cs) is None
     sp0 = XYZSpace('hijo')
     sp1 = XYZSpace('hija')
     custom_spaces = (sp0, sp1)
