@@ -196,20 +196,22 @@ def cube_with_strides_center(center=[0,0,0],
                    (0, 7, 5, 1),
                    (0, 7, 4, 6),
                    (0, 3, 1, 7)]
-        vertices = []
-        for k in range(2):
-            for j in range(2):
-                for i in range(2):
-                    vertices.append((center[0]+i)*strides[0] +
-                                    (center[1]+j)*strides[1] +
-                                    (center[2]+k)*strides[2])
+        vertices = [
+            (center[0]+i)*strides[0] +
+            (center[1]+j)*strides[1] +
+            (center[2]+k)*strides[2]
+            for k in range(2)
+            for j in range(2)
+            for i in range(2)
+        ]
     elif d == 2:
         maximal = [(0,1,3), (0,2,3)]
-        vertices = []
-        for j in range(2):
-            for i in range(2):
-                    vertices.append((center[0]+i)*strides[0] +
-                                    (center[1]+j)*strides[1])
+        vertices = [
+            (center[0]+i)*strides[0] +
+            (center[1]+j)*strides[1]
+            for j in range(2)
+            for i in range(2)
+        ]
     elif d == 1:
         maximal = [(0,1)]
         vertices = [center[0],center[0]+strides[0]]
