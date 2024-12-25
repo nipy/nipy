@@ -43,7 +43,8 @@ def randombox(shape):
     for j in range(len(shape)):
         edges[j].sort()
         if edges[j][0] == edges[j][1]:
-            edges[j][0] = 0; edges[j][1] = shape[j]/2+1
+            edges[j][0] = 0
+            edges[j][1] = shape[j]/2+1
     return edges, box(shape, edges)
 
 

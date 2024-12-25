@@ -27,7 +27,7 @@ def test_mask_parcel():
 def test_mask_parcel_multi_subj(in_tmp_path):
     """ Test that mask parcellation performs correctly
     """
-    rng = np.random.RandomState(0);
+    rng = np.random.RandomState(0)
     n_parcels = 20
     shape = (10, 10, 10)
     n_subjects = 5

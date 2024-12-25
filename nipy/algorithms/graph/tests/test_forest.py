@@ -74,7 +74,7 @@ def test_all_distances():
     dg = f.all_distances(1)
     assert dg[3] == 3.
 
-def test_depth():
+def test_depth_from_leaves():
     """ test the depth_from_leaves() methods
     """
     f =  simple_forest()

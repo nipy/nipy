@@ -27,7 +27,7 @@ def test_parcel_intra_from_3d_images_list(in_tmp_path):
         prevalence_threshold=0, prevalence_pval=0.5, write_dir=in_tmp_path,
         algorithm='density', contrast_id=contrast_id)
 
-    assert landmark == None
+    assert landmark is None
     assert len(hrois) == 5
     assert exists(f'density_{contrast_id}.nii')
     assert exists(f'prevalence_{contrast_id}.nii')

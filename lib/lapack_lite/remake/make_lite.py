@@ -6,10 +6,6 @@ import sys
 import clapack_scrub
 import fortran
 
-try: set
-except NameError:
-    from sets import Set as set
-
 # Arguments to pass to f2c. You'll always want -A for ANSI C prototypes
 # Others of interest: -a to not make variables static by default
 #                     -C to check array subscripts

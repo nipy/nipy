@@ -12,7 +12,9 @@ from ..matrices import full_rank, matrix_rank, pos_recipr, recipr0
 def test_matrix_rank():
     # Full rank matrix
     assert 4 == matrix_rank(np.eye(4))
-    I=np.eye(4); I[-1,-1] = 0. # rank deficient matrix
+    # rank deficient matrix
+    I=np.eye(4)
+    I[-1,-1] = 0.
     assert matrix_rank(I) == 3
     # All zeros - zero rank
     assert matrix_rank(np.zeros((4,4))) == 0

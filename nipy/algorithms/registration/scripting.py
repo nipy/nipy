@@ -24,7 +24,7 @@ from .groupwise_registration import SpaceTimeRealign
 
 timefuncs = st.timefuncs.SLICETIME_FUNCTIONS
 
-__all__ = ["space_time_realign", "aff2euler"]
+__all__ = ["aff2euler", "space_time_realign"]
 
 
 def aff2euler(affine):

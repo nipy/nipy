@@ -199,7 +199,8 @@ class ECquasi(np.poly1d):
                 self.__dict__[key] = val
             else:
                 raise ValueError('expecting positive float or inf')
-        else: np.poly1d.__setattr__(self, key, val)
+        else:
+            np.poly1d.__setattr__(self, key, val)
 
     def compatible(self, other):
         """ Check compatibility of degrees of freedom
@@ -220,7 +221,7 @@ class ECquasi(np.poly1d):
         False
         >>>
         """
-        if self.m != other.m:
+        if self.m != other.m:  # noqa: SIM103
             #raise ValueError, 'quasi polynomials are not compatible, m disagrees'
             return False
         return True

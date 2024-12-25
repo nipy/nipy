@@ -120,8 +120,8 @@ def make_link_targets(proj_name,
     """
     with open(known_link_fname) as link_fh:
         link_contents = link_fh.readlines()
-    have_url = not url is None
-    have_ml_url = not ml_url is None
+    have_url = url is not None
+    have_ml_url = ml_url is not None
     have_gh_url = None
     for line in link_contents:
         if not have_url:
@@ -140,12 +140,12 @@ def make_link_targets(proj_name,
         raise RuntimeError('Need command line or known project '
                            'and / or mailing list URLs')
     lines = []
-    if not url is None:
+    if url is not None:
         lines.append(f'.. _`{proj_name}`: {url}\n')
     if not have_gh_url:
         gh_url = f'https://github.com/{user_name}/{repo_name}\n'
         lines.append(f'.. _`{proj_name} github`: {gh_url}\n')
-    if not ml_url is None:
+    if ml_url is not None:
         lines.append(f'.. _`{proj_name} mailing list`: {ml_url}\n')
     if len(lines) == 0:
         # Nothing to do
@@ -216,7 +216,7 @@ def main():
                      out_path,
                      cp_globs=(pjoin('gitwash', '*'),),
                      rep_globs=('*.rst',),
-                     renames=(('\.rst$', options.source_suffix),))
+                     renames=((r'\.rst$', options.source_suffix),))
         make_link_targets(project_name,
                           options.main_gh_user,
                           options.repo_name,

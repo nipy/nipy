@@ -15,7 +15,7 @@ class TestClustering(TestCase):
     def testkmeans1(self):
         X = nr.randn(10, 2)
         A = np.concatenate([np.ones((7, 2)),np.zeros((3, 2))])
-        X = X + 3 * A;
+        X = X + 3 * A
         L = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
         C, L, J = kmeans(X, 2, L)
         self.assertLess(np.mean(L[:7]), 0.5)

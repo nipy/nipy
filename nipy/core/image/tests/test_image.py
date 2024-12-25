@@ -210,7 +210,7 @@ def test_from_image():
     assert_array_equal(img.get_fdata(), img2.get_fdata())
     assert img.coordmap == img2.coordmap
     assert img.metadata == img2.metadata
-    assert not img.metadata is img2.metadata
+    assert img.metadata is not img2.metadata
     # optional inputs - data
     arr2 = arr + 10
     new = Image.from_image(img, arr2)

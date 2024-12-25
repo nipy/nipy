@@ -147,7 +147,7 @@ def test_is_coordsys():
     # Test coordinate system check
     csys = CoordinateSystem('ijk')
     assert is_coordsys(csys)
-    class C: pass
+    class C: ...
     c = C()
     assert not is_coordsys(c)
     c.coord_names = []
@@ -263,7 +263,7 @@ def test_is_coordsys_maker():
     # Test coordinate system check
     cm = CoordSysMaker('xyz')
     assert is_coordsys_maker(cm)
-    class C: pass
+    class C: ...
     c = C()
     assert not is_coordsys_maker(c)
     c.coord_names = []

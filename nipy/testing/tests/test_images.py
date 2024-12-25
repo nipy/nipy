@@ -14,4 +14,4 @@ def test_dims():
     assert_array_equal(fimg.coordmap.affine[3, 3], 2.0)
     # should follow, but also make sure affine is invertible
     ainv = fimg.coordmap.inverse
-    assert not ainv is None
+    assert ainv is not None

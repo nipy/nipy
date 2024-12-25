@@ -70,13 +70,13 @@ def test_image_as_xyz_image():
         for tmap in (img_ro_out, img_ro_in, img_ro_both):
             assert not is_xyz_affable(tmap)
             img_r = as_xyz_image(tmap)
-            assert not tmap is img_r
+            assert tmap is not img_r
             assert img == img_r
             assert_array_equal(img.get_fdata(), img_r.get_fdata())
     img_t0 = rollimg(img, 't')
     assert not is_xyz_affable(img_t0)
     img_t0_r = as_xyz_image(img_t0)
-    assert not img_t0 is img_t0_r
+    assert img_t0 is not img_t0_r
     assert_array_equal(img.get_fdata(), img_t0_r.get_fdata())
     assert img.coordmap == img_t0_r.coordmap
     # Test against nibabel image

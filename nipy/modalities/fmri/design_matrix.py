@@ -257,7 +257,7 @@ class DesignMatrix:
         if frametimes is not None:
             if frametimes.size != matrix.shape[0]:
                 raise ValueError(
-                    'The number %d of frametimes is different from the' + \
+                    'The number %d of frametimes is different from the ' \
                     'number %d of rows' % (frametimes.size, matrix.shape[0]))
 
         self.frametimes = np.asarray(frametimes, dtype=np.float64)

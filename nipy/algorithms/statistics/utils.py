@@ -196,20 +196,22 @@ def cube_with_strides_center(center=[0,0,0],
                    (0, 7, 5, 1),
                    (0, 7, 4, 6),
                    (0, 3, 1, 7)]
-        vertices = []
-        for k in range(2):
-            for j in range(2):
-                for i in range(2):
-                    vertices.append((center[0]+i)*strides[0] +
-                                    (center[1]+j)*strides[1] +
-                                    (center[2]+k)*strides[2])
+        vertices = [
+            (center[0]+i)*strides[0] +
+            (center[1]+j)*strides[1] +
+            (center[2]+k)*strides[2]
+            for k in range(2)
+            for j in range(2)
+            for i in range(2)
+        ]
     elif d == 2:
         maximal = [(0,1,3), (0,2,3)]
-        vertices = []
-        for j in range(2):
-            for i in range(2):
-                    vertices.append((center[0]+i)*strides[0] +
-                                    (center[1]+j)*strides[1])
+        vertices = [
+            (center[0]+i)*strides[0] +
+            (center[1]+j)*strides[1]
+            for j in range(2)
+            for i in range(2)
+        ]
     elif d == 1:
         maximal = [(0,1)]
         vertices = [center[0],center[0]+strides[0]]
@@ -384,13 +386,17 @@ def test_EC3(shape):
     ec = 0
 
     for t in decompose3d(shape, dim=4):
-        ec -= 1; ts += 1
+        ec -= 1
+        ts += 1
     for f in decompose3d(shape, dim=3):
-        ec += 1; fs += 1
+        ec += 1
+        fs += 1
     for e in decompose3d(shape, dim=2):
-        ec -= 1; es += 1
+        ec -= 1
+        es += 1
     for v in decompose3d(shape, dim=1):
-        ec += 1; vs += 1
+        ec += 1
+        vs += 1
     return ts, fs, es, vs, ec
 
 # Tell testing framework not to run this as a test
@@ -405,11 +411,14 @@ def test_EC2(shape):
     ec = 0
 
     for f in decompose2d(shape, dim=3):
-        ec += 1; fs += 1
+        ec += 1
+        fs += 1
     for e in decompose2d(shape, dim=2):
-        ec -= 1; es += 1
+        ec -= 1
+        es += 1
     for v in decompose2d(shape, dim=1):
-        ec += 1; vs += 1
+        ec += 1
+        vs += 1
     return fs, es, vs, ec
 
 # Tell testing framework not to run this as a test

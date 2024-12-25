@@ -215,7 +215,8 @@ def run_model(subj, run):
 
     # We split the contrasts into F-tests and t-tests.
     # XXX helper function should do this
-    fcons = {}; tcons = {}
+    fcons = {}
+    tcons = {}
     for n, v in cons.items():
         v = np.squeeze(v)
         if v.ndim == 1:
