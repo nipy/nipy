@@ -41,7 +41,7 @@ void fff_vector_fetch_using_NumPy(fff_vector* y, const char* x, npy_intp stride,
   npy_intp dim[1] = {(npy_intp)y->size};
   npy_intp strides[1] = {stride};
   PyArrayObject* X = (PyArrayObject*) PyArray_New(&PyArray_Type, 1, dim, type, strides,
-						  (void*)x, itemsize, NPY_BEHAVED, NULL);
+						  (void*)x, itemsize, NPY_ARRAY_BEHAVED, NULL);
   PyArrayObject* Y = (PyArrayObject*) PyArray_SimpleNewFromData(1, dim, NPY_DOUBLE, (void*)y->data);
   PyArray_CopyInto(Y, X);
   Py_XDECREF(Y);
@@ -140,7 +140,7 @@ PyArrayObject* fff_vector_toPyArray(fff_vector* y)
      buffer to Python and transfer ownership */
   if (y->owner) {
     x = (PyArrayObject*) PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, (void*)y->data);
-    x->flags = (x->flags) | NPY_OWNDATA;
+    x->flags = (x->flags) | NPY_ARRAY_OWNDATA;
   }
   /* Otherwise, create Python array from scratch */
   else
@@ -166,7 +166,7 @@ PyArrayObject* fff_vector_const_toPyArray(const fff_vector* y)
   for (i=0; i<size; i++, bufX++, bufY+=stride)
     *bufX = *bufY;
   x = (PyArrayObject*) PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, (void*)data);
-  x->flags = (x->flags) | NPY_OWNDATA;
+  x->flags = (x->flags) | NPY_ARRAY_OWNDATA;
 
   return x;
 }
@@ -244,7 +244,7 @@ PyArrayObject* fff_matrix_toPyArray(fff_matrix* y)
      buffer to Python and transfer ownership */
   if ((tda == size2) && (y->owner)) {
     x = (PyArrayObject*) PyArray_SimpleNewFromData(2, dims, NPY_DOUBLE, (void*)y->data);
-    x->flags = (x->flags) | NPY_OWNDATA;
+    x->flags = (x->flags) | NPY_ARRAY_OWNDATA;
   }
   /* Otherwise, create PyArray from scratch. Note, the input
      fff_matrix is necessarily in row-major order. */
@@ -278,7 +278,7 @@ PyArrayObject* fff_matrix_const_toPyArray(const fff_matrix* y)
   }
 
   x = (PyArrayObject*) PyArray_SimpleNewFromData(2, dims, NPY_DOUBLE, (void*)data);
-  x->flags = (x->flags) | NPY_OWNDATA;
+  x->flags = (x->flags) | NPY_ARRAY_OWNDATA;
 
   return x;
 }
@@ -467,7 +467,7 @@ PyArrayObject* fff_array_toPyArray(fff_array* y)
    x = (PyArrayObject*) PyArray_SimpleNewFromData(yy->ndims, dims, datatype, (void*)yy->data);
 
   /* Transfer ownership to Python */
-  x->flags = (x->flags) | NPY_OWNDATA;
+  x->flags = (x->flags) | NPY_ARRAY_OWNDATA;
 
   /* Dealloc memory if needed */
   if (! y->owner)
