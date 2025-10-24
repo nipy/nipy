@@ -91,7 +91,7 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
         map = np.asarray(map)
     my_map = map.copy()
     if mask is not None:
-        slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
+        slice_x, slice_y, slice_z = ndimage.find_objects(np.int8(mask))[0]
         my_map = my_map[slice_x, slice_y, slice_z]
         mask = mask[slice_x, slice_y, slice_z]
         my_map *= mask
@@ -104,7 +104,7 @@ def find_cut_coords(map, mask=None, activation_threshold=None):
                                     np.abs(my_map[my_map !=0]).ravel(), 80)
     mask = np.abs(my_map) > activation_threshold-1.e-15
     mask = largest_cc(mask)
-    slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
+    slice_x, slice_y, slice_z = ndimage.find_objects(np.int8(mask))[0]
     my_map = my_map[slice_x, slice_y, slice_z]
     mask = mask[slice_x, slice_y, slice_z]
     my_map *= mask
@@ -132,7 +132,7 @@ def get_mask_bounds(mask, affine):
         The affine should be diagonal or diagonal-permuted.
     """
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
-    slices = ndimage.find_objects(mask)
+    slices = ndimage.find_objects(np.int8(mask))
     if len(slices) == 0:
         warnings.warn("empty mask", stacklevel=2)
     else:
