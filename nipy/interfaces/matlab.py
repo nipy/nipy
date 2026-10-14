@@ -11,14 +11,15 @@ http://nipy.org/nipype
 # Stdlib imports
 import os
 import re
+import shlex
 import subprocess
 import tempfile
 
 matlab_cmd = 'matlab -nojvm -nosplash'
 
 def run_matlab(cmd):
-    subprocess.call(f'{matlab_cmd} -r "{cmd};exit" ',
-                    shell=True)
+    launcher = shlex.split(matlab_cmd) if isinstance(matlab_cmd, str) else list(matlab_cmd)
+    subprocess.call(launcher + ['-r', f'{cmd};exit'])
 
 
 def run_matlab_script(script_lines, script_name='pyscript'):
