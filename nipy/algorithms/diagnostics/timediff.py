@@ -97,6 +97,7 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=None):
     T = shape[0]
     S = shape[1]
     vol_shape = shape[1:]
+    is_integer = arr.dtype.kind in 'iu'
     # loop over time points to save memory
     volds = np.empty((T-1,))
     sliceds = np.empty((T-1,S))
@@ -109,7 +110,17 @@ def time_slice_diffs(arr, time_axis=-1, slice_axis=None):
     for dtpi in range(T-1):
         tp = arr[dtpi+1] # shape vol_shape
         means[dtpi+1] = tp.mean()
-        dtp_diff2 = (tp - last_tp)**2
+        if is_integer and arr.dtype.itemsize <= 4:
+            # Float64 represents all differences between 32-bit integers exactly.
+            diff = np.subtract(tp, last_tp, dtype=np.float64)
+            dtp_diff2 = np.square(diff, out=diff)
+        elif is_integer:
+            # The absolute difference of two 64-bit integers fits in uint64.
+            diff = np.subtract(np.maximum(tp, last_tp), np.minimum(tp, last_tp),
+                               dtype=np.uint64, casting='unsafe')
+            dtp_diff2 = np.square(diff, dtype=np.float64)
+        else:
+            dtp_diff2 = (tp - last_tp)**2
         diff_mean_vol += dtp_diff2
         sliceds[dtpi] = dtp_diff2.reshape(S, -1).mean(-1)
         # check whether we have found a highest-diff slice

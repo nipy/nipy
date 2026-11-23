@@ -65,6 +65,28 @@ def test_time_slice_diffs():
         assert_array_almost_equal(results[key], expected[key])
 
 
+@pytest.mark.parametrize('dtype, first, second', [
+    (np.uint8, 250, 0),
+    (np.int16, -30000, 30000),
+    (np.int64, 2**60, 2**60 + 1),
+    (np.uint64, 2**63 + 1, 2**63),
+    (np.int64, -(2**63), 2**63 - 1),
+    (np.dtype('>u4'), 2**32 - 1, 0),
+    (np.dtype('>i8'), -(2**63), -(2**63) + 1),
+    (np.dtype('>f4'), 1, 3),
+])
+def test_time_slice_diffs_input_dtypes(dtype, first, second):
+    data = np.array([[first, second]], dtype=dtype)
+    expected = float((second - first) ** 2)
+
+    results = tsd.time_slice_diffs(data)
+
+    assert_array_equal(results['volume_mean_diff2'], [expected])
+    assert_array_equal(results['slice_mean_diff2'], [[expected]])
+    assert_array_equal(results['diff2_mean_vol'], [expected])
+    assert_array_equal(results['slice_diff2_max_vol'], [expected])
+
+
 def test_time_slice_axes():
     # Test time and slice axes work as expected
     fimg = load_image(funcfile)
